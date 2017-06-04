@@ -1,0 +1,51 @@
+.vs/
+Debug/
+Release/
+x64/
+ipch/
+cov-int/
+packages/
+
+*.opendb
+*.sdf
+*.vsp
+*.VC.db
+*.vcxproj.user
+
+*.swp
+*~
+
+*.bin
+*.rom
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+cpp_chip8
+
+src/state
