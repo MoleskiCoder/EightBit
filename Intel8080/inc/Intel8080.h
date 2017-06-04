@@ -65,7 +65,7 @@ namespace EightBit {
 		int step();
 
 	private:
-		InputOutput m_ports;
+		InputOutput& m_ports;
 
 		std::array<Instruction, 0x100> instructions;
 
