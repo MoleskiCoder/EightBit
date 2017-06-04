@@ -11,6 +11,7 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <bitset>
 
 #if defined(_M_X64) || defined(_M_IX86 )
 #	define HOST_LITTLE_ENDIAN

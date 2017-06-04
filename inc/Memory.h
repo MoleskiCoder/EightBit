@@ -4,6 +4,12 @@
 #include <cstdint>
 #include <string>
 
+#if defined(_M_X64) || defined(_M_IX86 )
+#	define HOST_LITTLE_ENDIAN
+#else
+#	define HOST_BIG_ENDIAN
+#endif
+
 namespace EightBit {
 
 	typedef union {
