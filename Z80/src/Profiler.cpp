@@ -2,28 +2,28 @@
 #include "Profiler.h"
 #include "Disassembler.h"
 
-Profiler::Profiler() {
+EightBit::Profiler::Profiler() {
 	std::fill(m_instructions.begin(), m_instructions.end(), 0);
 	std::fill(m_addresses.begin(), m_addresses.end(), 0);
 }
 
-Profiler::~Profiler() {
+EightBit::Profiler::~Profiler() {
 }
 
-void Profiler::addInstruction(uint8_t instruction) {
+void EightBit::Profiler::addInstruction(uint8_t instruction) {
 	m_instructions[instruction]++;
 }
 
-void Profiler::addAddress(uint16_t address) {
+void EightBit::Profiler::addAddress(uint16_t address) {
 	m_addresses[address]++;
 }
 
-void Profiler::dump() const {
+void EightBit::Profiler::dump() const {
 	dumpInstructionProfiles();
 	dumpAddressProfiles();
 }
 
-void Profiler::dumpInstructionProfiles() const {
+void EightBit::Profiler::dumpInstructionProfiles() const {
 	std::cout << "** instructions" << std::endl;
 	for (int i = 0; i < 0x100; ++i) {
 		auto count = m_instructions[i];
@@ -32,7 +32,7 @@ void Profiler::dumpInstructionProfiles() const {
 	}
 }
 
-void Profiler::dumpAddressProfiles() const {
+void EightBit::Profiler::dumpAddressProfiles() const {
 	std::cout << "** addresses" << std::endl;
 	for (int i = 0; i < 0x10000; ++i) {
 		auto count = m_addresses[i];

@@ -78,7 +78,7 @@ std::string EightBit::Disassembler::disassemble(Intel8080& cpu) {
 		output << hex(memory.peek(pc.word + 1));
 		break;
 	case Intel8080::Absolute:
-		output << hex(cpu.getWord(pc.word + 1).word);
+		output << hex(memory.peekWord(pc.word + 1));
 		break;
 	default:
 		break;

@@ -8,12 +8,12 @@
 #include "Memory.h"
 #include "Z80.h"
 
-Disassembler::Disassembler() {
+EightBit::Disassembler::Disassembler() {
 	// Disable exceptions where too many format arguments are available
 	m_formatter.exceptions(boost::io::all_error_bits ^ boost::io::too_many_args_bit);
 }
 
-std::string Disassembler::state(Z80& cpu) {
+std::string EightBit::Disassembler::state(Z80& cpu) {
 
 	auto pc = cpu.getProgramCounter();
 	auto sp = cpu.getStackPointer();
@@ -51,7 +51,7 @@ std::string Disassembler::state(Z80& cpu) {
 	return output.str();
 }
 
-std::string Disassembler::RP(int rp) const {
+std::string EightBit::Disassembler::RP(int rp) const {
 	switch (rp) {
 	case 0:
 		return "BC";
@@ -69,7 +69,7 @@ std::string Disassembler::RP(int rp) const {
 	throw std::logic_error("Unhandled register pair");
 }
 
-std::string Disassembler::RP2(int rp) const {
+std::string EightBit::Disassembler::RP2(int rp) const {
 	switch (rp) {
 	case 0:
 		return "BC";
@@ -87,7 +87,7 @@ std::string Disassembler::RP2(int rp) const {
 	throw std::logic_error("Unhandled register pair");
 }
 
-std::string Disassembler::R(int r) const {
+std::string EightBit::Disassembler::R(int r) const {
 	switch (r) {
 	case 0:
 		return "B";
@@ -125,7 +125,7 @@ std::string Disassembler::R(int r) const {
 	throw std::logic_error("Unhandled register");
 }
 
-std::string Disassembler::cc(int flag) {
+std::string EightBit::Disassembler::cc(int flag) {
 	switch (flag) {
 	case 0:
 		return "NZ";
@@ -147,7 +147,7 @@ std::string Disassembler::cc(int flag) {
 	throw std::logic_error("Unhandled condition");
 }
 
-std::string Disassembler::alu(int which) {
+std::string EightBit::Disassembler::alu(int which) {
 	switch (which) {
 	case 0:	// ADD A,n
 		return "ADD";
@@ -169,14 +169,14 @@ std::string Disassembler::alu(int which) {
 	throw std::logic_error("Unhandled alu operation");
 }
 
-std::string Disassembler::disassemble(const Z80& cpu) {
+std::string EightBit::Disassembler::disassemble(const Z80& cpu) {
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	std::ostringstream output;
 	disassemble(output, cpu, cpu.getProgramCounter().word);
 	return output.str();
 }
 
-void Disassembler::disassemble(std::ostringstream& output, const Z80& cpu, uint16_t pc) {
+void EightBit::Disassembler::disassemble(std::ostringstream& output, const Z80& cpu, uint16_t pc) {
 
 	const auto& memory = cpu.getMemory();
 	auto opcode = memory.peek(pc);
@@ -234,7 +234,7 @@ void Disassembler::disassemble(std::ostringstream& output, const Z80& cpu, uint1
 	}
 }
 
-void Disassembler::disassembleCB(
+void EightBit::Disassembler::disassembleCB(
 	std::ostringstream& output,
 	const Z80& cpu,
 	uint16_t pc,
@@ -284,7 +284,7 @@ void Disassembler::disassembleCB(
 	}
 }
 
-void Disassembler::disassembleED(
+void EightBit::Disassembler::disassembleED(
 		std::ostringstream& output,
 		const Z80& cpu,
 		uint16_t pc,
@@ -418,7 +418,7 @@ void Disassembler::disassembleED(
 	}
 }
 
-void Disassembler::disassembleOther(
+void EightBit::Disassembler::disassembleOther(
 	std::ostringstream& output,
 	const Z80& cpu,
 	uint16_t pc,
@@ -674,13 +674,13 @@ void Disassembler::disassembleOther(
 	}
 }
 
-std::string Disassembler::flag(uint8_t value, int flag, const std::string& represents) {
+std::string EightBit::Disassembler::flag(uint8_t value, int flag, const std::string& represents) {
 	std::ostringstream output;
 	output << (value & flag ? represents : "-");
 	return output.str();
 }
 
-std::string Disassembler::flags(uint8_t value) {
+std::string EightBit::Disassembler::flags(uint8_t value) {
 	std::ostringstream output;
 	output
 		<< flag(value, Z80::SF, "S")
@@ -694,31 +694,31 @@ std::string Disassembler::flags(uint8_t value) {
 	return output.str();
 }
 
-std::string Disassembler::hex(uint8_t value) {
+std::string EightBit::Disassembler::hex(uint8_t value) {
 	std::ostringstream output;
 	output << std::hex << std::setw(2) << std::setfill('0') << (int)value;
 	return output.str();
 }
 
-std::string Disassembler::hex(uint16_t value) {
+std::string EightBit::Disassembler::hex(uint16_t value) {
 	std::ostringstream output;
 	output << std::hex << std::setw(4) << std::setfill('0') << (int)value;
 	return output.str();
 }
 
-std::string Disassembler::binary(uint8_t value) {
+std::string EightBit::Disassembler::binary(uint8_t value) {
 	std::ostringstream output;
 	output << std::bitset<8>(value);
 	return output.str();
 }
 
-std::string Disassembler::decimal(uint8_t value) {
+std::string EightBit::Disassembler::decimal(uint8_t value) {
 	std::ostringstream output;
 	output << (int)value;
 	return output.str();
 }
 
-std::string Disassembler::invalid(uint8_t value) {
+std::string EightBit::Disassembler::invalid(uint8_t value) {
 	std::ostringstream output;
 	output << "Invalid instruction: " << hex(value) << "(" << binary(value) << ")";
 	return output.str();

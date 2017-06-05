@@ -1,449 +1,456 @@
 #pragma once
 
+#include <cstdint>
+
 #include "Processor.h"
+#include "InputOutput.h"
 
-class Z80 : public Processor {
-public:
-	enum StatusBits {
-		SF = Bit7,
-		ZF = Bit6,
-		YF = Bit5,
-		HC = Bit4,
-		XF = Bit3,
-		PF = Bit2,
-		VF = Bit2,
-		NF = Bit1,
-		CF = Bit0,
-	};
+namespace EightBit {
+	class Z80 : public Processor {
+	public:
+		enum StatusBits {
+			SF = Bit7,
+			ZF = Bit6,
+			YF = Bit5,
+			HC = Bit4,
+			XF = Bit3,
+			PF = Bit2,
+			VF = Bit2,
+			NF = Bit1,
+			CF = Bit0,
+		};
 
-	Z80(Memory& memory, InputOutput& ports);
+		Z80(Memory& memory, InputOutput& ports);
 
-	Signal<Z80> ExecutingInstruction;
+		Signal<Z80> ExecutingInstruction;
 
-	void disableInterrupts();
-	void enableInterrupts();
+		void disableInterrupts();
+		void enableInterrupts();
 
-	int interruptMaskable(uint8_t value) { return interrupt(true, value); }
-	int interruptMaskable() { return interruptMaskable(0); }
-	int interruptNonMaskable() { return interrupt(false, 0); }
+		int interruptMaskable(uint8_t value) { return interrupt(true, value); }
+		int interruptMaskable() { return interruptMaskable(0); }
+		int interruptNonMaskable() { return interrupt(false, 0); }
 
-	int interrupt(bool maskable, uint8_t value);
+		int interrupt(bool maskable, uint8_t value);
 
-	int execute(uint8_t opcode);
-	int step();
+		int execute(uint8_t opcode);
+		int step();
 
-	bool getM1() const { return m1; }
+		bool getM1() const { return m1; }
 
-	// Mutable access to processor!!
+		// Mutable access to processor!!
 
-	register16_t& AF() {
-		return m_accumulatorFlags[m_accumulatorFlagsSet];
-	}
+		register16_t& AF() {
+			return m_accumulatorFlags[m_accumulatorFlagsSet];
+		}
 
-	uint8_t& A() { return AF().high; }
-	uint8_t& F() { return AF().low; }
+		uint8_t& A() { return AF().high; }
+		uint8_t& F() { return AF().low; }
 
-	register16_t& BC() {
-		return m_registers[m_registerSet][BC_IDX];
-	}
+		register16_t& BC() {
+			return m_registers[m_registerSet][BC_IDX];
+		}
 
-	uint8_t& B() { return BC().high; }
-	uint8_t& C() { return BC().low; }
+		uint8_t& B() { return BC().high; }
+		uint8_t& C() { return BC().low; }
 
-	register16_t& DE() {
-		return m_registers[m_registerSet][DE_IDX];
-	}
+		register16_t& DE() {
+			return m_registers[m_registerSet][DE_IDX];
+		}
 
-	uint8_t& D() { return DE().high; }
-	uint8_t& E() { return DE().low; }
+		uint8_t& D() { return DE().high; }
+		uint8_t& E() { return DE().low; }
 
-	register16_t& HL() {
-		return m_registers[m_registerSet][HL_IDX];
-	}
+		register16_t& HL() {
+			return m_registers[m_registerSet][HL_IDX];
+		}
 
-	uint8_t& H() { return HL().high; }
-	uint8_t& L() { return HL().low; }
+		uint8_t& H() { return HL().high; }
+		uint8_t& L() { return HL().low; }
 
-	register16_t& IX() { return m_ix; }
-	uint8_t& IXH() { return IX().high; }
-	uint8_t& IXL() { return IX().low; }
+		register16_t& IX() { return m_ix; }
+		uint8_t& IXH() { return IX().high; }
+		uint8_t& IXL() { return IX().low; }
 
-	register16_t& IY() { return m_iy; }
-	uint8_t& IYH() { return IY().high; }
-	uint8_t& IYL() { return IY().low; }
+		register16_t& IY() { return m_iy; }
+		uint8_t& IYH() { return IY().high; }
+		uint8_t& IYL() { return IY().low; }
 
-	uint8_t& REFRESH() { return m_refresh; }
-	uint8_t& IV() { return iv; }
-	int& IM() { return m_interruptMode; }
-	bool& IFF1() { return m_iff1; }
-	bool& IFF2() { return m_iff2; }
+		uint8_t& REFRESH() { return m_refresh; }
+		uint8_t& IV() { return iv; }
+		int& IM() { return m_interruptMode; }
+		bool& IFF1() { return m_iff1; }
+		bool& IFF2() { return m_iff2; }
 
-	register16_t& MEMPTR() { return m_memptr; }
+		register16_t& MEMPTR() { return m_memptr; }
 
-	bool& M1() { return m1; }
+		bool& M1() { return m1; }
 
-	void exx() {
-		m_registerSet ^= 1;
-	}
+		void exx() {
+			m_registerSet ^= 1;
+		}
 
-	void exxAF() {
-		m_accumulatorFlagsSet = !m_accumulatorFlagsSet;
-	}
+		void exxAF() {
+			m_accumulatorFlagsSet = !m_accumulatorFlagsSet;
+		}
 
-	virtual void reset();
-	virtual void initialise();
+		virtual void reset();
+		virtual void initialise();
 
-private:
-	enum { BC_IDX, DE_IDX, HL_IDX };
+	private:
+		InputOutput& m_ports;
 
-	std::array<std::array<register16_t, 3>, 2> m_registers;
-	int m_registerSet;
+		enum { BC_IDX, DE_IDX, HL_IDX };
 
-	std::array<register16_t, 2> m_accumulatorFlags;
-	int m_accumulatorFlagsSet;
+		std::array<std::array<register16_t, 3>, 2> m_registers;
+		int m_registerSet;
 
-	register16_t m_ix;
-	register16_t m_iy;
+		std::array<register16_t, 2> m_accumulatorFlags;
+		int m_accumulatorFlagsSet;
 
-	uint8_t m_refresh;
-	uint8_t iv;
-	int m_interruptMode;
-	bool m_iff1;
-	bool m_iff2;
+		register16_t m_ix;
+		register16_t m_iy;
 
-	register16_t m_memptr;
+		uint8_t m_refresh;
+		uint8_t iv;
+		int m_interruptMode;
+		bool m_iff1;
+		bool m_iff2;
 
-	bool m1;
+		register16_t m_memptr;
 
-	bool m_prefixCB;
-	bool m_prefixDD;
-	bool m_prefixED;
-	bool m_prefixFD;
+		bool m1;
 
-	int8_t m_displacement;
+		bool m_prefixCB;
+		bool m_prefixDD;
+		bool m_prefixED;
+		bool m_prefixFD;
 
-	std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
-	std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
+		int8_t m_displacement;
 
-	int fetchExecute() {
-		M1() = true;
-		return execute(fetchByteExecute());
-	}
+		std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
+		std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 
-	uint8_t fetchByteExecute() {
-		if (!getM1())
-			throw std::logic_error("M1 cannot be high");
-		return fetchByte();
-	}
+		int fetchExecute() {
+			M1() = true;
+			return execute(fetchByteExecute());
+		}
 
-	uint8_t fetchByteData() {
-		if (getM1())
-			throw std::logic_error("M1 cannot be low");
-		return fetchByte();
-	}
+		uint8_t fetchByteExecute() {
+			if (!getM1())
+				throw std::logic_error("M1 cannot be high");
+			return fetchByte();
+		}
 
-	void incrementRefresh() {
-		auto incremented = ((REFRESH() & Mask7) + 1) & Mask7;
-		REFRESH() = (REFRESH() & Bit7) | incremented;
-	}
+		uint8_t fetchByteData() {
+			if (getM1())
+				throw std::logic_error("M1 cannot be low");
+			return fetchByte();
+		}
 
-	void clearFlag(int flag) { F() &= ~flag; }
-	void setFlag(int flag) { F() |= flag; }
+		void incrementRefresh() {
+			auto incremented = ((REFRESH() & Mask7) + 1) & Mask7;
+			REFRESH() = (REFRESH() & Bit7) | incremented;
+		}
 
-	void setFlag(int flag, int condition) { setFlag(flag, condition != 0); }
-	void setFlag(int flag, uint32_t condition) { setFlag(flag, condition != 0); }
-	void setFlag(int flag, bool condition) { condition ? setFlag(flag) : clearFlag(flag); }
+		void clearFlag(int flag) { F() &= ~flag; }
+		void setFlag(int flag) { F() |= flag; }
 
-	void clearFlag(int flag, int condition) { clearFlag(flag, condition != 0); }
-	void clearFlag(int flag, uint32_t condition) { clearFlag(flag, condition != 0); }
-	void clearFlag(int flag, bool condition) { condition ? clearFlag(flag) : setFlag(flag); }
+		void setFlag(int flag, int condition) { setFlag(flag, condition != 0); }
+		void setFlag(int flag, uint32_t condition) { setFlag(flag, condition != 0); }
+		void setFlag(int flag, bool condition) { condition ? setFlag(flag) : clearFlag(flag); }
 
-	uint8_t& DISPLACED() {
-		if (!(m_prefixDD || m_prefixFD))
-			throw std::logic_error("Unprefixed indexed displacement requested");
-		m_memory.ADDRESS().word = MEMPTR().word = (m_prefixDD ? IX() : IY()).word + m_displacement;
-		return m_memory.reference();
-	}
+		void clearFlag(int flag, int condition) { clearFlag(flag, condition != 0); }
+		void clearFlag(int flag, uint32_t condition) { clearFlag(flag, condition != 0); }
+		void clearFlag(int flag, bool condition) { condition ? clearFlag(flag) : setFlag(flag); }
 
-	uint8_t& R(int r) {
-		switch (r) {
-		case 0:
-			return B();
-		case 1:
-			return C();
-		case 2:
-			return D();
-		case 3:
-			return E();
-		case 4:
-			return ALT_HL().high;
-		case 5:
-			return ALT_HL().low;
-		case 6:
-			if (m_prefixDD || m_prefixFD) {
-				m_displacement = fetchByteData();
-				return DISPLACED();
+		uint8_t& DISPLACED() {
+			if (!(m_prefixDD || m_prefixFD))
+				throw std::logic_error("Unprefixed indexed displacement requested");
+			m_memory.ADDRESS().word = MEMPTR().word = (m_prefixDD ? IX() : IY()).word + m_displacement;
+			return m_memory.reference();
+		}
+
+		uint8_t& R(int r) {
+			switch (r) {
+			case 0:
+				return B();
+			case 1:
+				return C();
+			case 2:
+				return D();
+			case 3:
+				return E();
+			case 4:
+				return ALT_HL().high;
+			case 5:
+				return ALT_HL().low;
+			case 6:
+				if (m_prefixDD || m_prefixFD) {
+					m_displacement = fetchByteData();
+					return DISPLACED();
+				}
+				m_memory.ADDRESS() = HL();
+				return m_memory.reference();
+			case 7:
+				return A();
 			}
-			m_memory.ADDRESS() = HL();
+			throw std::logic_error("Unhandled registry mechanism");
+		}
+
+		uint8_t& R2(int r) {
+			switch (r) {
+			case 0:
+				return B();
+			case 1:
+				return C();
+			case 2:
+				return D();
+			case 3:
+				return E();
+			case 4:
+				return H();
+			case 5:
+				return L();
+			case 6:
+				m_memory.ADDRESS() = HL();
+				return m_memory.reference();
+			case 7:
+				return A();
+			}
+			throw std::logic_error("Unhandled registry mechanism");
+		}
+
+		register16_t& RP(int rp) {
+			switch (rp) {
+			case 3:
+				return sp;
+			case HL_IDX:
+				return ALT_HL();
+			default:
+				return m_registers[m_registerSet][rp];
+			}
+		}
+
+		register16_t& ALT_HL() {
+			if (m_prefixDD)
+				return IX();
+			else if (m_prefixFD)
+				return IY();
+			return HL();
+		}
+
+		register16_t& RP2(int rp) {
+			switch (rp) {
+			case 3:
+				return AF();
+			case HL_IDX:
+				return ALT_HL();
+			default:
+				return m_registers[m_registerSet][rp];
+			}
+		}
+
+		uint8_t getViaMemptr(register16_t address) {
+			m_memory.ADDRESS() = address;
+			MEMPTR().word = address.word + 1;
 			return m_memory.reference();
-		case 7:
-			return A();
 		}
-		throw std::logic_error("Unhandled registry mechanism");
-	}
 
-	uint8_t& R2(int r) {
-		switch (r) {
-		case 0:
-			return B();
-		case 1:
-			return C();
-		case 2:
-			return D();
-		case 3:
-			return E();
-		case 4:
-			return H();
-		case 5:
-			return L();
-		case 6:
-			m_memory.ADDRESS() = HL();
-			return m_memory.reference();
-		case 7:
-			return A();
+		void setViaMemptr(register16_t address, uint8_t value) {
+			m_memory.ADDRESS() = address;
+			m_memory.reference() = value;
+			++address.word;
+			MEMPTR().low = address.low;
+			MEMPTR().high = value;
 		}
-		throw std::logic_error("Unhandled registry mechanism");
-	}
 
-	register16_t& RP(int rp) {
-		switch (rp) {
-		case 3:
-			return sp;
-		case HL_IDX:
-			return ALT_HL();
-		default:
-			return m_registers[m_registerSet][rp];
+		register16_t getWordViaMemptr(register16_t address) {
+			register16_t returned;
+			m_memory.ADDRESS() = address;
+			returned.low = m_memory.reference();
+			m_memory.ADDRESS().word++;
+			returned.high = m_memory.reference();
+			MEMPTR() = m_memory.ADDRESS();
+			return returned;
 		}
-	}
 
-	register16_t& ALT_HL() {
-		if (m_prefixDD)
-			return IX();
-		else if (m_prefixFD)
-			return IY();
-		return HL();
-	}
-
-	register16_t& RP2(int rp) {
-		switch (rp) {
-		case 3:
-			return AF();
-		case HL_IDX:
-			return ALT_HL();
-		default:
-			return m_registers[m_registerSet][rp];
+		void setWordViaMemptr(register16_t address, register16_t value) {
+			m_memory.ADDRESS() = address;
+			m_memory.reference() = value.low;
+			m_memory.ADDRESS().word++;
+			m_memory.reference() = value.high;
+			MEMPTR() = m_memory.ADDRESS();
 		}
-	}
 
-	uint8_t getViaMemptr(register16_t address) {
-		m_memory.ADDRESS() = address;
-		MEMPTR().word = address.word + 1;
-		return m_memory.reference();
-	}
+		void setPcViaMemptr(register16_t address) {
+			MEMPTR() = pc = address;
+		}
 
-	void setViaMemptr(register16_t address, uint8_t value) {
-		m_memory.ADDRESS() = address;
-		m_memory.reference() = value;
-		++address.word;
-		MEMPTR().low = address.low;
-		MEMPTR().high = value;
-	}
+		void addViaMemptr(register16_t& hl, register16_t operand) {
+			MEMPTR().word = hl.word + 1;
+			add(hl, operand);
+		}
 
-	register16_t getWordViaMemptr(register16_t address) {
-		register16_t returned;
-		m_memory.ADDRESS() = address;
-		returned.low = m_memory.reference();
-		m_memory.ADDRESS().word++;
-		returned.high = m_memory.reference();
-		MEMPTR() = m_memory.ADDRESS();
-		return returned;
-	}
+		void sbcViaMemptr(register16_t& hl, register16_t operand) {
+			MEMPTR().word = hl.word + 1;
+			sbc(hl, operand);
+		}
 
-	void setWordViaMemptr(register16_t address, register16_t value) {
-		m_memory.ADDRESS() = address;
-		m_memory.reference() = value.low;
-		m_memory.ADDRESS().word++;
-		m_memory.reference() = value.high;
-		MEMPTR() = m_memory.ADDRESS();
-	}
+		void adcViaMemptr(register16_t& hl, register16_t operand) {
+			MEMPTR().word = hl.word + 1;
+			adc(hl, operand);
+		}
 
-	void setPcViaMemptr(register16_t address) {
-		MEMPTR() = pc = address;
-	}
+		int buildHalfCarryIndex(uint8_t before, uint8_t value, int calculation) {
+			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
+		}
 
-	void addViaMemptr(register16_t& hl, register16_t operand) {
-		MEMPTR().word = hl.word + 1;
-		add(hl, operand);
-	}
+		void adjustHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
+			auto index = buildHalfCarryIndex(before, value, calculation);
+			setFlag(HC, m_halfCarryTableAdd[index & 0x7]);
+		}
 
-	void sbcViaMemptr(register16_t& hl, register16_t operand) {
-		MEMPTR().word = hl.word + 1;
-		sbc(hl, operand);
-	}
+		void adjustHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
+			auto index = buildHalfCarryIndex(before, value, calculation);
+			setFlag(HC, m_halfCarryTableSub[index & 0x7]);
+		}
 
-	void adcViaMemptr(register16_t& hl, register16_t operand) {
-		MEMPTR().word = hl.word + 1;
-		adc(hl, operand);
-	}
+		void adjustOverflowAdd(uint8_t before, uint8_t value, uint8_t calculation) {
+			adjustOverflowAdd(before & SF, value & SF, calculation & SF);
+		}
 
-	int buildHalfCarryIndex(uint8_t before, uint8_t value, int calculation) {
-		return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
-	}
+		void adjustOverflowAdd(int beforeNegative, int valueNegative, int afterNegative) {
+			auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
+			setFlag(VF, overflow);
+		}
 
-	void adjustHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
-		auto index = buildHalfCarryIndex(before, value, calculation);
-		setFlag(HC, m_halfCarryTableAdd[index & 0x7]);
-	}
+		void adjustOverflowSub(uint8_t before, uint8_t value, uint8_t calculation) {
+			adjustOverflowSub(before & SF, value & SF, calculation & SF);
+		}
 
-	void adjustHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
-		auto index = buildHalfCarryIndex(before, value, calculation);
-		setFlag(HC, m_halfCarryTableSub[index & 0x7]);
-	}
+		void adjustOverflowSub(int beforeNegative, int valueNegative, int afterNegative) {
+			auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
+			setFlag(VF, overflow);
+		}
 
-	void adjustOverflowAdd(uint8_t before, uint8_t value, uint8_t calculation) {
-		adjustOverflowAdd(before & SF, value & SF, calculation & SF);
-	}
+		void executeCB(int x, int y, int z, int p, int q);
+		void executeED(int x, int y, int z, int p, int q);
+		void executeOther(int x, int y, int z, int p, int q);
 
-	void adjustOverflowAdd(int beforeNegative, int valueNegative, int afterNegative) {
-		auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
-		setFlag(VF, overflow);
-	}
+		void adjustSign(uint8_t value);
+		void adjustZero(uint8_t value);
+		void adjustParity(uint8_t value);
+		void adjustSZ(uint8_t value);
+		void adjustSZP(uint8_t value);
+		void adjustXY(uint8_t value);
+		void adjustSZPXY(uint8_t value);
+		void adjustSZXY(uint8_t value);
 
-	void adjustOverflowSub(uint8_t before, uint8_t value, uint8_t calculation) {
-		adjustOverflowSub(before & SF, value & SF, calculation & SF);
-	}
+		void postIncrement(uint8_t value);
+		void postDecrement(uint8_t value);
 
-	void adjustOverflowSub(int beforeNegative, int valueNegative, int afterNegative) {
-		auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
-		setFlag(VF, overflow);
-	}
+		void restart(uint8_t address);
 
-	void executeCB(int x, int y, int z, int p, int q);
-	void executeED(int x, int y, int z, int p, int q);
-	void executeOther(int x, int y, int z, int p, int q);
+		void jrConditional(int conditional);
+		void jrConditionalFlag(int flag);
 
-	void adjustSign(uint8_t value);
-	void adjustZero(uint8_t value);
-	void adjustParity(uint8_t value);
-	void adjustSZ(uint8_t value);
-	void adjustSZP(uint8_t value);
-	void adjustXY(uint8_t value);
-	void adjustSZPXY(uint8_t value);
-	void adjustSZXY(uint8_t value);
+		void ret();
+		void retn();
+		void reti();
 
-	void postIncrement(uint8_t value);
-	void postDecrement(uint8_t value);
+		void returnConditional(int condition);
+		void returnConditionalFlag(int flag);
 
-	void restart(uint8_t address);
+		void jumpConditional(int condition);
+		void jumpConditionalFlag(int flag);
 
-	void jrConditional(int conditional);
-	void jrConditionalFlag(int flag);
+		void call(register16_t address);
+		void callConditional(register16_t address, int condition);
+		void callConditionalFlag(register16_t address, int flag);
 
-	void ret();
-	void retn();
-	void reti();
+		void sbc(register16_t& operand, register16_t value);
+		void adc(register16_t& operand, register16_t value);
 
-	void returnConditional(int condition);
-	void returnConditionalFlag(int flag);
+		void add(register16_t& operand, register16_t value);
 
-	void jumpConditional(int condition);
-	void jumpConditionalFlag(int flag);
+		void add(uint8_t& operand, uint8_t value, int carry = 0);
+		void adc(uint8_t& operand, uint8_t value);
+		void sub(uint8_t& operand, uint8_t value, int carry = 0);
+		void sbc(uint8_t& operand, uint8_t value);
+		void andr(uint8_t& operand, uint8_t value);
+		void xorr(uint8_t& operand, uint8_t value);
+		void orr(uint8_t& operand, uint8_t value);
+		void compare(uint8_t value);
 
-	void call(register16_t address);
-	void callConditional(register16_t address, int condition);
-	void callConditionalFlag(register16_t address, int flag);
+		void rlca();
+		void rrca();
+		void rla();
+		void rra();
 
-	void sbc(register16_t& operand, register16_t value);
-	void adc(register16_t& operand, register16_t value);
+		void rlc(uint8_t& operand);
+		void rrc(uint8_t& operand);
+		void rl(uint8_t& operand);
+		void rr(uint8_t& operand);
+		void sla(uint8_t& operand);
+		void sra(uint8_t& operand);
+		void sll(uint8_t& operand);
+		void srl(uint8_t& operand);
 
-	void add(register16_t& operand, register16_t value);
+		void bit(int n, uint8_t& operand);
+		void res(int n, uint8_t& operand);
+		void set(int nit, uint8_t& operand);
 
-	void add(uint8_t& operand, uint8_t value, int carry = 0);
-	void adc(uint8_t& operand, uint8_t value);
-	void sub(uint8_t& operand, uint8_t value, int carry = 0);
-	void sbc(uint8_t& operand, uint8_t value);
-	void andr(uint8_t& operand, uint8_t value);
-	void xorr(uint8_t& operand, uint8_t value);
-	void orr(uint8_t& operand, uint8_t value);
-	void compare(uint8_t value);
+		void daa();
 
-	void rlca();
-	void rrca();
-	void rla();
-	void rra();
+		void scf();
+		void ccf();
+		void cpl();
 
-	void rlc(uint8_t& operand);
-	void rrc(uint8_t& operand);
-	void rl(uint8_t& operand);
-	void rr(uint8_t& operand);
-	void sla(uint8_t& operand);
-	void sra(uint8_t& operand);
-	void sll(uint8_t& operand);
-	void srl(uint8_t& operand);
+		void xhtl(register16_t& operand);
+		void xhtl();
 
-	void bit(int n, uint8_t& operand);
-	void res(int n, uint8_t& operand);
-	void set(int nit, uint8_t& operand);
+		void blockCompare();
 
-	void daa();
+		void cpi();
+		void cpir();
 
-	void scf();
-	void ccf();
-	void cpl();
+		void cpd();
+		void cpdr();
 
-	void xhtl(register16_t& operand);
-	void xhtl();
+		void blockLoad(register16_t source, register16_t destination);
 
-	void blockCompare();
+		void ldi();
+		void ldir();
 
-	void cpi();
-	void cpir();
+		void ldd();
+		void lddr();
 
-	void cpd();
-	void cpdr();
+		void ini();
+		void inir();
 
-	void blockLoad(register16_t source, register16_t destination);
+		void ind();
+		void indr();
 
-	void ldi();
-	void ldir();
+		void blockOut();
 
-	void ldd();
-	void lddr();
+		void outi();
+		void otir();
 
-	void ini();
-	void inir();
+		void outd();
+		void otdr();
 
-	void ind();
-	void indr();
+		void neg();
 
-	void blockOut();
+		void rrd();
+		void rld();
 
-	void outi();
-	void otir();
+		void writePort() {
+			m_ports.write(m_memory.ADDRESS().low, m_memory.DATA());
+		}
 
-	void outd();
-	void otdr();
-
-	void neg();
-
-	void rrd();
-	void rld();
-
-	void writePort() {
-		m_ports.write(m_memory.ADDRESS().low, m_memory.DATA());
-	}
-
-	void readPort() {
-		m_memory.placeDATA(m_ports.read(m_memory.ADDRESS().low));
-	}
-};
+		void readPort() {
+			m_memory.placeDATA(m_ports.read(m_memory.ADDRESS().low));
+		}
+	};
+}

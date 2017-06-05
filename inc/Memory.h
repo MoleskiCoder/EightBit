@@ -30,7 +30,7 @@ namespace EightBit {
 	public:
 		Memory(uint16_t addressMask);
 
-		virtual uint16_t& ADDRESS() { return m_address; }
+		virtual register16_t& ADDRESS() { return m_address; }
 		virtual uint8_t& DATA() { return *m_data; }
 
 		virtual uint8_t& placeDATA(uint8_t value) {
@@ -48,21 +48,21 @@ namespace EightBit {
 		virtual uint16_t peekWord(uint16_t address) const;
 
 		virtual uint8_t get(uint16_t address) {
-			ADDRESS() = address;
+			ADDRESS().word = address;
 			return reference();
 		}
 
 		virtual register16_t getWord(uint16_t address);
 
 		virtual void set(uint16_t address, uint8_t value) {
-			ADDRESS() = address;
+			ADDRESS().word = address;
 			reference() = value;
 		}
 
 		virtual void setWord(uint16_t address, register16_t value);
 
 		virtual uint8_t& reference() {
-			uint16_t effective = ADDRESS() & m_addressMask;
+			uint16_t effective = ADDRESS().word & m_addressMask;
 			return m_locked[effective] ? placeDATA(m_bus[effective]) : referenceDATA(m_bus[effective]);
 		}
 
@@ -76,7 +76,7 @@ namespace EightBit {
 
 		uint16_t m_addressMask;		// Mirror
 		uint8_t m_temporary;	// Used to simulate ROM
-		uint16_t m_address;
+		register16_t m_address;
 		uint8_t* m_data;
 
 		int loadMemory(const std::string& path, uint16_t offset);

@@ -5,7 +5,8 @@ EightBit::Processor::Processor(Memory& memory)
 :	m_memory(memory),
 	cycles(0),
 	m_halted(false) {
-	pc.word = sp.word = 0;
+	sp.word = 0xffff;
+	pc.word = 0;
 }
 
 void EightBit::Processor::reset() {
@@ -13,17 +14,30 @@ void EightBit::Processor::reset() {
 }
 
 void EightBit::Processor::initialise() {
-	sp.word = 0;
+	sp.word = 0xffff;
 	reset();
 }
 
+void EightBit::Processor::push(uint8_t value) {
+	sp.word--;
+	m_memory.ADDRESS() = sp;
+	m_memory.reference() = value;
+}
+
 void EightBit::Processor::pushWord(register16_t value) {
-	sp.word -= 2;
-	setWord(sp.word, value);
+	push(value.high);
+	push(value.low);
+}
+
+uint8_t EightBit::Processor::pop() {
+	m_memory.ADDRESS() = sp;
+	sp.word++;
+	return m_memory.reference();
 }
 
 EightBit::register16_t EightBit::Processor::popWord() {
-	auto value = getWord(sp.word);
-	sp.word += 2;
-	return value;
+	register16_t returned;
+	returned.low = pop();
+	returned.high = pop();
+	return returned;
 }

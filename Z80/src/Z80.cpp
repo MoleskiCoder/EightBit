@@ -4,8 +4,9 @@
 // based on http://www.z80.info/decoding.htm
 // Half carry flag help from https://github.com/oubiwann/z80
 
-Z80::Z80(Memory& memory, InputOutput& ports)
-: Processor(memory, ports),
+EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
+: Processor(memory),
+  m_ports(ports),
   m_registerSet(0),
   m_accumulatorFlagsSet(0),
   m_refresh(0x7f),
@@ -23,12 +24,12 @@ Z80::Z80(Memory& memory, InputOutput& ports)
 	MEMPTR().word = 0;
 }
 
-void Z80::reset() {
+void EightBit::Z80::reset() {
 	Processor::reset();
 	IFF1() = IFF2() = false;
 }
 
-void Z80::initialise() {
+void EightBit::Z80::initialise() {
 
 	Processor::initialise();
 
@@ -64,15 +65,15 @@ void Z80::initialise() {
 
 #pragma region Interrupt routines
 
-void Z80::disableInterrupts() {
+void EightBit::Z80::disableInterrupts() {
 	IFF1() = IFF2() = false;
 }
 
-void Z80::enableInterrupts() {
+void EightBit::Z80::enableInterrupts() {
 	IFF1() = IFF2() = true;
 }
 
-int Z80::interrupt(bool maskable, uint8_t value) {
+int EightBit::Z80::interrupt(bool maskable, uint8_t value) {
 	cycles = 0;
 	if (!maskable || (maskable && IFF1())) {
 		if (maskable) {
@@ -107,53 +108,53 @@ int Z80::interrupt(bool maskable, uint8_t value) {
 
 #pragma region Flag manipulation helpers
 
-void Z80::adjustSign(uint8_t value) {
+void EightBit::Z80::adjustSign(uint8_t value) {
 	setFlag(SF, value & SF);
 }
 
-void Z80::adjustZero(uint8_t value) {
+void EightBit::Z80::adjustZero(uint8_t value) {
 	clearFlag(ZF, value);
 }
 
-void Z80::adjustParity(uint8_t value) {
+void EightBit::Z80::adjustParity(uint8_t value) {
 	static const uint8_t lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
 	auto set = lookup[highNibble(value)] + lookup[lowNibble(value)];
 	clearFlag(PF, set % 2);
 }
 
-void Z80::adjustSZ(uint8_t value) {
+void EightBit::Z80::adjustSZ(uint8_t value) {
 	adjustSign(value);
 	adjustZero(value);
 }
 
-void Z80::adjustSZP(uint8_t value) {
+void EightBit::Z80::adjustSZP(uint8_t value) {
 	adjustSZ(value);
 	adjustParity(value);
 }
 
-void Z80::adjustXY(uint8_t value) {
+void EightBit::Z80::adjustXY(uint8_t value) {
 	setFlag(XF, value & XF);
 	setFlag(YF, value & YF);
 }
 
-void Z80::adjustSZPXY(uint8_t value) {
+void EightBit::Z80::adjustSZPXY(uint8_t value) {
 	adjustSZP(value);
 	adjustXY(value);
 }
 
-void Z80::adjustSZXY(uint8_t value) {
+void EightBit::Z80::adjustSZXY(uint8_t value) {
 	adjustSZ(value);
 	adjustXY(value);
 }
 
-void Z80::postIncrement(uint8_t value) {
+void EightBit::Z80::postIncrement(uint8_t value) {
 	adjustSZXY(value);
 	clearFlag(NF);
 	setFlag(VF, value == Bit7);
 	clearFlag(HC, lowNibble(value));
 }
 
-void Z80::postDecrement(uint8_t value) {
+void EightBit::Z80::postDecrement(uint8_t value) {
 	adjustSZXY(value);
 	setFlag(NF);
 	setFlag(VF, value == Mask7);
@@ -164,14 +165,14 @@ void Z80::postDecrement(uint8_t value) {
 
 #pragma region PC manipulation: call/ret/jp/jr
 
-void Z80::restart(uint8_t address) {
+void EightBit::Z80::restart(uint8_t address) {
 	pushWord(pc);
 	register16_t destination;
 	destination.word = address;
 	setPcViaMemptr(destination);
 }
 
-void Z80::jrConditional(int conditional) {
+void EightBit::Z80::jrConditional(int conditional) {
 	auto offset = (int8_t)fetchByteData();
 	if (conditional) {
 		register16_t destination;
@@ -181,7 +182,7 @@ void Z80::jrConditional(int conditional) {
 	}
 }
 
-void Z80::jrConditionalFlag(int flag) {
+void EightBit::Z80::jrConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		jrConditional(!(F() & ZF));
@@ -210,14 +211,14 @@ void Z80::jrConditionalFlag(int flag) {
 	}
 }
 
-void Z80::jumpConditional(int conditional) {
+void EightBit::Z80::jumpConditional(int conditional) {
 	auto address = fetchWord();
 	if (conditional)
 		pc = address;
 	MEMPTR() = address;
 }
 
-void Z80::jumpConditionalFlag(int flag) {
+void EightBit::Z80::jumpConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		jumpConditional(!(F() & ZF));
@@ -246,27 +247,27 @@ void Z80::jumpConditionalFlag(int flag) {
 	}
 }
 
-void Z80::ret() {
+void EightBit::Z80::ret() {
 	setPcViaMemptr(popWord());
 }
 
-void Z80::retn() {
+void EightBit::Z80::retn() {
 	ret();
 	IFF1() = IFF2();
 }
 
-void Z80::reti() {
+void EightBit::Z80::reti() {
 	retn();
 }
 
-void Z80::returnConditional(int condition) {
+void EightBit::Z80::returnConditional(int condition) {
 	if (condition) {
 		ret();
 		cycles += 6;
 	}
 }
 
-void Z80::returnConditionalFlag(int flag) {
+void EightBit::Z80::returnConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		returnConditional(!(F() & ZF));
@@ -295,12 +296,12 @@ void Z80::returnConditionalFlag(int flag) {
 	}
 }
 
-void Z80::call(register16_t address) {
+void EightBit::Z80::call(register16_t address) {
 	pushWord(pc);
 	pc = address;
 }
 
-void Z80::callConditional(register16_t address, int condition) {
+void EightBit::Z80::callConditional(register16_t address, int condition) {
 	if (condition) {
 		call(address);
 		cycles += 7;
@@ -308,7 +309,7 @@ void Z80::callConditional(register16_t address, int condition) {
 	MEMPTR() = address;
 }
 
-void Z80::callConditionalFlag(register16_t address, int flag) {
+void EightBit::Z80::callConditionalFlag(register16_t address, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		callConditional(address, !(F() & ZF));
@@ -341,7 +342,7 @@ void Z80::callConditionalFlag(register16_t address, int flag) {
 
 #pragma region 16-bit arithmetic
 
-void Z80::sbc(register16_t& operand, register16_t value) {
+void EightBit::Z80::sbc(register16_t& operand, register16_t value) {
 
 	auto before = operand;
 
@@ -362,7 +363,7 @@ void Z80::sbc(register16_t& operand, register16_t value) {
 	adjustXY(operand.high);
 }
 
-void Z80::adc(register16_t& operand, register16_t value) {
+void EightBit::Z80::adc(register16_t& operand, register16_t value) {
 
 	auto before = operand;
 
@@ -383,7 +384,7 @@ void Z80::adc(register16_t& operand, register16_t value) {
 	adjustXY(operand.high);
 }
 
-void Z80::add(register16_t& operand, register16_t value) {
+void EightBit::Z80::add(register16_t& operand, register16_t value) {
 
 	auto before = operand;
 
@@ -401,7 +402,7 @@ void Z80::add(register16_t& operand, register16_t value) {
 
 #pragma region ALU
 
-void Z80::add(uint8_t& operand, uint8_t value, int carry) {
+void EightBit::Z80::add(uint8_t& operand, uint8_t value, int carry) {
 
 	register16_t result;
 	result.word = operand + value + carry;
@@ -416,11 +417,11 @@ void Z80::add(uint8_t& operand, uint8_t value, int carry) {
 	adjustSZXY(operand);
 }
 
-void Z80::adc(uint8_t& operand, uint8_t value) {
+void EightBit::Z80::adc(uint8_t& operand, uint8_t value) {
 	add(operand, value, F() & CF);
 }
 
-void Z80::sub(uint8_t& operand, uint8_t value, int carry) {
+void EightBit::Z80::sub(uint8_t& operand, uint8_t value, int carry) {
 
 	register16_t result;
 	result.word = operand - value - carry;
@@ -435,30 +436,30 @@ void Z80::sub(uint8_t& operand, uint8_t value, int carry) {
 	adjustSZXY(operand);
 }
 
-void Z80::sbc(uint8_t& operand, uint8_t value) {
+void EightBit::Z80::sbc(uint8_t& operand, uint8_t value) {
 	sub(operand, value, F() & CF);
 }
 
-void Z80::andr(uint8_t& operand, uint8_t value) {
+void EightBit::Z80::andr(uint8_t& operand, uint8_t value) {
 	operand &= value;
 	setFlag(HC);
 	clearFlag(CF | NF);
 	adjustSZPXY(operand);
 }
 
-void Z80::xorr(uint8_t& operand, uint8_t value) {
+void EightBit::Z80::xorr(uint8_t& operand, uint8_t value) {
 	operand ^= value;
 	clearFlag(HC | CF | NF);
 	adjustSZPXY(operand);
 }
 
-void Z80::orr(uint8_t& operand, uint8_t value) {
+void EightBit::Z80::orr(uint8_t& operand, uint8_t value) {
 	operand |= value;
 	clearFlag(HC | CF | NF);
 	adjustSZPXY(operand);
 }
 
-void Z80::compare(uint8_t value) {
+void EightBit::Z80::compare(uint8_t value) {
 	auto check = A();
 	sub(check, value);
 	adjustXY(value);
@@ -468,7 +469,7 @@ void Z80::compare(uint8_t value) {
 
 #pragma region Shift and rotate
 
-void Z80::rlc(uint8_t& operand) {
+void EightBit::Z80::rlc(uint8_t& operand) {
 	auto carry = operand & Bit7;
 	operand <<= 1;
 	setFlag(CF, carry);
@@ -477,7 +478,7 @@ void Z80::rlc(uint8_t& operand) {
 	adjustXY(operand);
 }
 
-void Z80::rrc(uint8_t& operand) {
+void EightBit::Z80::rrc(uint8_t& operand) {
 	auto carry = operand & Bit0;
 	operand >>= 1;
 	carry ? operand |= Bit7 : operand &= ~Bit7;
@@ -486,7 +487,7 @@ void Z80::rrc(uint8_t& operand) {
 	adjustXY(operand);
 }
 
-void Z80::rl(uint8_t& operand) {
+void EightBit::Z80::rl(uint8_t& operand) {
 	auto oldCarry = F() & CF;
 	auto newCarry = operand & Bit7;
 	operand <<= 1;
@@ -496,7 +497,7 @@ void Z80::rl(uint8_t& operand) {
 	adjustXY(operand);
 }
 
-void Z80::rr(uint8_t& operand) {
+void EightBit::Z80::rr(uint8_t& operand) {
 	auto oldCarry = F() & CF;
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
@@ -508,7 +509,7 @@ void Z80::rr(uint8_t& operand) {
 
 //
 
-void Z80::sla(uint8_t& operand) {
+void EightBit::Z80::sla(uint8_t& operand) {
 	auto newCarry = operand & Bit7;
 	operand <<= 1;
 	setFlag(CF, newCarry);
@@ -516,7 +517,7 @@ void Z80::sla(uint8_t& operand) {
 	adjustXY(operand);
 }
 
-void Z80::sra(uint8_t& operand) {
+void EightBit::Z80::sra(uint8_t& operand) {
 	auto new7 = operand & Bit7;
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
@@ -526,7 +527,7 @@ void Z80::sra(uint8_t& operand) {
 	adjustXY(operand);
 }
 
-void Z80::sll(uint8_t& operand) {
+void EightBit::Z80::sll(uint8_t& operand) {
 	auto newCarry = operand & Bit7;
 	operand <<= 1;
 	operand |= 1;
@@ -535,7 +536,7 @@ void Z80::sll(uint8_t& operand) {
 	adjustXY(operand);
 }
 
-void Z80::srl(uint8_t& operand) {
+void EightBit::Z80::srl(uint8_t& operand) {
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
 	operand &= ~Bit7;	// clear bit 7
@@ -547,19 +548,19 @@ void Z80::srl(uint8_t& operand) {
 
 //
 
-void Z80::rlca() {
+void EightBit::Z80::rlca() {
 	rlc(A());
 }
 
-void Z80::rrca() {
+void EightBit::Z80::rrca() {
 	rrc(A());
 }
 
-void Z80::rla() {
+void EightBit::Z80::rla() {
 	rl(A());
 }
 
-void Z80::rra() {
+void EightBit::Z80::rra() {
 	rr(A());
 }
 
@@ -567,7 +568,7 @@ void Z80::rra() {
 
 #pragma region BIT/SET/RES
 
-void Z80::bit(int n, uint8_t& operand) {
+void EightBit::Z80::bit(int n, uint8_t& operand) {
 	auto carry = F() & CF;
 	uint8_t discarded = operand;
 	andr(discarded, 1 << n);
@@ -575,12 +576,12 @@ void Z80::bit(int n, uint8_t& operand) {
 	setFlag(CF, carry);
 }
 
-void Z80::res(int n, uint8_t& operand) {
+void EightBit::Z80::res(int n, uint8_t& operand) {
 	auto bit = 1 << n;
 	operand &= ~bit;
 }
 
-void Z80::set(int n, uint8_t& operand) {
+void EightBit::Z80::set(int n, uint8_t& operand) {
 	auto bit = 1 << n;
 	operand |= bit;
 }
@@ -589,7 +590,7 @@ void Z80::set(int n, uint8_t& operand) {
 
 #pragma region Miscellaneous instructions
 
-void Z80::neg() {
+void EightBit::Z80::neg() {
 	auto original = A();
 	A() = 0;
 	sub(A(), original);
@@ -597,7 +598,7 @@ void Z80::neg() {
 	setFlag(CF, original);
 }
 
-void Z80::daa() {
+void EightBit::Z80::daa() {
 
 	uint8_t a = A();
 
@@ -623,19 +624,19 @@ void Z80::daa() {
 	A() = a;
 }
 
-void Z80::cpl() {
+void EightBit::Z80::cpl() {
 	A() = ~A();
 	adjustXY(A());
 	setFlag(HC | NF);
 }
 
-void Z80::scf() {
+void EightBit::Z80::scf() {
 	setFlag(CF);
 	adjustXY(A());
 	clearFlag(HC | NF);
 }
 
-void Z80::ccf() {
+void EightBit::Z80::ccf() {
 	auto carry = F() & CF;
 	setFlag(HC, carry);
 	clearFlag(CF, carry);
@@ -643,7 +644,7 @@ void Z80::ccf() {
 	adjustXY(A());
 }
 
-void Z80::xhtl(register16_t& operand) {
+void EightBit::Z80::xhtl(register16_t& operand) {
 	m_memory.ADDRESS() = sp;
 	MEMPTR().low = m_memory.reference();
 	m_memory.reference() = operand.low;
@@ -654,7 +655,7 @@ void Z80::xhtl(register16_t& operand) {
 	operand.high = MEMPTR().high;
 }
 
-void Z80::xhtl() {
+void EightBit::Z80::xhtl() {
 	if (m_prefixDD)
 		xhtl(IX());
 	else if (m_prefixFD)
@@ -669,7 +670,7 @@ void Z80::xhtl() {
 
 #pragma region Block compare instructions
 
-void Z80::blockCompare() {
+void EightBit::Z80::blockCompare() {
 
 	m_memory.ADDRESS() = HL();
 
@@ -689,19 +690,19 @@ void Z80::blockCompare() {
 	setFlag(XF, result & Bit3);
 }
 
-void Z80::cpi() {
+void EightBit::Z80::cpi() {
 	blockCompare();
 	HL().word++;
 	MEMPTR().word++;
 }
 
-void Z80::cpd() {
+void EightBit::Z80::cpd() {
 	blockCompare();
 	HL().word--;
 	MEMPTR().word--;
 }
 
-void Z80::cpir() {
+void EightBit::Z80::cpir() {
 	cpi();
 	if ((F() & PF) && !(F() & ZF)) {		// See CPI
 		cycles += 5;
@@ -712,7 +713,7 @@ void Z80::cpir() {
 	}
 }
 
-void Z80::cpdr() {
+void EightBit::Z80::cpdr() {
 	cpd();
 	if ((F() & PF) && !(F() & ZF)) {		// See CPD
 		cycles += 5;
@@ -727,7 +728,7 @@ void Z80::cpdr() {
 
 #pragma region Block load instructions
 
-void Z80::blockLoad(register16_t source, register16_t destination) {
+void EightBit::Z80::blockLoad(register16_t source, register16_t destination) {
 	m_memory.ADDRESS() = source;
 	auto value = m_memory.reference();
 	m_memory.ADDRESS() = destination;
@@ -739,19 +740,19 @@ void Z80::blockLoad(register16_t source, register16_t destination) {
 	setFlag(PF, --BC().word);
 }
 
-void Z80::ldd() {
+void EightBit::Z80::ldd() {
 	blockLoad(HL(), DE());
 	HL().word--;
 	DE().word--;
 }
 
-void Z80::ldi() {
+void EightBit::Z80::ldi() {
 	blockLoad(HL(), DE());
 	HL().word++;
 	DE().word++;
 }
 
-void Z80::ldir() {
+void EightBit::Z80::ldir() {
 	ldi();
 	if (F() & PF) {		// See LDI
 		cycles += 5;
@@ -760,7 +761,7 @@ void Z80::ldir() {
 	}
 }
 
-void Z80::lddr() {
+void EightBit::Z80::lddr() {
 	ldd();
 	if (F() & PF) {		// See LDR
 		cycles += 5;
@@ -773,7 +774,7 @@ void Z80::lddr() {
 
 #pragma region Block input instructions
 
-void Z80::ini() {
+void EightBit::Z80::ini() {
 	auto bc = BC().word;
 	m_memory.ADDRESS().word = bc;
 	readPort();
@@ -785,7 +786,7 @@ void Z80::ini() {
 	MEMPTR().word = ++bc;
 }
 
-void Z80::ind() {
+void EightBit::Z80::ind() {
 	auto bc = BC().word;
 	m_memory.ADDRESS().word = bc;
 	readPort();
@@ -797,7 +798,7 @@ void Z80::ind() {
 	MEMPTR().word = --bc;
 }
 
-void Z80::inir() {
+void EightBit::Z80::inir() {
 	ini();
 	if (!(F() & ZF)) {		// See INI
 		cycles += 5;
@@ -805,7 +806,7 @@ void Z80::inir() {
 	}
 }
 
-void Z80::indr() {
+void EightBit::Z80::indr() {
 	ind();
 	if (!(F() & ZF)) {		// See IND
 		cycles += 5;
@@ -817,7 +818,7 @@ void Z80::indr() {
 
 #pragma region Block output instructions
 
-void Z80::blockOut() {
+void EightBit::Z80::blockOut() {
 	auto value = m_memory.reference();
 	m_memory.ADDRESS().word = BC().word;
 	writePort();
@@ -827,19 +828,19 @@ void Z80::blockOut() {
 	adjustParity(((value + L()) & 7) ^ B());
 }
 
-void Z80::outi() {
+void EightBit::Z80::outi() {
 	m_memory.ADDRESS().word = HL().word++;
 	blockOut();
 	MEMPTR().word = BC().word + 1;
 }
 
-void Z80::outd() {
+void EightBit::Z80::outd() {
 	m_memory.ADDRESS().word = HL().word--;
 	blockOut();
 	MEMPTR().word = BC().word - 1;
 }
 
-void Z80::otir() {
+void EightBit::Z80::otir() {
 	outi();
 	if (!(F() & ZF)) {		// See OUTI
 		cycles += 5;
@@ -847,7 +848,7 @@ void Z80::otir() {
 	}
 }
 
-void Z80::otdr() {
+void EightBit::Z80::otdr() {
 	outd();
 	if (!(F() & ZF)) {		// See OUTD
 		cycles += 5;
@@ -861,7 +862,7 @@ void Z80::otdr() {
 
 #pragma region Nibble rotation
 
-void Z80::rrd() {
+void EightBit::Z80::rrd() {
 	auto accumulator = A();
 	m_memory.ADDRESS() = HL();
 	auto memory = m_memory.reference();
@@ -873,7 +874,7 @@ void Z80::rrd() {
 	MEMPTR().word = HL().word + 1;
 }
 
-void Z80::rld() {
+void EightBit::Z80::rld() {
 	auto accumulator = A();
 	m_memory.ADDRESS() = HL();
 	auto memory = m_memory.reference();
@@ -887,14 +888,14 @@ void Z80::rld() {
 
 #pragma endregion Nibble rotation
 
-int Z80::step() {
+int EightBit::Z80::step() {
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	cycles = 0;
 	return fetchExecute();
 }
 
-int Z80::execute(uint8_t opcode) {
+int EightBit::Z80::execute(uint8_t opcode) {
 
 	if (!getM1())
 		throw std::logic_error("M1 cannot be high");
@@ -924,7 +925,7 @@ int Z80::execute(uint8_t opcode) {
 	return cycles;
 }
 
-void Z80::executeCB(int x, int y, int z, int p, int q) {
+void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 	switch (x) {
 	case 0:	// rot[y] r[z]
 		switch (y) {
@@ -1049,7 +1050,7 @@ void Z80::executeCB(int x, int y, int z, int p, int q) {
 	}
 }
 
-void Z80::executeED(int x, int y, int z, int p, int q) {
+void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 	switch (x) {
 	case 0:
 	case 3:	// Invalid instruction, equivalent to NONI followed by NOP
@@ -1246,7 +1247,7 @@ void Z80::executeED(int x, int y, int z, int p, int q) {
 	}
 }
 
-void Z80::executeOther(int x, int y, int z, int p, int q) {
+void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 	switch (x) {
 	case 0:
 		switch (z) {

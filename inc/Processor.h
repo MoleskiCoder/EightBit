@@ -47,10 +47,6 @@ namespace EightBit {
 		static uint8_t promoteNibble(uint8_t value) { return value << 4; }
 		static uint8_t demoteNibble(uint8_t value) { return highNibble(value); }
 
-		static uint16_t makeWord(uint8_t low, uint8_t high) {
-			return (high << 8) | low;
-		}
-
 		Processor(Memory& memory);
 
 		const Memory& getMemory() const { return m_memory; }
@@ -68,14 +64,6 @@ namespace EightBit {
 
 		void reset();
 
-		virtual register16_t getWord(uint16_t address) const {
-			return m_memory.getWord(address);
-		}
-
-		virtual void setWord(uint16_t address, register16_t value) {
-			m_memory.setWord(address, value);
-		}
-
 	protected:
 		Memory& m_memory;
 
@@ -86,17 +74,23 @@ namespace EightBit {
 
 		bool m_halted;
 
+		void push(uint8_t value);
 		void pushWord(register16_t value);
+
+		uint8_t pop();
 		register16_t popWord();
 
 		uint8_t fetchByte() {
-			return m_memory.get(pc.word++);
+			m_memory.ADDRESS() = pc;
+			pc.word++;
+			return m_memory.reference();
 		}
 
-		uint16_t fetchWord() {
-			auto value = getWord(pc.word);
-			pc.word += 2;
-			return value.word;
+		register16_t fetchWord() {
+			register16_t returned;
+			returned.low = fetchByte();
+			returned.high = fetchByte();
+			return returned;
 		}
 	};
 }

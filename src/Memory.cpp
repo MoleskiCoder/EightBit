@@ -7,18 +7,20 @@
 #include <algorithm>
 
 EightBit::Memory::Memory(uint16_t addressMask)
-: m_address(0),
-  m_addressMask(addressMask),
-  m_data(&(m_bus[m_address])) {}
+: m_addressMask(addressMask) {
+	m_address.word = 0;
+	m_data = &(m_bus[m_address.word]);
+}
 
 uint8_t EightBit::Memory::peek(uint16_t address) const {
 	return m_bus[address];
 }
 
 uint16_t EightBit::Memory::peekWord(uint16_t address) const {
-	auto low = peek(address);
-	auto high = peek(address + 1);
-	return Processor::makeWord(low, high);
+	register16_t returned;
+	returned.low = peek(address);
+	returned.high = peek(address + 1);
+	return returned.word;
 }
 
 EightBit::register16_t EightBit::Memory::getWord(uint16_t address) {

@@ -158,7 +158,7 @@ namespace EightBit {
 		void jmpConditional(int conditional) {
 			auto destination = fetchWord();
 			if (conditional)
-				pc.word = destination;
+				pc = destination;
 		}
 
 		void callConditional(int condition) {
@@ -325,9 +325,9 @@ namespace EightBit {
 			m_memory.set(HL().word, data);
 		}
 
-		void lxi_b() { BC().word = fetchWord(); }
-		void lxi_d() { DE().word = fetchWord(); }
-		void lxi_h() { HL().word = fetchWord(); }
+		void lxi_b() { BC() = fetchWord(); }
+		void lxi_d() { DE() = fetchWord(); }
+		void lxi_h() { HL() = fetchWord(); }
 
 		void stax_b() { m_memory.set(BC().word, A()); }
 		void stax_d() { m_memory.set(DE().word, A()); }
@@ -337,21 +337,21 @@ namespace EightBit {
 
 		void sta() {
 			auto destination = fetchWord();
-			m_memory.set(destination, A());
+			m_memory.set(destination.word, A());
 		}
 
 		void lda() {
 			auto source = fetchWord();
-			A() = m_memory.get(source);
+			A() = m_memory.get(source.word);
 		}
 
 		void shld() {
 			auto destination = fetchWord();
-			setWord(destination, HL());
+			m_memory.setWord(destination.word, HL());
 		}
 
 		void lhld() {
-			HL() = getWord(fetchWord());
+			HL() = m_memory.getWord(fetchWord().word);
 		}
 
 		void xchg() {
@@ -382,8 +382,8 @@ namespace EightBit {
 		}
 
 		void xhtl() {
-			auto tos = getWord(sp.word);
-			setWord(sp.word, HL());
+			auto tos = m_memory.getWord(sp.word);
+			m_memory.setWord(sp.word, HL());
 			HL() = tos;
 		}
 
@@ -392,7 +392,7 @@ namespace EightBit {
 		}
 
 		void lxi_sp() {
-			sp.word = fetchWord();
+			sp = fetchWord();
 		}
 
 		void inx_sp() { ++sp.word; }
@@ -421,7 +421,7 @@ namespace EightBit {
 		// call
 
 		void call() {
-			auto destination = getWord(pc.word);
+			auto destination = m_memory.getWord(pc.word);
 			callAddress(destination.word);
 		}
 
