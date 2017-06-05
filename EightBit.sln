@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Z80", "Z80\src\Z80.vcxproj"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_Z80", "Z80\test\test_Z80.vcxproj", "{F8EE7116-0D75-4C82-BA9E-409F69F5D47C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fusetest_Z80", "Z80\fusetest_Z80\fusetest_Z80.vcxproj", "{618F7A88-A262-4071-A6F1-FEB3A181B541}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -61,6 +63,14 @@ Global
 		{F8EE7116-0D75-4C82-BA9E-409F69F5D47C}.Release|x64.Build.0 = Release|x64
 		{F8EE7116-0D75-4C82-BA9E-409F69F5D47C}.Release|x86.ActiveCfg = Release|Win32
 		{F8EE7116-0D75-4C82-BA9E-409F69F5D47C}.Release|x86.Build.0 = Release|Win32
+		{618F7A88-A262-4071-A6F1-FEB3A181B541}.Debug|x64.ActiveCfg = Debug|x64
+		{618F7A88-A262-4071-A6F1-FEB3A181B541}.Debug|x64.Build.0 = Debug|x64
+		{618F7A88-A262-4071-A6F1-FEB3A181B541}.Debug|x86.ActiveCfg = Debug|Win32
+		{618F7A88-A262-4071-A6F1-FEB3A181B541}.Debug|x86.Build.0 = Debug|Win32
+		{618F7A88-A262-4071-A6F1-FEB3A181B541}.Release|x64.ActiveCfg = Release|x64
+		{618F7A88-A262-4071-A6F1-FEB3A181B541}.Release|x64.Build.0 = Release|x64
+		{618F7A88-A262-4071-A6F1-FEB3A181B541}.Release|x86.ActiveCfg = Release|Win32
+		{618F7A88-A262-4071-A6F1-FEB3A181B541}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
