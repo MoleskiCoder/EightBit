@@ -78,7 +78,7 @@ namespace EightBit {
 		void pushWord(register16_t value);
 
 		uint8_t pop();
-		register16_t popWord();
+		void popWord(register16_t& output);
 
 		uint8_t fetchByte() {
 			m_memory.ADDRESS() = pc;
@@ -86,11 +86,9 @@ namespace EightBit {
 			return m_memory.reference();
 		}
 
-		register16_t fetchWord() {
-			register16_t returned;
-			returned.low = fetchByte();
-			returned.high = fetchByte();
-			return returned;
+		void fetchWord(register16_t& output) {
+			output.low = fetchByte();
+			output.high = fetchByte();
 		}
 	};
 }

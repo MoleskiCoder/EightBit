@@ -35,9 +35,7 @@ uint8_t EightBit::Processor::pop() {
 	return m_memory.reference();
 }
 
-EightBit::register16_t EightBit::Processor::popWord() {
-	register16_t returned;
-	returned.low = pop();
-	returned.high = pop();
-	return returned;
+void EightBit::Processor::popWord(register16_t& output) {
+	output.low = pop();
+	output.high = pop();
 }

@@ -135,6 +135,14 @@ namespace EightBit {
 
 		//
 
+		register16_t fetchWord() {
+			register16_t returned;
+			Processor::fetchWord(returned);
+			return returned;
+		}
+
+		//
+
 		void compare(uint8_t value) {
 			uint16_t subtraction = A() - value;
 			adjustSZP((uint8_t)subtraction);
@@ -325,9 +333,9 @@ namespace EightBit {
 			m_memory.set(HL().word, data);
 		}
 
-		void lxi_b() { BC() = fetchWord(); }
-		void lxi_d() { DE() = fetchWord(); }
-		void lxi_h() { HL() = fetchWord(); }
+		void lxi_b() { Processor::fetchWord(BC()); }
+		void lxi_d() { Processor::fetchWord(DE()); }
+		void lxi_h() { Processor::fetchWord(HL()); }
 
 		void stax_b() { m_memory.set(BC().word, A()); }
 		void stax_d() { m_memory.set(DE().word, A()); }
@@ -371,14 +379,13 @@ namespace EightBit {
 			pushWord(pair);
 		}
 
-		void pop_b() { BC() = popWord(); }
-		void pop_d() { DE() = popWord(); }
-		void pop_h() { HL() = popWord(); }
+		void pop_b() { popWord(BC()); }
+		void pop_d() { popWord(DE()); }
+		void pop_h() { popWord(HL()); }
 
 		void pop_psw() {
-			auto af = popWord();
-			A() = af.high;
-			F() = af.low;
+			F() = pop();
+			A() = pop();
 		}
 
 		void xhtl() {
@@ -392,7 +399,7 @@ namespace EightBit {
 		}
 
 		void lxi_sp() {
-			sp = fetchWord();
+			Processor::fetchWord(sp);
 		}
 
 		void inx_sp() { ++sp.word; }
@@ -440,7 +447,7 @@ namespace EightBit {
 		// return
 
 		void ret() {
-			pc = popWord();
+			popWord(pc);
 		}
 
 		void rc() { returnConditional(F().C); }
