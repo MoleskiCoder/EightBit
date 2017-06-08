@@ -131,6 +131,10 @@ namespace EightBit {
 		std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 		std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 
+		void fetchWord() {
+			Processor::fetchWord(MEMPTR());
+		}
+
 		int fetchExecute() {
 			M1() = true;
 			return execute(fetchByteExecute());
@@ -251,40 +255,33 @@ namespace EightBit {
 			}
 		}
 
-		uint8_t getViaMemptr(register16_t address) {
-			m_memory.ADDRESS() = address;
-			MEMPTR().word = address.word + 1;
+		uint8_t getViaMemptr() {
+			m_memory.ADDRESS() = MEMPTR();
+			MEMPTR().word++;
 			return m_memory.reference();
 		}
 
-		void setViaMemptr(register16_t address, uint8_t value) {
-			m_memory.ADDRESS() = address;
+		void setViaMemptr(uint8_t value) {
+			m_memory.ADDRESS() = MEMPTR();
+			MEMPTR().word++;
 			m_memory.reference() = value;
-			++address.word;
-			MEMPTR().low = address.low;
 			MEMPTR().high = value;
 		}
 
-		register16_t getWordViaMemptr(register16_t address) {
-			register16_t returned;
-			m_memory.ADDRESS() = address;
-			returned.low = m_memory.reference();
+		void getWordViaMemptr(register16_t& value) {
+			m_memory.ADDRESS() = MEMPTR();
+			MEMPTR().word++;
+			value.low = m_memory.reference();
 			m_memory.ADDRESS().word++;
-			returned.high = m_memory.reference();
-			MEMPTR() = m_memory.ADDRESS();
-			return returned;
+			value.high = m_memory.reference();
 		}
 
-		void setWordViaMemptr(register16_t address, register16_t value) {
-			m_memory.ADDRESS() = address;
+		void setWordViaMemptr(register16_t value) {
+			m_memory.ADDRESS() = MEMPTR();
+			MEMPTR().word++;
 			m_memory.reference() = value.low;
 			m_memory.ADDRESS().word++;
 			m_memory.reference() = value.high;
-			MEMPTR() = m_memory.ADDRESS();
-		}
-
-		void setPcViaMemptr(register16_t address) {
-			MEMPTR() = pc = address;
 		}
 
 		void addViaMemptr(register16_t& hl, register16_t operand) {
@@ -365,9 +362,9 @@ namespace EightBit {
 		void jumpConditional(int condition);
 		void jumpConditionalFlag(int flag);
 
-		void call(register16_t address);
-		void callConditional(register16_t address, int condition);
-		void callConditionalFlag(register16_t address, int flag);
+		void call();
+		void callConditional(int condition);
+		void callConditionalFlag(int flag);
 
 		void sbc(register16_t& operand, register16_t value);
 		void adc(register16_t& operand, register16_t value);

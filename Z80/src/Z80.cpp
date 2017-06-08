@@ -167,17 +167,15 @@ void EightBit::Z80::postDecrement(uint8_t value) {
 
 void EightBit::Z80::restart(uint8_t address) {
 	pushWord(pc);
-	register16_t destination;
-	destination.word = address;
-	setPcViaMemptr(destination);
+	pc.low = MEMPTR().low = address;
+	pc.high = MEMPTR().high = 0;
 }
 
 void EightBit::Z80::jrConditional(int conditional) {
 	auto offset = (int8_t)fetchByteData();
 	if (conditional) {
-		register16_t destination;
-		destination.word = pc.word + offset;
-		setPcViaMemptr(destination);
+		MEMPTR().word = pc.word + offset;
+		pc = MEMPTR();
 		cycles += 5;
 	}
 }
@@ -212,10 +210,8 @@ void EightBit::Z80::jrConditionalFlag(int flag) {
 }
 
 void EightBit::Z80::jumpConditional(int conditional) {
-	auto address = fetchWord();
 	if (conditional)
-		pc = address;
-	MEMPTR() = address;
+		pc = MEMPTR();
 }
 
 void EightBit::Z80::jumpConditionalFlag(int flag) {
@@ -248,7 +244,8 @@ void EightBit::Z80::jumpConditionalFlag(int flag) {
 }
 
 void EightBit::Z80::ret() {
-	setPcViaMemptr(popWord());
+	popWord(MEMPTR());
+	pc = MEMPTR();
 }
 
 void EightBit::Z80::retn() {
@@ -296,44 +293,42 @@ void EightBit::Z80::returnConditionalFlag(int flag) {
 	}
 }
 
-void EightBit::Z80::call(register16_t address) {
+void EightBit::Z80::call() {
 	pushWord(pc);
-	pc = address;
+	pc = MEMPTR();
+	cycles += 7;
 }
 
-void EightBit::Z80::callConditional(register16_t address, int condition) {
-	if (condition) {
-		call(address);
-		cycles += 7;
-	}
-	MEMPTR() = address;
+void EightBit::Z80::callConditional(int condition) {
+	if (condition)
+		call();
 }
 
-void EightBit::Z80::callConditionalFlag(register16_t address, int flag) {
+void EightBit::Z80::callConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		callConditional(address, !(F() & ZF));
+		callConditional(!(F() & ZF));
 		break;
 	case 1:	// Z
-		callConditional(address, F() & ZF);
+		callConditional(F() & ZF);
 		break;
 	case 2:	// NC
-		callConditional(address, !(F() & CF));
+		callConditional(!(F() & CF));
 		break;
 	case 3:	// C
-		callConditional(address, F() & CF);
+		callConditional(F() & CF);
 		break;
 	case 4:	// PO
-		callConditional(address, !(F() & PF));
+		callConditional(!(F() & PF));
 		break;
 	case 5:	// PE
-		callConditional(address, F() & PF);
+		callConditional(F() & PF);
 		break;
 	case 6:	// P
-		callConditional(address, !(F() & SF));
+		callConditional(!(F() & SF));
 		break;
 	case 7:	// M
-		callConditional(address, F() & SF);
+		callConditional(F() & SF);
 		break;
 	}
 }
@@ -656,12 +651,7 @@ void EightBit::Z80::xhtl(register16_t& operand) {
 }
 
 void EightBit::Z80::xhtl() {
-	if (m_prefixDD)
-		xhtl(IX());
-	else if (m_prefixFD)
-		xhtl(IY());
-	else
-		xhtl(HL());
+	xhtl(ALT_HL());
 }
 
 #pragma endregion Miscellaneous instructions
@@ -775,27 +765,25 @@ void EightBit::Z80::lddr() {
 #pragma region Block input instructions
 
 void EightBit::Z80::ini() {
-	auto bc = BC().word;
-	m_memory.ADDRESS().word = bc;
+	MEMPTR() = m_memory.ADDRESS() = BC();
+	MEMPTR().word++;
 	readPort();
 	auto value = m_memory.DATA();
 	m_memory.ADDRESS().word = HL().word++;
 	m_memory.reference() = value;
 	postDecrement(--B());
 	setFlag(NF);
-	MEMPTR().word = ++bc;
 }
 
 void EightBit::Z80::ind() {
-	auto bc = BC().word;
-	m_memory.ADDRESS().word = bc;
+	MEMPTR() = m_memory.ADDRESS() = BC();
+	MEMPTR().word--;
 	readPort();
 	auto value = m_memory.DATA();
 	m_memory.ADDRESS().word = HL().word--;
 	m_memory.reference() = value;
 	postDecrement(--B());
 	setFlag(NF);
-	MEMPTR().word = --bc;
 }
 
 void EightBit::Z80::inir() {
@@ -863,27 +851,27 @@ void EightBit::Z80::otdr() {
 #pragma region Nibble rotation
 
 void EightBit::Z80::rrd() {
-	auto accumulator = A();
-	m_memory.ADDRESS() = HL();
+	MEMPTR() = m_memory.ADDRESS() = HL();
+	MEMPTR().word++;
 	auto memory = m_memory.reference();
+	auto accumulator = A();
 	A() = (accumulator & 0xf0) | lowNibble(memory);
 	uint8_t updated = promoteNibble(lowNibble(accumulator)) | highNibble(memory);
 	m_memory.reference() = updated;
 	adjustSZPXY(A());
 	clearFlag(NF | HC);
-	MEMPTR().word = HL().word + 1;
 }
 
 void EightBit::Z80::rld() {
-	auto accumulator = A();
-	m_memory.ADDRESS() = HL();
+	MEMPTR() = m_memory.ADDRESS() = HL();
+	MEMPTR().word++;
 	auto memory = m_memory.reference();
+	auto accumulator = A();
 	uint8_t updated = lowNibble(accumulator) | promoteNibble(memory);
 	A() = (accumulator & 0xf0) | highNibble(memory);
 	m_memory.reference() = updated;
 	adjustSZPXY(A());
 	clearFlag(NF | HC);
-	MEMPTR().word = HL().word + 1;
 }
 
 #pragma endregion Nibble rotation
@@ -1060,22 +1048,22 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 		switch (z) {
 		case 0: // Input from port with 16-bit address
 			MEMPTR() = m_memory.ADDRESS() = BC();
+			MEMPTR().word++;
 			readPort();
 			if (y != 6)	// IN r[y],(C)
 				R(y) = m_memory.DATA();
 			adjustSZPXY(m_memory.DATA());
 			clearFlag(HC | NF);
-			MEMPTR().word++;
 			cycles += 12;
 			break;
 		case 1:	// Output to port with 16-bit address
 			MEMPTR() = m_memory.ADDRESS() = BC();
+			MEMPTR().word++;
 			if (y == 6)	// OUT (C),0
 				m_memory.placeDATA(0);
 			else		// OUT (C),r[y]
 				m_memory.placeDATA(R(y));
 			writePort();
-			MEMPTR().word++;
 			cycles += 12;
 			break;
 		case 2:	// 16-bit add/subtract with carry
@@ -1092,10 +1080,12 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 		case 3:	// Retrieve/store register pair from/to immediate address
 			switch (q) {
 			case 0:	// LD (nn), rp[p]
-				setWordViaMemptr(fetchWord(), RP(p));
+				fetchWord();
+				setWordViaMemptr(RP(p));
 				break;
 			case 1:	// LD rp[p], (nn)
-				RP(p) = getWordViaMemptr(fetchWord());
+				fetchWord();
+				getWordViaMemptr(RP(p));
 				break;
 			}
 			cycles += 20;
@@ -1276,8 +1266,8 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			break;
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
-			case 0:	// LD rp,nn
-				RP(p) = fetchWord();
+			case 0: // LD rp,nn
+				Processor::fetchWord(RP(p));
 				cycles += 10;
 				break;
 			case 1:	// ADD HL,rp
@@ -1291,19 +1281,23 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					setViaMemptr(BC(), A());
+					MEMPTR() = BC();
+					setViaMemptr(A());
 					cycles += 7;
 					break;
 				case 1:	// LD (DE),A
-					setViaMemptr(DE(), A());
+					MEMPTR() = DE();
+					setViaMemptr(A());
 					cycles += 7;
 					break;
 				case 2:	// LD (nn),HL
-					setWordViaMemptr(fetchWord(), ALT_HL());
+					fetchWord();
+					setWordViaMemptr(ALT_HL());
 					cycles += 16;
 					break;
 				case 3: // LD (nn),A
-					setViaMemptr(fetchWord(), A());
+					fetchWord();
+					setViaMemptr(A());
 					cycles += 13;
 					break;
 				}
@@ -1311,19 +1305,23 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					A() = getViaMemptr(BC());
+					MEMPTR() = BC();
+					A() = getViaMemptr();
 					cycles += 7;
 					break;
 				case 1:	// LD A,(DE)
-					A() = getViaMemptr(DE());
+					MEMPTR() = DE();
+					A() = getViaMemptr();
 					cycles += 7;
 					break;
 				case 2:	// LD HL,(nn)
-					ALT_HL() = getWordViaMemptr(fetchWord());
+					fetchWord();
+					getWordViaMemptr(ALT_HL());
 					cycles += 16;
 					break;
 				case 3:	// LD A,(nn)
-					A() = getViaMemptr(fetchWord());
+					fetchWord();
+					A() = getViaMemptr();
 					cycles += 13;
 					break;
 				}
@@ -1466,7 +1464,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		case 1:	// POP & various ops
 			switch (q) {
 			case 0:	// POP rp2[p]
-				RP2(p) = popWord();
+				popWord(RP2(p));
 				cycles += 10;
 				break;
 			case 1:
@@ -1491,13 +1489,15 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			}
 			break;
 		case 2:	// Conditional jump
+			fetchWord();
 			jumpConditionalFlag(y);
 			cycles += 10;
 			break;
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0:	// JP nn
-				setPcViaMemptr(fetchWord());
+				fetchWord();
+				pc = MEMPTR();
 				cycles += 10;
 				break;
 			case 1:	// CB prefix
@@ -1543,7 +1543,8 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
-			callConditionalFlag(fetchWord(), y);
+			fetchWord();
+			callConditionalFlag(y);
 			cycles += 10;
 			break;
 		case 5:	// PUSH & various ops
@@ -1555,7 +1556,8 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
-					callConditional(fetchWord(), true);
+					fetchWord();
+					call();
 					cycles += 17;
 					break;
 				case 1:	// DD prefix
