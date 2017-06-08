@@ -651,12 +651,7 @@ void EightBit::Z80::xhtl(register16_t& operand) {
 }
 
 void EightBit::Z80::xhtl() {
-	if (m_prefixDD)
-		xhtl(IX());
-	else if (m_prefixFD)
-		xhtl(IY());
-	else
-		xhtl(HL());
+	xhtl(ALT_HL());
 }
 
 #pragma endregion Miscellaneous instructions
