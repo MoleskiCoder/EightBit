@@ -307,6 +307,7 @@ void EightBit::LR35902::add(uint8_t& operand, uint8_t value, int carry) {
 
 	clearFlag(NF);
 	setFlag(CF, result.word & Bit8);
+	adjustZero(operand);
 }
 
 void EightBit::LR35902::adc(uint8_t& operand, uint8_t value) {
@@ -324,6 +325,7 @@ void EightBit::LR35902::sub(uint8_t& operand, uint8_t value, int carry) {
 
 	setFlag(NF);
 	setFlag(CF, result.word & Bit8);
+	adjustZero(operand);
 }
 
 void EightBit::LR35902::sbc(uint8_t& operand, uint8_t value) {
