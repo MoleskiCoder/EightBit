@@ -3,8 +3,9 @@
 #include <cstdint>
 
 #include "Processor.h"
+#include "Bus.h"
 
-class LR35902 : public Processor {
+class LR35902 : public EightBit::Processor {
 public:
 	enum StatusBits {
 		ZF = Bit7,
@@ -15,7 +16,7 @@ public:
 
 	LR35902(Bus& memory);
 
-	Signal<LR35902> ExecutingInstruction;
+	EightBit::Signal<LR35902> ExecutingInstruction;
 
 	void stop() { m_stopped = true; }
 	void start() { m_stopped = false; }
@@ -33,7 +34,7 @@ public:
 
 	// Mutable access to processor!!
 
-	register16_t& AF() {
+	EightBit::register16_t& AF() {
 		m_accumulatorFlag.low &= 0xf0;
 		return m_accumulatorFlag;
 	}
@@ -41,21 +42,21 @@ public:
 	uint8_t& A() { return AF().high; }
 	uint8_t& F() { return AF().low; }
 
-	register16_t& BC() {
+	EightBit::register16_t& BC() {
 		return m_registers[BC_IDX];
 	}
 
 	uint8_t& B() { return BC().high; }
 	uint8_t& C() { return BC().low; }
 
-	register16_t& DE() {
+	EightBit::register16_t& DE() {
 		return m_registers[DE_IDX];
 	}
 
 	uint8_t& D() { return DE().high; }
 	uint8_t& E() { return DE().low; }
 
-	register16_t& HL() {
+	EightBit::register16_t& HL() {
 		return m_registers[HL_IDX];
 	}
 
@@ -68,8 +69,8 @@ public:
 private:
 	enum { BC_IDX, DE_IDX, HL_IDX };
 
-	std::array<register16_t, 3> m_registers;
-	register16_t m_accumulatorFlag;
+	std::array<EightBit::register16_t, 3> m_registers;
+	EightBit::register16_t m_accumulatorFlag;
 
 	bool m_ime;
 
@@ -79,6 +80,12 @@ private:
 
 	std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 	std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
+
+	EightBit::register16_t fetchWord() {
+		EightBit::register16_t returned;
+		Processor::fetchWord(returned);
+		return returned;
+	}
 
 	int fetchExecute() {
 		return execute(fetchByte());
@@ -110,28 +117,29 @@ private:
 		case 5:
 			return L();
 		case 6:
-			return m_memory.reference(HL().word);
+			m_memory.ADDRESS() = HL();
+			return m_memory.reference();
 		case 7:
 			return A();
 		}
 		throw std::logic_error("Unhandled registry mechanism");
 	}
 
-	uint16_t& RP(int rp) {
+	EightBit::register16_t& RP(int rp) {
 		switch (rp) {
 		case 3:
 			return sp;
 		default:
-			return m_registers[rp].word;
+			return m_registers[rp];
 		}
 	}
 
-	uint16_t& RP2(int rp) {
+	EightBit::register16_t& RP2(int rp) {
 		switch (rp) {
 		case 3:
-			return AF().word;
+			return AF();
 		default:
-			return m_registers[rp].word;
+			return m_registers[rp];
 		}
 	}
 

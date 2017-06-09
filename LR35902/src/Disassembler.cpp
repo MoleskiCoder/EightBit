@@ -34,9 +34,9 @@ std::string Disassembler::state(LR35902& cpu) {
 	std::ostringstream output;
 
 	output
-		<< "PC=" << hex(pc)
+		<< "PC=" << hex(pc.word)
 		<< " "
-		<< "SP=" << hex(sp)
+		<< "SP=" << hex(sp.word)
 		<< " " << "A=" << hex(a) << " " << "F=" << flags(f)
 		<< " " << "B=" << hex(b) << " " << "C=" << hex(c)
 		<< " " << "D=" << hex(d) << " " << "E=" << hex(e)
@@ -142,7 +142,7 @@ std::string Disassembler::alu(int which) {
 std::string Disassembler::disassemble(LR35902& cpu) {
 	m_prefixCB = false;
 	std::ostringstream output;
-	disassemble(output, cpu, cpu.getProgramCounter());
+	disassemble(output, cpu, cpu.getProgramCounter().word);
 	return output.str();
 }
 
@@ -162,7 +162,7 @@ void Disassembler::disassemble(std::ostringstream& output, LR35902& cpu, uint16_
 	auto q = (y & 1);
 
 	auto immediate = memory.peek(pc + 1);
-	auto absolute = cpu.getWord(pc + 1);
+	auto absolute = memory.peekWord(pc + 1);
 	auto displacement = (int8_t)immediate;
 	auto relative = pc + displacement + 2;
 	auto indexedImmediate = memory.peek(pc + 1);
@@ -517,10 +517,10 @@ std::string Disassembler::flags(uint8_t value) {
 		<< flag(value, LR35902::NF, "N")
 		<< flag(value, LR35902::HC, "H")
 		<< flag(value, LR35902::CF, "C")
-		<< flag(value, Processor::Bit3, "+")
-		<< flag(value, Processor::Bit2, "+")
-		<< flag(value, Processor::Bit1, "+")
-		<< flag(value, Processor::Bit0, "+");
+		<< flag(value, EightBit::Processor::Bit3, "+")
+		<< flag(value, EightBit::Processor::Bit2, "+")
+		<< flag(value, EightBit::Processor::Bit1, "+")
+		<< flag(value, EightBit::Processor::Bit0, "+");
 		return output.str();
 }
 

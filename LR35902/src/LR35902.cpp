@@ -12,7 +12,7 @@ LR35902::LR35902(Bus& memory)
 
 void LR35902::reset() {
 	Processor::reset();
-	setStackPointer(0xfffe);
+	sp.word = 0xfffe;
 	di();
 }
 
@@ -60,13 +60,13 @@ void LR35902::postDecrement(uint8_t value) {
 
 void LR35902::restart(uint8_t address) {
 	pushWord(pc);
-	pc = address;
+	pc.word = address;
 }
 
 void LR35902::jrConditional(int conditional) {
 	auto offset = (int8_t)fetchByte();
 	if (conditional) {
-		pc += offset;
+		pc.word += offset;
 		cycles++;
 	}
 }
@@ -121,22 +121,25 @@ void LR35902::jumpConditionalFlag(int flag) {
 		cycles--; // Giving 8 cycles
 		break;
 	case 5:	// GB: LD (nn),A
-		m_memory.set(fetchWord(), A());
+		m_memory.ADDRESS() = fetchWord();
+		m_memory.reference() = A();
 		cycles++; // Giving 16 cycles
 		break;
 	case 6:	// GB: LD A,(FF00 + C)
-		A() = m_memory.get(0xff00 + C());
+		m_memory.ADDRESS().word = 0xff00 + C();
+		A() = m_memory.reference();
 		cycles--; // 8 cycles
 		break;
 	case 7:	// GB: LD A,(nn)
-		A() = m_memory.get(fetchWord());
+		m_memory.ADDRESS() = fetchWord();
+		A() = m_memory.reference();
 		cycles++; // Giving 16 cycles
 		break;
 	}
 }
 
 void LR35902::ret() {
-	pc = popWord();
+	popWord(pc);
 }
 
 void LR35902::reti() {
@@ -172,10 +175,10 @@ void LR35902::returnConditionalFlag(int flag) {
 	case 5: { // GB: ADD SP,dd
 			auto before = sp;
 			auto value = fetchByte();
-			sp += (int8_t)value;
+			sp.word += (int8_t)value;
 			clearFlag(ZF | NF);
-			setFlag(CF, sp & Bit16);
-			adjustHalfCarryAdd(Memory::highByte(before), value, Memory::highByte(sp));
+			setFlag(CF, sp.word & Bit16);
+			adjustHalfCarryAdd(before.high, value, sp.high);
 		}
 		cycles += 2;	// 16 cycles
 		break;
@@ -186,11 +189,10 @@ void LR35902::returnConditionalFlag(int flag) {
 	case 7: { // GB: LD HL,SP + dd
 			auto before = sp;
 			auto value = fetchByte();
-			uint16_t result = before + (int8_t)value;
-			HL().word = result;
+			HL().word = before.word + (int8_t)value;
 			clearFlag(ZF | NF);
-			setFlag(CF, result & Bit16);
-			adjustHalfCarryAdd(Memory::highByte(before), value, Memory::highByte(result));
+			setFlag(CF, HL().word & Bit16);
+			adjustHalfCarryAdd(before.high, value, HL().high);
 		}
 		cycles++;	// 12 cycles
 		break;
@@ -198,16 +200,14 @@ void LR35902::returnConditionalFlag(int flag) {
 }
 
 void LR35902::call(uint16_t address) {
-	pushWord(pc + 2);
-	pc = address;
+	pushWord(pc);
+	pc.word = address;
 }
 
 void LR35902::callConditional(uint16_t address, int condition) {
 	if (condition) {
 		call(address);
 		cycles += 3;
-	} else {
-		pc += 2;
 	}
 }
 
@@ -238,14 +238,14 @@ uint16_t LR35902::sbc(uint16_t value) {
 
 	auto hl = RP(HL_IDX);
 
-	auto high = Memory::highByte(hl);
-	auto highValue = Memory::highByte(value);
+	auto high = hl.high;
+	auto highValue = EightBit::Memory::highByte(value);
 	auto applyCarry = F() & CF;
 
-	uint32_t result = (int)hl - (int)value;
+	uint32_t result = (int)hl.word - (int)value;
 	if (applyCarry)
 		--result;
-	auto highResult = Memory::highByte(result);
+	auto highResult = EightBit::Memory::highByte(result);
 
 	adjustZero(result);
 	adjustHalfCarrySub(high, highValue, highResult);
@@ -260,14 +260,14 @@ uint16_t LR35902::adc(uint16_t value) {
 
 	auto hl = RP(HL_IDX);
 
-	auto high = Memory::highByte(hl);
-	auto highValue = Memory::highByte(value);
+	auto high = hl.high;
+	auto highValue = EightBit::Memory::highByte(value);
 	auto applyCarry = F() & CF;
 
-	uint32_t result = (int)hl + (int)value;
+	uint32_t result = (int)hl.word + (int)value;
 	if (applyCarry)
 		++result;
-	auto highResult = Memory::highByte(result);
+	auto highResult = EightBit::Memory::highByte(result);
 
 	adjustZero(result);
 	adjustHalfCarryAdd(high, highValue, highResult);
@@ -282,12 +282,12 @@ uint16_t LR35902::add(uint16_t value) {
 
 	auto hl = RP(HL_IDX);
 
-	auto high = Memory::highByte(hl);
-	auto highValue = Memory::highByte(value);
+	auto high = hl.high;
+	auto highValue = EightBit::Memory::highByte(value);
 
-	uint32_t result = (int)hl + (int)value;
+	uint32_t result = (int)hl.word + (int)value;
 
-	auto highResult = Memory::highByte(result);
+	auto highResult = EightBit::Memory::highByte(result);
 
 	clearFlag(NF);
 	setFlag(CF, result & Bit16);
@@ -304,7 +304,7 @@ void LR35902::sub(uint8_t& operand, uint8_t value, bool carry) {
 	if (carry && (F() & CF))
 		--result;
 
-	operand = Memory::lowByte(result);
+	operand = EightBit::Memory::lowByte(result);
 
 	adjustZero(operand);
 	adjustHalfCarrySub(before, value, result);
@@ -328,7 +328,7 @@ void LR35902::add(uint8_t& operand, uint8_t value, bool carry) {
 	if (carry && (F() & CF))
 		++result;
 
-	operand = Memory::lowByte(result);
+	operand = EightBit::Memory::lowByte(result);
 
 	adjustZero(operand);
 	adjustHalfCarryAdd(before, value, result);
@@ -625,7 +625,7 @@ void LR35902::executeOther(int x, int y, int z, int p, int q) {
 				cycles++;
 				break;
 			case 1:	// GB: LD (nn),SP
-				m_memory.setWord(fetchWord(), sp);
+				m_memory.setWord(fetchWord().word, sp);
 				cycles += 5;
 				break;
 			case 2:	// GB: STOP
@@ -649,7 +649,7 @@ void LR35902::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 3;
 				break;
 			case 1:	// ADD HL,rp
-				RP(HL_IDX) = add(RP(p));
+				RP(HL_IDX).word = add(RP(p).word);
 				cycles += 2;
 				break;
 			}
@@ -701,10 +701,10 @@ void LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 3:	// 16-bit INC/DEC
 			switch (q) {
 			case 0:	// INC rp
-				++RP(p);
+				++RP(p).word;
 				break;
 			case 1:	// DEC rp
-				--RP(p);
+				--RP(p).word;
 				break;
 			}
 			cycles += 2;
@@ -806,7 +806,7 @@ void LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 1:	// POP & various ops
 			switch (q) {
 			case 0:	// POP rp2[p]
-				RP2(p) = popWord();
+				popWord(RP2(p));
 				cycles += 3;
 				break;
 			case 1:
@@ -820,11 +820,11 @@ void LR35902::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 4;
 					break;
 				case 2:	// JP HL
-					pc = HL().word;
+					pc = HL();
 					cycles += 1;
 					break;
 				case 3:	// LD SP,HL
-					sp = HL().word;
+					sp = HL();
 					cycles += 2;
 					break;
 				}
@@ -855,7 +855,7 @@ void LR35902::executeOther(int x, int y, int z, int p, int q) {
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
-			callConditionalFlag(getWord(pc), y);
+			callConditionalFlag(fetchWord().word, y);
 			cycles += 3;
 			break;
 		case 5:	// PUSH & various ops
@@ -867,7 +867,7 @@ void LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
-					callConditional(getWord(pc), true);
+					callConditional(fetchWord().word, true);
 					cycles += 3;
 					break;
 				}
