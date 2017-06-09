@@ -64,6 +64,8 @@ namespace EightBit {
 		uint8_t& H() { return HL().high; }
 		uint8_t& L() { return HL().low; }
 
+		register16_t& MEMPTR() { return m_memptr; }
+
 		virtual void reset();
 		virtual void initialise();
 
@@ -75,6 +77,8 @@ namespace EightBit {
 
 		bool m_ime;
 
+		register16_t m_memptr;
+
 		bool m_prefixCB;
 
 		bool m_stopped;
@@ -82,10 +86,8 @@ namespace EightBit {
 		std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 		std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 
-		register16_t fetchWord() {
-			register16_t returned;
-			Processor::fetchWord(returned);
-			return returned;
+		void fetchWord() {
+			Processor::fetchWord(MEMPTR());
 		}
 
 		int fetchExecute() {
@@ -180,28 +182,22 @@ namespace EightBit {
 		void jumpConditional(int condition);
 		void jumpConditionalFlag(int flag);
 
-		void call(uint16_t address);
-		void callConditional(uint16_t address, int condition);
-		void callConditionalFlag(uint16_t address, int flag);
+		void call();
+		void callConditional(int condition);
+		void callConditionalFlag(int flag);
 
-		uint16_t sbc(uint16_t value);
-		uint16_t adc(uint16_t value);
+		void sbc(register16_t& operand, register16_t value);
+		void adc(register16_t& operand, register16_t value);
 
-		uint16_t add(uint16_t value);
+		void add(register16_t& operand, register16_t value);
 
-		void sub(uint8_t& operand, uint8_t value, bool carry);
-		void sub(uint8_t& operand, uint8_t value);
-		void sbc(uint8_t& operand, uint8_t value);
-
-		void add(uint8_t& operand, uint8_t value, bool carry);
-		void add(uint8_t& operand, uint8_t value);
+		void add(uint8_t& operand, uint8_t value, int carry = 0);
 		void adc(uint8_t& operand, uint8_t value);
-
+		void sub(uint8_t& operand, uint8_t value, int carry = 0);
+		void sbc(uint8_t& operand, uint8_t value);
 		void andr(uint8_t& operand, uint8_t value);
-
-		void anda(uint8_t value);
-		void xora(uint8_t value);
-		void ora(uint8_t value);
+		void xorr(uint8_t& operand, uint8_t value);
+		void orr(uint8_t& operand, uint8_t value);
 		void compare(uint8_t value);
 
 		void rlca();

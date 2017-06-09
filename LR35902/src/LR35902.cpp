@@ -8,6 +8,7 @@ EightBit::LR35902::LR35902(Bus& memory)
 : Processor(memory),
   m_ime(false),
   m_prefixCB(false) {
+	MEMPTR().word = 0;
 }
 
 void EightBit::LR35902::reset() {
@@ -24,6 +25,8 @@ void EightBit::LR35902::initialise() {
 	BC().word = 0xffff;
 	DE().word = 0xffff;
 	HL().word = 0xffff;
+
+	MEMPTR().word = 0;
 
 	m_prefixCB = false;
 }
@@ -107,11 +110,8 @@ void EightBit::LR35902::jrConditionalFlag(int flag) {
 }
 
 void EightBit::LR35902::jumpConditional(int conditional) {
-	auto address = fetchWord();
-	if (conditional) {
-		pc = address;
-		cycles++;
-	}
+	if (conditional)
+		pc = MEMPTR();
 }
 
 void EightBit::LR35902::jumpConditionalFlag(int flag) {
@@ -133,7 +133,8 @@ void EightBit::LR35902::jumpConditionalFlag(int flag) {
 		cycles--; // Giving 8 cycles
 		break;
 	case 5:	// GB: LD (nn),A
-		m_memory.ADDRESS() = fetchWord();
+		fetchWord();
+		m_memory.ADDRESS() = MEMPTR();
 		m_memory.reference() = A();
 		cycles++; // Giving 16 cycles
 		break;
@@ -143,7 +144,8 @@ void EightBit::LR35902::jumpConditionalFlag(int flag) {
 		cycles--; // 8 cycles
 		break;
 	case 7:	// GB: LD A,(nn)
-		m_memory.ADDRESS() = fetchWord();
+		fetchWord();
+		m_memory.ADDRESS() = MEMPTR();
 		A() = m_memory.reference();
 		cycles++; // Giving 16 cycles
 		break;
@@ -151,7 +153,8 @@ void EightBit::LR35902::jumpConditionalFlag(int flag) {
 }
 
 void EightBit::LR35902::ret() {
-	popWord(pc);
+	popWord(MEMPTR());
+	pc = MEMPTR();
 }
 
 void EightBit::LR35902::reti() {
@@ -211,31 +214,31 @@ void EightBit::LR35902::returnConditionalFlag(int flag) {
 	}
 }
 
-void EightBit::LR35902::call(uint16_t address) {
+void EightBit::LR35902::call() {
 	pushWord(pc);
-	pc.word = address;
+	pc = MEMPTR();
 }
 
-void EightBit::LR35902::callConditional(uint16_t address, int condition) {
+void EightBit::LR35902::callConditional(int condition) {
 	if (condition) {
-		call(address);
+		call();
 		cycles += 3;
 	}
 }
 
-void EightBit::LR35902::callConditionalFlag(uint16_t address, int flag) {
+void EightBit::LR35902::callConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		callConditional(address, !(F() & ZF));
+		callConditional(!(F() & ZF));
 		break;
 	case 1:	// Z
-		callConditional(address, F() & ZF);
+		callConditional(F() & ZF);
 		break;
 	case 2:	// NC
-		callConditional(address, !(F() & CF));
+		callConditional(!(F() & CF));
 		break;
 	case 3:	// C
-		callConditional(address, F() & CF);
+		callConditional(F() & CF);
 		break;
 	case 4:
 	case 5:
@@ -250,143 +253,100 @@ void EightBit::LR35902::callConditionalFlag(uint16_t address, int flag) {
 
 #pragma region 16-bit arithmetic
 
-uint16_t EightBit::LR35902::sbc(uint16_t value) {
+void EightBit::LR35902::sbc(register16_t& operand, register16_t value) {
 
-	auto hl = RP(HL_IDX);
+	auto before = operand;
 
-	auto high = hl.high;
-	auto highValue = Memory::highByte(value);
-	auto applyCarry = F() & CF;
+	auto result = before.word - value.word - (F() & CF);
+	operand.word = result;
 
-	uint32_t result = (int)hl.word - (int)value;
-	if (applyCarry)
-		--result;
-	auto highResult = Memory::highByte(result);
-
-	adjustZero(result);
-	adjustHalfCarrySub(high, highValue, highResult);
-
+	clearFlag(ZF, operand.word);
+	adjustHalfCarrySub(before.high, value.high, operand.high);
 	setFlag(NF);
 	setFlag(CF, result & Bit16);
-
-	return result;
 }
 
-uint16_t EightBit::LR35902::adc(uint16_t value) {
+void EightBit::LR35902::adc(register16_t& operand, register16_t value) {
 
-	auto hl = RP(HL_IDX);
+	auto before = operand;
 
-	auto high = hl.high;
-	auto highValue = Memory::highByte(value);
-	auto applyCarry = F() & CF;
+	auto result = before.word + value.word + (F() & CF);
+	operand.word = result;
 
-	uint32_t result = (int)hl.word + (int)value;
-	if (applyCarry)
-		++result;
-	auto highResult = Memory::highByte(result);
+	clearFlag(ZF, result);
+	adjustHalfCarryAdd(before.high, value.high, operand.high);
+	clearFlag(NF);
+	setFlag(CF, result & Bit16);
+}
 
-	adjustZero(result);
-	adjustHalfCarryAdd(high, highValue, highResult);
+void EightBit::LR35902::add(register16_t& operand, register16_t value) {
+
+	auto before = operand;
+
+	auto result = before.word + value.word;
+
+	operand.word = result;
 
 	clearFlag(NF);
 	setFlag(CF, result & Bit16);
-
-	return result;
-}
-
-uint16_t EightBit::LR35902::add(uint16_t value) {
-
-	auto hl = RP(HL_IDX);
-
-	auto high = hl.high;
-	auto highValue = Memory::highByte(value);
-
-	uint32_t result = (int)hl.word + (int)value;
-
-	auto highResult = Memory::highByte(result);
-
-	clearFlag(NF);
-	setFlag(CF, result & Bit16);
-	adjustHalfCarryAdd(high, highValue, highResult);
-
-	return result;
+	adjustHalfCarryAdd(before.high, value.high, operand.high);
 }
 
 #pragma endregion 16-bit arithmetic
 
 #pragma region ALU
 
-void EightBit::LR35902::sub(uint8_t& operand, uint8_t value, bool carry) {
+void EightBit::LR35902::add(uint8_t& operand, uint8_t value, int carry) {
 
-	auto before = operand;
+	register16_t result;
+	result.word = operand + value + carry;
 
-	uint16_t result = before - value;
-	if (carry && (F() & CF))
-		--result;
+	adjustHalfCarryAdd(operand, value, result.low);
 
-	operand = Memory::lowByte(result);
+	operand = result.low;
 
-	adjustZero(operand);
-	adjustHalfCarrySub(before, value, result);
-	setFlag(NF);
-	setFlag(CF, result & Bit8);
-}
-
-void EightBit::LR35902::sbc(uint8_t& operand, uint8_t value) {
-	sub(operand, value, true);
-}
-
-void EightBit::LR35902::sub(uint8_t& operand, uint8_t value) {
-	sub(operand, value, false);
-}
-
-void EightBit::LR35902::add(uint8_t& operand, uint8_t value, bool carry) {
-
-	auto before = operand;
-
-	uint16_t result = before + value;
-	if (carry && (F() & CF))
-		++result;
-
-	operand = Memory::lowByte(result);
-
-	adjustZero(operand);
-	adjustHalfCarryAdd(before, value, result);
 	clearFlag(NF);
-	setFlag(CF, result & Bit8);
+	setFlag(CF, result.word & Bit8);
 }
 
 void EightBit::LR35902::adc(uint8_t& operand, uint8_t value) {
-	add(operand, value, true);
+	add(operand, value, F() & CF);
 }
 
-void EightBit::LR35902::add(uint8_t& operand, uint8_t value) {
-	add(operand, value, false);
+void EightBit::LR35902::sub(uint8_t& operand, uint8_t value, int carry) {
+
+	register16_t result;
+	result.word = operand - value - carry;
+
+	adjustHalfCarrySub(operand, value, result.low);
+
+	operand = result.low;
+
+	setFlag(NF);
+	setFlag(CF, result.word & Bit8);
 }
 
-//
+void EightBit::LR35902::sbc(uint8_t& operand, uint8_t value) {
+	sub(operand, value, F() & CF);
+}
 
 void EightBit::LR35902::andr(uint8_t& operand, uint8_t value) {
+	operand &= value;
 	setFlag(HC);
 	clearFlag(CF | NF);
-	operand &= value;
 	adjustZero(operand);
 }
 
-void EightBit::LR35902::anda(uint8_t value) {
-	andr(A(), value);
+void EightBit::LR35902::xorr(uint8_t& operand, uint8_t value) {
+	operand ^= value;
+	clearFlag(HC | CF | NF);
+	adjustZero(operand);
 }
 
-void EightBit::LR35902::xora(uint8_t value) {
+void EightBit::LR35902::orr(uint8_t& operand, uint8_t value) {
+	operand |= value;
 	clearFlag(HC | CF | NF);
-	A() ^= value;
-	adjustZero(A());
-}
-
-void EightBit::LR35902::ora(uint8_t value) {
-	clearFlag(HC | CF | NF);
-	A() |= value;
-	adjustZero(A());
+	adjustZero(operand);
 }
 
 void EightBit::LR35902::compare(uint8_t value) {
@@ -652,7 +612,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				cycles++;
 				break;
 			case 1:	// GB: LD (nn),SP
-				m_memory.setWord(fetchWord().word, sp);
+				fetchWord();
+				m_memory.setWord(MEMPTR().word, sp);
 				cycles += 5;
 				break;
 			case 2:	// GB: STOP
@@ -672,11 +633,12 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0:	// LD rp,nn
-				RP(p) = fetchWord();
+				fetchWord();
+				RP(p) = MEMPTR();
 				cycles += 3;
 				break;
 			case 1:	// ADD HL,rp
-				RP(HL_IDX).word = add(RP(p).word);
+				add(HL(), RP(p));
 				cycles += 2;
 				break;
 			}
@@ -808,13 +770,13 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			sbc(A(), R(z));
 			break;
 		case 4:	// AND r
-			anda(R(z));
+			andr(A(), R(z));
 			break;
 		case 5:	// XOR r
-			xora(R(z));
+			xorr(A(), R(z));
 			break;
 		case 6:	// OR r
-			ora(R(z));
+			orr(A(), R(z));
 			break;
 		case 7:	// CP r
 			compare(R(z));
@@ -864,7 +826,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0:	// JP nn
-				pc = fetchWord();
+				fetchWord();
+				pc = MEMPTR();
 				cycles += 4;
 				break;
 			case 1:	// CB prefix
@@ -882,7 +845,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
-			callConditionalFlag(fetchWord().word, y);
+			fetchWord();
+			callConditionalFlag(y);
 			cycles += 3;
 			break;
 		case 5:	// PUSH & various ops
@@ -894,7 +858,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
-					callConditional(fetchWord().word, true);
+					fetchWord();
+					callConditional(true);
 					cycles += 3;
 					break;
 				}
@@ -915,13 +880,13 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				sbc(A(), fetchByte());
 				break;
 			case 4:	// AND n
-				anda(fetchByte());
+				andr(A(), fetchByte());
 				break;
 			case 5:	// XOR n
-				xora(fetchByte());
+				xorr(A(), fetchByte());
 				break;
 			case 6:	// OR n
-				ora(fetchByte());
+				orr(A(), fetchByte());
 				break;
 			case 7:	// CP n
 				compare(fetchByte());
