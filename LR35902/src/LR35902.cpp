@@ -4,19 +4,19 @@
 // based on http://www.z80.info/decoding.htm
 // Half carry flag help from https://github.com/oubiwann/z80
 
-LR35902::LR35902(Bus& memory)
+EightBit::LR35902::LR35902(Bus& memory)
 : Processor(memory),
   m_ime(false),
   m_prefixCB(false) {
 }
 
-void LR35902::reset() {
+void EightBit::LR35902::reset() {
 	Processor::reset();
 	sp.word = 0xfffe;
 	di();
 }
 
-void LR35902::initialise() {
+void EightBit::LR35902::initialise() {
 
 	Processor::initialise();
 
@@ -28,42 +28,54 @@ void LR35902::initialise() {
 	m_prefixCB = false;
 }
 
-void LR35902::di() {
+#pragma region Interrupt routines
+
+void EightBit::LR35902::di() {
 	IME() = false;
 }
 
-void LR35902::ei() {
+void EightBit::LR35902::ei() {
 	IME() = true;
 }
 
-int LR35902::interrupt(uint8_t value) {
+int EightBit::LR35902::interrupt(uint8_t value) {
+	cycles = 0;
 	di();
 	restart(value);
 	return 4;
 }
 
-void LR35902::adjustZero(uint8_t value) {
+#pragma endregion Interrupt routines
+
+#pragma region Flag manipulation helpers
+
+void EightBit::LR35902::adjustZero(uint8_t value) {
 	clearFlag(ZF, value);
 }
 
-void LR35902::postIncrement(uint8_t value) {
+void EightBit::LR35902::postIncrement(uint8_t value) {
 	adjustZero(value);
 	clearFlag(NF);
 	clearFlag(HC, lowNibble(value));
 }
 
-void LR35902::postDecrement(uint8_t value) {
+void EightBit::LR35902::postDecrement(uint8_t value) {
 	adjustZero(value);
 	setFlag(NF);
 	clearFlag(HC, lowNibble(value + 1));
 }
 
-void LR35902::restart(uint8_t address) {
+#pragma endregion Flag manipulation helpers
+
+#pragma region PC manipulation: call/ret/jp/jr
+
+void EightBit::LR35902::restart(uint8_t address) {
 	pushWord(pc);
-	pc.word = address;
+	pc.low = address;
+	pc.high = 0;
 }
 
-void LR35902::jrConditional(int conditional) {
+void EightBit::LR35902::jrConditional(int conditional) {
 	auto offset = (int8_t)fetchByte();
 	if (conditional) {
 		pc.word += offset;
@@ -71,7 +83,7 @@ void LR35902::jrConditional(int conditional) {
 	}
 }
 
-void LR35902::jrConditionalFlag(int flag) {
+void EightBit::LR35902::jrConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		jrConditional(!(F() & ZF));
@@ -94,7 +106,7 @@ void LR35902::jrConditionalFlag(int flag) {
 	}
 }
 
-void LR35902::jumpConditional(int conditional) {
+void EightBit::LR35902::jumpConditional(int conditional) {
 	auto address = fetchWord();
 	if (conditional) {
 		pc = address;
@@ -102,7 +114,7 @@ void LR35902::jumpConditional(int conditional) {
 	}
 }
 
-void LR35902::jumpConditionalFlag(int flag) {
+void EightBit::LR35902::jumpConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		jumpConditional(!(F() & ZF));
@@ -138,23 +150,23 @@ void LR35902::jumpConditionalFlag(int flag) {
 	}
 }
 
-void LR35902::ret() {
+void EightBit::LR35902::ret() {
 	popWord(pc);
 }
 
-void LR35902::reti() {
+void EightBit::LR35902::reti() {
 	ret();
 	ei();
 }
 
-void LR35902::returnConditional(int condition) {
+void EightBit::LR35902::returnConditional(int condition) {
 	if (condition) {
 		ret();
 		cycles += 3;
 	}
 }
 
-void LR35902::returnConditionalFlag(int flag) {
+void EightBit::LR35902::returnConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		returnConditional(!(F() & ZF));
@@ -199,19 +211,19 @@ void LR35902::returnConditionalFlag(int flag) {
 	}
 }
 
-void LR35902::call(uint16_t address) {
+void EightBit::LR35902::call(uint16_t address) {
 	pushWord(pc);
 	pc.word = address;
 }
 
-void LR35902::callConditional(uint16_t address, int condition) {
+void EightBit::LR35902::callConditional(uint16_t address, int condition) {
 	if (condition) {
 		call(address);
 		cycles += 3;
 	}
 }
 
-void LR35902::callConditionalFlag(uint16_t address, int flag) {
+void EightBit::LR35902::callConditionalFlag(uint16_t address, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		callConditional(address, !(F() & ZF));
@@ -234,18 +246,22 @@ void LR35902::callConditionalFlag(uint16_t address, int flag) {
 	}
 }
 
-uint16_t LR35902::sbc(uint16_t value) {
+#pragma endregion PC manipulation: call/ret/jp/jr
+
+#pragma region 16-bit arithmetic
+
+uint16_t EightBit::LR35902::sbc(uint16_t value) {
 
 	auto hl = RP(HL_IDX);
 
 	auto high = hl.high;
-	auto highValue = EightBit::Memory::highByte(value);
+	auto highValue = Memory::highByte(value);
 	auto applyCarry = F() & CF;
 
 	uint32_t result = (int)hl.word - (int)value;
 	if (applyCarry)
 		--result;
-	auto highResult = EightBit::Memory::highByte(result);
+	auto highResult = Memory::highByte(result);
 
 	adjustZero(result);
 	adjustHalfCarrySub(high, highValue, highResult);
@@ -256,18 +272,18 @@ uint16_t LR35902::sbc(uint16_t value) {
 	return result;
 }
 
-uint16_t LR35902::adc(uint16_t value) {
+uint16_t EightBit::LR35902::adc(uint16_t value) {
 
 	auto hl = RP(HL_IDX);
 
 	auto high = hl.high;
-	auto highValue = EightBit::Memory::highByte(value);
+	auto highValue = Memory::highByte(value);
 	auto applyCarry = F() & CF;
 
 	uint32_t result = (int)hl.word + (int)value;
 	if (applyCarry)
 		++result;
-	auto highResult = EightBit::Memory::highByte(result);
+	auto highResult = Memory::highByte(result);
 
 	adjustZero(result);
 	adjustHalfCarryAdd(high, highValue, highResult);
@@ -278,16 +294,16 @@ uint16_t LR35902::adc(uint16_t value) {
 	return result;
 }
 
-uint16_t LR35902::add(uint16_t value) {
+uint16_t EightBit::LR35902::add(uint16_t value) {
 
 	auto hl = RP(HL_IDX);
 
 	auto high = hl.high;
-	auto highValue = EightBit::Memory::highByte(value);
+	auto highValue = Memory::highByte(value);
 
 	uint32_t result = (int)hl.word + (int)value;
 
-	auto highResult = EightBit::Memory::highByte(result);
+	auto highResult = Memory::highByte(result);
 
 	clearFlag(NF);
 	setFlag(CF, result & Bit16);
@@ -296,7 +312,11 @@ uint16_t LR35902::add(uint16_t value) {
 	return result;
 }
 
-void LR35902::sub(uint8_t& operand, uint8_t value, bool carry) {
+#pragma endregion 16-bit arithmetic
+
+#pragma region ALU
+
+void EightBit::LR35902::sub(uint8_t& operand, uint8_t value, bool carry) {
 
 	auto before = operand;
 
@@ -304,7 +324,7 @@ void LR35902::sub(uint8_t& operand, uint8_t value, bool carry) {
 	if (carry && (F() & CF))
 		--result;
 
-	operand = EightBit::Memory::lowByte(result);
+	operand = Memory::lowByte(result);
 
 	adjustZero(operand);
 	adjustHalfCarrySub(before, value, result);
@@ -312,15 +332,15 @@ void LR35902::sub(uint8_t& operand, uint8_t value, bool carry) {
 	setFlag(CF, result & Bit8);
 }
 
-void LR35902::sbc(uint8_t& operand, uint8_t value) {
+void EightBit::LR35902::sbc(uint8_t& operand, uint8_t value) {
 	sub(operand, value, true);
 }
 
-void LR35902::sub(uint8_t& operand, uint8_t value) {
+void EightBit::LR35902::sub(uint8_t& operand, uint8_t value) {
 	sub(operand, value, false);
 }
 
-void LR35902::add(uint8_t& operand, uint8_t value, bool carry) {
+void EightBit::LR35902::add(uint8_t& operand, uint8_t value, bool carry) {
 
 	auto before = operand;
 
@@ -328,7 +348,7 @@ void LR35902::add(uint8_t& operand, uint8_t value, bool carry) {
 	if (carry && (F() & CF))
 		++result;
 
-	operand = EightBit::Memory::lowByte(result);
+	operand = Memory::lowByte(result);
 
 	adjustZero(operand);
 	adjustHalfCarryAdd(before, value, result);
@@ -336,47 +356,49 @@ void LR35902::add(uint8_t& operand, uint8_t value, bool carry) {
 	setFlag(CF, result & Bit8);
 }
 
-void LR35902::adc(uint8_t& operand, uint8_t value) {
+void EightBit::LR35902::adc(uint8_t& operand, uint8_t value) {
 	add(operand, value, true);
 }
 
-void LR35902::add(uint8_t& operand, uint8_t value) {
+void EightBit::LR35902::add(uint8_t& operand, uint8_t value) {
 	add(operand, value, false);
 }
 
 //
 
-void LR35902::andr(uint8_t& operand, uint8_t value) {
+void EightBit::LR35902::andr(uint8_t& operand, uint8_t value) {
 	setFlag(HC);
 	clearFlag(CF | NF);
 	operand &= value;
 	adjustZero(operand);
 }
 
-void LR35902::anda(uint8_t value) {
+void EightBit::LR35902::anda(uint8_t value) {
 	andr(A(), value);
 }
 
-void LR35902::xora(uint8_t value) {
+void EightBit::LR35902::xora(uint8_t value) {
 	clearFlag(HC | CF | NF);
 	A() ^= value;
 	adjustZero(A());
 }
 
-void LR35902::ora(uint8_t value) {
+void EightBit::LR35902::ora(uint8_t value) {
 	clearFlag(HC | CF | NF);
 	A() |= value;
 	adjustZero(A());
 }
 
-void LR35902::compare(uint8_t value) {
+void EightBit::LR35902::compare(uint8_t value) {
 	auto check = A();
 	sub(check, value);
 }
 
-//
+#pragma endregion ALU
 
-void LR35902::rlc(uint8_t& operand) {
+#pragma region Shift and rotate
+
+void EightBit::LR35902::rlc(uint8_t& operand) {
 	auto carry = operand & Bit7;
 	operand <<= 1;
 	setFlag(CF, carry);
@@ -385,7 +407,7 @@ void LR35902::rlc(uint8_t& operand) {
 	adjustZero(operand);
 }
 
-void LR35902::rrc(uint8_t& operand) {
+void EightBit::LR35902::rrc(uint8_t& operand) {
 	auto carry = operand & Bit0;
 	operand >>= 1;
 	carry ? operand |= Bit7 : operand &= ~Bit7;
@@ -394,7 +416,7 @@ void LR35902::rrc(uint8_t& operand) {
 	adjustZero(operand);
 }
 
-void LR35902::rl(uint8_t& operand) {
+void EightBit::LR35902::rl(uint8_t& operand) {
 	auto oldCarry = F() & CF;
 	auto newCarry = operand & Bit7;
 	operand <<= 1;
@@ -404,7 +426,7 @@ void LR35902::rl(uint8_t& operand) {
 	adjustZero(operand);
 }
 
-void LR35902::rr(uint8_t& operand) {
+void EightBit::LR35902::rr(uint8_t& operand) {
 	auto oldCarry = F() & CF;
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
@@ -416,7 +438,7 @@ void LR35902::rr(uint8_t& operand) {
 
 //
 
-void LR35902::sla(uint8_t& operand) {
+void EightBit::LR35902::sla(uint8_t& operand) {
 	auto newCarry = operand & Bit7;
 	operand <<= 1;
 	setFlag(CF, newCarry);
@@ -424,7 +446,7 @@ void LR35902::sla(uint8_t& operand) {
 	adjustZero(operand);
 }
 
-void LR35902::sra(uint8_t& operand) {
+void EightBit::LR35902::sra(uint8_t& operand) {
 	auto new7 = operand & Bit7;
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
@@ -434,7 +456,7 @@ void LR35902::sra(uint8_t& operand) {
 	adjustZero(operand);
 }
 
-void LR35902::srl(uint8_t& operand) {
+void EightBit::LR35902::srl(uint8_t& operand) {
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
 	operand &= ~Bit7;	// clear bit 7
@@ -445,44 +467,48 @@ void LR35902::srl(uint8_t& operand) {
 
 //
 
-void LR35902::rlca() {
+void EightBit::LR35902::rlca() {
 	rlc(A());
 }
 
-void LR35902::rrca() {
+void EightBit::LR35902::rrca() {
 	rrc(A());
 }
 
-void LR35902::rla() {
+void EightBit::LR35902::rla() {
 	rl(A());
 }
 
-void LR35902::rra() {
+void EightBit::LR35902::rra() {
 	rr(A());
 }
 
-//
+#pragma endregion Shift and rotate
 
-void LR35902::bit(int n, uint8_t& operand) {
+#pragma region BIT/SET/RES
+
+void EightBit::LR35902::bit(int n, uint8_t& operand) {
 	auto carry = F() & CF;
 	uint8_t discarded = operand;
 	andr(discarded, 1 << n);
 	setFlag(CF, carry);
 }
 
-void LR35902::res(int n, uint8_t& operand) {
+void EightBit::LR35902::res(int n, uint8_t& operand) {
 	auto bit = 1 << n;
 	operand &= ~bit;
 }
 
-void LR35902::set(int n, uint8_t& operand) {
+void EightBit::LR35902::set(int n, uint8_t& operand) {
 	auto bit = 1 << n;
 	operand |= bit;
 }
 
-//
+#pragma endregion BIT/SET/RES
 
-void LR35902::daa() {
+#pragma region Miscellaneous instructions
+
+void EightBit::LR35902::daa() {
 
 	uint8_t a = A();
 
@@ -508,23 +534,23 @@ void LR35902::daa() {
 	A() = a;
 }
 
-void LR35902::cpl() {
+void EightBit::LR35902::cpl() {
 	A() = ~A();
 	setFlag(HC | NF);
 }
 
-void LR35902::scf() {
+void EightBit::LR35902::scf() {
 	setFlag(CF);
 	clearFlag(HC | NF);
 }
 
-void LR35902::ccf() {
+void EightBit::LR35902::ccf() {
 	auto carry = F() & CF;
 	clearFlag(CF, carry);
 	clearFlag(NF | HC);
 }
 
-void LR35902::swap(uint8_t& operand) {
+void EightBit::LR35902::swap(uint8_t& operand) {
 	auto low = lowNibble(operand);
 	auto high = highNibble(operand);
 	operand = promoteNibble(low) | demoteNibble(high);
@@ -532,13 +558,16 @@ void LR35902::swap(uint8_t& operand) {
 	clearFlag(NF | HC | CF);
 }
 
-int LR35902::step() {
+#pragma endregion Miscellaneous instructions
+
+int EightBit::LR35902::step() {
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;
+	cycles = 0;
 	return fetchExecute();
 }
 
-int LR35902::execute(uint8_t opcode) {
+int EightBit::LR35902::execute(uint8_t opcode) {
 
 	auto x = (opcode & 0b11000000) >> 6;
 	auto y = (opcode & 0b111000) >> 3;
@@ -546,8 +575,6 @@ int LR35902::execute(uint8_t opcode) {
 
 	auto p = (y & 0b110) >> 1;
 	auto q = (y & 1);
-
-	cycles = 0;
 
 	if (m_prefixCB)
 		executeCB(x, y, z, p, q);
@@ -560,7 +587,7 @@ int LR35902::execute(uint8_t opcode) {
 	return cycles * 4;
 }
 
-void LR35902::executeCB(int x, int y, int z, int p, int q) {
+void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 	switch (x) {
 	case 0:	// rot[y] r[z]
 		switch (y) {
@@ -615,7 +642,7 @@ void LR35902::executeCB(int x, int y, int z, int p, int q) {
 	}
 }
 
-void LR35902::executeOther(int x, int y, int z, int p, int q) {
+void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 	switch (x) {
 	case 0:
 		switch (z) {
