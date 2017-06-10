@@ -2,9 +2,9 @@
 #include "Processor.h"
 
 EightBit::Processor::Processor(Memory& memory)
-:	m_memory(memory),
-	cycles(0),
-	m_halted(false) {
+: m_memory(memory),
+  cycles(0),
+  m_halted(false) {
 	sp.word = 0xffff;
 	pc.word = 0;
 }
@@ -19,8 +19,7 @@ void EightBit::Processor::initialise() {
 }
 
 void EightBit::Processor::push(uint8_t value) {
-	sp.word--;
-	m_memory.ADDRESS() = sp;
+	m_memory.ADDRESS().word = --sp.word;
 	m_memory.reference() = value;
 }
 
@@ -30,8 +29,7 @@ void EightBit::Processor::pushWord(register16_t value) {
 }
 
 uint8_t EightBit::Processor::pop() {
-	m_memory.ADDRESS() = sp;
-	sp.word++;
+	m_memory.ADDRESS().word = sp.word++;
 	return m_memory.reference();
 }
 

@@ -1,11 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <array>
-#include <functional>
 
 #include "Memory.h"
-#include "Signal.h"
 
 namespace EightBit {
 	class Processor {
@@ -81,8 +78,7 @@ namespace EightBit {
 		void popWord(register16_t& output);
 
 		uint8_t fetchByte() {
-			m_memory.ADDRESS() = pc;
-			pc.word++;
+			m_memory.ADDRESS().word = pc.word++;
 			return m_memory.reference();
 		}
 

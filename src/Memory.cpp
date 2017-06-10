@@ -7,7 +7,9 @@
 #include <algorithm>
 
 EightBit::Memory::Memory(uint16_t addressMask)
-: m_addressMask(addressMask) {
+: m_addressMask(addressMask),
+  m_temporary(0) {
+	clear();
 	m_address.word = 0;
 	m_data = &(m_bus[m_address.word]);
 }
