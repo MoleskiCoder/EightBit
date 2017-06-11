@@ -50,12 +50,9 @@ namespace EightBit {
 			return m_interrupt;
 		}
 
-		void disableInterrupts() { m_interrupt = false; }
-		void enableInterrupts() { m_interrupt = true; }
-
 		int interrupt(uint8_t value) {
 			if (isInterruptable()) {
-				disableInterrupts();
+				di();
 				return execute(value);
 			}
 			return 0;
@@ -131,42 +128,6 @@ namespace EightBit {
 			adjustSZP((uint8_t)subtraction);
 			adjustAuxiliaryCarrySub(value, subtraction);
 			F().C = subtraction > 0xff;
-		}
-
-		void callAddress(uint16_t address) {
-			register16_t saved = pc;
-			saved.word += 2;
-			pushWord(saved);
-			pc.word = address;
-		}
-
-		void restart(uint8_t position) {
-			uint16_t address = position << 3;
-			pushWord(pc);
-			pc.word = address;
-		}
-
-		void jmpConditional(int conditional) {
-			fetchWord();
-			if (conditional)
-				pc = MEMPTR();
-		}
-
-		void callConditional(int condition) {
-			if (condition) {
-				call();
-				cycles += 6;
-			}
-			else {
-				pc.word += 2;
-			}
-		}
-
-		void returnConditional(int condition) {
-			if (condition) {
-				ret();
-				cycles += 6;
-			}
 		}
 
 		void anda(uint8_t value) {
@@ -391,19 +352,19 @@ namespace EightBit {
 
 		// jump
 
-		void jmp() { jmpConditional(true); }
+		void jmp() { jumpConditional(true); }
 
-		void jc() { jmpConditional(F().C); }
-		void jnc() { jmpConditional(!F().C); }
+		void jc() { jumpConditional(F().C); }
+		void jnc() { jumpConditional(!F().C); }
 
-		void jz() { jmpConditional(F().Z); }
-		void jnz() { jmpConditional(!F().Z); }
+		void jz() { jumpConditional(F().Z); }
+		void jnz() { jumpConditional(!F().Z); }
 
-		void jpe() { jmpConditional(F().P); }
-		void jpo() { jmpConditional(!F().P); }
+		void jpe() { jumpConditional(F().P); }
+		void jpo() { jumpConditional(!F().P); }
 
-		void jm() { jmpConditional(F().S); }
-		void jp() { jmpConditional(!F().S); }
+		void jm() { jumpConditional(F().S); }
+		void jp() { jumpConditional(!F().S); }
 
 		void pchl() {
 			pc = HL();
@@ -411,51 +372,47 @@ namespace EightBit {
 
 		// call
 
-		virtual void call() override {
-			auto destination = m_memory.getWord(pc.word);
-			callAddress(destination.word);
+		void callDirect() {
+			fetchWord();
+			call();
 		}
 
-		void cc() { callConditional(F().C); }
-		void cnc() { callConditional(!F().C); }
+		void cc() { if (callConditional(F().C)) cycles += 6; }
+		void cnc() { if (callConditional(!F().C)) cycles += 6; }
 
-		void cpe() { callConditional(F().P); }
-		void cpo() { callConditional(!F().P); }
+		void cpe() { if (callConditional(F().P)) cycles += 6; }
+		void cpo() { if (callConditional(!F().P)) cycles += 6; }
 
-		void cz() { callConditional(F().Z); }
-		void cnz() { callConditional(!F().Z); }
+		void cz() { if (callConditional(F().Z)) cycles += 6; }
+		void cnz() { if (callConditional(!F().Z)) cycles += 6; }
 
-		void cm() { callConditional(F().S); }
-		void cp() { callConditional(!F().S); }
+		void cm() { if (callConditional(F().S)) cycles += 6; }
+		void cp() { if (callConditional(!F().S)) cycles += 6; }
 
 		// return
 
-		void ret() {
-			popWord(pc);
-		}
+		void rc() { if (returnConditional(F().C)) cycles += 6; }
+		void rnc() { if (returnConditional(!F().C)) cycles += 6; }
 
-		void rc() { returnConditional(F().C); }
-		void rnc() { returnConditional(!F().C); }
+		void rz() { if (returnConditional(F().Z)) cycles += 6; }
+		void rnz() { if (returnConditional(!F().Z)) cycles += 6; }
 
-		void rz() { returnConditional(F().Z); }
-		void rnz() { returnConditional(!F().Z); }
+		void rpe() { if (returnConditional(F().P)) cycles += 6; }
+		void rpo() { if (returnConditional(!F().P)) cycles += 6; }
 
-		void rpe() { returnConditional(F().P); }
-		void rpo() { returnConditional(!F().P); }
-
-		void rm() { returnConditional(F().S); }
-		void rp() { returnConditional(!F().S); }
+		void rm() { if (returnConditional(F().S)) cycles += 6; }
+		void rp() { if (returnConditional(!F().S)) cycles += 6; }
 
 		// restart
 
-		void rst_0() { restart(0); }
-		void rst_1() { restart(1); }
-		void rst_2() { restart(2); }
-		void rst_3() { restart(3); }
-		void rst_4() { restart(4); }
-		void rst_5() { restart(5); }
-		void rst_6() { restart(6); }
-		void rst_7() { restart(7); }
+		void rst_0() { restart(0 << 3); }
+		void rst_1() { restart(1 << 3); }
+		void rst_2() { restart(2 << 3); }
+		void rst_3() { restart(3 << 3); }
+		void rst_4() { restart(4 << 3); }
+		void rst_5() { restart(5 << 3); }
+		void rst_6() { restart(6 << 3); }
+		void rst_7() { restart(7 << 3); }
 
 		// increment and decrement
 
@@ -689,8 +646,8 @@ namespace EightBit {
 
 		// control
 
-		void ei() { enableInterrupts(); }
-		void di() { disableInterrupts(); }
+		void ei() { m_interrupt = true; }
+		void di() { m_interrupt = false; }
 
 		void nop() {}
 

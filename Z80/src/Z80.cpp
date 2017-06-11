@@ -25,7 +25,7 @@ EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
 
 void EightBit::Z80::reset() {
 	IntelProcessor::reset();
-	IFF1() = IFF2() = false;
+	di();
 }
 
 void EightBit::Z80::initialise() {
@@ -63,11 +63,11 @@ void EightBit::Z80::initialise() {
 
 #pragma region Interrupt routines
 
-void EightBit::Z80::disableInterrupts() {
+void EightBit::Z80::di() {
 	IFF1() = IFF2() = false;
 }
 
-void EightBit::Z80::enableInterrupts() {
+void EightBit::Z80::ei() {
 	IFF1() = IFF2() = true;
 }
 
@@ -75,7 +75,7 @@ int EightBit::Z80::interrupt(bool maskable, uint8_t value) {
 	cycles = 0;
 	if (!maskable || (maskable && IFF1())) {
 		if (maskable) {
-			disableInterrupts();
+			di();
 			switch (IM()) {
 			case 0:
 				M1() = true;
@@ -93,7 +93,7 @@ int EightBit::Z80::interrupt(bool maskable, uint8_t value) {
 				break;
 			}
 		} else {
-			IFF1() = 0;
+			IFF1() = false;
 			restart(0x66);
 			cycles += 13;
 		}
@@ -163,87 +163,48 @@ void EightBit::Z80::postDecrement(uint8_t value) {
 
 #pragma region PC manipulation: call/ret/jp/jr
 
-void EightBit::Z80::restart(uint8_t address) {
-	pushWord(pc);
-	pc.low = MEMPTR().low = address;
-	pc.high = MEMPTR().high = 0;
-}
-
-void EightBit::Z80::jrConditional(int conditional) {
-	auto offset = (int8_t)fetchByteData();
-	if (conditional) {
-		MEMPTR().word = pc.word + offset;
-		pc = MEMPTR();
-		cycles += 5;
-	}
-}
-
-void EightBit::Z80::jrConditionalFlag(int flag) {
+bool EightBit::Z80::jrConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		jrConditional(!(F() & ZF));
-		break;
+		return jrConditional(!(F() & ZF));
 	case 1:	// Z
-		jrConditional(F() & ZF);
-		break;
+		return jrConditional(F() & ZF);
 	case 2:	// NC
-		jrConditional(!(F() & CF));
-		break;
+		return jrConditional(!(F() & CF));
 	case 3:	// C
-		jrConditional(F() & CF);
-		break;
+		return jrConditional(F() & CF);
 	case 4:	// PO
-		jrConditional(!(F() & PF));
-		break;
+		return jrConditional(!(F() & PF));
 	case 5:	// PE
-		jrConditional(F() & PF);
-		break;
+		return jrConditional(F() & PF);
 	case 6:	// P
-		jrConditional(!(F() & SF));
-		break;
+		return jrConditional(!(F() & SF));
 	case 7:	// M
-		jrConditional(F() & SF);
-		break;
+		return jrConditional(F() & SF);
 	}
+	throw std::logic_error("Unhandled JR conditional");
 }
 
-void EightBit::Z80::jumpConditional(int conditional) {
-	if (conditional)
-		pc = MEMPTR();
-}
-
-void EightBit::Z80::jumpConditionalFlag(int flag) {
+bool EightBit::Z80::jumpConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		jumpConditional(!(F() & ZF));
-		break;
+		return jumpConditional(!(F() & ZF));
 	case 1:	// Z
-		jumpConditional(F() & ZF);
-		break;
+		return jumpConditional(F() & ZF);
 	case 2:	// NC
-		jumpConditional(!(F() & CF));
-		break;
+		return jumpConditional(!(F() & CF));
 	case 3:	// C
-		jumpConditional(F() & CF);
-		break;
+		return jumpConditional(F() & CF);
 	case 4:	// PO
-		jumpConditional(!(F() & PF));
-		break;
+		return jumpConditional(!(F() & PF));
 	case 5:	// PE
-		jumpConditional(F() & PF);
-		break;
+		return jumpConditional(F() & PF);
 	case 6:	// P
-		jumpConditional(!(F() & SF));
-		break;
+		return jumpConditional(!(F() & SF));
 	case 7:	// M
-		jumpConditional(F() & SF);
-		break;
+		return jumpConditional(F() & SF);
 	}
-}
-
-void EightBit::Z80::ret() {
-	popWord(MEMPTR());
-	pc = MEMPTR();
+	throw std::logic_error("Unhandled JP conditional");
 }
 
 void EightBit::Z80::retn() {
@@ -255,79 +216,48 @@ void EightBit::Z80::reti() {
 	retn();
 }
 
-void EightBit::Z80::returnConditional(int condition) {
-	if (condition) {
-		ret();
-		cycles += 6;
-	}
-}
-
-void EightBit::Z80::returnConditionalFlag(int flag) {
+bool EightBit::Z80::returnConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		returnConditional(!(F() & ZF));
-		break;
+		return returnConditional(!(F() & ZF));
 	case 1:	// Z
-		returnConditional(F() & ZF);
-		break;
+		return returnConditional(F() & ZF);
 	case 2:	// NC
-		returnConditional(!(F() & CF));
-		break;
+		return returnConditional(!(F() & CF));
 	case 3:	// C
-		returnConditional(F() & CF);
-		break;
+		return returnConditional(F() & CF);
 	case 4:	// PO
-		returnConditional(!(F() & PF));
-		break;
+		return returnConditional(!(F() & PF));
 	case 5:	// PE
-		returnConditional(F() & PF);
-		break;
+		return returnConditional(F() & PF);
 	case 6:	// P
-		returnConditional(!(F() & SF));
-		break;
+		return returnConditional(!(F() & SF));
 	case 7:	// M
-		returnConditional(F() & SF);
-		break;
+		return returnConditional(F() & SF);
 	}
+	throw std::logic_error("Unhandled RET conditional");
 }
 
-void EightBit::Z80::call() {
-	IntelProcessor::call();
-	cycles += 7;
-}
-
-void EightBit::Z80::callConditional(int condition) {
-	if (condition)
-		call();
-}
-
-void EightBit::Z80::callConditionalFlag(int flag) {
+bool EightBit::Z80::callConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		callConditional(!(F() & ZF));
-		break;
+		return callConditional(!(F() & ZF));
 	case 1:	// Z
-		callConditional(F() & ZF);
-		break;
+		return callConditional(F() & ZF);
 	case 2:	// NC
-		callConditional(!(F() & CF));
-		break;
+		return callConditional(!(F() & CF));
 	case 3:	// C
-		callConditional(F() & CF);
-		break;
+		return callConditional(F() & CF);
 	case 4:	// PO
-		callConditional(!(F() & PF));
-		break;
+		return callConditional(!(F() & PF));
 	case 5:	// PE
-		callConditional(F() & PF);
-		break;
+		return callConditional(F() & PF);
 	case 6:	// P
-		callConditional(!(F() & SF));
-		break;
+		return callConditional(!(F() & SF));
 	case 7:	// M
-		callConditional(F() & SF);
-		break;
+		return callConditional(F() & SF);
 	}
+	throw std::logic_error("Unhandled CALL conditional");
 }
 
 #pragma endregion PC manipulation: call/ret/jp/jr
@@ -1248,15 +1178,17 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 4;
 				break;
 			case 2:	// DJNZ d
-				jrConditional(--B());
+				if (jrConditional(--B()))
+					cycles += 5;
 				cycles += 8;
 				break;
 			case 3:	// JR d
-				jrConditional(true);
-				cycles += 7;
+				jr(fetchByte());
+				cycles += 12;
 				break;
 			default:	// JR cc,d
-				jrConditionalFlag(y - 4);
+				if (jrConditionalFlag(y - 4))
+					cycles += 5;
 				cycles += 5;
 				break;
 			}
@@ -1347,7 +1279,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 7;
 			break;
 		case 6: { // 8-bit load immediate
-			R(y) = fetchByteData();	// LD r,n
+			R(y) = fetchByte();	// LD r,n
 			cycles += 7;
 			if (y == 6)
 				cycles += 3;
@@ -1455,7 +1387,8 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 	case 3:
 		switch (z) {
 		case 0:	// Conditional return
-			returnConditionalFlag(y);
+			if (returnConditionalFlag(y))
+				cycles += 6;
 			cycles += 5;
 			break;
 		case 1:	// POP & various ops
@@ -1486,7 +1419,6 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			}
 			break;
 		case 2:	// Conditional jump
-			fetchWord();
 			jumpConditionalFlag(y);
 			cycles += 10;
 			break;
@@ -1494,17 +1426,17 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			switch (y) {
 			case 0:	// JP nn
 				fetchWord();
-				pc = MEMPTR();
+				jump();
 				cycles += 10;
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
 				if (m_prefixDD || m_prefixFD)
-					m_displacement = fetchByteData();
+					m_displacement = fetchByte();
 				fetchExecute();
 				break;
 			case 2:	// OUT (n),A
-				m_memory.ADDRESS().low = fetchByteData();
+				m_memory.ADDRESS().low = fetchByte();
 				m_memory.ADDRESS().high = A();
 				MEMPTR() = m_memory.ADDRESS();
 				m_memory.placeDATA(A());
@@ -1513,7 +1445,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 11;
 				break;
 			case 3:	// IN A,(n)
-				m_memory.ADDRESS().low = fetchByteData();
+				m_memory.ADDRESS().low = fetchByte();
 				m_memory.ADDRESS().high = A();
 				MEMPTR() = m_memory.ADDRESS();
 				readPort();
@@ -1530,18 +1462,18 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 4;
 				break;
 			case 6:	// DI
-				disableInterrupts();
+				di();
 				cycles += 4;
 				break;
 			case 7:	// EI
-				enableInterrupts();
+				ei();
 				cycles += 4;
 				break;
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
-			fetchWord();
-			callConditionalFlag(y);
+			if (callConditionalFlag(y))
+				cycles += 7;
 			cycles += 10;
 			break;
 		case 5:	// PUSH & various ops
@@ -1575,28 +1507,28 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
 			switch (y) {
 			case 0:	// ADD A,n
-				add(A(), fetchByteData());
+				add(A(), fetchByte());
 				break;
 			case 1:	// ADC A,n
-				adc(A(), fetchByteData());
+				adc(A(), fetchByte());
 				break;
 			case 2:	// SUB n
-				sub(A(), fetchByteData());
+				sub(A(), fetchByte());
 				break;
 			case 3:	// SBC A,n
-				sbc(A(), fetchByteData());
+				sbc(A(), fetchByte());
 				break;
 			case 4:	// AND n
-				andr(A(), fetchByteData());
+				andr(A(), fetchByte());
 				break;
 			case 5:	// XOR n
-				xorr(A(), fetchByteData());
+				xorr(A(), fetchByte());
 				break;
 			case 6:	// OR n
-				orr(A(), fetchByteData());
+				orr(A(), fetchByte());
 				break;
 			case 7:	// CP n
-				compare(fetchByteData());
+				compare(fetchByte());
 				break;
 			}
 			cycles += 7;

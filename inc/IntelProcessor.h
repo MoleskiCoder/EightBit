@@ -6,8 +6,6 @@ namespace EightBit {
 	class IntelProcessor : public Processor
 	{
 	public:
-		virtual ~IntelProcessor();
-
 		register16_t& MEMPTR() { return m_memptr; }
 
 		virtual void initialise();
@@ -42,9 +40,58 @@ namespace EightBit {
 			Processor::fetchWord(MEMPTR());
 		}
 
-		virtual void call() {
-			pushWord(pc);
+		//
+
+		void jump() {
 			pc = MEMPTR();
+		}
+
+		void call() {
+			pushWord(pc);
+			jump();
+		}
+
+		void restart(uint8_t address) {
+			MEMPTR().low = address;
+			MEMPTR().high = 0;
+			call();
+		}
+
+		bool callConditional(int condition) {
+			fetchWord();
+			if (condition)
+				call();
+			return condition != 0;
+		}
+
+		bool jumpConditional(int conditional) {
+			fetchWord();
+			if (conditional)
+				jump();
+			return conditional != 0;
+		}
+
+		void ret() {
+			popWord(MEMPTR());
+			jump();
+		}
+
+		bool returnConditional(int condition) {
+			if (condition)
+				ret();
+			return condition != 0;
+		}
+
+		void jr(int8_t offset) {
+			MEMPTR().word = pc.word + offset;
+			jump();
+		}
+
+		bool jrConditional(int conditional) {
+			auto offset = fetchByte();
+			if (conditional)
+				jr(offset);
+			return conditional != 0;
 		}
 
 	private:

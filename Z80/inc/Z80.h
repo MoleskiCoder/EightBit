@@ -24,8 +24,8 @@ namespace EightBit {
 
 		Signal<Z80> ExecutingInstruction;
 
-		void disableInterrupts();
-		void enableInterrupts();
+		void di();
+		void ei();
 
 		int interruptMaskable(uint8_t value) { return interrupt(true, value); }
 		int interruptMaskable() { return interruptMaskable(0); }
@@ -126,19 +126,7 @@ namespace EightBit {
 
 		int fetchExecute() {
 			M1() = true;
-			return execute(fetchByteExecute());
-		}
-
-		uint8_t fetchByteExecute() {
-			if (!getM1())
-				throw std::logic_error("M1 cannot be high");
-			return fetchByte();
-		}
-
-		uint8_t fetchByteData() {
-			if (getM1())
-				throw std::logic_error("M1 cannot be low");
-			return fetchByte();
+			return execute(fetchByte());
 		}
 
 		void incrementRefresh() {
@@ -180,7 +168,7 @@ namespace EightBit {
 				return ALT_HL().low;
 			case 6:
 				if (m_prefixDD || m_prefixFD) {
-					m_displacement = fetchByteData();
+					m_displacement = fetchByte();
 					return DISPLACED();
 				}
 				m_memory.ADDRESS() = HL();
@@ -330,24 +318,13 @@ namespace EightBit {
 		void postIncrement(uint8_t value);
 		void postDecrement(uint8_t value);
 
-		void restart(uint8_t address);
-
-		void jrConditional(int conditional);
-		void jrConditionalFlag(int flag);
-
-		void ret();
 		void retn();
 		void reti();
 
-		void returnConditional(int condition);
-		void returnConditionalFlag(int flag);
-
-		void jumpConditional(int condition);
-		void jumpConditionalFlag(int flag);
-
-		virtual void call() override;
-		void callConditional(int condition);
-		void callConditionalFlag(int flag);
+		bool jrConditionalFlag(int flag);
+		bool returnConditionalFlag(int flag);
+		bool jumpConditionalFlag(int flag);
+		bool callConditionalFlag(int flag);
 
 		void sbc(register16_t& operand, register16_t value);
 		void adc(register16_t& operand, register16_t value);

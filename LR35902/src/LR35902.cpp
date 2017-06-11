@@ -8,25 +8,22 @@ EightBit::LR35902::LR35902(Bus& memory)
 : IntelProcessor(memory),
   m_ime(false),
   m_prefixCB(false) {
-	MEMPTR().word = 0;
 }
 
 void EightBit::LR35902::reset() {
-	Processor::reset();
+	IntelProcessor::reset();
 	sp.word = 0xfffe;
 	di();
 }
 
 void EightBit::LR35902::initialise() {
 
-	Processor::initialise();
+	IntelProcessor::initialise();
 
 	AF().word = 0xffff;
 	BC().word = 0xffff;
 	DE().word = 0xffff;
 	HL().word = 0xffff;
-
-	MEMPTR().word = 0;
 
 	m_prefixCB = false;
 }
@@ -72,89 +69,32 @@ void EightBit::LR35902::postDecrement(uint8_t value) {
 
 #pragma region PC manipulation: call/ret/jp/jr
 
-void EightBit::LR35902::restart(uint8_t address) {
-	pushWord(pc);
-	pc.low = address;
-	pc.high = 0;
-}
-
-void EightBit::LR35902::jrConditional(int conditional) {
-	auto offset = (int8_t)fetchByte();
-	if (conditional) {
-		pc.word += offset;
-		cycles++;
-	}
-}
-
-void EightBit::LR35902::jrConditionalFlag(int flag) {
+bool EightBit::LR35902::jrConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		jrConditional(!(F() & ZF));
-		break;
+		return jrConditional(!(F() & ZF));
 	case 1:	// Z
-		jrConditional(F() & ZF);
-		break;
+		return jrConditional(F() & ZF);
 	case 2:	// NC
-		jrConditional(!(F() & CF));
-		break;
+		return jrConditional(!(F() & CF));
 	case 3:	// C
-		jrConditional(F() & CF);
-		break;
-	case 4:	// PO
-	case 5:	// PE
-	case 6:	// P
-	case 7:	// M
-		cycles -= 2;
-		break;
+		return jrConditional(F() & CF);
 	}
+	throw std::logic_error("Unhandled JR conditional");
 }
 
-void EightBit::LR35902::jumpConditional(int conditional) {
-	if (conditional)
-		pc = MEMPTR();
-}
-
-void EightBit::LR35902::jumpConditionalFlag(int flag) {
+bool EightBit::LR35902::jumpConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		jumpConditional(!(F() & ZF));
-		break;
+		return jumpConditional(!(F() & ZF));
 	case 1:	// Z
-		jumpConditional(F() & ZF);
-		break;
+		return jumpConditional(F() & ZF);
 	case 2:	// NC
-		jumpConditional(!(F() & CF));
-		break;
+		return jumpConditional(!(F() & CF));
 	case 3:	// C
-		jumpConditional(F() & CF);
-		break;
-	case 4:	// GB: LD (FF00 + C),A
-		m_memory.set(0xff00 + C(), A());
-		cycles--; // Giving 8 cycles
-		break;
-	case 5:	// GB: LD (nn),A
-		fetchWord();
-		m_memory.ADDRESS() = MEMPTR();
-		m_memory.reference() = A();
-		cycles++; // Giving 16 cycles
-		break;
-	case 6:	// GB: LD A,(FF00 + C)
-		m_memory.ADDRESS().word = 0xff00 + C();
-		A() = m_memory.reference();
-		cycles--; // 8 cycles
-		break;
-	case 7:	// GB: LD A,(nn)
-		fetchWord();
-		m_memory.ADDRESS() = MEMPTR();
-		A() = m_memory.reference();
-		cycles++; // Giving 16 cycles
-		break;
+		return jumpConditional(F() & CF);
 	}
-}
-
-void EightBit::LR35902::ret() {
-	popWord(MEMPTR());
-	pc = MEMPTR();
+	throw std::logic_error("Unhandled JP conditional");
 }
 
 void EightBit::LR35902::reti() {
@@ -162,86 +102,35 @@ void EightBit::LR35902::reti() {
 	ei();
 }
 
-void EightBit::LR35902::returnConditional(int condition) {
-	if (condition) {
-		ret();
-		cycles += 3;
-	}
-}
-
-void EightBit::LR35902::returnConditionalFlag(int flag) {
+bool EightBit::LR35902::returnConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		returnConditional(!(F() & ZF));
-		break;
+		return returnConditional(!(F() & ZF));
 	case 1:	// Z
-		returnConditional(F() & ZF);
+		return returnConditional(F() & ZF);
 		break;
 	case 2:	// NC
-		returnConditional(!(F() & CF));
+		return returnConditional(!(F() & CF));
 		break;
 	case 3:	// C
-		returnConditional(F() & CF);
-		break;
-	case 4:	// GB: LD (FF00 + n),A
-		m_memory.set(0xff00 + fetchByte(), A());
-		cycles++; // giving 12 cycles in total
-		break;
-	case 5: { // GB: ADD SP,dd
-			auto before = sp;
-			auto value = fetchByte();
-			sp.word += (int8_t)value;
-			clearFlag(ZF | NF);
-			setFlag(CF, sp.word & Bit16);
-			adjustHalfCarryAdd(before.high, value, sp.high);
-		}
-		cycles += 2;	// 16 cycles
-		break;
-	case 6:	// GB: LD A,(FF00 + n)
-		A() = m_memory.get(0xff00 + fetchByte());
-		cycles++;	// 12 cycles
-		break;
-	case 7: { // GB: LD HL,SP + dd
-			auto before = sp;
-			auto value = fetchByte();
-			HL().word = before.word + (int8_t)value;
-			clearFlag(ZF | NF);
-			setFlag(CF, HL().word & Bit16);
-			adjustHalfCarryAdd(before.high, value, HL().high);
-		}
-		cycles++;	// 12 cycles
+		return returnConditional(F() & CF);
 		break;
 	}
+	throw std::logic_error("Unhandled RET conditional");
 }
 
-void EightBit::LR35902::callConditional(int condition) {
-	if (condition) {
-		call();
-		cycles += 3;
-	}
-}
-
-void EightBit::LR35902::callConditionalFlag(int flag) {
+bool EightBit::LR35902::callConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		callConditional(!(F() & ZF));
-		break;
+		return callConditional(!(F() & ZF));
 	case 1:	// Z
-		callConditional(F() & ZF);
-		break;
+		return callConditional(F() & ZF);
 	case 2:	// NC
-		callConditional(!(F() & CF));
-		break;
+		return callConditional(!(F() & CF));
 	case 3:	// C
-		callConditional(F() & CF);
-		break;
-	case 4:
-	case 5:
-	case 6:
-	case 7:
-		cycles -= 3; // removed from GB
-		break;
+		return callConditional(F() & CF);
 	}
+	throw std::logic_error("Unhandled CALL conditional");
 }
 
 #pragma endregion PC manipulation: call/ret/jp/jr
@@ -618,12 +507,17 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				cycles++;
 				break;
 			case 3:	// JR d
-				jrConditional(true);
-				cycles += 3;
+				jr(fetchByte());
+				cycles += 4;
 				break;
-			default:	// JR cc,d
-				jrConditionalFlag(y - 4);
-				cycles += 2;
+			default: {	// JR cc,d
+					auto condition = y - 4;
+					if (y < 4) {
+						if (jrConditionalFlag(condition))
+							cycles++;
+						cycles += 2;
+					}
+				}
 				break;
 			}
 			break;
@@ -786,8 +680,42 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 	case 3:
 		switch (z) {
 		case 0:	// Conditional return
-			returnConditionalFlag(y);
-			cycles += 2;
+			if (y < 4) {
+				if (returnConditionalFlag(y))
+					cycles += 3;
+				cycles += 2;
+			} else {
+				switch (y) {
+				case 4:	// GB: LD (FF00 + n),A
+					m_memory.set(0xff00 + fetchByte(), A());
+					cycles += 3;
+					break;
+				case 5: { // GB: ADD SP,dd
+						auto before = sp;
+						auto value = fetchByte();
+						sp.word += (int8_t)value;
+						clearFlag(ZF | NF);
+						setFlag(CF, sp.word & Bit16);
+						adjustHalfCarryAdd(before.high, value, sp.high);
+					}
+					cycles += 4;
+					break;
+				case 6:	// GB: LD A,(FF00 + n)
+					A() = m_memory.get(0xff00 + fetchByte());
+					cycles += 3;
+					break;
+				case 7: { // GB: LD HL,SP + dd
+						auto before = sp;
+						auto value = fetchByte();
+						HL().word = before.word + (int8_t)value;
+						clearFlag(ZF | NF);
+						setFlag(CF, HL().word & Bit16);
+						adjustHalfCarryAdd(before.high, value, HL().high);
+					}
+					cycles += 3;
+					break;
+				}
+			}
 			break;
 		case 1:	// POP & various ops
 			switch (q) {
@@ -817,8 +745,34 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			}
 			break;
 		case 2:	// Conditional jump
-			jumpConditionalFlag(y);
-			cycles += 3;
+			if (y < 4) {
+				jumpConditionalFlag(y);
+				cycles += 3;
+			} else {
+				switch (y) {
+				case 4:	// GB: LD (FF00 + C),A
+					m_memory.set(0xff00 + C(), A());
+					cycles += 2;
+					break;
+				case 5:	// GB: LD (nn),A
+					fetchWord();
+					m_memory.ADDRESS() = MEMPTR();
+					m_memory.reference() = A();
+					cycles += 4;
+					break;
+				case 6:	// GB: LD A,(FF00 + C)
+					m_memory.ADDRESS().word = 0xff00 + C();
+					A() = m_memory.reference();
+					cycles += 2;
+					break;
+				case 7:	// GB: LD A,(nn)
+					fetchWord();
+					m_memory.ADDRESS() = MEMPTR();
+					A() = m_memory.reference();
+					cycles += 4;
+					break;
+				}
+			}
 			break;
 		case 3:	// Assorted operations
 			switch (y) {

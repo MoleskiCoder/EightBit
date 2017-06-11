@@ -155,22 +155,12 @@ namespace EightBit {
 		void postIncrement(uint8_t value);
 		void postDecrement(uint8_t value);
 
-		void restart(uint8_t address);
-
-		void jrConditional(int conditional);
-		void jrConditionalFlag(int flag);
-
-		void ret();
 		void reti();
 
-		void returnConditional(int condition);
-		void returnConditionalFlag(int flag);
-
-		void jumpConditional(int condition);
-		void jumpConditionalFlag(int flag);
-
-		void callConditional(int condition);
-		void callConditionalFlag(int flag);
+		bool jrConditionalFlag(int flag);
+		bool returnConditionalFlag(int flag);
+		bool jumpConditionalFlag(int flag);
+		bool callConditionalFlag(int flag);
 
 		void sbc(register16_t& operand, register16_t value);
 		void adc(register16_t& operand, register16_t value);
