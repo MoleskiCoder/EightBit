@@ -21,6 +21,7 @@ void EightBit::LR35902::initialise() {
 	IntelProcessor::initialise();
 
 	AF().word = 0xffff;
+
 	BC().word = 0xffff;
 	DE().word = 0xffff;
 	HL().word = 0xffff;
@@ -535,19 +536,23 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					m_memory.set(BC().word, A());
+					MEMPTR() = BC();
+					setViaMemptr(A());
 					cycles += 2;
 					break;
 				case 1:	// LD (DE),A
-					m_memory.set(DE().word, A());
+					MEMPTR() = DE();
+					setViaMemptr(A());
 					cycles += 2;
 					break;
 				case 2:	// GB: LDI (HL),A
-					m_memory.set(HL().word++, A());
+					MEMPTR().word = HL().word++;
+					setViaMemptr(A());
 					cycles += 2;
 					break;
 				case 3: // GB: LDD (HL),A
-					m_memory.set(HL().word--, A());
+					MEMPTR().word = HL().word--;
+					setViaMemptr(A());
 					cycles += 2;
 					break;
 				}
@@ -555,19 +560,23 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					A() = m_memory.get(BC().word);
+					MEMPTR() = BC();
+					A() = getViaMemptr();
 					cycles += 2;
 					break;
 				case 1:	// LD A,(DE)
-					A() = m_memory.get(DE().word);
+					MEMPTR() = DE();
+					A() = getViaMemptr();
 					cycles += 2;
 					break;
 				case 2:	// GB: LDI A,(HL)
-					A() = m_memory.get(HL().word++);
+					MEMPTR().word = HL().word++;
+					A() = m_memory.reference();
 					cycles += 2;
 					break;
 				case 3:	// GB: LDD A,(HL)
-					A() = m_memory.get(HL().word--);
+					MEMPTR().word = HL().word--;
+					A() = m_memory.reference();
 					cycles += 2;
 					break;
 				}
