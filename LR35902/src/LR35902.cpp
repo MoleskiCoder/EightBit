@@ -108,13 +108,10 @@ bool EightBit::LR35902::returnConditionalFlag(int flag) {
 		return returnConditional(!(F() & ZF));
 	case 1:	// Z
 		return returnConditional(F() & ZF);
-		break;
 	case 2:	// NC
 		return returnConditional(!(F() & CF));
-		break;
 	case 3:	// C
 		return returnConditional(F() & CF);
-		break;
 	}
 	throw std::logic_error("Unhandled RET conditional");
 }
@@ -512,7 +509,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			default: {	// JR cc,d
 					auto condition = y - 4;
-					if (y < 4) {
+					if (condition < 4) {
 						if (jrConditionalFlag(condition))
 							cycles++;
 						cycles += 2;
@@ -524,8 +521,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0:	// LD rp,nn
-				fetchWord();
-				RP(p) = MEMPTR();
+				Processor::fetchWord(RP(p));
 				cycles += 3;
 				break;
 			case 1:	// ADD HL,rp
@@ -778,7 +774,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			switch (y) {
 			case 0:	// JP nn
 				fetchWord();
-				pc = MEMPTR();
+				jump();
 				cycles += 4;
 				break;
 			case 1:	// CB prefix
@@ -796,8 +792,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
-			fetchWord();
-			callConditionalFlag(y);
+			if (callConditionalFlag(y))
+				cycles += 3;
 			cycles += 3;
 			break;
 		case 5:	// PUSH & various ops
@@ -810,8 +806,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				switch (p) {
 				case 0:	// CALL nn
 					fetchWord();
-					callConditional(true);
-					cycles += 3;
+					call();
+					cycles += 6;
 					break;
 				}
 			}
