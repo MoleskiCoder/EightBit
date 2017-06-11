@@ -2,12 +2,12 @@
 
 // Auxiliary carry logic from https://github.com/begoon/i8080-core
 
-#include "Processor.h"
+#include "IntelProcessor.h"
 #include "StatusFlags.h"
 #include "InputOutput.h"
 
 namespace EightBit {
-	class Intel8080 : public Processor {
+	class Intel8080 : public IntelProcessor {
 	public:
 		typedef std::function<void()> instruction_t;
 
@@ -69,9 +69,6 @@ namespace EightBit {
 
 		std::array<Instruction, 0x100> instructions;
 
-		std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
-		std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
-
 		uint8_t a;
 		StatusFlags f;
 
@@ -104,42 +101,28 @@ namespace EightBit {
 			adjustParity(value);
 		}
 
-		int buildAuxiliaryCarryIndex(uint8_t value, int calculation) {
-			return ((A() & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
-		}
-
 		void adjustAuxiliaryCarryAdd(uint8_t value, int calculation) {
-			auto index = buildAuxiliaryCarryIndex(value, calculation);
-			F().AC = m_halfCarryTableAdd[index & 0x7];
+			F().AC = calculateHalfCarryAdd(A(), value, calculation);
 		}
 
 		void adjustAuxiliaryCarrySub(uint8_t value, int calculation) {
-			auto index = buildAuxiliaryCarryIndex(value, calculation);
-			F().AC = !m_halfCarryTableSub[index & 0x7];
+			F().AC = !calculateHalfCarrySub(A(), value, calculation);
 		}
 
 		void postIncrement(uint8_t value) {
 			adjustSZP(value);
-			F().AC = (value & 0x0f) == 0;
+			F().AC = lowNibble(value) == 0;
 		}
 
 		void postDecrement(uint8_t value) {
 			adjustSZP(value);
-			F().AC = (value & 0x0f) != 0xf;
+			F().AC = lowNibble(value) != 0xf;
 		}
 
 		static Instruction INS(instruction_t method, AddressingMode mode, std::string disassembly, int cycles);
 		Instruction UNKNOWN();
 
 		void installInstructions();
-
-		//
-
-		register16_t fetchWord() {
-			register16_t returned;
-			Processor::fetchWord(returned);
-			return returned;
-		}
 
 		//
 
@@ -164,9 +147,9 @@ namespace EightBit {
 		}
 
 		void jmpConditional(int conditional) {
-			auto destination = fetchWord();
+			fetchWord();
 			if (conditional)
-				pc = destination;
+				pc = MEMPTR();
 		}
 
 		void callConditional(int condition) {
@@ -344,22 +327,23 @@ namespace EightBit {
 		void ldax_d() { A() = m_memory.get(DE().word); }
 
 		void sta() {
-			auto destination = fetchWord();
-			m_memory.set(destination.word, A());
+			fetchWord();
+			m_memory.set(MEMPTR().word, A());
 		}
 
 		void lda() {
-			auto source = fetchWord();
-			A() = m_memory.get(source.word);
+			fetchWord();
+			A() = m_memory.get(MEMPTR().word);
 		}
 
 		void shld() {
-			auto destination = fetchWord();
-			m_memory.setWord(destination.word, HL());
+			fetchWord();
+			m_memory.setWord(MEMPTR().word, HL());
 		}
 
 		void lhld() {
-			HL() = m_memory.getWord(fetchWord().word);
+			fetchWord();
+			HL() = m_memory.getWord(MEMPTR().word);
 		}
 
 		void xchg() {
@@ -427,7 +411,7 @@ namespace EightBit {
 
 		// call
 
-		void call() {
+		virtual void call() override {
 			auto destination = m_memory.getWord(pc.word);
 			callAddress(destination.word);
 		}

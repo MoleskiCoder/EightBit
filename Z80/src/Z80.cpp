@@ -5,7 +5,7 @@
 // Half carry flag help from https://github.com/oubiwann/z80
 
 EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
-: Processor(memory),
+: IntelProcessor(memory),
   m_ports(ports),
   m_registerSet(0),
   m_accumulatorFlagsSet(0),
@@ -21,17 +21,16 @@ EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
   m_prefixFD(false) {
 	IX().word = 0xffff;
 	IY().word = 0xffff;
-	MEMPTR().word = 0;
 }
 
 void EightBit::Z80::reset() {
-	Processor::reset();
+	IntelProcessor::reset();
 	IFF1() = IFF2() = false;
 }
 
 void EightBit::Z80::initialise() {
 
-	Processor::initialise();
+	IntelProcessor::initialise();
 
 	IM() = 0;
 
@@ -55,7 +54,6 @@ void EightBit::Z80::initialise() {
 
 	REFRESH() = 0x7f;
 	IV() = 0xff;
-	MEMPTR().word = 0;
 
 	m_prefixCB = false;
 	m_prefixDD = false;
@@ -294,8 +292,7 @@ void EightBit::Z80::returnConditionalFlag(int flag) {
 }
 
 void EightBit::Z80::call() {
-	pushWord(pc);
-	pc = MEMPTR();
+	IntelProcessor::call();
 	cycles += 7;
 }
 

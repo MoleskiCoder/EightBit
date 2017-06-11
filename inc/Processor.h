@@ -44,8 +44,6 @@ namespace EightBit {
 		static uint8_t promoteNibble(uint8_t value) { return value << 4; }
 		static uint8_t demoteNibble(uint8_t value) { return highNibble(value); }
 
-		Processor(Memory& memory);
-
 		const Memory& getMemory() const { return m_memory; }
 
 		register16_t getProgramCounter() const { return pc; }
@@ -62,6 +60,8 @@ namespace EightBit {
 		void reset();
 
 	protected:
+		Processor(Memory& memory);
+
 		Memory& m_memory;
 
 		int cycles;
@@ -70,12 +70,6 @@ namespace EightBit {
 		register16_t sp;
 
 		bool m_halted;
-
-		void push(uint8_t value);
-		void pushWord(register16_t value);
-
-		uint8_t pop();
-		void popWord(register16_t& output);
 
 		uint8_t fetchByte() {
 			m_memory.ADDRESS().word = pc.word++;

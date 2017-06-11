@@ -143,6 +143,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\EventArgs.h" />
+    <ClInclude Include="..\inc\IntelProcessor.h" />
     <ClInclude Include="..\inc\Memory.h" />
     <ClInclude Include="..\inc\Processor.h" />
     <ClInclude Include="..\inc\Signal.h" />
@@ -150,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EventArgs.cpp" />
+    <ClCompile Include="IntelProcessor.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Processor.cpp" />
     <ClCompile Include="stdafx.cpp">

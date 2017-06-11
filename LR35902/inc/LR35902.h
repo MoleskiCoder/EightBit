@@ -2,11 +2,12 @@
 
 #include <cstdint>
 
-#include "Processor.h"
+#include "IntelProcessor.h"
 #include "Bus.h"
+#include "Signal.h"
 
 namespace EightBit {
-	class LR35902 : public Processor {
+	class LR35902 : public IntelProcessor {
 	public:
 		enum StatusBits {
 			ZF = Bit7,
@@ -64,8 +65,6 @@ namespace EightBit {
 		uint8_t& H() { return HL().high; }
 		uint8_t& L() { return HL().low; }
 
-		register16_t& MEMPTR() { return m_memptr; }
-
 		virtual void reset();
 		virtual void initialise();
 
@@ -77,18 +76,12 @@ namespace EightBit {
 
 		bool m_ime;
 
-		register16_t m_memptr;
-
 		bool m_prefixCB;
 
 		bool m_stopped;
 
 		std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 		std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
-
-		void fetchWord() {
-			Processor::fetchWord(MEMPTR());
-		}
 
 		int fetchExecute() {
 			return execute(fetchByte());
@@ -146,18 +139,12 @@ namespace EightBit {
 			}
 		}
 
-		int buildHalfCarryIndex(uint8_t before, uint8_t value, int calculation) {
-			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
-		}
-
 		void adjustHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
-			auto index = buildHalfCarryIndex(before, value, calculation);
-			setFlag(HC, m_halfCarryTableAdd[index & 0x7]);
+			setFlag(HC, calculateHalfCarryAdd(before, value, calculation));
 		}
 
 		void adjustHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
-			auto index = buildHalfCarryIndex(before, value, calculation);
-			setFlag(HC, m_halfCarryTableSub[index & 0x7]);
+			setFlag(HC, calculateHalfCarrySub(before, value, calculation));
 		}
 
 		void executeCB(int x, int y, int z, int p, int q);
@@ -182,7 +169,6 @@ namespace EightBit {
 		void jumpConditional(int condition);
 		void jumpConditionalFlag(int flag);
 
-		void call();
 		void callConditional(int condition);
 		void callConditionalFlag(int flag);
 

@@ -17,23 +17,3 @@ void EightBit::Processor::initialise() {
 	sp.word = 0xffff;
 	reset();
 }
-
-void EightBit::Processor::push(uint8_t value) {
-	m_memory.ADDRESS().word = --sp.word;
-	m_memory.reference() = value;
-}
-
-void EightBit::Processor::pushWord(register16_t value) {
-	push(value.high);
-	push(value.low);
-}
-
-uint8_t EightBit::Processor::pop() {
-	m_memory.ADDRESS().word = sp.word++;
-	return m_memory.reference();
-}
-
-void EightBit::Processor::popWord(register16_t& output) {
-	output.low = pop();
-	output.high = pop();
-}

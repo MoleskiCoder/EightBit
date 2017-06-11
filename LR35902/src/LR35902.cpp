@@ -5,7 +5,7 @@
 // Half carry flag help from https://github.com/oubiwann/z80
 
 EightBit::LR35902::LR35902(Bus& memory)
-: Processor(memory),
+: IntelProcessor(memory),
   m_ime(false),
   m_prefixCB(false) {
 	MEMPTR().word = 0;
@@ -212,11 +212,6 @@ void EightBit::LR35902::returnConditionalFlag(int flag) {
 		cycles++;	// 12 cycles
 		break;
 	}
-}
-
-void EightBit::LR35902::call() {
-	pushWord(pc);
-	pc = MEMPTR();
 }
 
 void EightBit::LR35902::callConditional(int condition) {

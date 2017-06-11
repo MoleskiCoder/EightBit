@@ -5,7 +5,7 @@
 #include "Disassembler.h"
 
 EightBit::Intel8080::Intel8080(Memory& memory, InputOutput& ports)
-:	Processor(memory),
+:	IntelProcessor(memory),
 	a(0),
 	f(0),
 	m_interrupt(false),
