@@ -4,6 +4,7 @@
 
 #include "IntelProcessor.h"
 #include "InputOutput.h"
+#include "Signal.h"
 
 namespace EightBit {
 	class Z80 : public IntelProcessor {
@@ -232,35 +233,6 @@ namespace EightBit {
 			}
 		}
 
-		uint8_t getViaMemptr() {
-			m_memory.ADDRESS() = MEMPTR();
-			MEMPTR().word++;
-			return m_memory.reference();
-		}
-
-		void setViaMemptr(uint8_t value) {
-			m_memory.ADDRESS() = MEMPTR();
-			MEMPTR().word++;
-			m_memory.reference() = value;
-			MEMPTR().high = value;
-		}
-
-		void getWordViaMemptr(register16_t& value) {
-			m_memory.ADDRESS() = MEMPTR();
-			MEMPTR().word++;
-			value.low = m_memory.reference();
-			m_memory.ADDRESS().word++;
-			value.high = m_memory.reference();
-		}
-
-		void setWordViaMemptr(register16_t value) {
-			m_memory.ADDRESS() = MEMPTR();
-			MEMPTR().word++;
-			m_memory.reference() = value.low;
-			m_memory.ADDRESS().word++;
-			m_memory.reference() = value.high;
-		}
-
 		void addViaMemptr(register16_t& hl, register16_t operand) {
 			MEMPTR().word = hl.word + 1;
 			add(hl, operand);
@@ -370,32 +342,32 @@ namespace EightBit {
 		void blockCompare();
 
 		void cpi();
-		void cpir();
+		bool cpir();
 
 		void cpd();
-		void cpdr();
+		bool cpdr();
 
 		void blockLoad(register16_t source, register16_t destination);
 
 		void ldi();
-		void ldir();
+		bool ldir();
 
 		void ldd();
-		void lddr();
+		bool lddr();
 
 		void ini();
-		void inir();
+		bool inir();
 
 		void ind();
-		void indr();
+		bool indr();
 
 		void blockOut();
 
 		void outi();
-		void otir();
+		bool otir();
 
 		void outd();
-		void otdr();
+		bool otdr();
 
 		void neg();
 

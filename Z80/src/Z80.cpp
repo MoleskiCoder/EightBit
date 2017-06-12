@@ -619,26 +619,28 @@ void EightBit::Z80::cpd() {
 	MEMPTR().word--;
 }
 
-void EightBit::Z80::cpir() {
+bool EightBit::Z80::cpir() {
 	cpi();
-	if ((F() & PF) && !(F() & ZF)) {		// See CPI
-		cycles += 5;
+	MEMPTR().word = pc.word;
+	auto again = (F() & PF) && !(F() & ZF);	// See CPI
+	if (again) {
+		MEMPTR().word--;
 		pc.word -= 2;
-		MEMPTR().word = pc.word + 1;
-	} else {
-		MEMPTR().word = pc.word;
 	}
+	return again;
 }
 
-void EightBit::Z80::cpdr() {
+bool EightBit::Z80::cpdr() {
 	cpd();
-	if ((F() & PF) && !(F() & ZF)) {		// See CPD
-		cycles += 5;
+	MEMPTR().word = pc.word;
+	auto again = (F() & PF) && !(F() & ZF);	// See CPD
+	if (again) {
+		MEMPTR().word--;
 		pc.word -= 2;
-		MEMPTR().word = pc.word + 1;
 	} else {
-		MEMPTR().word = pc.word - 2;
+		MEMPTR().word -= 2;
 	}
+	return again;
 }
 
 #pragma endregion Block compare instructions
@@ -669,22 +671,24 @@ void EightBit::Z80::ldi() {
 	DE().word++;
 }
 
-void EightBit::Z80::ldir() {
+bool EightBit::Z80::ldir() {
 	ldi();
-	if (F() & PF) {		// See LDI
-		cycles += 5;
+	auto again = (F() & PF) != 0;
+	if (again) {		// See LDI
+		MEMPTR().word = pc.word - 1;
 		pc.word -= 2;
-		MEMPTR().word = pc.word + 1;
 	}
+	return again;
 }
 
-void EightBit::Z80::lddr() {
+bool EightBit::Z80::lddr() {
 	ldd();
+	auto again = (F() & PF) != 0;
 	if (F() & PF) {		// See LDR
-		cycles += 5;
+		MEMPTR().word = pc.word - 1;
 		pc.word -= 2;
-		MEMPTR().word = pc.word + 1;
 	}
+	return again;
 }
 
 #pragma endregion Block load instructions
@@ -713,20 +717,20 @@ void EightBit::Z80::ind() {
 	setFlag(NF);
 }
 
-void EightBit::Z80::inir() {
+bool EightBit::Z80::inir() {
 	ini();
-	if (!(F() & ZF)) {		// See INI
-		cycles += 5;
+	auto again = !(F() & ZF);	// See INI
+	if (again)
 		pc.word -= 2;
-	}
+	return again;
 }
 
-void EightBit::Z80::indr() {
+bool EightBit::Z80::indr() {
 	ind();
-	if (!(F() & ZF)) {		// See IND
-		cycles += 5;
+	auto again = !(F() & ZF);	// See IND
+	if (again)
 		pc.word -= 2;
-	}
+	return again;
 }
 
 #pragma endregion Block input instructions
@@ -755,20 +759,20 @@ void EightBit::Z80::outd() {
 	MEMPTR().word = BC().word - 1;
 }
 
-void EightBit::Z80::otir() {
+bool EightBit::Z80::otir() {
 	outi();
-	if (!(F() & ZF)) {		// See OUTI
-		cycles += 5;
+	auto again = !(F() & ZF);	// See OUTI
+	if (again)
 		pc.word -= 2;
-	}
+	return again;
 }
 
-void EightBit::Z80::otdr() {
+bool EightBit::Z80::otdr() {
 	outd();
-	if (!(F() & ZF)) {		// See OUTD
-		cycles += 5;
+	auto again = !(F() & ZF);	// See OUTD
+	if (again)
 		pc.word -= 2;
-	}
+	return again;
 }
 
 #pragma endregion Block output instructions
@@ -778,9 +782,8 @@ void EightBit::Z80::otdr() {
 #pragma region Nibble rotation
 
 void EightBit::Z80::rrd() {
-	MEMPTR() = m_memory.ADDRESS() = HL();
-	MEMPTR().word++;
-	auto memory = m_memory.reference();
+	MEMPTR() = HL();
+	auto memory = getViaMemptr();
 	auto accumulator = A();
 	A() = (accumulator & 0xf0) | lowNibble(memory);
 	uint8_t updated = promoteNibble(lowNibble(accumulator)) | highNibble(memory);
@@ -790,9 +793,8 @@ void EightBit::Z80::rrd() {
 }
 
 void EightBit::Z80::rld() {
-	MEMPTR() = m_memory.ADDRESS() = HL();
-	MEMPTR().word++;
-	auto memory = m_memory.reference();
+	MEMPTR() = HL();
+	auto memory = getViaMemptr();
 	auto accumulator = A();
 	uint8_t updated = lowNibble(accumulator) | promoteNibble(memory);
 	A() = (accumulator & 0xf0) | highNibble(memory);
@@ -909,13 +911,11 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 			}
 			break;
 		}
-		if (m_prefixDD || m_prefixFD)
-			adjustSZP(DISPLACED());
-		else
-			adjustSZP(R(z));
 		if (m_prefixDD || m_prefixFD) {
+			adjustSZP(DISPLACED());
 			cycles += 23;
 		} else {
+			adjustSZP(R(z));
 			cycles += 8;
 			if (z == 6)
 				cycles += 7;
@@ -1103,10 +1103,12 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				ldd();
 				break;
 			case 6:	// LDIR
-				ldir();
+				if (ldir())
+					cycles += 5;
 				break;
 			case 7:	// LDDR
-				lddr();
+				if (lddr())
+					cycles += 5;
 				break;
 			}
 			break;
@@ -1119,10 +1121,12 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				cpd();
 				break;
 			case 6:	// CPIR
-				cpir();
+				if (cpir())
+					cycles += 5;
 				break;
 			case 7:	// CPDR
-				cpdr();
+				if (cpdr())
+					cycles += 5;
 				break;
 			}
 			break;
@@ -1135,10 +1139,12 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				ind();
 				break;
 			case 6:	// INIR
-				inir();
+				if (inir())
+					cycles += 5;
 				break;
 			case 7:	// INDR
-				indr();
+				if (indr())
+					cycles += 5;
 				break;
 			}
 			break;
@@ -1151,10 +1157,12 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				outd();
 				break;
 			case 6:	// OTIR
-				otir();
+				if (otir())
+					cycles += 5;
 				break;
 			case 7:	// OTDR
-				otdr();
+				if (otdr())
+					cycles += 5;
 				break;
 			}
 			break;
