@@ -516,7 +516,7 @@ void EightBit::Z80::neg() {
 	auto original = A();
 	A() = 0;
 	sub(A(), original);
-	setFlag(PF, original == 0x80);
+	setFlag(PF, original == Bit7);
 	setFlag(CF, original);
 }
 
@@ -524,7 +524,7 @@ void EightBit::Z80::daa() {
 
 	uint8_t a = A();
 
-	auto lowAdjust = (F() & HC) | ((A() & 0xf) > 9);
+	auto lowAdjust = (F() & HC) | ((A() & Mask4) > 9);
 	auto highAdjust = (F() & CF) | (A() > 0x99);
 
 	if (F() & NF) {

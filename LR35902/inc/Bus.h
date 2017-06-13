@@ -95,7 +95,7 @@ namespace EightBit {
 		void loadBootRom(const std::string& path);
 
 		bool isBootRom(uint16_t address) const {
-			return (address < m_boot.size()) && (peek(BASE + BOOT_DISABLE) == 0);
+			return (address < m_boot.size()) && !peek(BASE + BOOT_DISABLE);
 		}
 
 		virtual uint8_t peek(uint16_t address) const;

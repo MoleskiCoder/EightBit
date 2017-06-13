@@ -83,8 +83,8 @@ namespace EightBit {
 			return cycles + instruction.count;
 		}
 
-		void adjustSign(uint8_t value) { F().S = ((value & 0x80) != 0); }
-		void adjustZero(uint8_t value) { F().Z = (value == 0); }
+		void adjustSign(uint8_t value) { F().S = ((value & Bit7) != 0); }
+		void adjustZero(uint8_t value) { F().Z = !value; }
 
 		void adjustParity(uint8_t value) {
 			static const uint8_t lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
@@ -108,12 +108,12 @@ namespace EightBit {
 
 		void postIncrement(uint8_t value) {
 			adjustSZP(value);
-			F().AC = lowNibble(value) == 0;
+			F().AC = !lowNibble(value);
 		}
 
 		void postDecrement(uint8_t value) {
 			adjustSZP(value);
-			F().AC = lowNibble(value) != 0xf;
+			F().AC = lowNibble(value) != Mask4;
 		}
 
 		static Instruction INS(instruction_t method, AddressingMode mode, std::string disassembly, int cycles);
@@ -127,11 +127,11 @@ namespace EightBit {
 			uint16_t subtraction = A() - value;
 			adjustSZP((uint8_t)subtraction);
 			adjustAuxiliaryCarrySub(value, subtraction);
-			F().C = subtraction > 0xff;
+			F().C = subtraction & Bit8;
 		}
 
 		void anda(uint8_t value) {
-			F().AC = (((A() | value) & 0x8) != 0);
+			F().AC = (((A() | value) & Bit3) != 0);
 			F().C = false;
 			adjustSZP(A() &= value);
 		}
@@ -151,7 +151,7 @@ namespace EightBit {
 			sum.word = A() + value + carry;
 			adjustAuxiliaryCarryAdd(value, sum.word);
 			A() = sum.low;
-			F().C = sum.word > 0xff;
+			F().C = sum.word & Bit8;
 			adjustSZP(A());
 		}
 
@@ -170,7 +170,7 @@ namespace EightBit {
 			difference.word = A() - value - carry;
 			adjustAuxiliaryCarrySub(value, difference.word);
 			A() = difference.low;
-			F().C = difference.word > 0xff;
+			F().C = difference.word & Bit8;
 			adjustSZP(A());
 		}
 
@@ -592,7 +592,7 @@ namespace EightBit {
 		// rotate
 
 		void rlc() {
-			auto carry = A() & 0x80;
+			auto carry = A() & Bit7;
 			A() <<= 1;
 			A() |= carry >> 7;
 			F().C = carry != 0;
@@ -606,7 +606,7 @@ namespace EightBit {
 		}
 
 		void ral() {
-			auto carry = A() & 0x80;
+			auto carry = A() & Bit7;
 			A() <<= 1;
 			A() |= (uint8_t)F().C;
 			F().C = carry != 0;
@@ -621,7 +621,7 @@ namespace EightBit {
 
 		// specials
 
-		void cma() { A() ^= 0xff; }
+		void cma() { A() ^= Mask8; }
 		void stc() { F().C = true; }
 		void cmc() { F().C = !F().C; }
 

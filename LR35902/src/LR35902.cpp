@@ -356,7 +356,7 @@ void EightBit::LR35902::daa() {
 
 	uint8_t a = A();
 
-	auto lowAdjust = (F() & HC) | ((A() & 0xf) > 9);
+	auto lowAdjust = (F() & HC) | ((A() & Mask4) > 9);
 	auto highAdjust = (F() & CF) | (A() > 0x99);
 
 	if (F() & NF) {

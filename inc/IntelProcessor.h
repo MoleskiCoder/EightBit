@@ -22,12 +22,12 @@ namespace EightBit {
 
 		bool calculateHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
 			auto index = buildHalfCarryIndex(before, value, calculation);
-			return m_halfCarryTableAdd[index & 0x7];
+			return m_halfCarryTableAdd[index & Mask3];
 		}
 
 		bool calculateHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
 			auto index = buildHalfCarryIndex(before, value, calculation);
-			return m_halfCarryTableSub[index & 0x7];
+			return m_halfCarryTableSub[index & Mask3];
 		}
 
 		void push(uint8_t value);
