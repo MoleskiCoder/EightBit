@@ -911,11 +911,13 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 			}
 			break;
 		}
-		if (m_prefixDD || m_prefixFD) {
+		if (m_prefixDD || m_prefixFD)
 			adjustSZP(DISPLACED());
+		else
+			adjustSZP(R(z));
+		if (m_prefixDD || m_prefixFD) {
 			cycles += 23;
 		} else {
-			adjustSZP(R(z));
 			cycles += 8;
 			if (z == 6)
 				cycles += 7;
