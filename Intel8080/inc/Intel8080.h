@@ -89,7 +89,7 @@ namespace EightBit {
 		void adjustParity(uint8_t value) {
 			static const uint8_t lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
 			auto set = (lookup[highNibble(value)] + lookup[lowNibble(value)]);
-			F().P = (set % 2) == 0;
+			F().P = !(set % 2);
 		}
 
 		void adjustSZP(uint8_t value) {
@@ -127,7 +127,7 @@ namespace EightBit {
 			uint16_t subtraction = A() - value;
 			adjustSZP((uint8_t)subtraction);
 			adjustAuxiliaryCarrySub(value, subtraction);
-			F().C = subtraction & Bit8;
+			F().C = (subtraction & Bit8) != 0;
 		}
 
 		void anda(uint8_t value) {
@@ -151,7 +151,7 @@ namespace EightBit {
 			sum.word = A() + value + carry;
 			adjustAuxiliaryCarryAdd(value, sum.word);
 			A() = sum.low;
-			F().C = sum.word & Bit8;
+			F().C = (sum.word & Bit8) != 0;
 			adjustSZP(A());
 		}
 
@@ -170,7 +170,7 @@ namespace EightBit {
 			difference.word = A() - value - carry;
 			adjustAuxiliaryCarrySub(value, difference.word);
 			A() = difference.low;
-			F().C = difference.word & Bit8;
+			F().C = (difference.word & Bit8) != 0;
 			adjustSZP(A());
 		}
 
