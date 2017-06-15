@@ -42,31 +42,20 @@ namespace EightBit {
 
 		//
 
-		uint8_t getViaMemptr() {
+		uint8_t& memptrReference() {
 			m_memory.ADDRESS() = MEMPTR();
 			MEMPTR().word++;
 			return m_memory.reference();
 		}
 
-		void setViaMemptr(uint8_t value) {
-			m_memory.ADDRESS() = MEMPTR();
-			MEMPTR().word++;
-			m_memory.reference() = value;
-			MEMPTR().high = value;
-		}
-
 		void getWordViaMemptr(register16_t& value) {
-			m_memory.ADDRESS() = MEMPTR();
-			MEMPTR().word++;
-			value.low = m_memory.reference();
+			value.low = memptrReference();
 			m_memory.ADDRESS().word++;
 			value.high = m_memory.reference();
 		}
 
 		void setWordViaMemptr(register16_t value) {
-			m_memory.ADDRESS() = MEMPTR();
-			MEMPTR().word++;
-			m_memory.reference() = value.low;
+			memptrReference() = value.low;
 			m_memory.ADDRESS().word++;
 			m_memory.reference() = value.high;
 		}

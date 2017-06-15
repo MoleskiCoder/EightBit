@@ -391,25 +391,27 @@ void EightBit::Z80::compare(uint8_t value) {
 
 #pragma region Shift and rotate
 
-void EightBit::Z80::rlc(uint8_t& operand) {
+uint8_t& EightBit::Z80::rlc(uint8_t& operand) {
 	auto carry = operand & Bit7;
 	operand <<= 1;
-	setFlag(CF, carry);
 	carry ? operand |= Bit0 : operand &= ~Bit0;
+	setFlag(CF, carry);
 	clearFlag(NF | HC);
 	adjustXY(operand);
+	return operand;
 }
 
-void EightBit::Z80::rrc(uint8_t& operand) {
+uint8_t& EightBit::Z80::rrc(uint8_t& operand) {
 	auto carry = operand & Bit0;
 	operand >>= 1;
 	carry ? operand |= Bit7 : operand &= ~Bit7;
 	setFlag(CF, carry);
 	clearFlag(NF | HC);
 	adjustXY(operand);
+	return operand;
 }
 
-void EightBit::Z80::rl(uint8_t& operand) {
+uint8_t& EightBit::Z80::rl(uint8_t& operand) {
 	auto oldCarry = F() & CF;
 	auto newCarry = operand & Bit7;
 	operand <<= 1;
@@ -417,9 +419,10 @@ void EightBit::Z80::rl(uint8_t& operand) {
 	setFlag(CF, newCarry);
 	clearFlag(NF | HC);
 	adjustXY(operand);
+	return operand;
 }
 
-void EightBit::Z80::rr(uint8_t& operand) {
+uint8_t& EightBit::Z80::rr(uint8_t& operand) {
 	auto oldCarry = F() & CF;
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
@@ -427,19 +430,21 @@ void EightBit::Z80::rr(uint8_t& operand) {
 	setFlag(CF, newCarry);
 	clearFlag(NF | HC);
 	adjustXY(operand);
+	return operand;
 }
 
 //
 
-void EightBit::Z80::sla(uint8_t& operand) {
+uint8_t& EightBit::Z80::sla(uint8_t& operand) {
 	auto newCarry = operand & Bit7;
 	operand <<= 1;
 	setFlag(CF, newCarry);
 	clearFlag(NF | HC);
 	adjustXY(operand);
+	return operand;
 }
 
-void EightBit::Z80::sra(uint8_t& operand) {
+uint8_t& EightBit::Z80::sra(uint8_t& operand) {
 	auto new7 = operand & Bit7;
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
@@ -447,18 +452,20 @@ void EightBit::Z80::sra(uint8_t& operand) {
 	setFlag(CF, newCarry);
 	clearFlag(NF | HC);
 	adjustXY(operand);
+	return operand;
 }
 
-void EightBit::Z80::sll(uint8_t& operand) {
+uint8_t& EightBit::Z80::sll(uint8_t& operand) {
 	auto newCarry = operand & Bit7;
 	operand <<= 1;
 	operand |= 1;
 	setFlag(CF, newCarry);
 	clearFlag(NF | HC);
 	adjustXY(operand);
+	return operand;
 }
 
-void EightBit::Z80::srl(uint8_t& operand) {
+uint8_t& EightBit::Z80::srl(uint8_t& operand) {
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
 	operand &= ~Bit7;	// clear bit 7
@@ -466,24 +473,7 @@ void EightBit::Z80::srl(uint8_t& operand) {
 	clearFlag(NF | HC);
 	adjustXY(operand);
 	setFlag(ZF, operand);
-}
-
-//
-
-void EightBit::Z80::rlca() {
-	rlc(A());
-}
-
-void EightBit::Z80::rrca() {
-	rrc(A());
-}
-
-void EightBit::Z80::rla() {
-	rl(A());
-}
-
-void EightBit::Z80::rra() {
-	rr(A());
+	return operand;
 }
 
 #pragma endregion Shift and rotate
@@ -524,7 +514,7 @@ void EightBit::Z80::daa() {
 
 	uint8_t a = A();
 
-	auto lowAdjust = (F() & HC) | ((A() & Mask4) > 9);
+	auto lowAdjust = (F() & HC) | (lowNibble(A()) > 9);
 	auto highAdjust = (F() & CF) | (A() > 0x99);
 
 	if (F() & NF) {
@@ -578,7 +568,7 @@ void EightBit::Z80::xhtl(register16_t& operand) {
 }
 
 void EightBit::Z80::xhtl() {
-	xhtl(ALT_HL());
+	xhtl(HL2());
 }
 
 #pragma endregion Miscellaneous instructions
@@ -632,9 +622,8 @@ bool EightBit::Z80::cpdr() {
 	cpd();
 	MEMPTR().word = pc.word - 1;
 	auto again = (F() & PF) && !(F() & ZF);	// See CPD
-	if (!again) {
+	if (!again)
 		MEMPTR().word--;
-	}
 	return again;
 }
 
@@ -762,22 +751,18 @@ bool EightBit::Z80::otdr() {
 
 void EightBit::Z80::rrd() {
 	MEMPTR() = HL();
-	auto memory = getViaMemptr();
-	auto accumulator = A();
-	A() = (accumulator & 0xf0) | lowNibble(memory);
-	uint8_t updated = promoteNibble(lowNibble(accumulator)) | highNibble(memory);
-	m_memory.reference() = updated;
+	auto memory = memptrReference();
+	m_memory.reference() = promoteNibble(A()) | highNibble(memory);
+	A() = (A() & 0xf0) | lowNibble(memory);
 	adjustSZPXY(A());
 	clearFlag(NF | HC);
 }
 
 void EightBit::Z80::rld() {
 	MEMPTR() = HL();
-	auto memory = getViaMemptr();
-	auto accumulator = A();
-	uint8_t updated = lowNibble(accumulator) | promoteNibble(memory);
-	A() = (accumulator & 0xf0) | highNibble(memory);
-	m_memory.reference() = updated;
+	auto memory = memptrReference();
+	m_memory.reference() = promoteNibble(memory) | lowNibble(A());
+	A() = (A() & 0xf0) | highNibble(memory);
 	adjustSZPXY(A());
 	clearFlag(NF | HC);
 }
@@ -786,7 +771,7 @@ void EightBit::Z80::rld() {
 
 int EightBit::Z80::step() {
 	ExecutingInstruction.fire(*this);
-	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
+	m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	cycles = 0;
 	return fetchExecute();
 }
@@ -803,7 +788,7 @@ int EightBit::Z80::execute(uint8_t opcode) {
 	auto p = (y & 0b110) >> 1;
 	auto q = (y & 1);
 
-	if (!(m_prefixCB && (m_prefixDD || m_prefixFD))) {
+	if (!(m_prefixCB && m_displaced)) {
 		incrementRefresh();
 		M1() = false;
 	}
@@ -826,75 +811,31 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 	case 0:	// rot[y] r[z]
 		switch (y) {
 		case 0:
-			if (m_prefixDD || m_prefixFD) {
-				rlc(DISPLACED());
-				R2(z) = DISPLACED();
-			} else {
-				rlc(R(z));
-			}
+			adjustSZP(m_displaced ? R2(z) = rlc(DISPLACED()) : rlc(R(z)));
 			break;
 		case 1:
-			if (m_prefixDD || m_prefixFD) {
-				rrc(DISPLACED());
-				R2(z) = DISPLACED();
-			} else {
-				rrc(R(z));
-			}
+			adjustSZP(m_displaced ? R2(z) = rrc(DISPLACED()) : rrc(R(z)));
 			break;
 		case 2:
-			if (m_prefixDD || m_prefixFD) {
-				rl(DISPLACED());
-				R2(z) = DISPLACED();
-			} else {
-				rl(R(z));
-			}
+			adjustSZP(m_displaced ? R2(z) = rl(DISPLACED()) : rl(R(z)));
 			break;
 		case 3:
-			if (m_prefixDD || m_prefixFD) {
-				rr(DISPLACED());
-				R2(z) = DISPLACED();
-			} else {
-				rr(R(z));
-			}
+			adjustSZP(m_displaced ? R2(z) = rr(DISPLACED()) : rr(R(z)));
 			break;
 		case 4:
-			if (m_prefixDD || m_prefixFD) {
-				sla(DISPLACED());
-				R2(z) = DISPLACED();
-			} else {
-				sla(R(z));
-			}
+			adjustSZP(m_displaced ? R2(z) = sla(DISPLACED()) : sla(R(z)));
 			break;
 		case 5:
-			if (m_prefixDD || m_prefixFD) {
-				sra(DISPLACED());
-				R2(z) = DISPLACED();
-			} else {
-				sra(R(z));
-			}
+			adjustSZP(m_displaced ? R2(z) = sra(DISPLACED()) : sra(R(z)));
 			break;
 		case 6:
-			if (m_prefixDD || m_prefixFD) {
-				sll(DISPLACED());
-				R2(z) = DISPLACED();
-			} else {
-				sll(R(z));
-			}
+			adjustSZP(m_displaced ? R2(z) = sll(DISPLACED()) : sll(R(z)));
 			break;
 		case 7:
-			if (m_prefixDD || m_prefixFD) {
-				srl(DISPLACED());
-				R2(z) = DISPLACED();
-			} else {
-				srl(R(z));
-			}
+			adjustSZP(m_displaced ? R2(z) = srl(DISPLACED()) : srl(R(z)));
 			break;
 		}
-		if (m_prefixDD || m_prefixFD)
-			adjustSZP(DISPLACED());
-		else
-			adjustSZP(R(z));
-		if (m_prefixDD || m_prefixFD) {
+		if (m_displaced) {
 			cycles += 23;
 		} else {
 			cycles += 8;
@@ -903,7 +844,7 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 		}
 		break;
 	case 1:	// BIT y, r[z]
-		if (m_prefixDD || m_prefixFD) {
+		if (m_displaced) {
 			bit(y, DISPLACED());
 			adjustXY(MEMPTR().high);
 			cycles += 20;
@@ -920,7 +861,7 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 		}
 		break;
 	case 2:	// RES y, r[z]
-		if (m_prefixDD || m_prefixFD) {
+		if (m_displaced) {
 			res(y, DISPLACED());
 			R2(z) = DISPLACED();
 			cycles += 23;
@@ -932,7 +873,7 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 		}
 		break;
 	case 3:	// SET y, r[z]
-		if (m_prefixDD || m_prefixFD) {
+		if (m_displaced) {
 			set(y, DISPLACED());
 			R2(z) = DISPLACED();
 			cycles += 23;
@@ -961,7 +902,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			if (y != 6)	// IN r[y],(C)
 				R(y) = m_memory.DATA();
 			adjustSZPXY(m_memory.DATA());
-			clearFlag(HC | NF);
+			clearFlag(NF | HC);
 			cycles += 12;
 			break;
 		case 1:	// Output to port with 16-bit address
@@ -977,10 +918,10 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 		case 2:	// 16-bit add/subtract with carry
 			switch (q) {
 			case 0:	// SBC HL, rp[p]
-				sbcViaMemptr(ALT_HL(), RP(p));
+				sbcViaMemptr(HL2(), RP(p));
 				break;
 			case 1:	// ADC HL, rp[p]
-				adcViaMemptr(ALT_HL(), RP(p));
+				adcViaMemptr(HL2(), RP(p));
 				break;
 			}
 			cycles += 15;
@@ -1053,7 +994,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			case 3:	// LD A,R
 				A() = REFRESH();
 				adjustSZXY(A());
-				clearFlag(HC | NF);
+				clearFlag(NF | HC);
 				setFlag(PF, IFF2());
 				cycles += 9;
 				break;
@@ -1205,7 +1146,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 10;
 				break;
 			case 1:	// ADD HL,rp
-				addViaMemptr(ALT_HL(), RP(p));
+				addViaMemptr(HL2(), RP(p));
 				cycles += 11;
 				break;
 			}
@@ -1216,22 +1157,22 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				switch (p) {
 				case 0:	// LD (BC),A
 					MEMPTR() = BC();
-					setViaMemptr(A());
+					MEMPTR().high = memptrReference() = A();
 					cycles += 7;
 					break;
 				case 1:	// LD (DE),A
 					MEMPTR() = DE();
-					setViaMemptr(A());
+					MEMPTR().high = memptrReference() = A();
 					cycles += 7;
 					break;
 				case 2:	// LD (nn),HL
 					fetchWord();
-					setWordViaMemptr(ALT_HL());
+					setWordViaMemptr(HL2());
 					cycles += 16;
 					break;
 				case 3: // LD (nn),A
 					fetchWord();
-					setViaMemptr(A());
+					MEMPTR().high = memptrReference() = A();
 					cycles += 13;
 					break;
 				}
@@ -1240,22 +1181,22 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				switch (p) {
 				case 0:	// LD A,(BC)
 					MEMPTR() = BC();
-					A() = getViaMemptr();
+					A() = memptrReference();
 					cycles += 7;
 					break;
 				case 1:	// LD A,(DE)
 					MEMPTR() = DE();
-					A() = getViaMemptr();
+					A() = memptrReference();
 					cycles += 7;
 					break;
 				case 2:	// LD HL,(nn)
 					fetchWord();
-					getWordViaMemptr(ALT_HL());
+					getWordViaMemptr(HL2());
 					cycles += 16;
 					break;
 				case 3:	// LD A,(nn)
 					fetchWord();
-					A() = getViaMemptr();
+					A() = memptrReference();
 					cycles += 13;
 					break;
 				}
@@ -1283,25 +1224,25 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			if (y == 6)
 				cycles += 7;
 			break;
-		case 6: { // 8-bit load immediate
+		case 6:	// 8-bit load immediate
 			R(y) = fetchByte();	// LD r,n
 			cycles += 7;
 			if (y == 6)
 				cycles += 3;
 			break;
-		} case 7:	// Assorted operations on accumulator/flags
+		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
 			case 0:
-				rlca();
+				rlc(A());
 				break;
 			case 1:
-				rrca();
+				rrc(A());
 				break;
 			case 2:
-				rla();
+				rl(A());
 				break;
 			case 3:
-				rra();
+				rr(A());
 				break;
 			case 4:
 				daa();
@@ -1325,7 +1266,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			halt();
 		} else {
 			bool normal = true;
-			if (m_prefixDD || m_prefixFD) {
+			if (m_displaced) {
 				if (z == 6) {
 					switch (y) {
 					case 4:
@@ -1413,11 +1354,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 4;
 					break;
 				case 2:	// JP HL
-					pc = ALT_HL();
+					pc = HL2();
 					cycles += 4;
 					break;
 				case 3:	// LD SP,HL
-					sp = ALT_HL();
+					sp = HL2();
 					cycles += 4;
 					break;
 				}
@@ -1436,7 +1377,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
-				if (m_prefixDD || m_prefixFD)
+				if (m_displaced)
 					m_displacement = fetchByte();
 				fetchExecute();
 				break;
@@ -1495,7 +1436,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 17;
 					break;
 				case 1:	// DD prefix
-					m_prefixDD = true;
+					m_displaced = m_prefixDD = true;
 					fetchExecute();
 					break;
 				case 2:	// ED prefix
@@ -1503,7 +1444,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					fetchExecute();
 					break;
 				case 3:	// FD prefix
-					m_prefixFD = true;
+					m_displaced = m_prefixFD = true;
 					fetchExecute();
 					break;
 				}

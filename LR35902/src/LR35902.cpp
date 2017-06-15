@@ -309,24 +309,6 @@ void EightBit::LR35902::srl(uint8_t& operand) {
 	adjustZero(operand);
 }
 
-//
-
-void EightBit::LR35902::rlca() {
-	rlc(A());
-}
-
-void EightBit::LR35902::rrca() {
-	rrc(A());
-}
-
-void EightBit::LR35902::rla() {
-	rl(A());
-}
-
-void EightBit::LR35902::rra() {
-	rr(A());
-}
-
 #pragma endregion Shift and rotate
 
 #pragma region BIT/SET/RES
@@ -537,22 +519,22 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				switch (p) {
 				case 0:	// LD (BC),A
 					MEMPTR() = BC();
-					setViaMemptr(A());
+					MEMPTR().high = memptrReference() = A();
 					cycles += 2;
 					break;
 				case 1:	// LD (DE),A
 					MEMPTR() = DE();
-					setViaMemptr(A());
+					MEMPTR().high = memptrReference() = A();
 					cycles += 2;
 					break;
 				case 2:	// GB: LDI (HL),A
 					MEMPTR().word = HL().word++;
-					setViaMemptr(A());
+					MEMPTR().high = memptrReference() = A();
 					cycles += 2;
 					break;
 				case 3: // GB: LDD (HL),A
 					MEMPTR().word = HL().word--;
-					setViaMemptr(A());
+					MEMPTR().high = memptrReference() = A();
 					cycles += 2;
 					break;
 				}
@@ -561,12 +543,12 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				switch (p) {
 				case 0:	// LD A,(BC)
 					MEMPTR() = BC();
-					A() = getViaMemptr();
+					A() = memptrReference();
 					cycles += 2;
 					break;
 				case 1:	// LD A,(DE)
 					MEMPTR() = DE();
-					A() = getViaMemptr();
+					A() = memptrReference();
 					cycles += 2;
 					break;
 				case 2:	// GB: LDI A,(HL)
@@ -613,16 +595,16 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
 			case 0:
-				rlca();
+				rlc(A());
 				break;
 			case 1:
-				rrca();
+				rrc(A());
 				break;
 			case 2:
-				rla();
+				rl(A());
 				break;
 			case 3:
-				rra();
+				rr(A());
 				break;
 			case 4:
 				daa();

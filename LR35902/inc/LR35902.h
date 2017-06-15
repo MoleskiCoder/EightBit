@@ -176,11 +176,6 @@ namespace EightBit {
 		void orr(uint8_t& operand, uint8_t value);
 		void compare(uint8_t value);
 
-		void rlca();
-		void rrca();
-		void rla();
-		void rra();
-
 		void rlc(uint8_t& operand);
 		void rrc(uint8_t& operand);
 		void rl(uint8_t& operand);

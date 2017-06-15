@@ -124,6 +124,7 @@ namespace EightBit {
 		bool m_prefixFD;
 
 		int8_t m_displacement;
+		bool m_displaced;
 
 		int fetchExecute() {
 			M1() = true;
@@ -131,7 +132,7 @@ namespace EightBit {
 		}
 
 		void incrementRefresh() {
-			auto incremented = ((REFRESH() & Mask7) + 1) & Mask7;
+			auto incremented = (REFRESH() + 1) & Mask7;
 			REFRESH() = (REFRESH() & Bit7) | incremented;
 		}
 
@@ -147,8 +148,6 @@ namespace EightBit {
 		void clearFlag(int flag, bool condition) { condition ? clearFlag(flag) : setFlag(flag); }
 
 		uint8_t& DISPLACED() {
-			if (!(m_prefixDD || m_prefixFD))
-				throw std::logic_error("Unprefixed indexed displacement requested");
 			m_memory.ADDRESS().word = MEMPTR().word = (m_prefixDD ? IX() : IY()).word + m_displacement;
 			return m_memory.reference();
 		}
@@ -164,11 +163,11 @@ namespace EightBit {
 			case 3:
 				return E();
 			case 4:
-				return ALT_HL().high;
+				return HL2().high;
 			case 5:
-				return ALT_HL().low;
+				return HL2().low;
 			case 6:
-				if (m_prefixDD || m_prefixFD) {
+				if (m_displaced) {
 					m_displacement = fetchByte();
 					return DISPLACED();
 				}
@@ -208,17 +207,19 @@ namespace EightBit {
 			case 3:
 				return sp;
 			case HL_IDX:
-				return ALT_HL();
+				return HL2();
 			default:
 				return m_registers[m_registerSet][rp];
 			}
 		}
 
-		register16_t& ALT_HL() {
-			if (m_prefixDD)
-				return IX();
-			else if (m_prefixFD)
-				return IY();
+		register16_t& HL2() {
+			if (m_displaced) {
+				if (m_prefixDD)
+					return IX();
+				else if (m_prefixFD)
+					return IY();
+			}
 			return HL();
 		}
 
@@ -227,7 +228,7 @@ namespace EightBit {
 			case 3:
 				return AF();
 			case HL_IDX:
-				return ALT_HL();
+				return HL2();
 			default:
 				return m_registers[m_registerSet][rp];
 			}
@@ -312,19 +313,14 @@ namespace EightBit {
 		void orr(uint8_t& operand, uint8_t value);
 		void compare(uint8_t value);
 
-		void rlca();
-		void rrca();
-		void rla();
-		void rra();
-
-		void rlc(uint8_t& operand);
-		void rrc(uint8_t& operand);
-		void rl(uint8_t& operand);
-		void rr(uint8_t& operand);
-		void sla(uint8_t& operand);
-		void sra(uint8_t& operand);
-		void sll(uint8_t& operand);
-		void srl(uint8_t& operand);
+		uint8_t& rlc(uint8_t& operand);
+		uint8_t& rrc(uint8_t& operand);
+		uint8_t& rl(uint8_t& operand);
+		uint8_t& rr(uint8_t& operand);
+		uint8_t& sla(uint8_t& operand);
+		uint8_t& sra(uint8_t& operand);
+		uint8_t& sll(uint8_t& operand);
+		uint8_t& srl(uint8_t& operand);
 
 		void bit(int n, uint8_t& operand);
 		void res(int n, uint8_t& operand);
