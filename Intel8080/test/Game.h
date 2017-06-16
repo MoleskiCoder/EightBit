@@ -1,10 +1,5 @@
 #pragma once
 
-//#include <stdexcept>
-//#include <string>
-//#include <memory>
-//#include <map>
-
 #include "Board.h"
 
 class Configuration;
