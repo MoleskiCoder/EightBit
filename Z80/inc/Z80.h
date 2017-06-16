@@ -41,33 +41,21 @@ namespace EightBit {
 
 		// Mutable access to processor!!
 
-		register16_t& AF() {
+		virtual register16_t& AF() override {
 			return m_accumulatorFlags[m_accumulatorFlagsSet];
 		}
 
-		uint8_t& A() { return AF().high; }
-		uint8_t& F() { return AF().low; }
-
-		register16_t& BC() {
+		virtual register16_t& BC() override {
 			return m_registers[m_registerSet][BC_IDX];
 		}
 
-		uint8_t& B() { return BC().high; }
-		uint8_t& C() { return BC().low; }
-
-		register16_t& DE() {
+		virtual register16_t& DE() override {
 			return m_registers[m_registerSet][DE_IDX];
 		}
 
-		uint8_t& D() { return DE().high; }
-		uint8_t& E() { return DE().low; }
-
-		register16_t& HL() {
+		virtual register16_t& HL() override {
 			return m_registers[m_registerSet][HL_IDX];
 		}
-
-		uint8_t& H() { return HL().high; }
-		uint8_t& L() { return HL().low; }
 
 		register16_t& IX() { return m_ix; }
 		uint8_t& IXH() { return IX().high; }
@@ -135,17 +123,6 @@ namespace EightBit {
 			auto incremented = (REFRESH() + 1) & Mask7;
 			REFRESH() = (REFRESH() & Bit7) | incremented;
 		}
-
-		void clearFlag(int flag) { F() &= ~flag; }
-		void setFlag(int flag) { F() |= flag; }
-
-		void setFlag(int flag, int condition) { setFlag(flag, condition != 0); }
-		void setFlag(int flag, uint32_t condition) { setFlag(flag, condition != 0); }
-		void setFlag(int flag, bool condition) { condition ? setFlag(flag) : clearFlag(flag); }
-
-		void clearFlag(int flag, int condition) { clearFlag(flag, condition != 0); }
-		void clearFlag(int flag, uint32_t condition) { clearFlag(flag, condition != 0); }
-		void clearFlag(int flag, bool condition) { condition ? clearFlag(flag) : setFlag(flag); }
 
 		uint8_t& DISPLACED() {
 			m_memory.ADDRESS().word = MEMPTR().word = (m_prefixDD ? IX() : IY()).word + m_displacement;

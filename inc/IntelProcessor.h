@@ -10,8 +10,35 @@ namespace EightBit {
 
 		virtual void initialise();
 
+		virtual register16_t& AF() = 0;
+		uint8_t& A() { return AF().high; }
+		uint8_t& F() { return AF().low; }
+
+		virtual register16_t& BC() = 0;
+		uint8_t& B() { return BC().high; }
+		uint8_t& C() { return BC().low; }
+
+		virtual register16_t& DE() = 0;
+		uint8_t& D() { return DE().high; }
+		uint8_t& E() { return DE().low; }
+
+		virtual register16_t& HL() = 0;
+		uint8_t& H() { return HL().high; }
+		uint8_t& L() { return HL().low; }
+
 	protected:
 		IntelProcessor(Memory& memory);
+
+		void clearFlag(int flag) { F() &= ~flag; }
+		void setFlag(int flag) { F() |= flag; }
+
+		void setFlag(int flag, int condition) { setFlag(flag, condition != 0); }
+		void setFlag(int flag, uint32_t condition) { setFlag(flag, condition != 0); }
+		void setFlag(int flag, bool condition) { condition ? setFlag(flag) : clearFlag(flag); }
+
+		void clearFlag(int flag, int condition) { clearFlag(flag, condition != 0); }
+		void clearFlag(int flag, uint32_t condition) { clearFlag(flag, condition != 0); }
+		void clearFlag(int flag, bool condition) { condition ? clearFlag(flag) : setFlag(flag); }
 
 		std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 		std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
