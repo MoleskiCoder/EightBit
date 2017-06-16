@@ -7,7 +7,6 @@
 
 #include "Memory.h"
 #include "Intel8080.h"
-#include "StatusFlags.h"
 
 EightBit::Disassembler::Disassembler() {
 }
@@ -35,7 +34,7 @@ std::string EightBit::Disassembler::state(Intel8080& cpu) {
 		<< "PC=" << hex(pc.word)
 		<< " "
 		<< "SP=" << hex(sp.word)
-		<< " " << "A=" << hex(a) << " " << "F=" << (std::string)f
+		<< " " << "A=" << hex(a) << " " << "F=" << flags(f)
 		<< " " << "B=" << hex(b) << " " << "C=" << hex(c)
 		<< " " << "D=" << hex(d) << " " << "E=" << hex(e)
 		<< " " << "H=" << hex(h) << " " << "L=" << hex(l);
@@ -84,6 +83,26 @@ std::string EightBit::Disassembler::disassemble(Intel8080& cpu) {
 		break;
 	}
 
+	return output.str();
+}
+
+std::string EightBit::Disassembler::flag(uint8_t value, int flag, const std::string& represents) {
+	std::ostringstream output;
+	output << (value & flag ? represents : "-");
+	return output.str();
+}
+
+std::string EightBit::Disassembler::flags(uint8_t value) {
+	std::ostringstream output;
+	output
+		<< flag(value, Intel8080::SF, "S")
+		<< flag(value, Intel8080::ZF, "Z")
+		<< "0"
+		<< flag(value, Intel8080::AC, "A")
+		<< "0"
+		<< flag(value, Intel8080::PF, "P")
+		<< "1"
+		<< flag(value, Intel8080::CF, "C");
 	return output.str();
 }
 

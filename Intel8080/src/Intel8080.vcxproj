@@ -148,7 +148,6 @@
     <ClInclude Include="..\inc\Intel8080.h" />
     <ClInclude Include="..\inc\PortEventArgs.h" />
     <ClInclude Include="..\inc\Profiler.h" />
-    <ClInclude Include="..\inc\StatusFlags.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

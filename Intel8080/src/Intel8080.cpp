@@ -5,11 +5,9 @@
 #include "Disassembler.h"
 
 EightBit::Intel8080::Intel8080(Memory& memory, InputOutput& ports)
-:	IntelProcessor(memory),
-	a(0),
-	f(0),
-	m_interrupt(false),
-	m_ports(ports) {
+: IntelProcessor(memory),
+  m_interrupt(false),
+  m_ports(ports) {
 	bc.word = de.word = hl.word = 0;
 	installInstructions();
 }
@@ -61,8 +59,7 @@ void EightBit::Intel8080::installInstructions() {
 
 void EightBit::Intel8080::initialise() {
 	Processor::initialise();
-	bc.word = de.word = hl.word = 0;
-	a = f = 0;
+	AF().word = BC().word = DE().word = HL().word = 0;
 }
 
 int EightBit::Intel8080::step() {

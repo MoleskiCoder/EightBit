@@ -3,13 +3,20 @@
 // Auxiliary carry logic from https://github.com/begoon/i8080-core
 
 #include "IntelProcessor.h"
-#include "StatusFlags.h"
 #include "InputOutput.h"
 
 namespace EightBit {
 	class Intel8080 : public IntelProcessor {
 	public:
 		typedef std::function<void()> instruction_t;
+
+		enum StatusBits {
+			SF = Bit7,
+			ZF = Bit6,
+			AC = Bit4,
+			PF = Bit2,
+			CF = Bit0,
+		};
 
 		enum AddressingMode {
 			Unknown,
@@ -31,8 +38,14 @@ namespace EightBit {
 
 		const std::array<Instruction, 0x100>& getInstructions() const { return instructions; }
 
-		uint8_t& A() { return a; }
-		StatusFlags& F() { return f; }
+		register16_t& AF() {
+			af.low &= ~(Bit5 | Bit3);
+			af.low |= Bit1;
+			return af;
+		}
+
+		uint8_t& A() { return AF().high; }
+		uint8_t& F() { return AF().low; }
 
 		register16_t& BC() { return bc; }
 		uint8_t& B() { return BC().high; }
@@ -66,14 +79,23 @@ namespace EightBit {
 
 		std::array<Instruction, 0x100> instructions;
 
-		uint8_t a;
-		StatusFlags f;
-
+		register16_t af;
 		register16_t bc;
 		register16_t de;
 		register16_t hl;
 
 		bool m_interrupt;
+
+		void clearFlag(int flag) { F() &= ~flag; }
+		void setFlag(int flag) { F() |= flag; }
+
+		void setFlag(int flag, int condition) { setFlag(flag, condition != 0); }
+		void setFlag(int flag, uint32_t condition) { setFlag(flag, condition != 0); }
+		void setFlag(int flag, bool condition) { condition ? setFlag(flag) : clearFlag(flag); }
+
+		void clearFlag(int flag, int condition) { clearFlag(flag, condition != 0); }
+		void clearFlag(int flag, uint32_t condition) { clearFlag(flag, condition != 0); }
+		void clearFlag(int flag, bool condition) { condition ? clearFlag(flag) : setFlag(flag); }
 
 		int execute(uint8_t opcode);
 
@@ -83,13 +105,13 @@ namespace EightBit {
 			return cycles + instruction.count;
 		}
 
-		void adjustSign(uint8_t value) { F().S = ((value & Bit7) != 0); }
-		void adjustZero(uint8_t value) { F().Z = !value; }
+		void adjustSign(uint8_t value) { setFlag(SF, value & SF); }
+		void adjustZero(uint8_t value) { clearFlag(ZF, value);}
 
 		void adjustParity(uint8_t value) {
 			static const uint8_t lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
 			auto set = (lookup[highNibble(value)] + lookup[lowNibble(value)]);
-			F().P = !(set % 2);
+			clearFlag(PF, set % 2);
 		}
 
 		void adjustSZP(uint8_t value) {
@@ -99,21 +121,21 @@ namespace EightBit {
 		}
 
 		void adjustAuxiliaryCarryAdd(uint8_t value, int calculation) {
-			F().AC = calculateHalfCarryAdd(A(), value, calculation);
+			setFlag(AC, calculateHalfCarryAdd(A(), value, calculation));
 		}
 
 		void adjustAuxiliaryCarrySub(uint8_t value, int calculation) {
-			F().AC = !calculateHalfCarrySub(A(), value, calculation);
+			clearFlag(AC, calculateHalfCarrySub(A(), value, calculation));
 		}
 
 		void postIncrement(uint8_t value) {
 			adjustSZP(value);
-			F().AC = !lowNibble(value);
+			clearFlag(AC, lowNibble(value));
 		}
 
 		void postDecrement(uint8_t value) {
 			adjustSZP(value);
-			F().AC = lowNibble(value) != Mask4;
+			setFlag(AC, lowNibble(value) != Mask4);
 		}
 
 		static Instruction INS(instruction_t method, AddressingMode mode, std::string disassembly, int cycles);
@@ -127,22 +149,22 @@ namespace EightBit {
 			uint16_t subtraction = A() - value;
 			adjustSZP((uint8_t)subtraction);
 			adjustAuxiliaryCarrySub(value, subtraction);
-			F().C = (subtraction & Bit8) != 0;
+			setFlag(CF, subtraction & Bit8);
 		}
 
 		void anda(uint8_t value) {
-			F().AC = (((A() | value) & Bit3) != 0);
-			F().C = false;
+			setFlag(AC, (A() | value) & Bit3);
+			clearFlag(CF);
 			adjustSZP(A() &= value);
 		}
 
 		void ora(uint8_t value) {
-			F().AC = F().C = false;
+			clearFlag(AC | CF);
 			adjustSZP(A() |= value);
 		}
 
 		void xra(uint8_t value) {
-			F().AC = F().C = false;
+			clearFlag(AC | CF);
 			adjustSZP(A() ^= value);
 		}
 
@@ -151,17 +173,17 @@ namespace EightBit {
 			sum.word = A() + value + carry;
 			adjustAuxiliaryCarryAdd(value, sum.word);
 			A() = sum.low;
-			F().C = (sum.word & Bit8) != 0;
+			setFlag(CF, sum.word & Bit8);
 			adjustSZP(A());
 		}
 
 		void adc(uint8_t value) {
-			add(value, F().C);
+			add(value, F() & CF);
 		}
 
 		void dad(uint16_t value) {
 			uint32_t sum = HL().word + value;
-			F().C = sum > 0xffff;
+			setFlag(CF, sum > 0xffff);
 			HL().word = (uint16_t)sum;
 		}
 
@@ -170,12 +192,12 @@ namespace EightBit {
 			difference.word = A() - value - carry;
 			adjustAuxiliaryCarrySub(value, difference.word);
 			A() = difference.low;
-			F().C = (difference.word & Bit8) != 0;
+			setFlag(CF, difference.word & Bit8);
 			adjustSZP(A());
 		}
 
 		void sbb(uint8_t value) {
-			sub(value, F().C);
+			sub(value, F() & CF);
 		}
 
 		void mov_m_r(uint8_t value) {
@@ -316,22 +338,12 @@ namespace EightBit {
 		void push_b() { pushWord(BC()); }
 		void push_d() { pushWord(DE()); }
 		void push_h() { pushWord(HL()); }
-
-		void push_psw() {
-			register16_t pair;
-			pair.low = F();
-			pair.high = A();
-			pushWord(pair);
-		}
+		void push_psw() { pushWord(AF()); }
 
 		void pop_b() { popWord(BC()); }
 		void pop_d() { popWord(DE()); }
 		void pop_h() { popWord(HL()); }
-
-		void pop_psw() {
-			F() = pop();
-			A() = pop();
-		}
+		void pop_psw() { popWord(AF()); }
 
 		void xhtl() {
 			auto tos = m_memory.getWord(sp.word);
@@ -354,17 +366,17 @@ namespace EightBit {
 
 		void jmp() { jumpConditional(true); }
 
-		void jc() { jumpConditional(F().C); }
-		void jnc() { jumpConditional(!F().C); }
+		void jc() { jumpConditional(F() & CF); }
+		void jnc() { jumpConditional(!(F() & CF)); }
 
-		void jz() { jumpConditional(F().Z); }
-		void jnz() { jumpConditional(!F().Z); }
+		void jz() { jumpConditional(F() & ZF); }
+		void jnz() { jumpConditional(!(F() & ZF)); }
 
-		void jpe() { jumpConditional(F().P); }
-		void jpo() { jumpConditional(!F().P); }
+		void jpe() { jumpConditional(F() & PF); }
+		void jpo() { jumpConditional(!(F() & PF)); }
 
-		void jm() { jumpConditional(F().S); }
-		void jp() { jumpConditional(!F().S); }
+		void jm() { jumpConditional(F() & SF); }
+		void jp() { jumpConditional(!(F() & SF)); }
 
 		void pchl() {
 			pc = HL();
@@ -377,31 +389,31 @@ namespace EightBit {
 			call();
 		}
 
-		void cc() { if (callConditional(F().C)) cycles += 6; }
-		void cnc() { if (callConditional(!F().C)) cycles += 6; }
+		void cc() { if (callConditional(F() & CF)) cycles += 6; }
+		void cnc() { if (callConditional(!(F() & CF))) cycles += 6; }
 
-		void cpe() { if (callConditional(F().P)) cycles += 6; }
-		void cpo() { if (callConditional(!F().P)) cycles += 6; }
+		void cpe() { if (callConditional(F() & PF)) cycles += 6; }
+		void cpo() { if (callConditional(!(F() & PF))) cycles += 6; }
 
-		void cz() { if (callConditional(F().Z)) cycles += 6; }
-		void cnz() { if (callConditional(!F().Z)) cycles += 6; }
+		void cz() { if (callConditional(F() & ZF)) cycles += 6; }
+		void cnz() { if (callConditional(!(F() & ZF))) cycles += 6; }
 
-		void cm() { if (callConditional(F().S)) cycles += 6; }
-		void cp() { if (callConditional(!F().S)) cycles += 6; }
+		void cm() { if (callConditional(F() & SF)) cycles += 6; }
+		void cp() { if (callConditional(!(F() & SF))) cycles += 6; }
 
 		// return
 
-		void rc() { if (returnConditional(F().C)) cycles += 6; }
-		void rnc() { if (returnConditional(!F().C)) cycles += 6; }
+		void rc() { if (returnConditional(F() & CF)) cycles += 6; }
+		void rnc() { if (returnConditional(!(F() & CF))) cycles += 6; }
 
-		void rz() { if (returnConditional(F().Z)) cycles += 6; }
-		void rnz() { if (returnConditional(!F().Z)) cycles += 6; }
+		void rz() { if (returnConditional(F() & ZF)) cycles += 6; }
+		void rnz() { if (returnConditional(!(F() & ZF))) cycles += 6; }
 
-		void rpe() { if (returnConditional(F().P)) cycles += 6; }
-		void rpo() { if (returnConditional(!F().P)) cycles += 6; }
+		void rpe() { if (returnConditional(F() & PF)) cycles += 6; }
+		void rpo() { if (returnConditional(!(F() & PF))) cycles += 6; }
 
-		void rm() { if (returnConditional(F().S)) cycles += 6; }
-		void rp() { if (returnConditional(!F().S)) cycles += 6; }
+		void rm() { if (returnConditional(F() & SF)) cycles += 6; }
+		void rp() { if (returnConditional(!(F() & SF))) cycles += 6; }
 
 		// restart
 
@@ -594,49 +606,49 @@ namespace EightBit {
 		void rlc() {
 			auto carry = A() & Bit7;
 			A() <<= 1;
-			A() |= carry >> 7;
-			F().C = carry != 0;
+			carry ? A() |= Bit0 : A() &= ~Bit0;
+			setFlag(CF, carry);
 		}
 
 		void rrc() {
-			auto carry = A() & 1;
+			auto carry = A() & Bit0;
 			A() >>= 1;
-			A() |= carry << 7;
-			F().C = carry != 0;
+			carry ? A() |= Bit7 : A() &= ~Bit7;
+			setFlag(CF, carry);
 		}
 
 		void ral() {
 			auto carry = A() & Bit7;
 			A() <<= 1;
-			A() |= (uint8_t)F().C;
-			F().C = carry != 0;
+			A() |= (F() & CF);
+			setFlag(CF, carry);
 		}
 
 		void rar() {
 			auto carry = A() & 1;
 			A() >>= 1;
-			A() |= F().C << 7;
-			F().C = carry != 0;
+			A() |= (F() & CF) << 7;
+			setFlag(CF, carry);
 		}
 
 		// specials
 
 		void cma() { A() ^= Mask8; }
-		void stc() { F().C = true; }
-		void cmc() { F().C = !F().C; }
+		void stc() { setFlag(CF); }
+		void cmc() { clearFlag(CF, F() & CF); }
 
 		void daa() {
-			auto carry = F().C;
+			auto carry = F() & CF;
 			uint8_t addition = 0;
-			if (F().AC || lowNibble(A()) > 9) {
+			if ((F() & AC) || lowNibble(A()) > 9) {
 				addition = 0x6;
 			}
-			if (F().C || highNibble(A()) > 9 || (highNibble(A()) >= 9 && lowNibble(A()) > 9)) {
+			if ((F() & CF) || highNibble(A()) > 9 || (highNibble(A()) >= 9 && lowNibble(A()) > 9)) {
 				addition |= 0x60;
 				carry = true;
 			}
 			add(addition);
-			F().C = carry;
+			setFlag(CF, carry);
 		}
 
 		// input/output
