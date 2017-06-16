@@ -38,12 +38,7 @@ namespace EightBit {
 
 		const std::array<Instruction, 0x100>& getInstructions() const { return instructions; }
 
-		register16_t& AF() {
-			af.low &= ~(Bit5 | Bit3);
-			af.low |= Bit1;
-			return af;
-		}
-
+		register16_t& AF() { return af; }
 		uint8_t& A() { return AF().high; }
 		uint8_t& F() { return AF().low; }
 
@@ -103,6 +98,11 @@ namespace EightBit {
 			cycles = 0;
 			instruction.vector();
 			return cycles + instruction.count;
+		}
+
+		void adjustReservedFlags() {
+			AF().low &= ~(Bit5 | Bit3);
+			AF().low |= Bit1;
 		}
 
 		void adjustSign(uint8_t value) { setFlag(SF, value & SF); }
@@ -343,7 +343,11 @@ namespace EightBit {
 		void pop_b() { popWord(BC()); }
 		void pop_d() { popWord(DE()); }
 		void pop_h() { popWord(HL()); }
-		void pop_psw() { popWord(AF()); }
+
+		void pop_psw() {
+			popWord(AF());
+			adjustReservedFlags();
+		}
 
 		void xhtl() {
 			auto tos = m_memory.getWord(sp.word);
