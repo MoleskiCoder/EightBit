@@ -289,22 +289,22 @@ namespace EightBit {
 
 		void sta() {
 			fetchWord();
-			m_memory.set(MEMPTR().word, A());
+			memptrReference() = A();
 		}
 
 		void lda() {
 			fetchWord();
-			A() = m_memory.get(MEMPTR().word);
+			A() = memptrReference();
 		}
 
 		void shld() {
 			fetchWord();
-			m_memory.setWord(MEMPTR().word, HL());
+			setWordViaMemptr(HL());
 		}
 
 		void lhld() {
 			fetchWord();
-			HL() = m_memory.getWord(MEMPTR().word);
+			getWordViaMemptr(HL());
 		}
 
 		void xchg() {

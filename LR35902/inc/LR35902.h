@@ -68,9 +68,6 @@ namespace EightBit {
 
 		bool m_stopped;
 
-		std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
-		std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
-
 		int fetchExecute() {
 			return execute(fetchByte());
 		}

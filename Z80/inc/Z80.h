@@ -120,8 +120,7 @@ namespace EightBit {
 		}
 
 		void incrementRefresh() {
-			auto incremented = (REFRESH() + 1) & Mask7;
-			REFRESH() = (REFRESH() & Bit7) | incremented;
+			REFRESH() = (REFRESH() & Bit7) | (REFRESH() + 1) & Mask7;
 		}
 
 		uint8_t& DISPLACED() {
