@@ -225,47 +225,47 @@ namespace EightBit {
 			adc(hl, operand);
 		}
 
-		void adjustHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
-			setFlag(HC, calculateHalfCarryAdd(before, value, calculation));
+		void adjustHalfCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
+			setFlag(f, HC, calculateHalfCarryAdd(before, value, calculation));
 		}
 
-		void adjustHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
-			setFlag(HC, calculateHalfCarrySub(before, value, calculation));
+		void adjustHalfCarrySub(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
+			setFlag(f, HC, calculateHalfCarrySub(before, value, calculation));
 		}
 
-		void adjustOverflowAdd(uint8_t before, uint8_t value, uint8_t calculation) {
-			adjustOverflowAdd(before & SF, value & SF, calculation & SF);
+		void adjustOverflowAdd(uint8_t& f, uint8_t before, uint8_t value, uint8_t calculation) {
+			adjustOverflowAdd(f, before & SF, value & SF, calculation & SF);
 		}
 
-		void adjustOverflowAdd(int beforeNegative, int valueNegative, int afterNegative) {
+		void adjustOverflowAdd(uint8_t& f, int beforeNegative, int valueNegative, int afterNegative) {
 			auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
-			setFlag(VF, overflow);
+			setFlag(f, VF, overflow);
 		}
 
-		void adjustOverflowSub(uint8_t before, uint8_t value, uint8_t calculation) {
-			adjustOverflowSub(before & SF, value & SF, calculation & SF);
+		void adjustOverflowSub(uint8_t& f, uint8_t before, uint8_t value, uint8_t calculation) {
+			adjustOverflowSub(f, before & SF, value & SF, calculation & SF);
 		}
 
-		void adjustOverflowSub(int beforeNegative, int valueNegative, int afterNegative) {
+		void adjustOverflowSub(uint8_t& f, int beforeNegative, int valueNegative, int afterNegative) {
 			auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
-			setFlag(VF, overflow);
+			setFlag(f, VF, overflow);
 		}
 
 		void executeCB(int x, int y, int z, int p, int q);
 		void executeED(int x, int y, int z, int p, int q);
 		void executeOther(int x, int y, int z, int p, int q);
 
-		void adjustSign(uint8_t value);
-		void adjustZero(uint8_t value);
-		void adjustParity(uint8_t value);
-		void adjustSZ(uint8_t value);
-		void adjustSZP(uint8_t value);
-		void adjustXY(uint8_t value);
-		void adjustSZPXY(uint8_t value);
-		void adjustSZXY(uint8_t value);
+		static void adjustSign(uint8_t& f, uint8_t value);
+		static void adjustZero(uint8_t& f, uint8_t value);
+		static void adjustParity(uint8_t& f, uint8_t value);
+		static void adjustSZ(uint8_t& f, uint8_t value);
+		static void adjustSZP(uint8_t& f, uint8_t value);
+		static void adjustXY(uint8_t& f, uint8_t value);
+		static void adjustSZPXY(uint8_t& f, uint8_t value);
+		static void adjustSZXY(uint8_t& f, uint8_t value);
 
-		void postIncrement(uint8_t value);
-		void postDecrement(uint8_t value);
+		void postIncrement(uint8_t& f, uint8_t value);
+		void postDecrement(uint8_t& f, uint8_t value);
 
 		void retn();
 		void reti();

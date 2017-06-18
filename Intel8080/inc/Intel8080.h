@@ -83,37 +83,37 @@ namespace EightBit {
 			AF().low |= Bit1;
 		}
 
-		void adjustSign(uint8_t value) { setFlag(SF, value & SF); }
-		void adjustZero(uint8_t value) { clearFlag(ZF, value);}
+		static void adjustSign(uint8_t& f, uint8_t value) { setFlag(f, SF, value & SF); }
+		static void adjustZero(uint8_t& f, uint8_t value) { clearFlag(f, ZF, value); }
 
-		void adjustParity(uint8_t value) {
+		void adjustParity(uint8_t& f, uint8_t value) {
 			static const uint8_t lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
 			auto set = (lookup[highNibble(value)] + lookup[lowNibble(value)]);
-			clearFlag(PF, set % 2);
+			clearFlag(f, PF, set % 2);
 		}
 
-		void adjustSZP(uint8_t value) {
-			adjustSign(value);
-			adjustZero(value);
-			adjustParity(value);
+		void adjustSZP(uint8_t& f, uint8_t value) {
+			adjustSign(f, value);
+			adjustZero(f, value);
+			adjustParity(f, value);
 		}
 
-		void adjustAuxiliaryCarryAdd(uint8_t value, int calculation) {
-			setFlag(AC, calculateHalfCarryAdd(A(), value, calculation));
+		void adjustAuxiliaryCarryAdd(uint8_t& f, uint8_t value, int calculation) {
+			setFlag(f, AC, calculateHalfCarryAdd(A(), value, calculation));
 		}
 
-		void adjustAuxiliaryCarrySub(uint8_t value, int calculation) {
-			clearFlag(AC, calculateHalfCarrySub(A(), value, calculation));
+		void adjustAuxiliaryCarrySub(uint8_t& f, uint8_t value, int calculation) {
+			clearFlag(f, AC, calculateHalfCarrySub(A(), value, calculation));
 		}
 
-		void postIncrement(uint8_t value) {
-			adjustSZP(value);
-			clearFlag(AC, lowNibble(value));
+		void postIncrement(uint8_t& f, uint8_t value) {
+			adjustSZP(f, value);
+			clearFlag(f, AC, lowNibble(value));
 		}
 
-		void postDecrement(uint8_t value) {
-			adjustSZP(value);
-			setFlag(AC, lowNibble(value) != Mask4);
+		void postDecrement(uint8_t& f, uint8_t value) {
+			adjustSZP(f, value);
+			setFlag(f, AC, lowNibble(value) != Mask4);
 		}
 
 		static Instruction INS(instruction_t method, AddressingMode mode, std::string disassembly, int cycles);
@@ -124,35 +124,40 @@ namespace EightBit {
 		//
 
 		void compare(uint8_t value) {
+			auto& f = F();
 			uint16_t subtraction = A() - value;
-			adjustSZP((uint8_t)subtraction);
-			adjustAuxiliaryCarrySub(value, subtraction);
-			setFlag(CF, subtraction & Bit8);
+			adjustSZP(f, (uint8_t)subtraction);
+			adjustAuxiliaryCarrySub(f, value, subtraction);
+			setFlag(f, CF, subtraction & Bit8);
 		}
 
 		void anda(uint8_t value) {
-			setFlag(AC, (A() | value) & Bit3);
-			clearFlag(CF);
-			adjustSZP(A() &= value);
+			auto& f = F();
+			setFlag(f, AC, (A() | value) & Bit3);
+			clearFlag(f, CF);
+			adjustSZP(f, A() &= value);
 		}
 
 		void ora(uint8_t value) {
-			clearFlag(AC | CF);
-			adjustSZP(A() |= value);
+			auto& f = F();
+			clearFlag(f, AC | CF);
+			adjustSZP(f, A() |= value);
 		}
 
 		void xra(uint8_t value) {
-			clearFlag(AC | CF);
-			adjustSZP(A() ^= value);
+			auto& f = F();
+			clearFlag(f, AC | CF);
+			adjustSZP(f, A() ^= value);
 		}
 
 		void add(uint8_t value, int carry = 0) {
+			auto& f = F();
 			register16_t sum;
 			sum.word = A() + value + carry;
-			adjustAuxiliaryCarryAdd(value, sum.word);
+			adjustAuxiliaryCarryAdd(f, value, sum.word);
 			A() = sum.low;
-			setFlag(CF, sum.word & Bit8);
-			adjustSZP(A());
+			setFlag(f, CF, sum.word & Bit8);
+			adjustSZP(f, A());
 		}
 
 		void adc(uint8_t value) {
@@ -160,18 +165,20 @@ namespace EightBit {
 		}
 
 		void dad(uint16_t value) {
+			auto& f = F();
 			uint32_t sum = HL().word + value;
-			setFlag(CF, sum > 0xffff);
+			setFlag(f, CF, sum > 0xffff);
 			HL().word = (uint16_t)sum;
 		}
 
 		void sub(uint8_t value, int carry = 0) {
+			auto& f = F();
 			register16_t difference;
 			difference.word = A() - value - carry;
-			adjustAuxiliaryCarrySub(value, difference.word);
+			adjustAuxiliaryCarrySub(f, value, difference.word);
 			A() = difference.low;
-			setFlag(CF, difference.word & Bit8);
-			adjustSZP(A());
+			setFlag(f, CF, difference.word & Bit8);
+			adjustSZP(f, A());
 		}
 
 		void sbb(uint8_t value) {
@@ -410,31 +417,31 @@ namespace EightBit {
 
 		// increment and decrement
 
-		void inr_a() { postIncrement(++A()); }
-		void inr_b() { postIncrement(++B()); }
-		void inr_c() { postIncrement(++C()); }
-		void inr_d() { postIncrement(++D()); }
-		void inr_e() { postIncrement(++E()); }
-		void inr_h() { postIncrement(++H()); }
-		void inr_l() { postIncrement(++L()); }
+		void inr_a() { postIncrement(F(), ++A()); }
+		void inr_b() { postIncrement(F(), ++B()); }
+		void inr_c() { postIncrement(F(), ++C()); }
+		void inr_d() { postIncrement(F(), ++D()); }
+		void inr_e() { postIncrement(F(), ++E()); }
+		void inr_h() { postIncrement(F(), ++H()); }
+		void inr_l() { postIncrement(F(), ++L()); }
 
 		void inr_m() {
 			auto value = m_memory.get(HL().word);
-			postIncrement(++value);
+			postIncrement(F(), ++value);
 			m_memory.set(HL().word, value);
 		}
 
-		void dcr_a() { postDecrement(--A()); }
-		void dcr_b() { postDecrement(--B()); }
-		void dcr_c() { postDecrement(--C()); }
-		void dcr_d() { postDecrement(--D()); }
-		void dcr_e() { postDecrement(--E()); }
-		void dcr_h() { postDecrement(--H()); }
-		void dcr_l() { postDecrement(--L()); }
+		void dcr_a() { postDecrement(F(), --A()); }
+		void dcr_b() { postDecrement(F(), --B()); }
+		void dcr_c() { postDecrement(F(), --C()); }
+		void dcr_d() { postDecrement(F(), --D()); }
+		void dcr_e() { postDecrement(F(), --E()); }
+		void dcr_h() { postDecrement(F(), --H()); }
+		void dcr_l() { postDecrement(F(), --L()); }
 
 		void dcr_m() {
 			auto value = m_memory.get(HL().word);
-			postDecrement(--value);
+			postDecrement(F(), --value);
 			m_memory.set(HL().word, value);
 		}
 
@@ -589,48 +596,51 @@ namespace EightBit {
 			auto carry = A() & Bit7;
 			A() <<= 1;
 			carry ? A() |= Bit0 : A() &= ~Bit0;
-			setFlag(CF, carry);
+			setFlag(F(), CF, carry);
 		}
 
 		void rrc() {
 			auto carry = A() & Bit0;
 			A() >>= 1;
 			carry ? A() |= Bit7 : A() &= ~Bit7;
-			setFlag(CF, carry);
+			setFlag(F(), CF, carry);
 		}
 
 		void ral() {
+			auto& f = F();
 			auto carry = A() & Bit7;
 			A() <<= 1;
-			A() |= (F() & CF);
-			setFlag(CF, carry);
+			A() |= (f & CF);
+			setFlag(f, CF, carry);
 		}
 
 		void rar() {
+			auto& f = F();
 			auto carry = A() & 1;
 			A() >>= 1;
-			A() |= (F() & CF) << 7;
-			setFlag(CF, carry);
+			A() |= (f & CF) << 7;
+			setFlag(f, CF, carry);
 		}
 
 		// specials
 
 		void cma() { A() ^= Mask8; }
-		void stc() { setFlag(CF); }
-		void cmc() { clearFlag(CF, F() & CF); }
+		void stc() { setFlag(F(), CF); }
+		void cmc() { clearFlag(F(), CF, F() & CF); }
 
 		void daa() {
-			auto carry = F() & CF;
+			auto& f = F();
+			auto carry = f & CF;
 			uint8_t addition = 0;
-			if ((F() & AC) || lowNibble(A()) > 9) {
+			if ((f & AC) || lowNibble(A()) > 9) {
 				addition = 0x6;
 			}
-			if ((F() & CF) || highNibble(A()) > 9 || (highNibble(A()) >= 9 && lowNibble(A()) > 9)) {
+			if ((f & CF) || highNibble(A()) > 9 || (highNibble(A()) >= 9 && lowNibble(A()) > 9)) {
 				addition |= 0x60;
 				carry = true;
 			}
 			add(addition);
-			setFlag(CF, carry);
+			setFlag(f, CF, carry);
 		}
 
 		// input/output

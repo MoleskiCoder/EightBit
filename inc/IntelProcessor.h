@@ -29,16 +29,16 @@ namespace EightBit {
 	protected:
 		IntelProcessor(Memory& memory);
 
-		void clearFlag(int flag) { F() &= ~flag; }
-		void setFlag(int flag) { F() |= flag; }
+		static void clearFlag(uint8_t& f, int flag) { f &= ~flag; }
+		static void setFlag(uint8_t& f, int flag) { f |= flag; }
 
-		void setFlag(int flag, int condition) { setFlag(flag, condition != 0); }
-		void setFlag(int flag, uint32_t condition) { setFlag(flag, condition != 0); }
-		void setFlag(int flag, bool condition) { condition ? setFlag(flag) : clearFlag(flag); }
+		static void setFlag(uint8_t& f, int flag, int condition) { setFlag(f, flag, condition != 0); }
+		static void setFlag(uint8_t& f, int flag, uint32_t condition) { setFlag(f, flag, condition != 0); }
+		static void setFlag(uint8_t& f, int flag, bool condition) { condition ? setFlag(f, flag) : clearFlag(f, flag); }
 
-		void clearFlag(int flag, int condition) { clearFlag(flag, condition != 0); }
-		void clearFlag(int flag, uint32_t condition) { clearFlag(flag, condition != 0); }
-		void clearFlag(int flag, bool condition) { condition ? clearFlag(flag) : setFlag(flag); }
+		static void clearFlag(uint8_t& f, int flag, int condition) { clearFlag(f, flag, condition != 0); }
+		static void clearFlag(uint8_t& f, int flag, uint32_t condition) { clearFlag(f, flag, condition != 0); }
+		static void clearFlag(uint8_t& f, int flag, bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
 
 		std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 		std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
@@ -57,11 +57,25 @@ namespace EightBit {
 			return m_halfCarryTableSub[index & Mask3];
 		}
 
-		void push(uint8_t value);
-		void pushWord(register16_t value);
+		void push(uint8_t value) {
+			m_memory.ADDRESS().word = --sp.word;
+			m_memory.reference() = value;
+		}
 
-		uint8_t pop();
-		void popWord(register16_t& output);
+		void pushWord(register16_t value) {
+			push(value.high);
+			push(value.low);
+		}
+
+		uint8_t pop() {
+			m_memory.ADDRESS().word = sp.word++;
+			return m_memory.reference();
+		}
+
+		void popWord(register16_t& output) {
+			output.low = pop();
+			output.high = pop();
+		}
 
 		void fetchWord() {
 			Processor::fetchWord(MEMPTR());

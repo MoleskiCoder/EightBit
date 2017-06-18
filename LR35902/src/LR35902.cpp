@@ -50,20 +50,20 @@ int EightBit::LR35902::interrupt(uint8_t value) {
 
 #pragma region Flag manipulation helpers
 
-void EightBit::LR35902::adjustZero(uint8_t value) {
-	clearFlag(ZF, value);
+void EightBit::LR35902::adjustZero(uint8_t& f, uint8_t value) {
+	clearFlag(f, ZF, value);
 }
 
-void EightBit::LR35902::postIncrement(uint8_t value) {
-	adjustZero(value);
-	clearFlag(NF);
-	clearFlag(HC, lowNibble(value));
+void EightBit::LR35902::postIncrement(uint8_t& f, uint8_t value) {
+	adjustZero(f, value);
+	clearFlag(f, NF);
+	clearFlag(f, HC, lowNibble(value));
 }
 
-void EightBit::LR35902::postDecrement(uint8_t value) {
-	adjustZero(value);
-	setFlag(NF);
-	clearFlag(HC, lowNibble(value + 1));
+void EightBit::LR35902::postDecrement(uint8_t& f, uint8_t value) {
+	adjustZero(f, value);
+	setFlag(f, NF);
+	clearFlag(f, HC, lowNibble(value + 1));
 }
 
 #pragma endregion Flag manipulation helpers
@@ -142,10 +142,11 @@ void EightBit::LR35902::sbc(register16_t& operand, register16_t value) {
 	auto result = before.word - value.word - (F() & CF);
 	operand.word = result;
 
-	clearFlag(ZF, operand.word);
-	adjustHalfCarrySub(before.high, value.high, operand.high);
-	setFlag(NF);
-	setFlag(CF, result & Bit16);
+	auto& f = F();
+	clearFlag(f, ZF, operand.word);
+	adjustHalfCarrySub(f, before.high, value.high, operand.high);
+	setFlag(f, NF);
+	setFlag(f, CF, result & Bit16);
 }
 
 void EightBit::LR35902::adc(register16_t& operand, register16_t value) {
@@ -155,10 +156,11 @@ void EightBit::LR35902::adc(register16_t& operand, register16_t value) {
 	auto result = before.word + value.word + (F() & CF);
 	operand.word = result;
 
-	clearFlag(ZF, result);
-	adjustHalfCarryAdd(before.high, value.high, operand.high);
-	clearFlag(NF);
-	setFlag(CF, result & Bit16);
+	auto& f = F();
+	clearFlag(f, ZF, result);
+	adjustHalfCarryAdd(f, before.high, value.high, operand.high);
+	clearFlag(f, NF);
+	setFlag(f, CF, result & Bit16);
 }
 
 void EightBit::LR35902::add(register16_t& operand, register16_t value) {
@@ -169,9 +171,10 @@ void EightBit::LR35902::add(register16_t& operand, register16_t value) {
 
 	operand.word = result;
 
-	clearFlag(NF);
-	setFlag(CF, result & Bit16);
-	adjustHalfCarryAdd(before.high, value.high, operand.high);
+	auto& f = F();
+	clearFlag(f, NF);
+	setFlag(f, CF, result & Bit16);
+	adjustHalfCarryAdd(f, before.high, value.high, operand.high);
 }
 
 #pragma endregion 16-bit arithmetic
@@ -180,16 +183,18 @@ void EightBit::LR35902::add(register16_t& operand, register16_t value) {
 
 void EightBit::LR35902::add(uint8_t& operand, uint8_t value, int carry) {
 
+	auto& f = F();
+
 	register16_t result;
 	result.word = operand + value + carry;
 
-	adjustHalfCarryAdd(operand, value, result.low);
+	adjustHalfCarryAdd(f, operand, value, result.low);
 
 	operand = result.low;
 
-	clearFlag(NF);
-	setFlag(CF, result.word & Bit8);
-	adjustZero(operand);
+	clearFlag(f, NF);
+	setFlag(f, CF, result.word & Bit8);
+	adjustZero(f, operand);
 }
 
 void EightBit::LR35902::adc(uint8_t& operand, uint8_t value) {
@@ -198,16 +203,18 @@ void EightBit::LR35902::adc(uint8_t& operand, uint8_t value) {
 
 void EightBit::LR35902::sub(uint8_t& operand, uint8_t value, int carry) {
 
+	auto& f = F();
+
 	register16_t result;
 	result.word = operand - value - carry;
 
-	adjustHalfCarrySub(operand, value, result.low);
+	adjustHalfCarrySub(f, operand, value, result.low);
 
 	operand = result.low;
 
-	setFlag(NF);
-	setFlag(CF, result.word & Bit8);
-	adjustZero(operand);
+	setFlag(f, NF);
+	setFlag(f, CF, result.word & Bit8);
+	adjustZero(f, operand);
 }
 
 void EightBit::LR35902::sbc(uint8_t& operand, uint8_t value) {
@@ -215,22 +222,25 @@ void EightBit::LR35902::sbc(uint8_t& operand, uint8_t value) {
 }
 
 void EightBit::LR35902::andr(uint8_t& operand, uint8_t value) {
+	auto& f = F();
 	operand &= value;
-	setFlag(HC);
-	clearFlag(CF | NF);
-	adjustZero(operand);
+	setFlag(f, HC);
+	clearFlag(f, CF | NF);
+	adjustZero(f, operand);
 }
 
 void EightBit::LR35902::xorr(uint8_t& operand, uint8_t value) {
+	auto& f = F();
 	operand ^= value;
-	clearFlag(HC | CF | NF);
-	adjustZero(operand);
+	clearFlag(f, HC | CF | NF);
+	adjustZero(f, operand);
 }
 
 void EightBit::LR35902::orr(uint8_t& operand, uint8_t value) {
+	auto& f = F();
 	operand |= value;
-	clearFlag(HC | CF | NF);
-	adjustZero(operand);
+	clearFlag(f, HC | CF | NF);
+	adjustZero(f, operand);
 }
 
 void EightBit::LR35902::compare(uint8_t value) {
@@ -243,70 +253,77 @@ void EightBit::LR35902::compare(uint8_t value) {
 #pragma region Shift and rotate
 
 void EightBit::LR35902::rlc(uint8_t& operand) {
+	auto& f = F();
 	auto carry = operand & Bit7;
 	operand <<= 1;
-	setFlag(CF, carry);
+	setFlag(f, CF, carry);
 	carry ? operand |= Bit0 : operand &= ~Bit0;
-	clearFlag(NF | HC);
-	adjustZero(operand);
+	clearFlag(f, NF | HC);
+	adjustZero(f, operand);
 }
 
 void EightBit::LR35902::rrc(uint8_t& operand) {
+	auto& f = F();
 	auto carry = operand & Bit0;
 	operand >>= 1;
 	carry ? operand |= Bit7 : operand &= ~Bit7;
-	setFlag(CF, carry);
-	clearFlag(NF | HC);
-	adjustZero(operand);
+	setFlag(f, CF, carry);
+	clearFlag(f, NF | HC);
+	adjustZero(f, operand);
 }
 
 void EightBit::LR35902::rl(uint8_t& operand) {
-	auto oldCarry = F() & CF;
+	auto& f = F();
+	auto oldCarry = f & CF;
 	auto newCarry = operand & Bit7;
 	operand <<= 1;
 	oldCarry ? operand |= Bit0 : operand &= ~Bit0;
-	setFlag(CF, newCarry);
-	clearFlag(NF | HC);
-	adjustZero(operand);
+	setFlag(f, CF, newCarry);
+	clearFlag(f, NF | HC);
+	adjustZero(f, operand);
 }
 
 void EightBit::LR35902::rr(uint8_t& operand) {
-	auto oldCarry = F() & CF;
+	auto& f = F();
+	auto oldCarry = f & CF;
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
 	operand |= oldCarry << 7;
-	setFlag(CF, newCarry);
-	clearFlag(NF | HC);
-	adjustZero(operand);
+	setFlag(f, CF, newCarry);
+	clearFlag(f, NF | HC);
+	adjustZero(f, operand);
 }
 
 //
 
 void EightBit::LR35902::sla(uint8_t& operand) {
+	auto& f = F();
 	auto newCarry = operand & Bit7;
 	operand <<= 1;
-	setFlag(CF, newCarry);
-	clearFlag(NF | HC);
-	adjustZero(operand);
+	setFlag(f, CF, newCarry);
+	clearFlag(f, NF | HC);
+	adjustZero(f, operand);
 }
 
 void EightBit::LR35902::sra(uint8_t& operand) {
+	auto& f = F();
 	auto new7 = operand & Bit7;
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
 	operand |= new7;
-	setFlag(CF, newCarry);
-	clearFlag(NF | HC);
-	adjustZero(operand);
+	setFlag(f, CF, newCarry);
+	clearFlag(f, NF | HC);
+	adjustZero(f, operand);
 }
 
 void EightBit::LR35902::srl(uint8_t& operand) {
+	auto& f = F();
 	auto newCarry = operand & Bit0;
 	operand >>= 1;
 	operand &= ~Bit7;	// clear bit 7
-	setFlag(CF, newCarry);
-	clearFlag(NF | HC);
-	adjustZero(operand);
+	setFlag(f, CF, newCarry);
+	clearFlag(f, NF | HC);
+	adjustZero(f, operand);
 }
 
 #pragma endregion Shift and rotate
@@ -314,10 +331,11 @@ void EightBit::LR35902::srl(uint8_t& operand) {
 #pragma region BIT/SET/RES
 
 void EightBit::LR35902::bit(int n, uint8_t& operand) {
-	auto carry = F() & CF;
+	auto& f = F();
+	auto carry = f & CF;
 	uint8_t discarded = operand;
 	andr(discarded, 1 << n);
-	setFlag(CF, carry);
+	setFlag(f, CF, carry);
 }
 
 void EightBit::LR35902::res(int n, uint8_t& operand) {
@@ -336,10 +354,12 @@ void EightBit::LR35902::set(int n, uint8_t& operand) {
 
 void EightBit::LR35902::daa() {
 
+	auto& f = F();
+
 	uint8_t a = A();
 
-	auto lowAdjust = (F() & HC) | ((A() & Mask4) > 9);
-	auto highAdjust = (F() & CF) | (A() > 0x99);
+	auto lowAdjust = (f & HC) | ((A() & Mask4) > 9);
+	auto highAdjust = (f & CF) | (A() > 0x99);
 
 	if (F() & NF) {
 		if (lowAdjust)
@@ -353,35 +373,39 @@ void EightBit::LR35902::daa() {
 			a += 0x60;
 	}
 
-	F() = (F() & (CF | NF)) | (A() > 0x99) | ((A() ^ a) & HC);
+	f = (f & (CF | NF)) | (A() > 0x99) | ((A() ^ a) & HC);
 
-	adjustZero(a);
+	adjustZero(f, a);
 
 	A() = a;
 }
 
 void EightBit::LR35902::cpl() {
 	A() = ~A();
-	setFlag(HC | NF);
+	auto& f = F();
+	setFlag(f, HC | NF);
 }
 
 void EightBit::LR35902::scf() {
-	setFlag(CF);
-	clearFlag(HC | NF);
+	auto& f = F();
+	setFlag(f, CF);
+	clearFlag(f, HC | NF);
 }
 
 void EightBit::LR35902::ccf() {
-	auto carry = F() & CF;
-	clearFlag(CF, carry);
-	clearFlag(NF | HC);
+	auto& f = F();
+	auto carry = f & CF;
+	clearFlag(f, CF, carry);
+	clearFlag(f, NF | HC);
 }
 
 void EightBit::LR35902::swap(uint8_t& operand) {
+	auto& f = F();
 	auto low = lowNibble(operand);
 	auto high = highNibble(operand);
 	operand = promoteNibble(low) | demoteNibble(high);
-	adjustZero(operand);
-	clearFlag(NF | HC | CF);
+	adjustZero(f, operand);
+	clearFlag(f, NF | HC | CF);
 }
 
 #pragma endregion Miscellaneous instructions
@@ -442,7 +466,7 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 			srl(R(z));
 			break;
 		}
-		adjustZero(R(z));
+		adjustZero(F(), R(z));
 		cycles += 2;
 		if (z == 6)
 			cycles += 2;
@@ -577,13 +601,13 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			cycles += 2;
 			break;
 		case 4:	// 8-bit INC
-			postIncrement(++R(y));	// INC r
+			postIncrement(F(), ++R(y));	// INC r
 			cycles++;
 			if (y == 6)
 				cycles += 2;
 			break;
 		case 5:	// 8-bit DEC
-			postDecrement(--R(y));	// DEC r
+			postDecrement(F(), --R(y));	// DEC r
 			cycles++;
 			if (y == 6)
 				cycles += 2;
@@ -678,12 +702,13 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 3;
 					break;
 				case 5: { // GB: ADD SP,dd
+						auto& f = F();
 						auto before = sp;
 						auto value = fetchByte();
 						sp.word += (int8_t)value;
-						clearFlag(ZF | NF);
-						setFlag(CF, sp.word & Bit16);
-						adjustHalfCarryAdd(before.high, value, sp.high);
+						clearFlag(f, ZF | NF);
+						setFlag(f, CF, sp.word & Bit16);
+						adjustHalfCarryAdd(f, before.high, value, sp.high);
 					}
 					cycles += 4;
 					break;
@@ -692,12 +717,13 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 3;
 					break;
 				case 7: { // GB: LD HL,SP + dd
+						auto& f = F();
 						auto before = sp;
 						auto value = fetchByte();
 						HL().word = before.word + (int8_t)value;
-						clearFlag(ZF | NF);
-						setFlag(CF, HL().word & Bit16);
-						adjustHalfCarryAdd(before.high, value, HL().high);
+						clearFlag(f, ZF | NF);
+						setFlag(f, CF, HL().word & Bit16);
+						adjustHalfCarryAdd(f, before.high, value, HL().high);
 					}
 					cycles += 3;
 					break;

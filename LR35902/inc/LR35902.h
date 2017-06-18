@@ -113,21 +113,21 @@ namespace EightBit {
 			}
 		}
 
-		void adjustHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
-			setFlag(HC, calculateHalfCarryAdd(before, value, calculation));
+		void adjustHalfCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
+			setFlag(f, HC, calculateHalfCarryAdd(before, value, calculation));
 		}
 
-		void adjustHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
-			setFlag(HC, calculateHalfCarrySub(before, value, calculation));
+		void adjustHalfCarrySub(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
+			setFlag(f, HC, calculateHalfCarrySub(before, value, calculation));
 		}
 
 		void executeCB(int x, int y, int z, int p, int q);
 		void executeOther(int x, int y, int z, int p, int q);
 
-		void adjustZero(uint8_t value);
+		void adjustZero(uint8_t& f, uint8_t value);
 
-		void postIncrement(uint8_t value);
-		void postDecrement(uint8_t value);
+		void postIncrement(uint8_t& f, uint8_t value);
+		void postDecrement(uint8_t& f, uint8_t value);
 
 		void reti();
 
