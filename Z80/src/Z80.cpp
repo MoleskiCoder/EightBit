@@ -798,7 +798,7 @@ void EightBit::Z80::rrd() {
 	auto memory = memptrReference();
 	m_memory.reference() = promoteNibble(a) | highNibble(memory);
 	a = (a & 0xf0) | lowNibble(memory);
-	adjustSZPXY(f, A());
+	adjustSZPXY(f, a);
 	clearFlag(f, NF | HC);
 }
 

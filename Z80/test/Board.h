@@ -25,8 +25,8 @@ private:
 	EightBit::Memory m_memory;
 	EightBit::InputOutput m_ports;
 	EightBit::Z80 m_cpu;
-	EightBit::Profiler m_profiler;
 	EightBit::Disassembler m_disassembler;
+	EightBit::Profiler m_profiler;
 
 	void Cpu_ExecutingInstruction_Cpm(const EightBit::Z80& cpu);
 

@@ -591,7 +591,7 @@ void EightBit::Disassembler::disassembleOther(
 					specification = "JP (HL)";
 					break;
 				case 3:	// LD SP,HL
-					specification = "LD SP,Hl";
+					specification = "LD SP,HL";
 					break;
 				}
 			}

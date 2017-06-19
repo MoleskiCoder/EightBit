@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <array>
+
 #include "Processor.h"
 
 namespace EightBit {
