@@ -39,8 +39,8 @@ void Fuse::TestRunner::initialiseRegisters() {
 	m_cpu.IX() = inputRegisters[Fuse::RegisterState::IX];
 	m_cpu.IY() = inputRegisters[Fuse::RegisterState::IY];
 
-	m_cpu.setStackPointer(inputRegisters[Fuse::RegisterState::SP]);
-	m_cpu.setProgramCounter(inputRegisters[Fuse::RegisterState::PC]);
+	m_cpu.SP() = inputRegisters[Fuse::RegisterState::SP];
+	m_cpu.PC() = inputRegisters[Fuse::RegisterState::PC];
 
 	m_cpu.MEMPTR() = inputRegisters[Fuse::RegisterState::MEMPTR];
 
@@ -115,8 +115,8 @@ void Fuse::TestRunner::checkregisters() {
 	auto ix = m_cpu.IX().word == expectedRegisters[Fuse::RegisterState::IX].word;
 	auto iy = m_cpu.IY().word == expectedRegisters[Fuse::RegisterState::IY].word;
 
-	auto sp = m_cpu.getStackPointer().word == expectedRegisters[Fuse::RegisterState::SP].word;
-	auto pc = m_cpu.getProgramCounter().word == expectedRegisters[Fuse::RegisterState::PC].word;
+	auto sp = m_cpu.SP().word == expectedRegisters[Fuse::RegisterState::SP].word;
+	auto pc = m_cpu.PC().word == expectedRegisters[Fuse::RegisterState::PC].word;
 
 	auto memptr = m_cpu.MEMPTR().word == expectedRegisters[Fuse::RegisterState::MEMPTR].word;
 
@@ -194,13 +194,13 @@ void Fuse::TestRunner::checkregisters() {
 
 		if (!sp) {
 			auto expectedWord = expectedRegisters[Fuse::RegisterState::SP];
-			auto actualWord = m_cpu.getStackPointer();
+			auto actualWord = m_cpu.SP();
 			dumpDifference("SPH", "SPL", actualWord, expectedWord);
 		}
 
 		if (!pc) {
 			auto expectedWord = expectedRegisters[Fuse::RegisterState::PC];
-			auto actualWord = m_cpu.getProgramCounter();
+			auto actualWord = m_cpu.PC();
 			dumpDifference("PCH", "PCL", actualWord, expectedWord);
 		}
 

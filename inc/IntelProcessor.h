@@ -40,25 +40,24 @@ namespace EightBit {
 		static void clearFlag(uint8_t& f, int flag, uint32_t condition) { clearFlag(f, flag, condition != 0); }
 		static void clearFlag(uint8_t& f, int flag, bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
 
-		std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
-		std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
-
-		int buildHalfCarryIndex(uint8_t before, uint8_t value, int calculation) {
+		static int buildHalfCarryIndex(uint8_t before, uint8_t value, int calculation) {
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
-		bool calculateHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
+		static bool calculateHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
+			static std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 			auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableAdd[index & Mask3];
 		}
 
-		bool calculateHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
+		static bool calculateHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
+			std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 			auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableSub[index & Mask3];
 		}
 
 		void push(uint8_t value) {
-			m_memory.ADDRESS().word = --sp.word;
+			m_memory.ADDRESS().word = --SP().word;
 			m_memory.reference() = value;
 		}
 
@@ -68,7 +67,7 @@ namespace EightBit {
 		}
 
 		uint8_t pop() {
-			m_memory.ADDRESS().word = sp.word++;
+			m_memory.ADDRESS().word = SP().word++;
 			return m_memory.reference();
 		}
 
@@ -104,11 +103,11 @@ namespace EightBit {
 		//
 
 		void jump() {
-			pc = MEMPTR();
+			PC() = MEMPTR();
 		}
 
 		void call() {
-			pushWord(pc);
+			pushWord(PC());
 			jump();
 		}
 
@@ -144,7 +143,7 @@ namespace EightBit {
 		}
 
 		void jr(int8_t offset) {
-			MEMPTR().word = pc.word + offset;
+			MEMPTR().word = PC().word + offset;
 			jump();
 		}
 

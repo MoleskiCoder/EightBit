@@ -15,8 +15,8 @@ EightBit::Disassembler::Disassembler() {
 
 std::string EightBit::Disassembler::state(Z80& cpu) {
 
-	auto pc = cpu.getProgramCounter();
-	auto sp = cpu.getStackPointer();
+	auto pc = cpu.PC();
+	auto sp = cpu.SP();
 
 	auto a = cpu.A();
 	auto f = cpu.F();
@@ -169,10 +169,10 @@ std::string EightBit::Disassembler::alu(int which) {
 	throw std::logic_error("Unhandled alu operation");
 }
 
-std::string EightBit::Disassembler::disassemble(const Z80& cpu) {
+std::string EightBit::Disassembler::disassemble(Z80& cpu) {
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	std::ostringstream output;
-	disassemble(output, cpu, cpu.getProgramCounter().word);
+	disassemble(output, cpu, cpu.PC().word);
 	return output.str();
 }
 

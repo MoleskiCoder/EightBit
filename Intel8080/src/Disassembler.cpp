@@ -13,8 +13,8 @@ EightBit::Disassembler::Disassembler() {
 
 std::string EightBit::Disassembler::state(Intel8080& cpu) {
 
-	auto pc = cpu.getProgramCounter();
-	auto sp = cpu.getStackPointer();
+	auto pc = cpu.PC();
+	auto sp = cpu.SP();
 
 	auto a = cpu.A();
 	auto f = cpu.F();
@@ -45,7 +45,7 @@ std::string EightBit::Disassembler::state(Intel8080& cpu) {
 std::string EightBit::Disassembler::disassemble(Intel8080& cpu) {
 
 	const auto& memory = cpu.getMemory();
-	auto pc = cpu.getProgramCounter();
+	auto pc = cpu.PC();
 	auto opcode = memory.peek(pc.word);
 	const auto& instruction = cpu.getInstructions()[opcode];
 

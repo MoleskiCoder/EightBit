@@ -16,8 +16,8 @@ EightBit::Disassembler::Disassembler() {
 
 std::string EightBit::Disassembler::state(EightBit::LR35902& cpu) {
 
-	auto pc = cpu.getProgramCounter();
-	auto sp = cpu.getStackPointer();
+	auto pc = cpu.PC();
+	auto sp = cpu.SP();
 
 	auto a = cpu.A();
 	auto f = cpu.F();
@@ -142,7 +142,7 @@ std::string EightBit::Disassembler::alu(int which) {
 std::string EightBit::Disassembler::disassemble(LR35902& cpu) {
 	m_prefixCB = false;
 	std::ostringstream output;
-	disassemble(output, cpu, cpu.getProgramCounter().word);
+	disassemble(output, cpu, cpu.PC().word);
 	return output.str();
 }
 

@@ -86,9 +86,9 @@ int EightBit::Z80::interrupt(bool maskable, uint8_t value) {
 				cycles += 13;
 				break;
 			case 2:
-				pushWord(pc);
-				pc.low = value;
-				pc.high = IV();
+				pushWord(PC());
+				PC().low = value;
+				PC().high = IV();
 				cycles += 19;
 				break;
 			}
@@ -502,23 +502,26 @@ uint8_t& EightBit::Z80::srl(uint8_t& operand) {
 
 #pragma region BIT/SET/RES
 
-void EightBit::Z80::bit(int n, uint8_t& operand) {
+uint8_t& EightBit::Z80::bit(int n, uint8_t& operand) {
 	auto& f = F();
 	auto carry = f & CF;
 	uint8_t discarded = operand;
 	andr(discarded, 1 << n);
 	clearFlag(f, PF, discarded);
 	setFlag(f, CF, carry);
+	return operand;
 }
 
-void EightBit::Z80::res(int n, uint8_t& operand) {
+uint8_t& EightBit::Z80::res(int n, uint8_t& operand) {
 	auto bit = 1 << n;
 	operand &= ~bit;
+	return operand;
 }
 
-void EightBit::Z80::set(int n, uint8_t& operand) {
+uint8_t& EightBit::Z80::set(int n, uint8_t& operand) {
 	auto bit = 1 << n;
 	operand |= bit;
+	return operand;
 }
 
 #pragma endregion BIT/SET/RES
@@ -526,22 +529,24 @@ void EightBit::Z80::set(int n, uint8_t& operand) {
 #pragma region Miscellaneous instructions
 
 void EightBit::Z80::neg() {
+	auto& a = A();
 	auto& f = F();
-	auto original = A();
-	A() = 0;
-	sub(A(), original);
+	auto original = a;
+	a = 0;
+	sub(a, original);
 	setFlag(f, PF, original == Bit7);
 	setFlag(f, CF, original);
 }
 
 void EightBit::Z80::daa() {
 
+	auto& acc = A();
 	auto& f = F();
 
-	uint8_t a = A();
+	auto a = acc;
 
-	auto lowAdjust = (f & HC) | (lowNibble(A()) > 9);
-	auto highAdjust = (f & CF) | (A() > 0x99);
+	auto lowAdjust = (f & HC) | (lowNibble(acc) > 9);
+	auto highAdjust = (f & CF) | (acc > 0x99);
 
 	if (f & NF) {
 		if (lowAdjust)
@@ -555,16 +560,17 @@ void EightBit::Z80::daa() {
 			a += 0x60;
 	}
 
-	f = (f & (CF | NF)) | (A() > 0x99) | ((A() ^ a) & HC);
+	f = (f & (CF | NF)) | (acc > 0x99) | ((acc ^ a) & HC);
 
 	adjustSZPXY(f, a);
 
-	A() = a;
+	acc = a;
 }
 
 void EightBit::Z80::cpl() {
+	auto& a = A();
 	auto& f = F();
-	A() = ~A();
+	a = ~a;
 	adjustXY(f, A());
 	setFlag(f, HC | NF);
 }
@@ -586,7 +592,7 @@ void EightBit::Z80::ccf() {
 }
 
 void EightBit::Z80::xhtl(register16_t& operand) {
-	m_memory.ADDRESS() = sp;
+	m_memory.ADDRESS() = SP();
 	MEMPTR().low = m_memory.reference();
 	m_memory.reference() = operand.low;
 	operand.low = MEMPTR().low;
@@ -608,17 +614,18 @@ void EightBit::Z80::xhtl() {
 
 void EightBit::Z80::blockCompare() {
 
+	const auto& a = A();
 	auto& f = F();
 
 	m_memory.ADDRESS() = HL();
 
 	auto value = m_memory.reference();
-	uint8_t result = A() - value;
+	uint8_t result = a - value;
 
 	setFlag(f, PF, --BC().word);
 
 	adjustSZ(f, result);
-	adjustHalfCarrySub(f, A(), value, result);
+	adjustHalfCarrySub(f, a, value, result);
 	setFlag(f, NF);
 
 	if (f & HC)
@@ -642,7 +649,7 @@ void EightBit::Z80::cpd() {
 
 bool EightBit::Z80::cpir() {
 	cpi();
-	MEMPTR().word = pc.word;
+	MEMPTR() = PC();
 	auto again = (F() & PF) && !(F() & ZF);	// See CPI
 	if (again)
 		MEMPTR().word--;
@@ -651,7 +658,7 @@ bool EightBit::Z80::cpir() {
 
 bool EightBit::Z80::cpdr() {
 	cpd();
-	MEMPTR().word = pc.word - 1;
+	MEMPTR().word = PC().word - 1;
 	auto again = (F() & PF) && !(F() & ZF);	// See CPD
 	if (!again)
 		MEMPTR().word--;
@@ -691,7 +698,7 @@ bool EightBit::Z80::ldir() {
 	ldi();
 	auto again = (F() & PF) != 0;
 	if (again)		// See LDI
-		MEMPTR().word = pc.word - 1;
+		MEMPTR().word = PC().word - 1;
 	return again;
 }
 
@@ -699,7 +706,7 @@ bool EightBit::Z80::lddr() {
 	ldd();
 	auto again = (F() & PF) != 0;
 	if (again)		// See LDR
-		MEMPTR().word = pc.word - 1;
+		MEMPTR().word = PC().word - 1;
 	return again;
 }
 
@@ -785,22 +792,24 @@ bool EightBit::Z80::otdr() {
 #pragma region Nibble rotation
 
 void EightBit::Z80::rrd() {
+	auto& a = A();
 	auto& f = F();
 	MEMPTR() = HL();
 	auto memory = memptrReference();
-	m_memory.reference() = promoteNibble(A()) | highNibble(memory);
-	A() = (A() & 0xf0) | lowNibble(memory);
+	m_memory.reference() = promoteNibble(a) | highNibble(memory);
+	a = (a & 0xf0) | lowNibble(memory);
 	adjustSZPXY(f, A());
 	clearFlag(f, NF | HC);
 }
 
 void EightBit::Z80::rld() {
+	auto& a = A();
 	auto& f = F();
 	MEMPTR() = HL();
 	auto memory = memptrReference();
-	m_memory.reference() = promoteNibble(memory) | lowNibble(A());
-	A() = (A() & 0xf0) | highNibble(memory);
-	adjustSZPXY(f, A());
+	m_memory.reference() = promoteNibble(memory) | lowNibble(a);
+	a = (a & 0xf0) | highNibble(memory);
+	adjustSZPXY(f, a);
 	clearFlag(f, NF | HC);
 }
 
@@ -815,7 +824,7 @@ int EightBit::Z80::step() {
 
 int EightBit::Z80::execute(uint8_t opcode) {
 
-	if (!getM1())
+	if (!M1())
 		throw std::logic_error("M1 cannot be high");
 
 	auto x = (opcode & 0b11000000) >> 6;
@@ -887,8 +896,7 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 			adjustXY(f, MEMPTR().high);
 			cycles += 20;
 		} else {
-			auto operand = R(z);
-			bit(y, operand);
+			auto operand = bit(y, R(z));
 			cycles += 8;
 			if (z == 6) {
 				adjustXY(f, MEMPTR().high);
@@ -900,8 +908,7 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 		break;
 	case 2:	// RES y, r[z]
 		if (m_displaced) {
-			res(y, DISPLACED());
-			R2(z) = DISPLACED();
+			R2(z) = res(y, DISPLACED());
 			cycles += 23;
 		} else {
 			res(y, R(z));
@@ -912,8 +919,7 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 		break;
 	case 3:	// SET y, r[z]
 		if (m_displaced) {
-			set(y, DISPLACED());
-			R2(z) = DISPLACED();
+			R2(z) = set(y, DISPLACED());
 			cycles += 23;
 		} else {
 			set(y, R(z));
@@ -1065,13 +1071,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				break;
 			case 6:	// LDIR
 				if (ldir()) {
-					pc.word -= 2;
+					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
 			case 7:	// LDDR
 				if (lddr()) {
-					pc.word -= 2;
+					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
@@ -1087,13 +1093,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				break;
 			case 6:	// CPIR
 				if (cpir()) {
-					pc.word -= 2;
+					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
 			case 7:	// CPDR
 				if (cpdr()) {
-					pc.word -= 2;
+					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
@@ -1109,13 +1115,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				break;
 			case 6:	// INIR
 				if (inir()) {
-					pc.word -= 2;
+					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
 			case 7:	// INDR
 				if (indr()) {
-					pc.word -= 2;
+					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
@@ -1131,13 +1137,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				break;
 			case 6:	// OTIR
 				if (otir()) {
-					pc.word -= 2;
+					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
 			case 7:	// OTDR
 				if (otdr()) {
-					pc.word -= 2;
+					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
@@ -1394,11 +1400,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 4;
 					break;
 				case 2:	// JP HL
-					pc = HL2();
+					PC() = HL2();
 					cycles += 4;
 					break;
 				case 3:	// LD SP,HL
-					sp = HL2();
+					SP() = HL2();
 					cycles += 4;
 					break;
 				}

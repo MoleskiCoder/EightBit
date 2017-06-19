@@ -37,8 +37,6 @@ namespace EightBit {
 		int execute(uint8_t opcode);
 		int step();
 
-		bool getM1() const { return m1; }
-
 		// Mutable access to processor!!
 
 		virtual register16_t& AF() override {
@@ -181,7 +179,7 @@ namespace EightBit {
 		register16_t& RP(int rp) {
 			switch (rp) {
 			case 3:
-				return sp;
+				return SP();
 			case HL_IDX:
 				return HL2();
 			default:
@@ -225,28 +223,28 @@ namespace EightBit {
 			adc(hl, operand);
 		}
 
-		void adjustHalfCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
+		static void adjustHalfCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
 			setFlag(f, HC, calculateHalfCarryAdd(before, value, calculation));
 		}
 
-		void adjustHalfCarrySub(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
+		static void adjustHalfCarrySub(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
 			setFlag(f, HC, calculateHalfCarrySub(before, value, calculation));
 		}
 
-		void adjustOverflowAdd(uint8_t& f, uint8_t before, uint8_t value, uint8_t calculation) {
+		static void adjustOverflowAdd(uint8_t& f, uint8_t before, uint8_t value, uint8_t calculation) {
 			adjustOverflowAdd(f, before & SF, value & SF, calculation & SF);
 		}
 
-		void adjustOverflowAdd(uint8_t& f, int beforeNegative, int valueNegative, int afterNegative) {
+		static void adjustOverflowAdd(uint8_t& f, int beforeNegative, int valueNegative, int afterNegative) {
 			auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
 			setFlag(f, VF, overflow);
 		}
 
-		void adjustOverflowSub(uint8_t& f, uint8_t before, uint8_t value, uint8_t calculation) {
+		static void adjustOverflowSub(uint8_t& f, uint8_t before, uint8_t value, uint8_t calculation) {
 			adjustOverflowSub(f, before & SF, value & SF, calculation & SF);
 		}
 
-		void adjustOverflowSub(uint8_t& f, int beforeNegative, int valueNegative, int afterNegative) {
+		static void adjustOverflowSub(uint8_t& f, int beforeNegative, int valueNegative, int afterNegative) {
 			auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
 			setFlag(f, VF, overflow);
 		}
@@ -298,9 +296,9 @@ namespace EightBit {
 		uint8_t& sll(uint8_t& operand);
 		uint8_t& srl(uint8_t& operand);
 
-		void bit(int n, uint8_t& operand);
-		void res(int n, uint8_t& operand);
-		void set(int nit, uint8_t& operand);
+		uint8_t& bit(int n, uint8_t& operand);
+		uint8_t& res(int n, uint8_t& operand);
+		uint8_t& set(int nit, uint8_t& operand);
 
 		void daa();
 

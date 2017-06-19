@@ -32,11 +32,11 @@ void Board::initialise() {
 	}
 
 	m_cpu.initialise();
-	m_cpu.setProgramCounter(m_configuration.getStartAddress());
+	m_cpu.PC() = m_configuration.getStartAddress();
 }
 
 void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Z80&) {
-	auto pc = m_cpu.getProgramCounter();
+	auto pc = m_cpu.PC();
 	switch (pc.word) {
 	case 0x0:	// CP/M warm start
 		m_cpu.halt();
@@ -68,7 +68,7 @@ void Board::bdos() {
 
 void Board::Cpu_ExecutingInstruction_Profile(const EightBit::Z80& cpu) {
 
-	const auto pc = cpu.getProgramCounter();
+	const auto pc = m_cpu.PC();
 
 	m_profiler.addAddress(pc.word);
 	m_profiler.addInstruction(m_memory.peek(pc.word));
@@ -79,6 +79,6 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::Z80& cpu) {
 	std::cerr
 		<< EightBit::Disassembler::state(m_cpu)
 		<< "\t"
-		<< m_disassembler.disassemble(cpu)
+		<< m_disassembler.disassemble(m_cpu)
 		<< '\n';
 }

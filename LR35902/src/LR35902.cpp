@@ -12,7 +12,7 @@ EightBit::LR35902::LR35902(Bus& memory)
 
 void EightBit::LR35902::reset() {
 	IntelProcessor::reset();
-	sp.word = 0xfffe;
+	SP().word = 0xfffe;
 	di();
 }
 
@@ -503,7 +503,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			case 1:	// GB: LD (nn),SP
 				fetchWord();
-				m_memory.setWord(MEMPTR().word, sp);
+				m_memory.setWord(MEMPTR().word, SP());
 				cycles += 5;
 				break;
 			case 2:	// GB: STOP
@@ -703,12 +703,13 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					break;
 				case 5: { // GB: ADD SP,dd
 						auto& f = F();
-						auto before = sp;
+						auto before = SP();
 						auto value = fetchByte();
-						sp.word += (int8_t)value;
+						auto result = SP().word + (int8_t)value;
+						SP().word = result;
 						clearFlag(f, ZF | NF);
-						setFlag(f, CF, sp.word & Bit16);
-						adjustHalfCarryAdd(f, before.high, value, sp.high);
+						setFlag(f, CF, result & Bit16);
+						adjustHalfCarryAdd(f, before.high, value, SP().high);
 					}
 					cycles += 4;
 					break;
@@ -718,11 +719,12 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					break;
 				case 7: { // GB: LD HL,SP + dd
 						auto& f = F();
-						auto before = sp;
+						auto before = HL();
 						auto value = fetchByte();
-						HL().word = before.word + (int8_t)value;
+						auto result = SP().word + (int8_t)value;
+						HL().word = result;
 						clearFlag(f, ZF | NF);
-						setFlag(f, CF, HL().word & Bit16);
+						setFlag(f, CF, result & Bit16);
 						adjustHalfCarryAdd(f, before.high, value, HL().high);
 					}
 					cycles += 3;
@@ -747,11 +749,11 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 4;
 					break;
 				case 2:	// JP HL
-					pc = HL();
+					PC() = HL();
 					cycles += 1;
 					break;
 				case 3:	// LD SP,HL
-					sp = HL();
+					SP() = HL();
 					cycles += 2;
 					break;
 				}

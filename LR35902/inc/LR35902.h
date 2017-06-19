@@ -98,7 +98,7 @@ namespace EightBit {
 		register16_t& RP(int rp) {
 			switch (rp) {
 			case 3:
-				return sp;
+				return SP();
 			default:
 				return m_registers[rp];
 			}
@@ -113,21 +113,21 @@ namespace EightBit {
 			}
 		}
 
-		void adjustHalfCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
+		static void adjustHalfCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
 			setFlag(f, HC, calculateHalfCarryAdd(before, value, calculation));
 		}
 
-		void adjustHalfCarrySub(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
+		static void adjustHalfCarrySub(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
 			setFlag(f, HC, calculateHalfCarrySub(before, value, calculation));
 		}
 
 		void executeCB(int x, int y, int z, int p, int q);
 		void executeOther(int x, int y, int z, int p, int q);
 
-		void adjustZero(uint8_t& f, uint8_t value);
+		static void adjustZero(uint8_t& f, uint8_t value);
 
-		void postIncrement(uint8_t& f, uint8_t value);
-		void postDecrement(uint8_t& f, uint8_t value);
+		static void postIncrement(uint8_t& f, uint8_t value);
+		static void postDecrement(uint8_t& f, uint8_t value);
 
 		void reti();
 

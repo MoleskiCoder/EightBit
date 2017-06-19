@@ -46,14 +46,11 @@ namespace EightBit {
 
 		const Memory& getMemory() const { return m_memory; }
 
-		register16_t getProgramCounter() const { return pc; }
-		void setProgramCounter(register16_t value) { pc = value; }
-
-		register16_t getStackPointer() const { return sp; }
-		void setStackPointer(register16_t value) { sp = value; }
+		register16_t& PC() { return pc; }
+		register16_t& SP() { return sp; }
 
 		bool isHalted() const { return m_halted; }
-		void halt() { --pc.word;  m_halted = true; }
+		void halt() { --PC().word;  m_halted = true; }
 
 		virtual void initialise();
 
@@ -63,16 +60,10 @@ namespace EightBit {
 		Processor(Memory& memory);
 
 		Memory& m_memory;
-
 		int cycles;
 
-		register16_t pc;
-		register16_t sp;
-
-		bool m_halted;
-
 		uint8_t fetchByte() {
-			m_memory.ADDRESS().word = pc.word++;
+			m_memory.ADDRESS().word = PC().word++;
 			return m_memory.reference();
 		}
 
@@ -80,5 +71,10 @@ namespace EightBit {
 			output.low = fetchByte();
 			output.high = fetchByte();
 		}
+
+	private:
+		register16_t pc;
+		register16_t sp;
+		bool m_halted;
 	};
 }
