@@ -1,8 +1,11 @@
 #include "stdafx.h"
 #include "Profiler.h"
 #include "Disassembler.h"
+#include "Z80.h"
 
-EightBit::Profiler::Profiler() {
+EightBit::Profiler::Profiler(Z80& cpu, Disassembler& disassembler)
+: m_cpu(cpu),
+  m_disassembler(disassembler) {
 	std::fill(m_instructions.begin(), m_instructions.end(), 0);
 	std::fill(m_addresses.begin(), m_addresses.end(), 0);
 }
@@ -36,7 +39,16 @@ void EightBit::Profiler::dumpAddressProfiles() const {
 	std::cout << "** addresses" << std::endl;
 	for (int i = 0; i < 0x10000; ++i) {
 		auto count = m_addresses[i];
+
+		m_cpu.PC().word = i;
+
 		if (count > 0)
-			std::cout << Disassembler::hex((uint16_t)i) << "\t" << count << std::endl;
+			std::cout
+				<< Disassembler::hex((uint16_t)i)
+				<< "\t"
+				<< count
+				<< "\t"
+				<< m_disassembler.disassemble(m_cpu)
+				<< std::endl;
 	}
 }
