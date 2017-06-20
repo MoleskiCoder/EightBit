@@ -503,7 +503,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			case 1:	// GB: LD (nn),SP
 				fetchWord();
-				m_memory.setWord(MEMPTR().word, SP());
+				setWordViaMemptr(SP());
 				cycles += 5;
 				break;
 			case 2:	// GB: STOP
@@ -698,7 +698,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			} else {
 				switch (y) {
 				case 4:	// GB: LD (FF00 + n),A
-					m_memory.set(0xff00 + fetchByte(), A());
+					m_memory.ADDRESS().word = 0xff00 + fetchByte();
+					m_memory.reference() = A();
 					cycles += 3;
 					break;
 				case 5: { // GB: ADD SP,dd
@@ -714,7 +715,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 4;
 					break;
 				case 6:	// GB: LD A,(FF00 + n)
-					A() = m_memory.get(0xff00 + fetchByte());
+					m_memory.ADDRESS().word = 0xff00 + fetchByte();
+					A() = m_memory.reference();
 					cycles += 3;
 					break;
 				case 7: { // GB: LD HL,SP + dd
@@ -766,7 +768,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			} else {
 				switch (y) {
 				case 4:	// GB: LD (FF00 + C),A
-					m_memory.set(0xff00 + C(), A());
+					m_memory.ADDRESS().word = 0xff00 + C();
+					m_memory.reference() = A();
 					cycles += 2;
 					break;
 				case 5:	// GB: LD (nn),A

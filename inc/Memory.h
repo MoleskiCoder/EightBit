@@ -56,20 +56,6 @@ namespace EightBit {
 		virtual uint8_t peek(uint16_t address) const;
 		virtual uint16_t peekWord(uint16_t address) const;
 
-		virtual uint8_t get(uint16_t address) {
-			ADDRESS().word = address;
-			return reference();
-		}
-
-		virtual register16_t getWord(uint16_t address);
-
-		virtual void set(uint16_t address, uint8_t value) {
-			ADDRESS().word = address;
-			reference() = value;
-		}
-
-		virtual void setWord(uint16_t address, register16_t value);
-
 		virtual uint8_t& reference() {
 			auto effective = effectiveAddress(ADDRESS().word);
 			return m_locked[effective] ? placeDATA(m_bus[effective]) : referenceDATA(m_bus[effective]);

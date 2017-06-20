@@ -190,11 +190,13 @@ namespace EightBit {
 		}
 
 		void mov_m_r(uint8_t value) {
-			m_memory.set(HL().word, value);
+			m_memory.ADDRESS() = HL();
+			m_memory.reference() = value;
 		}
 
 		uint8_t mov_r_m() {
-			return m_memory.get(HL().word);
+			m_memory.ADDRESS() = HL();
+			return m_memory.reference();
 		}
 
 		//
@@ -285,18 +287,29 @@ namespace EightBit {
 
 		void mvi_m() {
 			auto data = fetchByte();
-			m_memory.set(HL().word, data);
+			m_memory.ADDRESS() = HL();
+			m_memory.reference() = data;
 		}
 
 		void lxi_b() { Processor::fetchWord(BC()); }
 		void lxi_d() { Processor::fetchWord(DE()); }
 		void lxi_h() { Processor::fetchWord(HL()); }
 
-		void stax_b() { m_memory.set(BC().word, A()); }
-		void stax_d() { m_memory.set(DE().word, A()); }
+		void stax_r(register16_t& destination) {
+			m_memory.ADDRESS() = destination;
+			m_memory.reference() = A();
+		}
 
-		void ldax_b() { A() = m_memory.get(BC().word); }
-		void ldax_d() { A() = m_memory.get(DE().word); }
+		void stax_b() { stax_r(BC()); }
+		void stax_d() { stax_r(DE()); }
+
+		void ldax_r(register16_t& source) {
+			m_memory.ADDRESS() = source;
+			A() = m_memory.reference();
+		}
+
+		void ldax_b() { ldax_r(BC()); }
+		void ldax_d() { ldax_r(DE()); }
 
 		void sta() {
 			fetchWord();
@@ -339,9 +352,14 @@ namespace EightBit {
 		}
 
 		void xhtl() {
-			auto tos = m_memory.getWord(SP().word);
-			m_memory.setWord(SP().word, HL());
-			HL() = tos;
+			m_memory.ADDRESS() = SP();
+			MEMPTR().low = m_memory.reference();
+			m_memory.reference() = L();
+			L() = MEMPTR().low;
+			m_memory.ADDRESS().word++;
+			MEMPTR().high = m_memory.reference();
+			m_memory.reference() = H();
+			H() = MEMPTR().high;
 		}
 
 		void sphl() {
@@ -430,9 +448,10 @@ namespace EightBit {
 		void inr_l() { postIncrement(F(), ++L()); }
 
 		void inr_m() {
-			auto value = m_memory.get(HL().word);
+			m_memory.ADDRESS() = HL();
+			auto value = m_memory.reference();
 			postIncrement(F(), ++value);
-			m_memory.set(HL().word, value);
+			m_memory.reference() = value;
 		}
 
 		void dcr_a() { postDecrement(F(), --A()); }
@@ -444,9 +463,10 @@ namespace EightBit {
 		void dcr_l() { postDecrement(F(), --L()); }
 
 		void dcr_m() {
-			auto value = m_memory.get(HL().word);
+			m_memory.ADDRESS() = HL();
+			auto value = m_memory.reference();
 			postDecrement(F(), --value);
-			m_memory.set(HL().word, value);
+			m_memory.reference() = value;
 		}
 
 		void inx_b() { ++BC().word; }
@@ -468,8 +488,8 @@ namespace EightBit {
 		void add_l() { add(L()); }
 
 		void add_m() {
-			auto value = m_memory.get(HL().word);
-			add(value);
+			m_memory.ADDRESS() = HL();
+			add(m_memory.reference());
 		}
 
 		void adi() { add(fetchByte()); }
@@ -483,8 +503,8 @@ namespace EightBit {
 		void adc_l() { adc(L()); }
 
 		void adc_m() {
-			auto value = m_memory.get(HL().word);
-			adc(value);
+			m_memory.ADDRESS() = HL();
+			adc(m_memory.reference());
 		}
 
 		void aci() { adc(fetchByte()); }
@@ -505,8 +525,8 @@ namespace EightBit {
 		void sub_l() { sub(L()); }
 
 		void sub_m() {
-			auto value = m_memory.get(HL().word);
-			sub(value);
+			m_memory.ADDRESS() = HL();
+			sub(m_memory.reference());
 		}
 
 		void sbb_a() { sbb(A()); }
@@ -518,8 +538,8 @@ namespace EightBit {
 		void sbb_l() { sbb(L()); }
 
 		void sbb_m() {
-			auto value = m_memory.get(HL().word);
-			sbb(value);
+			m_memory.ADDRESS() = HL();
+			sbb(m_memory.reference());
 		}
 
 		void sbi() {
@@ -543,8 +563,8 @@ namespace EightBit {
 		void ana_l() { anda(L()); }
 
 		void ana_m() {
-			auto value = m_memory.get(HL().word);
-			anda(value);
+			m_memory.ADDRESS() = HL();
+			anda(m_memory.reference());
 		}
 
 		void ani() { anda(fetchByte()); }
@@ -558,8 +578,8 @@ namespace EightBit {
 		void xra_l() { xra(L()); }
 
 		void xra_m() {
-			auto value = m_memory.get(HL().word);
-			xra(value);
+			m_memory.ADDRESS() = HL();
+			xra(m_memory.reference());
 		}
 
 		void xri() { xra(fetchByte()); }
@@ -573,8 +593,8 @@ namespace EightBit {
 		void ora_l() { ora(L()); }
 
 		void ora_m() {
-			auto value = m_memory.get(HL().word);
-			ora(value);
+			m_memory.ADDRESS() = HL();
+			ora(m_memory.reference());
 		}
 
 		void ori() { ora(fetchByte()); }
@@ -588,8 +608,8 @@ namespace EightBit {
 		void cmp_l() { compare(L()); }
 
 		void cmp_m() {
-			auto value = m_memory.get(HL().word);
-			compare(value);
+			m_memory.ADDRESS() = HL();
+			compare(m_memory.reference());
 		}
 
 		void cpi() { compare(fetchByte()); }

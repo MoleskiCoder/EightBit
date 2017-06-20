@@ -75,7 +75,8 @@ int EightBit::Intel8080::execute(uint8_t opcode) {
 //
 
 void EightBit::Intel8080::___() {
-	auto opcode = m_memory.get(PC().word - 1);
+	m_memory.ADDRESS().word = PC().word - 1;
+	auto opcode = m_memory.reference();
 	auto message = Disassembler::invalid(opcode);
 	throw std::domain_error(message);
 }

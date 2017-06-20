@@ -25,18 +25,6 @@ uint16_t EightBit::Memory::peekWord(uint16_t address) const {
 	return returned.word;
 }
 
-EightBit::register16_t EightBit::Memory::getWord(uint16_t address) {
-	register16_t returned;
-	returned.low = get(address);
-	returned.high = get(address + 1);
-	return returned;
-}
-
-void EightBit::Memory::setWord(uint16_t address, register16_t value) {
-	set(address, value.low);
-	set(address + 1, value.high);
-}
-
 void EightBit::Memory::clear() {
 	m_bus.fill(0);
 	m_locked.fill(false);

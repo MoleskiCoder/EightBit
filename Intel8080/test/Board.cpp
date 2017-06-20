@@ -21,7 +21,8 @@ void Board::initialise() {
 	m_memory.loadRam(romDirectory + "/8080EX1.COM", 0x100);	// Cringle/Bartholomew
 	//m_memory.loadRam(romDirectory + "/CPUTEST.COM", 0x100);	// SuperSoft diagnostics
 
-	m_memory.set(5, 0xc9);	// ret
+	m_memory.ADDRESS().word = 5;
+	m_memory.reference() = 0xc9; // ret
 	m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Cpm, this, std::placeholders::_1));
 
 	if (m_configuration.isProfileMode()) {
@@ -60,8 +61,8 @@ void Board::bdos() {
 		break;
 	}
 	case 0x9:
-		for (uint16_t i = m_cpu.DE().word; m_memory.get(i) != '$'; ++i) {
-			std::cout << m_memory.get(i);
+		for (uint16_t i = m_cpu.DE().word; m_memory.peek(i) != '$'; ++i) {
+			std::cout << m_memory.peek(i);
 		}
 		break;
 	}
