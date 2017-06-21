@@ -143,6 +143,7 @@
     <ClInclude Include="..\inc\Memory.h" />
     <ClInclude Include="..\inc\Processor.h" />
     <ClInclude Include="..\inc\Signal.h" />
+    <ClInclude Include="..\inc\TestHarness.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

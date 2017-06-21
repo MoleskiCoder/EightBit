@@ -1,5 +1,6 @@
 #include "stdafx.h"
-#include "Game.h"
+#include "TestHarness.h"
+#include "Board.h"
 #include "Configuration.h"
 
 int main(int, char*[]) {
@@ -11,9 +12,9 @@ int main(int, char*[]) {
 	configuration.setProfileMode(true);
 #endif
 
-	Game game(configuration);
-	game.initialise();
-	game.runLoop();
+	EightBit::TestHarness<Configuration, Board> harness(configuration);
+	harness.initialise();
+	harness.runLoop();
 
 	return 0;
 }
