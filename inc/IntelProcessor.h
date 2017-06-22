@@ -43,6 +43,49 @@ namespace EightBit {
 		static void clearFlag(uint8_t& f, int flag, uint32_t condition) { clearFlag(f, flag, condition != 0); }
 		static void clearFlag(uint8_t& f, int flag, bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
 
+		//
+
+		template<class T> static void adjustSign(uint8_t& f, uint8_t value) {
+			setFlag(f, T::SF, value & T::SF);
+		}
+
+		template<class T> static void adjustZero(uint8_t& f, uint8_t value) {
+			clearFlag(f, T::ZF, value);
+		}
+
+		template<class T> static void adjustParity(uint8_t& f, uint8_t value) {
+			static const uint8_t lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
+			auto set = lookup[highNibble(value)] + lookup[lowNibble(value)];
+			clearFlag(f, T::PF, set % 2);
+		}
+
+		template<class T> static void adjustSZ(uint8_t& f, uint8_t value) {
+			adjustSign<T>(f, value);
+			adjustZero<T>(f, value);
+		}
+
+		template<class T> static void adjustSZP(uint8_t& f, uint8_t value) {
+			adjustSZ<T>(f, value);
+			adjustParity<T>(f, value);
+		}
+
+		template<class T> static void adjustXY(uint8_t& f, uint8_t value) {
+			setFlag(f, T::XF, value & T::XF);
+			setFlag(f, T::YF, value & T::YF);
+		}
+
+		template<class T> static void adjustSZPXY(uint8_t& f, uint8_t value) {
+			adjustSZP<T>(f, value);
+			adjustXY<T>(f, value);
+		}
+
+		template<class T> static void adjustSZXY(uint8_t& f, uint8_t value) {
+			adjustSZ<T>(f, value);
+			adjustXY<T>(f, value);
+		}
+
+		//
+
 		static int buildHalfCarryIndex(uint8_t before, uint8_t value, int calculation) {
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}

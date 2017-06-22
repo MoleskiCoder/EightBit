@@ -253,15 +253,6 @@ namespace EightBit {
 		void executeED(int x, int y, int z, int p, int q);
 		void executeOther(int x, int y, int z, int p, int q);
 
-		static void adjustSign(uint8_t& f, uint8_t value);
-		static void adjustZero(uint8_t& f, uint8_t value);
-		static void adjustParity(uint8_t& f, uint8_t value);
-		static void adjustSZ(uint8_t& f, uint8_t value);
-		static void adjustSZP(uint8_t& f, uint8_t value);
-		static void adjustXY(uint8_t& f, uint8_t value);
-		static void adjustSZPXY(uint8_t& f, uint8_t value);
-		static void adjustSZXY(uint8_t& f, uint8_t value);
-
 		void postIncrement(uint8_t& f, uint8_t value);
 		void postDecrement(uint8_t& f, uint8_t value);
 

@@ -83,21 +83,6 @@ namespace EightBit {
 			F() |= Bit1;
 		}
 
-		static void adjustSign(uint8_t& f, uint8_t value) { setFlag(f, SF, value & SF); }
-		static void adjustZero(uint8_t& f, uint8_t value) { clearFlag(f, ZF, value); }
-
-		static void adjustParity(uint8_t& f, uint8_t value) {
-			static const uint8_t lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
-			auto set = (lookup[highNibble(value)] + lookup[lowNibble(value)]);
-			clearFlag(f, PF, set % 2);
-		}
-
-		static void adjustSZP(uint8_t& f, uint8_t value) {
-			adjustSign(f, value);
-			adjustZero(f, value);
-			adjustParity(f, value);
-		}
-
 		static void adjustAuxiliaryCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
 			setFlag(f, AC, calculateHalfCarryAdd(before, value, calculation));
 		}
@@ -107,12 +92,12 @@ namespace EightBit {
 		}
 
 		static void postIncrement(uint8_t& f, uint8_t value) {
-			adjustSZP(f, value);
+			adjustSZP<Intel8080>(f, value);
 			clearFlag(f, AC, lowNibble(value));
 		}
 
 		static void postDecrement(uint8_t& f, uint8_t value) {
-			adjustSZP(f, value);
+			adjustSZP<Intel8080>(f, value);
 			setFlag(f, AC, lowNibble(value) != Mask4);
 		}
 
@@ -127,7 +112,7 @@ namespace EightBit {
 			const auto& a = A();
 			auto& f = F();
 			uint16_t subtraction = a - value;
-			adjustSZP(f, (uint8_t)subtraction);
+			adjustSZP<Intel8080>(f, (uint8_t)subtraction);
 			adjustAuxiliaryCarrySub(f, a, value, subtraction);
 			setFlag(f, CF, subtraction & Bit8);
 		}
@@ -137,19 +122,19 @@ namespace EightBit {
 			auto& f = F();
 			setFlag(f, AC, (a | value) & Bit3);
 			clearFlag(f, CF);
-			adjustSZP(f, a &= value);
+			adjustSZP<Intel8080>(f, a &= value);
 		}
 
 		void ora(uint8_t value) {
 			auto& f = F();
 			clearFlag(f, AC | CF);
-			adjustSZP(f, A() |= value);
+			adjustSZP<Intel8080>(f, A() |= value);
 		}
 
 		void xra(uint8_t value) {
 			auto& f = F();
 			clearFlag(f, AC | CF);
-			adjustSZP(f, A() ^= value);
+			adjustSZP<Intel8080>(f, A() ^= value);
 		}
 
 		void add(uint8_t value, int carry = 0) {
@@ -160,7 +145,7 @@ namespace EightBit {
 			adjustAuxiliaryCarryAdd(f, a, value, sum.word);
 			a = sum.low;
 			setFlag(f, CF, sum.word & Bit8);
-			adjustSZP(f, a);
+			adjustSZP<Intel8080>(f, a);
 		}
 
 		void adc(uint8_t value) {
@@ -182,7 +167,7 @@ namespace EightBit {
 			adjustAuxiliaryCarrySub(f, a, value, difference.word);
 			a = difference.low;
 			setFlag(f, CF, difference.word & Bit8);
-			adjustSZP(f, a);
+			adjustSZP<Intel8080>(f, a);
 		}
 
 		void sbb(uint8_t value) {

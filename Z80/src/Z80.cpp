@@ -106,54 +106,15 @@ int EightBit::Z80::interrupt(bool maskable, uint8_t value) {
 
 #pragma region Flag manipulation helpers
 
-void EightBit::Z80::adjustSign(uint8_t& f, uint8_t value) {
-	setFlag(f, SF, value & SF);
-}
-
-void EightBit::Z80::adjustZero(uint8_t& f, uint8_t value) {
-	clearFlag(f, ZF, value);
-}
-
-void EightBit::Z80::adjustParity(uint8_t& f, uint8_t value) {
-	static const uint8_t lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
-	auto set = lookup[highNibble(value)] + lookup[lowNibble(value)];
-	clearFlag(f, PF, set % 2);
-}
-
-void EightBit::Z80::adjustSZ(uint8_t& f, uint8_t value) {
-	adjustSign(f, value);
-	adjustZero(f, value);
-}
-
-void EightBit::Z80::adjustSZP(uint8_t& f, uint8_t value) {
-	adjustSZ(f, value);
-	adjustParity(f, value);
-}
-
-void EightBit::Z80::adjustXY(uint8_t& f, uint8_t value) {
-	setFlag(f, XF, value & XF);
-	setFlag(f, YF, value & YF);
-}
-
-void EightBit::Z80::adjustSZPXY(uint8_t& f, uint8_t value) {
-	adjustSZP(f, value);
-	adjustXY(f, value);
-}
-
-void EightBit::Z80::adjustSZXY(uint8_t& f, uint8_t value) {
-	adjustSZ(f, value);
-	adjustXY(f, value);
-}
-
 void EightBit::Z80::postIncrement(uint8_t& f, uint8_t value) {
-	adjustSZXY(f, value);
+	adjustSZXY<Z80>(f, value);
 	clearFlag(f, NF);
 	setFlag(f, VF, value == Bit7);
 	clearFlag(f, HC, lowNibble(value));
 }
 
 void EightBit::Z80::postDecrement(uint8_t& f, uint8_t value) {
-	adjustSZXY(f, value);
+	adjustSZXY<Z80>(f, value);
 	setFlag(f, NF);
 	setFlag(f, VF, value == Mask7);
 	clearFlag(f, HC, lowNibble(value + 1));
@@ -284,7 +245,7 @@ void EightBit::Z80::sbc(register16_t& operand, register16_t value) {
 	adjustOverflowSub(f, beforeNegative, valueNegative, afterNegative);
 	setFlag(f, NF);
 	setFlag(f, CF, result & Bit16);
-	adjustXY(f, operand.high);
+	adjustXY<Z80>(f, operand.high);
 }
 
 void EightBit::Z80::adc(register16_t& operand, register16_t value) {
@@ -307,7 +268,7 @@ void EightBit::Z80::adc(register16_t& operand, register16_t value) {
 	adjustOverflowAdd(f, beforeNegative, valueNegative, afterNegative);
 	clearFlag(f, NF);
 	setFlag(f, CF, result & Bit16);
-	adjustXY(f, operand.high);
+	adjustXY<Z80>(f, operand.high);
 }
 
 void EightBit::Z80::add(register16_t& operand, register16_t value) {
@@ -323,7 +284,7 @@ void EightBit::Z80::add(register16_t& operand, register16_t value) {
 	clearFlag(f, NF);
 	setFlag(f, CF, result & Bit16);
 	adjustHalfCarryAdd(f, before.high, value.high, operand.high);
-	adjustXY(f, operand.high);
+	adjustXY<Z80>(f, operand.high);
 }
 
 #pragma endregion 16-bit arithmetic
@@ -344,7 +305,7 @@ void EightBit::Z80::add(uint8_t& operand, uint8_t value, int carry) {
 
 	clearFlag(f, NF);
 	setFlag(f, CF, result.word & Bit8);
-	adjustSZXY(f, operand);
+	adjustSZXY<Z80>(f, operand);
 }
 
 void EightBit::Z80::adc(uint8_t& operand, uint8_t value) {
@@ -365,7 +326,7 @@ void EightBit::Z80::sub(uint8_t& operand, uint8_t value, int carry) {
 
 	setFlag(f, NF);
 	setFlag(f, CF, result.word & Bit8);
-	adjustSZXY(f, operand);
+	adjustSZXY<Z80>(f, operand);
 }
 
 void EightBit::Z80::sbc(uint8_t& operand, uint8_t value) {
@@ -377,28 +338,28 @@ void EightBit::Z80::andr(uint8_t& operand, uint8_t value) {
 	operand &= value;
 	setFlag(f, HC);
 	clearFlag(f, CF | NF);
-	adjustSZPXY(f, operand);
+	adjustSZPXY<Z80>(f, operand);
 }
 
 void EightBit::Z80::xorr(uint8_t& operand, uint8_t value) {
 	auto& f = F();
 	operand ^= value;
 	clearFlag(f, HC | CF | NF);
-	adjustSZPXY(f, operand);
+	adjustSZPXY<Z80>(f, operand);
 }
 
 void EightBit::Z80::orr(uint8_t& operand, uint8_t value) {
 	auto& f = F();
 	operand |= value;
 	clearFlag(f, HC | CF | NF);
-	adjustSZPXY(f, operand);
+	adjustSZPXY<Z80>(f, operand);
 }
 
 void EightBit::Z80::compare(uint8_t value) {
 	auto& f = F();
 	auto check = A();
 	sub(check, value);
-	adjustXY(f, value);
+	adjustXY<Z80>(f, value);
 }
 
 #pragma endregion ALU
@@ -412,7 +373,7 @@ uint8_t& EightBit::Z80::rlc(uint8_t& operand) {
 	carry ? operand |= Bit0 : operand &= ~Bit0;
 	setFlag(f, CF, carry);
 	clearFlag(f, NF | HC);
-	adjustXY(f, operand);
+	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
@@ -423,7 +384,7 @@ uint8_t& EightBit::Z80::rrc(uint8_t& operand) {
 	carry ? operand |= Bit7 : operand &= ~Bit7;
 	setFlag(f, CF, carry);
 	clearFlag(f, NF | HC);
-	adjustXY(f, operand);
+	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
@@ -435,7 +396,7 @@ uint8_t& EightBit::Z80::rl(uint8_t& operand) {
 	oldCarry ? operand |= Bit0 : operand &= ~Bit0;
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustXY(f, operand);
+	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
@@ -447,7 +408,7 @@ uint8_t& EightBit::Z80::rr(uint8_t& operand) {
 	operand |= oldCarry << 7;
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustXY(f, operand);
+	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
@@ -459,7 +420,7 @@ uint8_t& EightBit::Z80::sla(uint8_t& operand) {
 	operand <<= 1;
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustXY(f, operand);
+	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
@@ -471,7 +432,7 @@ uint8_t& EightBit::Z80::sra(uint8_t& operand) {
 	operand |= new7;
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustXY(f, operand);
+	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
@@ -482,7 +443,7 @@ uint8_t& EightBit::Z80::sll(uint8_t& operand) {
 	operand |= 1;
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustXY(f, operand);
+	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
@@ -493,7 +454,7 @@ uint8_t& EightBit::Z80::srl(uint8_t& operand) {
 	operand &= ~Bit7;	// clear bit 7
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustXY(f, operand);
+	adjustXY<Z80>(f, operand);
 	setFlag(f, ZF, operand);
 	return operand;
 }
@@ -562,7 +523,7 @@ void EightBit::Z80::daa() {
 
 	f = (f & (CF | NF)) | (acc > 0x99) | ((acc ^ a) & HC);
 
-	adjustSZPXY(f, a);
+	adjustSZPXY<Z80>(f, a);
 
 	acc = a;
 }
@@ -571,14 +532,14 @@ void EightBit::Z80::cpl() {
 	auto& a = A();
 	auto& f = F();
 	a = ~a;
-	adjustXY(f, A());
+	adjustXY<Z80>(f, A());
 	setFlag(f, HC | NF);
 }
 
 void EightBit::Z80::scf() {
 	auto& f = F();
 	setFlag(f, CF);
-	adjustXY(f, A());
+	adjustXY<Z80>(f, A());
 	clearFlag(f, HC | NF);
 }
 
@@ -588,7 +549,7 @@ void EightBit::Z80::ccf() {
 	setFlag(f, HC, carry);
 	clearFlag(f, CF, carry);
 	clearFlag(f, NF);
-	adjustXY(f, A());
+	adjustXY<Z80>(f, A());
 }
 
 void EightBit::Z80::xhtl(register16_t& operand) {
@@ -624,7 +585,7 @@ void EightBit::Z80::blockCompare() {
 
 	setFlag(f, PF, --BC().word);
 
-	adjustSZ(f, result);
+	adjustSZ<Z80>(f, result);
 	adjustHalfCarrySub(f, a, value, result);
 	setFlag(f, NF);
 
@@ -760,7 +721,7 @@ void EightBit::Z80::blockOut() {
 	postDecrement(f, --B());
 	setFlag(f, NF, value & Bit7);
 	setFlag(f, HC | CF, (L() + value) > 0xff);
-	adjustParity(f, ((value + L()) & 7) ^ B());
+	adjustParity<Z80>(f, ((value + L()) & 7) ^ B());
 }
 
 void EightBit::Z80::outi() {
@@ -798,7 +759,7 @@ void EightBit::Z80::rrd() {
 	auto memory = memptrReference();
 	m_memory.reference() = promoteNibble(a) | highNibble(memory);
 	a = (a & 0xf0) | lowNibble(memory);
-	adjustSZPXY(f, a);
+	adjustSZPXY<Z80>(f, a);
 	clearFlag(f, NF | HC);
 }
 
@@ -809,7 +770,7 @@ void EightBit::Z80::rld() {
 	auto memory = memptrReference();
 	m_memory.reference() = promoteNibble(memory) | lowNibble(a);
 	a = (a & 0xf0) | highNibble(memory);
-	adjustSZPXY(f, a);
+	adjustSZPXY<Z80>(f, a);
 	clearFlag(f, NF | HC);
 }
 
@@ -858,28 +819,28 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 	case 0:	// rot[y] r[z]
 		switch (y) {
 		case 0:
-			adjustSZP(f, m_displaced ? R2(z) = rlc(DISPLACED()) : rlc(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = rlc(DISPLACED()) : rlc(R(z)));
 			break;
 		case 1:
-			adjustSZP(f, m_displaced ? R2(z) = rrc(DISPLACED()) : rrc(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = rrc(DISPLACED()) : rrc(R(z)));
 			break;
 		case 2:
-			adjustSZP(f, m_displaced ? R2(z) = rl(DISPLACED()) : rl(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = rl(DISPLACED()) : rl(R(z)));
 			break;
 		case 3:
-			adjustSZP(f, m_displaced ? R2(z) = rr(DISPLACED()) : rr(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = rr(DISPLACED()) : rr(R(z)));
 			break;
 		case 4:
-			adjustSZP(f, m_displaced ? R2(z) = sla(DISPLACED()) : sla(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = sla(DISPLACED()) : sla(R(z)));
 			break;
 		case 5:
-			adjustSZP(f, m_displaced ? R2(z) = sra(DISPLACED()) : sra(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = sra(DISPLACED()) : sra(R(z)));
 			break;
 		case 6:
-			adjustSZP(f, m_displaced ? R2(z) = sll(DISPLACED()) : sll(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = sll(DISPLACED()) : sll(R(z)));
 			break;
 		case 7:
-			adjustSZP(f, m_displaced ? R2(z) = srl(DISPLACED()) : srl(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = srl(DISPLACED()) : srl(R(z)));
 			break;
 		}
 		if (m_displaced) {
@@ -893,16 +854,16 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 	case 1:	// BIT y, r[z]
 		if (m_displaced) {
 			bit(y, DISPLACED());
-			adjustXY(f, MEMPTR().high);
+			adjustXY<Z80>(f, MEMPTR().high);
 			cycles += 20;
 		} else {
 			auto operand = bit(y, R(z));
 			cycles += 8;
 			if (z == 6) {
-				adjustXY(f, MEMPTR().high);
+				adjustXY<Z80>(f, MEMPTR().high);
 				cycles += 4;
 			} else {
-				adjustXY(f, operand);
+				adjustXY<Z80>(f, operand);
 			}
 		}
 		break;
@@ -946,7 +907,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			readPort();
 			if (y != 6)	// IN r[y],(C)
 				R(y) = m_memory.DATA();
-			adjustSZPXY(f, m_memory.DATA());
+			adjustSZPXY<Z80>(f, m_memory.DATA());
 			clearFlag(f, NF | HC);
 			cycles += 12;
 			break;
@@ -1031,14 +992,14 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				break;
 			case 2:	// LD A,I
 				A() = IV();
-				adjustSZXY(f, A());
+				adjustSZXY<Z80>(f, A());
 				setFlag(f, PF, IFF2());
 				clearFlag(f, NF | HC);
 				cycles += 9;
 				break;
 			case 3:	// LD A,R
 				A() = REFRESH();
-				adjustSZXY(f, A());
+				adjustSZXY<Z80>(f, A());
 				clearFlag(f, NF | HC);
 				setFlag(f, PF, IFF2());
 				cycles += 9;
