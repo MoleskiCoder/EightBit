@@ -356,10 +356,9 @@ void EightBit::Z80::orr(uint8_t& operand, uint8_t value) {
 }
 
 void EightBit::Z80::compare(uint8_t value) {
-	auto& f = F();
 	auto check = A();
 	sub(check, value);
-	adjustXY<Z80>(f, value);
+	adjustXY<Z80>(F(), value);
 }
 
 #pragma endregion ALU

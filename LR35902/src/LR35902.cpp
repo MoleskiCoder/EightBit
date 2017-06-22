@@ -50,18 +50,14 @@ int EightBit::LR35902::interrupt(uint8_t value) {
 
 #pragma region Flag manipulation helpers
 
-void EightBit::LR35902::adjustZero(uint8_t& f, uint8_t value) {
-	clearFlag(f, ZF, value);
-}
-
 void EightBit::LR35902::postIncrement(uint8_t& f, uint8_t value) {
-	adjustZero(f, value);
+	adjustZero<LR35902>(f, value);
 	clearFlag(f, NF);
 	clearFlag(f, HC, lowNibble(value));
 }
 
 void EightBit::LR35902::postDecrement(uint8_t& f, uint8_t value) {
-	adjustZero(f, value);
+	adjustZero<LR35902>(f, value);
 	setFlag(f, NF);
 	clearFlag(f, HC, lowNibble(value + 1));
 }
@@ -194,7 +190,7 @@ void EightBit::LR35902::add(uint8_t& operand, uint8_t value, int carry) {
 
 	clearFlag(f, NF);
 	setFlag(f, CF, result.word & Bit8);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 void EightBit::LR35902::adc(uint8_t& operand, uint8_t value) {
@@ -214,7 +210,7 @@ void EightBit::LR35902::sub(uint8_t& operand, uint8_t value, int carry) {
 
 	setFlag(f, NF);
 	setFlag(f, CF, result.word & Bit8);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 void EightBit::LR35902::sbc(uint8_t& operand, uint8_t value) {
@@ -226,21 +222,21 @@ void EightBit::LR35902::andr(uint8_t& operand, uint8_t value) {
 	operand &= value;
 	setFlag(f, HC);
 	clearFlag(f, CF | NF);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 void EightBit::LR35902::xorr(uint8_t& operand, uint8_t value) {
 	auto& f = F();
 	operand ^= value;
 	clearFlag(f, HC | CF | NF);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 void EightBit::LR35902::orr(uint8_t& operand, uint8_t value) {
 	auto& f = F();
 	operand |= value;
 	clearFlag(f, HC | CF | NF);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 void EightBit::LR35902::compare(uint8_t value) {
@@ -259,7 +255,7 @@ void EightBit::LR35902::rlc(uint8_t& operand) {
 	setFlag(f, CF, carry);
 	carry ? operand |= Bit0 : operand &= ~Bit0;
 	clearFlag(f, NF | HC);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 void EightBit::LR35902::rrc(uint8_t& operand) {
@@ -269,7 +265,7 @@ void EightBit::LR35902::rrc(uint8_t& operand) {
 	carry ? operand |= Bit7 : operand &= ~Bit7;
 	setFlag(f, CF, carry);
 	clearFlag(f, NF | HC);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 void EightBit::LR35902::rl(uint8_t& operand) {
@@ -280,7 +276,7 @@ void EightBit::LR35902::rl(uint8_t& operand) {
 	oldCarry ? operand |= Bit0 : operand &= ~Bit0;
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 void EightBit::LR35902::rr(uint8_t& operand) {
@@ -291,7 +287,7 @@ void EightBit::LR35902::rr(uint8_t& operand) {
 	operand |= oldCarry << 7;
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 //
@@ -302,7 +298,7 @@ void EightBit::LR35902::sla(uint8_t& operand) {
 	operand <<= 1;
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 void EightBit::LR35902::sra(uint8_t& operand) {
@@ -313,7 +309,7 @@ void EightBit::LR35902::sra(uint8_t& operand) {
 	operand |= new7;
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 void EightBit::LR35902::srl(uint8_t& operand) {
@@ -323,7 +319,7 @@ void EightBit::LR35902::srl(uint8_t& operand) {
 	operand &= ~Bit7;	// clear bit 7
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 }
 
 #pragma endregion Shift and rotate
@@ -375,7 +371,7 @@ void EightBit::LR35902::daa() {
 
 	f = (f & (CF | NF)) | (A() > 0x99) | ((A() ^ a) & HC);
 
-	adjustZero(f, a);
+	adjustZero<LR35902>(f, a);
 
 	A() = a;
 }
@@ -404,7 +400,7 @@ void EightBit::LR35902::swap(uint8_t& operand) {
 	auto low = lowNibble(operand);
 	auto high = highNibble(operand);
 	operand = promoteNibble(low) | demoteNibble(high);
-	adjustZero(f, operand);
+	adjustZero<LR35902>(f, operand);
 	clearFlag(f, NF | HC | CF);
 }
 
@@ -466,7 +462,7 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 			srl(R(z));
 			break;
 		}
-		adjustZero(F(), R(z));
+		adjustZero<LR35902>(F(), R(z));
 		cycles += 2;
 		if (z == 6)
 			cycles += 2;

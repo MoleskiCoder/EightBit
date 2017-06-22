@@ -109,12 +109,8 @@ namespace EightBit {
 		//
 
 		void compare(uint8_t value) {
-			const auto& a = A();
-			auto& f = F();
-			uint16_t subtraction = a - value;
-			adjustSZP<Intel8080>(f, (uint8_t)subtraction);
-			adjustAuxiliaryCarrySub(f, a, value, subtraction);
-			setFlag(f, CF, subtraction & Bit8);
+			auto check = A();
+			sub(check, value);
 		}
 
 		void anda(uint8_t value) {
@@ -159,15 +155,18 @@ namespace EightBit {
 			HL().word = (uint16_t)sum;
 		}
 
-		void sub(uint8_t value, int carry = 0) {
-			auto& a = A();
+		void sub(uint8_t& operand, uint8_t value, int carry = 0) {
 			auto& f = F();
 			register16_t difference;
-			difference.word = a - value - carry;
-			adjustAuxiliaryCarrySub(f, a, value, difference.word);
-			a = difference.low;
+			difference.word = operand - value - carry;
+			adjustAuxiliaryCarrySub(f, operand, value, difference.word);
+			operand = difference.low;
 			setFlag(f, CF, difference.word & Bit8);
-			adjustSZP<Intel8080>(f, a);
+			adjustSZP<Intel8080>(f, operand);
+		}
+
+		void sub(uint8_t value, int carry = 0) {
+			sub(A(), value, carry);
 		}
 
 		void sbb(uint8_t value) {

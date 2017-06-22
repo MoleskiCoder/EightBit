@@ -124,8 +124,6 @@ namespace EightBit {
 		void executeCB(int x, int y, int z, int p, int q);
 		void executeOther(int x, int y, int z, int p, int q);
 
-		static void adjustZero(uint8_t& f, uint8_t value);
-
 		static void postIncrement(uint8_t& f, uint8_t value);
 		static void postDecrement(uint8_t& f, uint8_t value);
 
