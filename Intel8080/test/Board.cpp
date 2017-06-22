@@ -42,7 +42,9 @@ void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Intel8080&) {
 	switch (pc.word) {
 	case 0x0:	// CP/M warm start
 		m_cpu.halt();
-		m_profiler.dump();
+		if (m_configuration.isProfileMode()) {
+			m_profiler.dump();
+		}
 		break;
 	case 0x5:	// BDOS
 		bdos();
