@@ -538,23 +538,23 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					MEMPTR() = BC();
-					MEMPTR().high = memptrReference() = A();
+					m_memory.ADDRESS() = BC();
+					m_memory.reference() = A();
 					cycles += 2;
 					break;
 				case 1:	// LD (DE),A
-					MEMPTR() = DE();
-					MEMPTR().high = memptrReference() = A();
+					m_memory.ADDRESS() = DE();
+					m_memory.reference() = A();
 					cycles += 2;
 					break;
 				case 2:	// GB: LDI (HL),A
-					MEMPTR().word = HL().word++;
-					MEMPTR().high = memptrReference() = A();
+					m_memory.ADDRESS().word = HL().word++;
+					m_memory.reference() = A();
 					cycles += 2;
 					break;
 				case 3: // GB: LDD (HL),A
-					MEMPTR().word = HL().word--;
-					MEMPTR().high = memptrReference() = A();
+					m_memory.ADDRESS().word = HL().word--;
+					m_memory.reference() = A();
 					cycles += 2;
 					break;
 				}
@@ -562,22 +562,22 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					MEMPTR() = BC();
-					A() = memptrReference();
+					m_memory.ADDRESS() = BC();
+					A() = m_memory.reference();
 					cycles += 2;
 					break;
 				case 1:	// LD A,(DE)
-					MEMPTR() = DE();
-					A() = memptrReference();
+					m_memory.ADDRESS() = DE();
+					A() = m_memory.reference();
 					cycles += 2;
 					break;
 				case 2:	// GB: LDI A,(HL)
-					MEMPTR().word = HL().word++;
+					m_memory.ADDRESS().word = HL().word++;
 					A() = m_memory.reference();
 					cycles += 2;
 					break;
 				case 3:	// GB: LDD A,(HL)
-					MEMPTR().word = HL().word--;
+					m_memory.ADDRESS().word = HL().word--;
 					A() = m_memory.reference();
 					cycles += 2;
 					break;
