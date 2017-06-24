@@ -18,7 +18,9 @@ EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
   m_prefixCB(false),
   m_prefixDD(false),
   m_prefixED(false),
-  m_prefixFD(false) {
+  m_prefixFD(false),
+  m_displacement(0),
+  m_displaced(false) {
 	IX().word = 0xffff;
 	IY().word = 0xffff;
 }
@@ -1230,13 +1232,14 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			if (y == 6)
 				cycles += 7;
 			break;
-		case 6:	// 8-bit load immediate
-			R(y) = fetchByte();	// LD r,n
+		case 6: { // 8-bit load immediate
+			auto& r = R(y);	// LD r,n
+			r = fetchByte();
 			cycles += 7;
 			if (y == 6)
 				cycles += 3;
 			break;
-		case 7:	// Assorted operations on accumulator/flags
+		} case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
 			case 0:
 				rlc(A());
