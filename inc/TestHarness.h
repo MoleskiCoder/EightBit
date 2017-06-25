@@ -14,10 +14,16 @@ namespace EightBit {
 			std::cout << std::endl;
 			std::cout.imbue(std::locale(""));
 
-			std::cout << "Cycles = " << m_totalCycles << std::endl;
+			std::cout << "Guest cycles = " << m_totalCycles << std::endl;
 			std::cout << "Seconds = " << getElapsedSeconds() << std::endl;
 
 			std::cout << getCyclesPerSecond() << " cycles/second" << std::endl;
+
+			auto elapsedHostCycles = m_finishHostCycles - m_startHostCycles;
+			std::cout << "Host cycles = " << elapsedHostCycles << std::endl;
+
+			auto efficiency = elapsedHostCycles / m_totalCycles;
+			std::cout << "Efficiency = " << efficiency << std::endl;
 		}
 
 		std::chrono::steady_clock::duration getElapsedTime() const {
@@ -35,12 +41,14 @@ namespace EightBit {
 		void runLoop() {
 			m_startTime = now();
 			m_totalCycles = 0UL;
+			m_startHostCycles = currentHostCycles();
 
 			auto& cpu = m_board.getCPUMutable();
 			while (!cpu.isHalted()) {
 				m_totalCycles += cpu.step();
 			}
 
+			m_finishHostCycles = currentHostCycles();
 			m_finishTime = now();
 		}
 
@@ -54,9 +62,15 @@ namespace EightBit {
 		long long m_totalCycles;
 		std::chrono::steady_clock::time_point m_startTime;
 		std::chrono::steady_clock::time_point m_finishTime;
+		unsigned __int64 m_startHostCycles;
+		unsigned __int64 m_finishHostCycles;
 
-		std::chrono::steady_clock::time_point now() {
+		static std::chrono::steady_clock::time_point now() {
 			return std::chrono::steady_clock::now();
+		}
+
+		static unsigned __int64 currentHostCycles() {
+			return __rdtsc();
 		}
 	};
 }
