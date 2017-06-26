@@ -107,7 +107,7 @@ namespace EightBit {
 			m_memory.reference() = value;
 		}
 
-		void pushWord(register16_t value) {
+		void pushWord(const register16_t& value) {
 			push(value.high);
 			push(value.low);
 		}

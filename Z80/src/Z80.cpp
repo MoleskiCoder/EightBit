@@ -9,7 +9,6 @@ EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
   m_ports(ports),
   m_registerSet(0),
   m_accumulatorFlagsSet(0),
-  m_refresh(0x7f),
   iv(0xff),
   m_interruptMode(0),
   m_iff1(false),
@@ -21,8 +20,11 @@ EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
   m_prefixFD(false),
   m_displacement(0),
   m_displaced(false) {
+
 	IX().word = 0xffff;
 	IY().word = 0xffff;
+
+	REFRESH() = refresh_t::fromUint8(0x7f);
 }
 
 void EightBit::Z80::reset() {
@@ -33,6 +35,10 @@ void EightBit::Z80::reset() {
 void EightBit::Z80::initialise() {
 
 	IntelProcessor::initialise();
+
+	for (int i = 0; i < 0x100; ++i) {
+		m_decodedOpcodes[i] = opcode_decoded_t::decode(i);
+	}
 
 	IM() = 0;
 
@@ -54,7 +60,7 @@ void EightBit::Z80::initialise() {
 	IX().word = 0xffff;
 	IY().word = 0xffff;
 
-	REFRESH() = 0x7f;
+	REFRESH() = refresh_t::fromUint8(0x7f);
 	IV() = 0xff;
 
 	m_prefixCB = false;
@@ -126,46 +132,46 @@ void EightBit::Z80::postDecrement(uint8_t& f, uint8_t value) {
 
 #pragma region PC manipulation: call/ret/jp/jr
 
-bool EightBit::Z80::jrConditionalFlag(int flag) {
+bool EightBit::Z80::jrConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		return jrConditional(!(F() & ZF));
+		return jrConditional(!(f & ZF));
 	case 1:	// Z
-		return jrConditional(F() & ZF);
+		return jrConditional(f & ZF);
 	case 2:	// NC
-		return jrConditional(!(F() & CF));
+		return jrConditional(!(f & CF));
 	case 3:	// C
-		return jrConditional(F() & CF);
+		return jrConditional(f & CF);
 	case 4:	// PO
-		return jrConditional(!(F() & PF));
+		return jrConditional(!(f & PF));
 	case 5:	// PE
-		return jrConditional(F() & PF);
+		return jrConditional(f & PF);
 	case 6:	// P
-		return jrConditional(!(F() & SF));
+		return jrConditional(!(f & SF));
 	case 7:	// M
-		return jrConditional(F() & SF);
+		return jrConditional(f & SF);
 	}
 	throw std::logic_error("Unhandled JR conditional");
 }
 
-bool EightBit::Z80::jumpConditionalFlag(int flag) {
+bool EightBit::Z80::jumpConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		return jumpConditional(!(F() & ZF));
+		return jumpConditional(!(f & ZF));
 	case 1:	// Z
-		return jumpConditional(F() & ZF);
+		return jumpConditional(f & ZF);
 	case 2:	// NC
-		return jumpConditional(!(F() & CF));
+		return jumpConditional(!(f & CF));
 	case 3:	// C
-		return jumpConditional(F() & CF);
+		return jumpConditional(f & CF);
 	case 4:	// PO
-		return jumpConditional(!(F() & PF));
+		return jumpConditional(!(f & PF));
 	case 5:	// PE
-		return jumpConditional(F() & PF);
+		return jumpConditional(f & PF);
 	case 6:	// P
-		return jumpConditional(!(F() & SF));
+		return jumpConditional(!(f & SF));
 	case 7:	// M
-		return jumpConditional(F() & SF);
+		return jumpConditional(f & SF);
 	}
 	throw std::logic_error("Unhandled JP conditional");
 }
@@ -179,46 +185,46 @@ void EightBit::Z80::reti() {
 	retn();
 }
 
-bool EightBit::Z80::returnConditionalFlag(int flag) {
+bool EightBit::Z80::returnConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		return returnConditional(!(F() & ZF));
+		return returnConditional(!(f & ZF));
 	case 1:	// Z
-		return returnConditional(F() & ZF);
+		return returnConditional(f & ZF);
 	case 2:	// NC
-		return returnConditional(!(F() & CF));
+		return returnConditional(!(f & CF));
 	case 3:	// C
-		return returnConditional(F() & CF);
+		return returnConditional(f & CF);
 	case 4:	// PO
-		return returnConditional(!(F() & PF));
+		return returnConditional(!(f & PF));
 	case 5:	// PE
-		return returnConditional(F() & PF);
+		return returnConditional(f & PF);
 	case 6:	// P
-		return returnConditional(!(F() & SF));
+		return returnConditional(!(f & SF));
 	case 7:	// M
-		return returnConditional(F() & SF);
+		return returnConditional(f & SF);
 	}
 	throw std::logic_error("Unhandled RET conditional");
 }
 
-bool EightBit::Z80::callConditionalFlag(int flag) {
+bool EightBit::Z80::callConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		return callConditional(!(F() & ZF));
+		return callConditional(!(f & ZF));
 	case 1:	// Z
-		return callConditional(F() & ZF);
+		return callConditional(f & ZF);
 	case 2:	// NC
-		return callConditional(!(F() & CF));
+		return callConditional(!(f & CF));
 	case 3:	// C
-		return callConditional(F() & CF);
+		return callConditional(f & CF);
 	case 4:	// PO
-		return callConditional(!(F() & PF));
+		return callConditional(!(f & PF));
 	case 5:	// PE
-		return callConditional(F() & PF);
+		return callConditional(f & PF);
 	case 6:	// P
-		return callConditional(!(F() & SF));
+		return callConditional(!(f & SF));
 	case 7:	// M
-		return callConditional(F() & SF);
+		return callConditional(f & SF);
 	}
 	throw std::logic_error("Unhandled CALL conditional");
 }
@@ -231,15 +237,15 @@ void EightBit::Z80::sbc(register16_t& operand, register16_t value) {
 
 	auto& f = F();
 
-	auto before = operand;
+	const auto before = operand;
 
-	auto beforeNegative = before.high & SF;
-	auto valueNegative = value.high & SF;
+	const auto beforeNegative = before.high & SF;
+	const auto valueNegative = value.high & SF;
 
-	auto result = before.word - value.word - (f & CF);
+	const auto result = before.word - value.word - (f & CF);
 	operand.word = result;
 
-	auto afterNegative = operand.high & SF;
+	const auto afterNegative = operand.high & SF;
 
 	setFlag(f, SF, afterNegative);
 	clearFlag(f, ZF, operand.word);
@@ -254,18 +260,18 @@ void EightBit::Z80::adc(register16_t& operand, register16_t value) {
 
 	auto& f = F();
 
-	auto before = operand;
+	const auto before = operand;
 
-	auto beforeNegative = before.high & SF;
-	auto valueNegative = value.high & SF;
+	const auto beforeNegative = before.high & SF;
+	const auto valueNegative = value.high & SF;
 
-	auto result = before.word + value.word + (f & CF);
+	const auto result = before.word + value.word + (f & CF);
 	operand.word = result;
 
 	auto afterNegative = operand.high & SF;
 
 	setFlag(f, SF, afterNegative);
-	clearFlag(f, ZF, result);
+	clearFlag(f, ZF, operand.word);
 	adjustHalfCarryAdd(f, before.high, value.high, operand.high);
 	adjustOverflowAdd(f, beforeNegative, valueNegative, afterNegative);
 	clearFlag(f, NF);
@@ -277,9 +283,9 @@ void EightBit::Z80::add(register16_t& operand, register16_t value) {
 
 	auto& f = F();
 
-	auto before = operand;
+	const auto before = operand;
 
-	auto result = before.word + value.word;
+	const auto result = before.word + value.word;
 
 	operand.word = result;
 
@@ -293,9 +299,7 @@ void EightBit::Z80::add(register16_t& operand, register16_t value) {
 
 #pragma region ALU
 
-void EightBit::Z80::add(uint8_t& operand, uint8_t value, int carry) {
-
-	auto& f = F();
+void EightBit::Z80::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
 
 	register16_t result;
 	result.word = operand + value + carry;
@@ -311,12 +315,11 @@ void EightBit::Z80::add(uint8_t& operand, uint8_t value, int carry) {
 }
 
 void EightBit::Z80::adc(uint8_t& operand, uint8_t value) {
-	add(operand, value, F() & CF);
+	auto& f = F();
+	add(f, operand, value, f & CF);
 }
 
-void EightBit::Z80::sub(uint8_t& operand, uint8_t value, int carry) {
-
-	auto& f = F();
+void EightBit::Z80::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
 
 	register16_t result;
 	result.word = operand - value - carry;
@@ -328,71 +331,68 @@ void EightBit::Z80::sub(uint8_t& operand, uint8_t value, int carry) {
 
 	setFlag(f, NF);
 	setFlag(f, CF, result.word & Bit8);
-	adjustSZXY<Z80>(f, operand);
+	adjustSZ<Z80>(f, operand);
+}
+
+void EightBit::Z80::sub(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
+	subtract(f, operand, value, carry);
+	adjustXY<Z80>(f, operand);
 }
 
 void EightBit::Z80::sbc(uint8_t& operand, uint8_t value) {
-	sub(operand, value, F() & CF);
+	auto& f = F();
+	sub(f, operand, value, f & CF);
 }
 
-void EightBit::Z80::andr(uint8_t& operand, uint8_t value) {
-	auto& f = F();
+void EightBit::Z80::andr(uint8_t& f, uint8_t& operand, uint8_t value) {
 	operand &= value;
 	setFlag(f, HC);
 	clearFlag(f, CF | NF);
 	adjustSZPXY<Z80>(f, operand);
 }
 
-void EightBit::Z80::xorr(uint8_t& operand, uint8_t value) {
-	auto& f = F();
+void EightBit::Z80::xorr(uint8_t& f, uint8_t& operand, uint8_t value) {
 	operand ^= value;
 	clearFlag(f, HC | CF | NF);
 	adjustSZPXY<Z80>(f, operand);
 }
 
-void EightBit::Z80::orr(uint8_t& operand, uint8_t value) {
-	auto& f = F();
+void EightBit::Z80::orr(uint8_t& f, uint8_t& operand, uint8_t value) {
 	operand |= value;
 	clearFlag(f, HC | CF | NF);
 	adjustSZPXY<Z80>(f, operand);
 }
 
-void EightBit::Z80::compare(uint8_t value) {
-	auto check = A();
-	sub(check, value);
-	adjustXY<Z80>(F(), value);
+void EightBit::Z80::compare(uint8_t& f, uint8_t check, uint8_t value) {
+	subtract(f, check, value);
+	adjustXY<Z80>(f, value);
 }
 
 #pragma endregion ALU
 
 #pragma region Shift and rotate
 
-uint8_t& EightBit::Z80::rlc(uint8_t& operand) {
-	auto& f = F();
-	auto carry = operand & Bit7;
-	operand <<= 1;
-	carry ? operand |= Bit0 : operand &= ~Bit0;
+uint8_t& EightBit::Z80::rlc(uint8_t& f, uint8_t& operand) {
+	const auto carry = operand & Bit7;
+	operand = _rotl8(operand, 1);
 	setFlag(f, CF, carry);
 	clearFlag(f, NF | HC);
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
-uint8_t& EightBit::Z80::rrc(uint8_t& operand) {
-	auto& f = F();
-	auto carry = operand & Bit0;
-	operand >>= 1;
-	carry ? operand |= Bit7 : operand &= ~Bit7;
+uint8_t& EightBit::Z80::rrc(uint8_t& f, uint8_t& operand) {
+	const auto carry = operand & Bit0;
+	operand = _rotr8(operand, 1);
 	setFlag(f, CF, carry);
 	clearFlag(f, NF | HC);
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
-uint8_t& EightBit::Z80::rl(uint8_t& operand) {
-	auto& f = F();
-	auto oldCarry = f & CF;
-	auto newCarry = operand & Bit7;
+uint8_t& EightBit::Z80::rl(uint8_t& f, uint8_t& operand) {
+	const auto oldCarry = f & CF;
+	const auto newCarry = operand & Bit7;
 	operand <<= 1;
 	oldCarry ? operand |= Bit0 : operand &= ~Bit0;
 	setFlag(f, CF, newCarry);
@@ -401,10 +401,9 @@ uint8_t& EightBit::Z80::rl(uint8_t& operand) {
 	return operand;
 }
 
-uint8_t& EightBit::Z80::rr(uint8_t& operand) {
-	auto& f = F();
-	auto oldCarry = f & CF;
-	auto newCarry = operand & Bit0;
+uint8_t& EightBit::Z80::rr(uint8_t& f, uint8_t& operand) {
+	const auto oldCarry = f & CF;
+	const auto newCarry = operand & Bit0;
 	operand >>= 1;
 	operand |= oldCarry << 7;
 	setFlag(f, CF, newCarry);
@@ -415,9 +414,8 @@ uint8_t& EightBit::Z80::rr(uint8_t& operand) {
 
 //
 
-uint8_t& EightBit::Z80::sla(uint8_t& operand) {
-	auto& f = F();
-	auto newCarry = operand & Bit7;
+uint8_t& EightBit::Z80::sla(uint8_t& f, uint8_t& operand) {
+	const auto newCarry = operand & Bit7;
 	operand <<= 1;
 	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
@@ -425,10 +423,9 @@ uint8_t& EightBit::Z80::sla(uint8_t& operand) {
 	return operand;
 }
 
-uint8_t& EightBit::Z80::sra(uint8_t& operand) {
-	auto& f = F();
-	auto new7 = operand & Bit7;
-	auto newCarry = operand & Bit0;
+uint8_t& EightBit::Z80::sra(uint8_t& f, uint8_t& operand) {
+	const auto new7 = operand & Bit7;
+	const auto newCarry = operand & Bit0;
 	operand >>= 1;
 	operand |= new7;
 	setFlag(f, CF, newCarry);
@@ -437,9 +434,8 @@ uint8_t& EightBit::Z80::sra(uint8_t& operand) {
 	return operand;
 }
 
-uint8_t& EightBit::Z80::sll(uint8_t& operand) {
-	auto& f = F();
-	auto newCarry = operand & Bit7;
+uint8_t& EightBit::Z80::sll(uint8_t& f, uint8_t& operand) {
+	const auto newCarry = operand & Bit7;
 	operand <<= 1;
 	operand |= 1;
 	setFlag(f, CF, newCarry);
@@ -448,9 +444,8 @@ uint8_t& EightBit::Z80::sll(uint8_t& operand) {
 	return operand;
 }
 
-uint8_t& EightBit::Z80::srl(uint8_t& operand) {
-	auto& f = F();
-	auto newCarry = operand & Bit0;
+uint8_t& EightBit::Z80::srl(uint8_t& f, uint8_t& operand) {
+	const auto newCarry = operand & Bit0;
 	operand >>= 1;
 	operand &= ~Bit7;	// clear bit 7
 	setFlag(f, CF, newCarry);
@@ -464,24 +459,23 @@ uint8_t& EightBit::Z80::srl(uint8_t& operand) {
 
 #pragma region BIT/SET/RES
 
-uint8_t& EightBit::Z80::bit(int n, uint8_t& operand) {
-	auto& f = F();
-	auto carry = f & CF;
-	uint8_t discarded = operand;
-	andr(discarded, 1 << n);
+uint8_t& EightBit::Z80::bit(uint8_t& f, int n, uint8_t& operand) {
+	const uint8_t discarded = operand & (1 << n);
+	setFlag(f, HC);
+	clearFlag(f, NF);
+	adjustSZXY<Z80>(f, discarded);
 	clearFlag(f, PF, discarded);
-	setFlag(f, CF, carry);
 	return operand;
 }
 
 uint8_t& EightBit::Z80::res(int n, uint8_t& operand) {
-	auto bit = 1 << n;
+	const auto bit = 1 << n;
 	operand &= ~bit;
 	return operand;
 }
 
 uint8_t& EightBit::Z80::set(int n, uint8_t& operand) {
-	auto bit = 1 << n;
+	const auto bit = 1 << n;
 	operand |= bit;
 	return operand;
 }
@@ -493,9 +487,9 @@ uint8_t& EightBit::Z80::set(int n, uint8_t& operand) {
 void EightBit::Z80::neg() {
 	auto& a = A();
 	auto& f = F();
-	auto original = a;
+	const auto original = a;
 	a = 0;
-	sub(a, original);
+	sub(f, a, original);
 	setFlag(f, PF, original == Bit7);
 	setFlag(f, CF, original);
 }
@@ -533,7 +527,7 @@ void EightBit::Z80::cpl() {
 	auto& a = A();
 	auto& f = F();
 	a = ~a;
-	adjustXY<Z80>(f, A());
+	adjustXY<Z80>(f, a);
 	setFlag(f, HC | NF);
 }
 
@@ -546,7 +540,7 @@ void EightBit::Z80::scf() {
 
 void EightBit::Z80::ccf() {
 	auto& f = F();
-	auto carry = f & CF;
+	const auto carry = f & CF;
 	setFlag(f, HC, carry);
 	clearFlag(f, CF, carry);
 	clearFlag(f, NF);
@@ -574,14 +568,11 @@ void EightBit::Z80::xhtl() {
 
 #pragma region Block compare instructions
 
-void EightBit::Z80::blockCompare() {
-
-	const auto& a = A();
-	auto& f = F();
+void EightBit::Z80::blockCompare(uint8_t a, uint8_t& f) {
 
 	m_memory.ADDRESS() = HL();
 
-	auto value = m_memory.reference();
+	const auto value = m_memory.reference();
 	uint8_t result = a - value;
 
 	setFlag(f, PF, --BC().word);
@@ -597,31 +588,35 @@ void EightBit::Z80::blockCompare() {
 	setFlag(f, XF, result & Bit3);
 }
 
-void EightBit::Z80::cpi() {
-	blockCompare();
+void EightBit::Z80::cpi(uint8_t a, uint8_t& f) {
+	blockCompare(a, f);
 	HL().word++;
 	MEMPTR().word++;
 }
 
-void EightBit::Z80::cpd() {
-	blockCompare();
+void EightBit::Z80::cpd(uint8_t a, uint8_t& f) {
+	blockCompare(a, f);
 	HL().word--;
 	MEMPTR().word--;
 }
 
 bool EightBit::Z80::cpir() {
-	cpi();
+	const auto a = A();
+	auto& f = F();
+	cpi(a, f);
 	MEMPTR() = PC();
-	auto again = (F() & PF) && !(F() & ZF);	// See CPI
+	auto again = (f & PF) && !(f & ZF);	// See CPI
 	if (again)
 		MEMPTR().word--;
 	return again;
 }
 
 bool EightBit::Z80::cpdr() {
-	cpd();
+	const auto a = A();
+	auto& f = F();
+	cpd(a, f);
 	MEMPTR().word = PC().word - 1;
-	auto again = (F() & PF) && !(F() & ZF);	// See CPD
+	auto again = (f & PF) && !(f & ZF);	// See CPD
 	if (!again)
 		MEMPTR().word--;
 	return again;
@@ -789,12 +784,14 @@ int EightBit::Z80::execute(uint8_t opcode) {
 	if (!M1())
 		throw std::logic_error("M1 cannot be high");
 
-	auto x = (opcode & 0b11000000) >> 6;
-	auto y = (opcode & 0b111000) >> 3;
-	auto z = (opcode & 0b111);
+	const auto& decoded = m_decodedOpcodes[opcode];
 
-	auto p = (y & 0b110) >> 1;
-	auto q = (y & 1);
+	auto x = decoded.x;
+	auto y = decoded.y;
+	auto z = decoded.z;
+
+	auto p = decoded.p;
+	auto q = decoded.q;
 
 	if (!(m_prefixCB && m_displaced)) {
 		incrementRefresh();
@@ -802,7 +799,7 @@ int EightBit::Z80::execute(uint8_t opcode) {
 	}
 
 	if (m_prefixCB)
-		executeCB(x, y, z, p, q);
+		executeCB(x, y, z);
 	else if (m_prefixED)
 		executeED(x, y, z, p, q);
 	else
@@ -814,34 +811,34 @@ int EightBit::Z80::execute(uint8_t opcode) {
 	return cycles;
 }
 
-void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
+void EightBit::Z80::executeCB(int x, int y, int z) {
 	auto& f = F();
 	switch (x) {
 	case 0:	// rot[y] r[z]
 		switch (y) {
 		case 0:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = rlc(DISPLACED()) : rlc(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = rlc(f, DISPLACED()) : rlc(f, R(z)));
 			break;
 		case 1:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = rrc(DISPLACED()) : rrc(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = rrc(f, DISPLACED()) : rrc(f, R(z)));
 			break;
 		case 2:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = rl(DISPLACED()) : rl(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = rl(f, DISPLACED()) : rl(f, R(z)));
 			break;
 		case 3:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = rr(DISPLACED()) : rr(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = rr(f, DISPLACED()) : rr(f, R(z)));
 			break;
 		case 4:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = sla(DISPLACED()) : sla(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = sla(f, DISPLACED()) : sla(f, R(z)));
 			break;
 		case 5:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = sra(DISPLACED()) : sra(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = sra(f, DISPLACED()) : sra(f, R(z)));
 			break;
 		case 6:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = sll(DISPLACED()) : sll(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = sll(f, DISPLACED()) : sll(f, R(z)));
 			break;
 		case 7:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = srl(DISPLACED()) : srl(R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z) = srl(f, DISPLACED()) : srl(f, R(z)));
 			break;
 		}
 		if (m_displaced) {
@@ -854,11 +851,11 @@ void EightBit::Z80::executeCB(int x, int y, int z, int p, int q) {
 		break;
 	case 1:	// BIT y, r[z]
 		if (m_displaced) {
-			bit(y, DISPLACED());
+			bit(f, y, DISPLACED());
 			adjustXY<Z80>(f, MEMPTR().high);
 			cycles += 20;
 		} else {
-			auto operand = bit(y, R(z));
+			auto operand = bit(f, y, R(z));
 			cycles += 8;
 			if (z == 6) {
 				adjustXY<Z80>(f, MEMPTR().high);
@@ -988,7 +985,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				cycles += 9;
 				break;
 			case 1:	// LD R,A
-				REFRESH() = A();
+				REFRESH() = refresh_t::fromUint8(A());
 				cycles += 9;
 				break;
 			case 2:	// LD A,I
@@ -999,7 +996,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				cycles += 9;
 				break;
 			case 3:	// LD A,R
-				A() = REFRESH();
+				A() = REFRESH().asUint8();
 				adjustSZXY<Z80>(f, A());
 				clearFlag(f, NF | HC);
 				setFlag(f, PF, IFF2());
@@ -1048,10 +1045,10 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 		case 1:	// CP
 			switch (y) {
 			case 4:	// CPI
-				cpi();
+				cpi(A(), f);
 				break;
 			case 5:	// CPD
-				cpd();
+				cpd(A(), f);
 				break;
 			case 6:	// CPIR
 				if (cpir()) {
@@ -1141,7 +1138,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 12;
 				break;
 			default:	// JR cc,d
-				if (jrConditionalFlag(y - 4))
+				if (jrConditionalFlag(f, y - 4))
 					cycles += 5;
 				cycles += 5;
 				break;
@@ -1242,16 +1239,16 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		} case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
 			case 0:
-				rlc(A());
+				rlc(f, A());
 				break;
 			case 1:
-				rrc(A());
+				rrc(f, A());
 				break;
 			case 2:
-				rl(A());
+				rl(f, A());
 				break;
 			case 3:
-				rr(A());
+				rr(f, A());
 				break;
 			case 4:
 				daa();
@@ -1311,28 +1308,28 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 	case 2:	// Operate on accumulator and register/memory location
 		switch (y) {
 		case 0:	// ADD A,r
-			add(A(), R(z));
+			add(f, A(), R(z));
 			break;
 		case 1:	// ADC A,r
 			adc(A(), R(z));
 			break;
 		case 2:	// SUB r
-			sub(A(), R(z));
+			sub(f, A(), R(z));
 			break;
 		case 3:	// SBC A,r
 			sbc(A(), R(z));
 			break;
 		case 4:	// AND r
-			andr(A(), R(z));
+			andr(f, A(), R(z));
 			break;
 		case 5:	// XOR r
-			xorr(A(), R(z));
+			xorr(f, A(), R(z));
 			break;
 		case 6:	// OR r
-			orr(A(), R(z));
+			orr(f, A(), R(z));
 			break;
 		case 7:	// CP r
-			compare(R(z));
+			compare(f, A(), R(z));
 			break;
 		}
 		cycles += 4;
@@ -1342,7 +1339,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 	case 3:
 		switch (z) {
 		case 0:	// Conditional return
-			if (returnConditionalFlag(y))
+			if (returnConditionalFlag(f, y))
 				cycles += 6;
 			cycles += 5;
 			break;
@@ -1374,7 +1371,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			}
 			break;
 		case 2:	// Conditional jump
-			jumpConditionalFlag(y);
+			jumpConditionalFlag(f, y);
 			cycles += 10;
 			break;
 		case 3:	// Assorted operations
@@ -1427,7 +1424,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
-			if (callConditionalFlag(y))
+			if (callConditionalFlag(f, y))
 				cycles += 7;
 			cycles += 10;
 			break;
@@ -1462,28 +1459,28 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
 			switch (y) {
 			case 0:	// ADD A,n
-				add(A(), fetchByte());
+				add(f, A(), fetchByte());
 				break;
 			case 1:	// ADC A,n
 				adc(A(), fetchByte());
 				break;
 			case 2:	// SUB n
-				sub(A(), fetchByte());
+				sub(f, A(), fetchByte());
 				break;
 			case 3:	// SBC A,n
 				sbc(A(), fetchByte());
 				break;
 			case 4:	// AND n
-				andr(A(), fetchByte());
+				andr(f, A(), fetchByte());
 				break;
 			case 5:	// XOR n
-				xorr(A(), fetchByte());
+				xorr(f, A(), fetchByte());
 				break;
 			case 6:	// OR n
-				orr(A(), fetchByte());
+				orr(f, A(), fetchByte());
 				break;
 			case 7:	// CP n
-				compare(fetchByte());
+				compare(f, A(), fetchByte());
 				break;
 			}
 			cycles += 7;
