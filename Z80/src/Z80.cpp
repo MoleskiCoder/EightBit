@@ -9,6 +9,7 @@ EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
   m_ports(ports),
   m_registerSet(0),
   m_accumulatorFlagsSet(0),
+  m_refresh(0x7f),
   iv(0xff),
   m_interruptMode(0),
   m_iff1(false),
@@ -20,11 +21,8 @@ EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
   m_prefixFD(false),
   m_displacement(0),
   m_displaced(false) {
-
 	IX().word = 0xffff;
 	IY().word = 0xffff;
-
-	REFRESH() = refresh_t::fromUint8(0x7f);
 }
 
 void EightBit::Z80::reset() {
@@ -37,7 +35,7 @@ void EightBit::Z80::initialise() {
 	IntelProcessor::initialise();
 
 	for (int i = 0; i < 0x100; ++i) {
-		m_decodedOpcodes[i] = opcode_decoded_t::decode(i);
+		m_decodedOpcodes[i] = i;
 	}
 
 	IM() = 0;
@@ -60,7 +58,7 @@ void EightBit::Z80::initialise() {
 	IX().word = 0xffff;
 	IY().word = 0xffff;
 
-	REFRESH() = refresh_t::fromUint8(0x7f);
+	REFRESH() = 0x7f;
 	IV() = 0xff;
 
 	m_prefixCB = false;
@@ -794,7 +792,7 @@ int EightBit::Z80::execute(uint8_t opcode) {
 	auto q = decoded.q;
 
 	if (!(m_prefixCB && m_displaced)) {
-		incrementRefresh();
+		++REFRESH();
 		M1() = false;
 	}
 
@@ -985,7 +983,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				cycles += 9;
 				break;
 			case 1:	// LD R,A
-				REFRESH() = refresh_t::fromUint8(A());
+				REFRESH() = A();
 				cycles += 9;
 				break;
 			case 2:	// LD A,I
@@ -996,7 +994,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				cycles += 9;
 				break;
 			case 3:	// LD A,R
-				A() = REFRESH().asUint8();
+				A() = REFRESH();
 				adjustSZXY<Z80>(f, A());
 				clearFlag(f, NF | HC);
 				setFlag(f, PF, IFF2());

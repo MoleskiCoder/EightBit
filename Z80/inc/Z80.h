@@ -14,15 +14,18 @@ namespace EightBit {
 			bool high : 1;
 			uint8_t variable : 7;
 
-			uint8_t asUint8() const {
+			refresh_t(uint8_t value)
+			: high((value & Bit7) != 0),
+			  variable(value & Mask7)
+			{ }
+
+			operator uint8_t() const {
 				return (high << 7) | variable;
 			}
 
-			static refresh_t fromUint8(uint8_t value) {
-				refresh_t returned;
-				returned.high = (value & Bit7) != 0;
-				returned.variable = value & Mask7;
-				return returned;
+			refresh_t& operator++() {
+				++variable;
+				return *this;
 			}
 		};
 
@@ -34,14 +37,16 @@ namespace EightBit {
 			int p;
 			int q;
 
-			static opcode_decoded_t decode(uint8_t opcode) {
-				opcode_decoded_t returned;
-				returned.x = (opcode & 0b11000000) >> 6;
-				returned.y = (opcode & 0b00111000) >> 3;
-				returned.z = (opcode & 0b00000111);
-				returned.p = (returned.y & 0b110) >> 1;
-				returned.q = (returned.y & 1);
-				return returned;
+			opcode_decoded_t() {
+				x = y = z = p = q = 0;
+			}
+
+			opcode_decoded_t(uint8_t opcode) {
+				x = (opcode & 0b11000000) >> 6;
+				y = (opcode & 0b00111000) >> 3;
+				z = (opcode & 0b00000111);
+				p = (y & 0b110) >> 1;
+				q = (y & 1);
 			}
 		};
 
@@ -154,10 +159,6 @@ namespace EightBit {
 		int fetchExecute() {
 			M1() = true;
 			return execute(fetchByte());
-		}
-
-		void incrementRefresh() {
-			REFRESH().variable++;
 		}
 
 		uint8_t& DISPLACED() {

@@ -45,7 +45,7 @@ void Fuse::TestRunner::initialiseRegisters() {
 	m_cpu.MEMPTR() = inputRegisters[Fuse::RegisterState::MEMPTR];
 
 	m_cpu.IV() = testState.i;
-	m_cpu.REFRESH() = EightBit::Z80::refresh_t::fromUint8(testState.r);
+	m_cpu.REFRESH() = testState.r;
 	m_cpu.IFF1() = testState.iff1;
 	m_cpu.IFF2() = testState.iff2;
 	m_cpu.IM() = testState.im;
@@ -121,7 +121,7 @@ void Fuse::TestRunner::checkregisters() {
 	auto memptr = m_cpu.MEMPTR().word == expectedRegisters[Fuse::RegisterState::MEMPTR].word;
 
 	auto iv = m_cpu.IV() == expectedState.i;
-	auto refresh = m_cpu.REFRESH().asUint8() == expectedState.r;
+	auto refresh = m_cpu.REFRESH() == expectedState.r;
 	auto iff1 = m_cpu.IFF1() == expectedState.iff1;
 	auto iff2 = m_cpu.IFF2() == expectedState.iff2;
 	auto im = m_cpu.IM() == expectedState.im;
@@ -263,7 +263,7 @@ void Fuse::TestRunner::checkregisters() {
 				<< "**** R, Expected: "
 				<< EightBit::Disassembler::hex((uint8_t)expectedState.r)
 				<< ", Got: "
-				<< EightBit::Disassembler::hex(m_cpu.REFRESH().variable)
+				<< EightBit::Disassembler::hex((uint8_t)m_cpu.REFRESH())
 				<< std::endl;
 		}
 
