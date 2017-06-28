@@ -166,7 +166,7 @@ namespace EightBit {
 			return m_memory.reference();
 		}
 
-		uint8_t& R(int r) {
+		uint8_t& R(int r, uint8_t& a) {
 			switch (r) {
 			case 0:
 				return B();
@@ -188,14 +188,14 @@ namespace EightBit {
 				m_memory.ADDRESS() = HL();
 				return m_memory.reference();
 			case 7:
-				return A();
+				return a;
 			default:
 				__assume(0);
 			}
 			throw std::logic_error("Unhandled registry mechanism");
 		}
 
-		uint8_t& R2(int r) {
+		uint8_t& R2(int r, uint8_t& a) {
 			switch (r) {
 			case 0:
 				return B();
@@ -213,7 +213,7 @@ namespace EightBit {
 				m_memory.ADDRESS() = HL();
 				return m_memory.reference();
 			case 7:
-				return A();
+				return a;
 			default:
 				__assume(0);
 			}

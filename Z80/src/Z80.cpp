@@ -818,28 +818,28 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 	case 0:	// rot[y] r[z]
 		switch (y) {
 		case 0:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = rlc(f, DISPLACED()) : rlc(f, R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z, a) = rlc(f, DISPLACED()) : rlc(f, R(z, a)));
 			break;
 		case 1:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = rrc(f, DISPLACED()) : rrc(f, R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z, a) = rrc(f, DISPLACED()) : rrc(f, R(z, a)));
 			break;
 		case 2:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = rl(f, DISPLACED()) : rl(f, R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z, a) = rl(f, DISPLACED()) : rl(f, R(z, a)));
 			break;
 		case 3:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = rr(f, DISPLACED()) : rr(f, R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z, a) = rr(f, DISPLACED()) : rr(f, R(z, a)));
 			break;
 		case 4:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = sla(f, DISPLACED()) : sla(f, R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z, a) = sla(f, DISPLACED()) : sla(f, R(z, a)));
 			break;
 		case 5:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = sra(f, DISPLACED()) : sra(f, R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z, a) = sra(f, DISPLACED()) : sra(f, R(z, a)));
 			break;
 		case 6:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = sll(f, DISPLACED()) : sll(f, R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z, a) = sll(f, DISPLACED()) : sll(f, R(z, a)));
 			break;
 		case 7:
-			adjustSZP<Z80>(f, m_displaced ? R2(z) = srl(f, DISPLACED()) : srl(f, R(z)));
+			adjustSZP<Z80>(f, m_displaced ? R2(z, a) = srl(f, DISPLACED()) : srl(f, R(z, a)));
 			break;
 		}
 		if (m_displaced) {
@@ -856,7 +856,7 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 			adjustXY<Z80>(f, MEMPTR().high);
 			cycles += 20;
 		} else {
-			auto operand = bit(f, y, R(z));
+			auto operand = bit(f, y, R(z, a));
 			cycles += 8;
 			if (z == 6) {
 				adjustXY<Z80>(f, MEMPTR().high);
@@ -868,10 +868,10 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 		break;
 	case 2:	// RES y, r[z]
 		if (m_displaced) {
-			R2(z) = res(y, DISPLACED());
+			R2(z, a) = res(y, DISPLACED());
 			cycles += 23;
 		} else {
-			res(y, R(z));
+			res(y, R(z, a));
 			cycles += 8;
 			if (z == 6)
 				cycles += 7;
@@ -879,10 +879,10 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 		break;
 	case 3:	// SET y, r[z]
 		if (m_displaced) {
-			R2(z) = set(y, DISPLACED());
+			R2(z, a) = set(y, DISPLACED());
 			cycles += 23;
 		} else {
-			set(y, R(z));
+			set(y, R(z, a));
 			cycles += 8;
 			if (z == 6)
 				cycles += 7;
@@ -906,7 +906,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			MEMPTR().word++;
 			readPort();
 			if (y != 6)	// IN r[y],(C)
-				R(y) = m_memory.DATA();
+				R(y, a) = m_memory.DATA();
 			adjustSZPXY<Z80>(f, m_memory.DATA());
 			clearFlag(f, NF | HC);
 			cycles += 12;
@@ -917,7 +917,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			if (y == 6)	// OUT (C),0
 				m_memory.placeDATA(0);
 			else		// OUT (C),r[y]
-				m_memory.placeDATA(R(y));
+				m_memory.placeDATA(R(y, a));
 			writePort();
 			cycles += 12;
 			break;
@@ -1243,17 +1243,17 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			cycles += 6;
 			break;
 		case 4:	// 8-bit INC
-			postIncrement(f, ++R(y));	// INC r
+			postIncrement(f, ++R(y, a));	// INC r
 			cycles += 4;
 			break;
 		case 5:	// 8-bit DEC
-			postDecrement(f, --R(y));	// DEC r
+			postDecrement(f, --R(y, a));	// DEC r
 			cycles += 4;
 			if (y == 6)
 				cycles += 7;
 			break;
 		case 6: { // 8-bit load immediate
-			auto& r = R(y);	// LD r,n
+			auto& r = R(y, a);	// LD r,n
 			r = fetchByte();
 			cycles += 7;
 			if (y == 6)
@@ -1303,11 +1303,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				if (z == 6) {
 					switch (y) {
 					case 4:
-						H() = R(z);
+						H() = R(z, a);
 						normal = false;
 						break;
 					case 5:
-						L() = R(z);
+						L() = R(z, a);
 						normal = false;
 						break;
 					}
@@ -1315,18 +1315,18 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				if (y == 6) {
 					switch (z) {
 					case 4:
-						R(y) = H();
+						R(y, a) = H();
 						normal = false;
 						break;
 					case 5:
-						R(y) = L();
+						R(y, a) = L();
 						normal = false;
 						break;
 					}
 				}
 			}
 			if (normal)
-				R(y) = R(z);
+				R(y, a) = R(z, a);
 			if ((y == 6) || (z == 6))	// M operations
 				cycles += 3;
 		}
@@ -1335,28 +1335,28 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 	case 2:	// Operate on accumulator and register/memory location
 		switch (y) {
 		case 0:	// ADD A,r
-			add(f, a, R(z));
+			add(f, a, R(z, a));
 			break;
 		case 1:	// ADC A,r
-			adc(f, a, R(z));
+			adc(f, a, R(z, a));
 			break;
 		case 2:	// SUB r
-			sub(f, a, R(z));
+			sub(f, a, R(z, a));
 			break;
 		case 3:	// SBC A,r
-			sbc(f, a, R(z));
+			sbc(f, a, R(z, a));
 			break;
 		case 4:	// AND r
-			andr(f, a, R(z));
+			andr(f, a, R(z, a));
 			break;
 		case 5:	// XOR r
-			xorr(f, a, R(z));
+			xorr(f, a, R(z, a));
 			break;
 		case 6:	// OR r
-			orr(f, a, R(z));
+			orr(f, a, R(z, a));
 			break;
 		case 7:	// CP r
-			compare(f, a, R(z));
+			compare(f, a, R(z, a));
 			break;
 		default:
 			__assume(0);

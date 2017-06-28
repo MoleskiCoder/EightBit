@@ -39,16 +39,16 @@ namespace EightBit {
 
 		Memory(uint16_t addressMask);
 
-		virtual register16_t& ADDRESS() { return m_address; }
-		virtual uint8_t& DATA() { return *m_data; }
+		register16_t& ADDRESS() { return m_address; }
+		uint8_t& DATA() { return *m_data; }
 
-		virtual uint8_t& placeDATA(uint8_t value) {
+		uint8_t& placeDATA(uint8_t value) {
 			m_temporary = value;
 			m_data = &m_temporary;
 			return DATA();
 		}
 
-		virtual uint8_t& referenceDATA(uint8_t& value) {
+		uint8_t& referenceDATA(uint8_t& value) {
 			m_data = &value;
 			return DATA();
 		}
