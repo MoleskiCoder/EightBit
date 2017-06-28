@@ -231,9 +231,7 @@ bool EightBit::Z80::callConditionalFlag(uint8_t& f, int flag) {
 
 #pragma region 16-bit arithmetic
 
-void EightBit::Z80::sbc(register16_t& operand, register16_t value) {
-
-	auto& f = F();
+void EightBit::Z80::sbc(uint8_t& f, register16_t& operand, register16_t value) {
 
 	const auto before = operand;
 
@@ -254,9 +252,7 @@ void EightBit::Z80::sbc(register16_t& operand, register16_t value) {
 	adjustXY<Z80>(f, operand.high);
 }
 
-void EightBit::Z80::adc(register16_t& operand, register16_t value) {
-
-	auto& f = F();
+void EightBit::Z80::adc(uint8_t& f, register16_t& operand, register16_t value) {
 
 	const auto before = operand;
 
@@ -277,9 +273,7 @@ void EightBit::Z80::adc(register16_t& operand, register16_t value) {
 	adjustXY<Z80>(f, operand.high);
 }
 
-void EightBit::Z80::add(register16_t& operand, register16_t value) {
-
-	auto& f = F();
+void EightBit::Z80::add(uint8_t& f, register16_t& operand, register16_t value) {
 
 	const auto before = operand;
 
@@ -312,8 +306,7 @@ void EightBit::Z80::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) 
 	adjustSZXY<Z80>(f, operand);
 }
 
-void EightBit::Z80::adc(uint8_t& operand, uint8_t value) {
-	auto& f = F();
+void EightBit::Z80::adc(uint8_t& f, uint8_t& operand, uint8_t value) {
 	add(f, operand, value, f & CF);
 }
 
@@ -337,8 +330,7 @@ void EightBit::Z80::sub(uint8_t& f, uint8_t& operand, uint8_t value, int carry) 
 	adjustXY<Z80>(f, operand);
 }
 
-void EightBit::Z80::sbc(uint8_t& operand, uint8_t value) {
-	auto& f = F();
+void EightBit::Z80::sbc(uint8_t& f, uint8_t& operand, uint8_t value) {
 	sub(f, operand, value, f & CF);
 }
 
@@ -467,14 +459,12 @@ uint8_t& EightBit::Z80::bit(uint8_t& f, int n, uint8_t& operand) {
 }
 
 uint8_t& EightBit::Z80::res(int n, uint8_t& operand) {
-	const auto bit = 1 << n;
-	operand &= ~bit;
+	operand &= ~(1 << n);
 	return operand;
 }
 
 uint8_t& EightBit::Z80::set(int n, uint8_t& operand) {
-	const auto bit = 1 << n;
-	operand |= bit;
+	operand |= (1 << n);
 	return operand;
 }
 
@@ -482,67 +472,65 @@ uint8_t& EightBit::Z80::set(int n, uint8_t& operand) {
 
 #pragma region Miscellaneous instructions
 
-void EightBit::Z80::neg() {
-	auto& a = A();
-	auto& f = F();
+void EightBit::Z80::neg(uint8_t& a, uint8_t& f) {
+
+	setFlag(f, PF, a == Bit7);
+	setFlag(f, CF, a);
+	setFlag(f, NF);
+
 	const auto original = a;
-	a = 0;
-	sub(f, a, original);
-	setFlag(f, PF, original == Bit7);
-	setFlag(f, CF, original);
+
+	a = (~a + 1);	// two's complement
+
+	adjustHalfCarrySub(f, 0U, original, a);
+	adjustOverflowSub(f, 0U, original, a);
+
+	adjustSZXY<Z80>(f, a);
 }
 
-void EightBit::Z80::daa() {
+void EightBit::Z80::daa(uint8_t& a, uint8_t& f) {
 
-	auto& acc = A();
-	auto& f = F();
+	auto updated = a;
 
-	auto a = acc;
-
-	auto lowAdjust = (f & HC) | (lowNibble(acc) > 9);
-	auto highAdjust = (f & CF) | (acc > 0x99);
+	auto lowAdjust = (f & HC) | (lowNibble(a) > 9);
+	auto highAdjust = (f & CF) | (a > 0x99);
 
 	if (f & NF) {
 		if (lowAdjust)
-			a -= 6;
+			updated -= 6;
 		if (highAdjust)
-			a -= 0x60;
+			updated -= 0x60;
 	} else {
 		if (lowAdjust)
-			a += 6;
+			updated += 6;
 		if (highAdjust)
-			a += 0x60;
+			updated += 0x60;
 	}
 
-	f = (f & (CF | NF)) | (acc > 0x99) | ((acc ^ a) & HC);
+	f = (f & (CF | NF)) | (a > 0x99) | ((a ^ updated) & HC);
+	a = updated;
 
 	adjustSZPXY<Z80>(f, a);
-
-	acc = a;
 }
 
-void EightBit::Z80::cpl() {
-	auto& a = A();
-	auto& f = F();
+void EightBit::Z80::cpl(uint8_t& a, uint8_t& f) {
 	a = ~a;
 	adjustXY<Z80>(f, a);
 	setFlag(f, HC | NF);
 }
 
-void EightBit::Z80::scf() {
-	auto& f = F();
+void EightBit::Z80::scf(uint8_t a, uint8_t& f) {
 	setFlag(f, CF);
-	adjustXY<Z80>(f, A());
+	adjustXY<Z80>(f, a);
 	clearFlag(f, HC | NF);
 }
 
-void EightBit::Z80::ccf() {
-	auto& f = F();
+void EightBit::Z80::ccf(uint8_t a, uint8_t& f) {
 	const auto carry = f & CF;
 	setFlag(f, HC, carry);
 	clearFlag(f, CF, carry);
 	clearFlag(f, NF);
-	adjustXY<Z80>(f, A());
+	adjustXY<Z80>(f, a);
 }
 
 void EightBit::Z80::xhtl(register16_t& operand) {
@@ -554,10 +542,6 @@ void EightBit::Z80::xhtl(register16_t& operand) {
 	MEMPTR().high = m_memory.reference();
 	m_memory.reference() = operand.high;
 	operand.high = MEMPTR().high;
-}
-
-void EightBit::Z80::xhtl() {
-	xhtl(HL2());
 }
 
 #pragma endregion Miscellaneous instructions
@@ -598,9 +582,7 @@ void EightBit::Z80::cpd(uint8_t a, uint8_t& f) {
 	MEMPTR().word--;
 }
 
-bool EightBit::Z80::cpir() {
-	const auto a = A();
-	auto& f = F();
+bool EightBit::Z80::cpir(uint8_t a, uint8_t& f) {
 	cpi(a, f);
 	MEMPTR() = PC();
 	auto again = (f & PF) && !(f & ZF);	// See CPI
@@ -609,9 +591,7 @@ bool EightBit::Z80::cpir() {
 	return again;
 }
 
-bool EightBit::Z80::cpdr() {
-	const auto a = A();
-	auto& f = F();
+bool EightBit::Z80::cpdr(uint8_t a, uint8_t& f) {
 	cpd(a, f);
 	MEMPTR().word = PC().word - 1;
 	auto again = (f & PF) && !(f & ZF);	// See CPD
@@ -624,42 +604,41 @@ bool EightBit::Z80::cpdr() {
 
 #pragma region Block load instructions
 
-void EightBit::Z80::blockLoad(register16_t source, register16_t destination) {
-	auto& f = F();
+void EightBit::Z80::blockLoad(uint8_t a, uint8_t& f, register16_t source, register16_t destination) {
 	m_memory.ADDRESS() = source;
 	auto value = m_memory.reference();
 	m_memory.ADDRESS() = destination;
 	m_memory.reference() = value;
-	auto xy = A() + value;
+	auto xy = a + value;
 	setFlag(f, XF, xy & 8);
 	setFlag(f, YF, xy & 2);
 	clearFlag(f, NF | HC);
 	setFlag(f, PF, --BC().word);
 }
 
-void EightBit::Z80::ldd() {
-	blockLoad(HL(), DE());
+void EightBit::Z80::ldd(uint8_t a, uint8_t& f) {
+	blockLoad(a, f, HL(), DE());
 	HL().word--;
 	DE().word--;
 }
 
-void EightBit::Z80::ldi() {
-	blockLoad(HL(), DE());
+void EightBit::Z80::ldi(uint8_t a, uint8_t& f) {
+	blockLoad(a, f, HL(), DE());
 	HL().word++;
 	DE().word++;
 }
 
-bool EightBit::Z80::ldir() {
-	ldi();
-	auto again = (F() & PF) != 0;
+bool EightBit::Z80::ldir(uint8_t a, uint8_t& f) {
+	ldi(a, f);
+	auto again = (f & PF) != 0;
 	if (again)		// See LDI
 		MEMPTR().word = PC().word - 1;
 	return again;
 }
 
-bool EightBit::Z80::lddr() {
-	ldd();
-	auto again = (F() & PF) != 0;
+bool EightBit::Z80::lddr(uint8_t a, uint8_t& f) {
+	ldd(a, f);
+	auto again = (f & PF) != 0;
 	if (again)		// See LDR
 		MEMPTR().word = PC().word - 1;
 	return again;
@@ -669,8 +648,7 @@ bool EightBit::Z80::lddr() {
 
 #pragma region Block input instructions
 
-void EightBit::Z80::ini() {
-	auto& f = F();
+void EightBit::Z80::ini(uint8_t& f) {
 	MEMPTR() = m_memory.ADDRESS() = BC();
 	MEMPTR().word++;
 	readPort();
@@ -681,8 +659,7 @@ void EightBit::Z80::ini() {
 	setFlag(f, NF);
 }
 
-void EightBit::Z80::ind() {
-	auto& f = F();
+void EightBit::Z80::ind(uint8_t& f) {
 	MEMPTR() = m_memory.ADDRESS() = BC();
 	MEMPTR().word--;
 	readPort();
@@ -693,22 +670,21 @@ void EightBit::Z80::ind() {
 	setFlag(f, NF);
 }
 
-bool EightBit::Z80::inir() {
-	ini();
-	return !(F() & ZF);	// See INI
+bool EightBit::Z80::inir(uint8_t& f) {
+	ini(f);
+	return !(f & ZF);	// See INI
 }
 
-bool EightBit::Z80::indr() {
-	ind();
-	return !(F() & ZF);	// See IND
+bool EightBit::Z80::indr(uint8_t& f) {
+	ind(f);
+	return !(f & ZF);	// See IND
 }
 
 #pragma endregion Block input instructions
 
 #pragma region Block output instructions
 
-void EightBit::Z80::blockOut() {
-	auto& f = F();
+void EightBit::Z80::blockOut(uint8_t& f) {
 	auto value = m_memory.reference();
 	m_memory.ADDRESS().word = BC().word;
 	writePort();
@@ -718,26 +694,26 @@ void EightBit::Z80::blockOut() {
 	adjustParity<Z80>(f, ((value + L()) & 7) ^ B());
 }
 
-void EightBit::Z80::outi() {
+void EightBit::Z80::outi(uint8_t& f) {
 	m_memory.ADDRESS().word = HL().word++;
-	blockOut();
+	blockOut(f);
 	MEMPTR().word = BC().word + 1;
 }
 
-void EightBit::Z80::outd() {
+void EightBit::Z80::outd(uint8_t& f) {
 	m_memory.ADDRESS().word = HL().word--;
-	blockOut();
+	blockOut(f);
 	MEMPTR().word = BC().word - 1;
 }
 
-bool EightBit::Z80::otir() {
-	outi();
-	return !(F() & ZF);	// See OUTI
+bool EightBit::Z80::otir(uint8_t& f) {
+	outi(f);
+	return !(f & ZF);	// See OUTI
 }
 
-bool EightBit::Z80::otdr() {
-	outd();
-	return !(F() & ZF);	// See OUTD
+bool EightBit::Z80::otdr(uint8_t& f) {
+	outd(f);
+	return !(f & ZF);	// See OUTD
 }
 
 #pragma endregion Block output instructions
@@ -746,9 +722,7 @@ bool EightBit::Z80::otdr() {
 
 #pragma region Nibble rotation
 
-void EightBit::Z80::rrd() {
-	auto& a = A();
-	auto& f = F();
+void EightBit::Z80::rrd(uint8_t& a, uint8_t& f) {
 	MEMPTR() = HL();
 	auto memory = memptrReference();
 	m_memory.reference() = promoteNibble(a) | highNibble(memory);
@@ -757,9 +731,7 @@ void EightBit::Z80::rrd() {
 	clearFlag(f, NF | HC);
 }
 
-void EightBit::Z80::rld() {
-	auto& a = A();
-	auto& f = F();
+void EightBit::Z80::rld(uint8_t& a, uint8_t& f) {
 	MEMPTR() = HL();
 	auto memory = memptrReference();
 	m_memory.reference() = promoteNibble(memory) | lowNibble(a);
@@ -769,6 +741,36 @@ void EightBit::Z80::rld() {
 }
 
 #pragma endregion Nibble rotation
+
+#pragma region I/O instructions
+
+void EightBit::Z80::writePort(uint8_t port, uint8_t data) {
+	m_memory.ADDRESS().low = port;
+	m_memory.ADDRESS().high = data;
+	MEMPTR() = m_memory.ADDRESS();
+	m_memory.placeDATA(data);
+	writePort();
+	MEMPTR().low++;
+}
+
+void EightBit::Z80::writePort() {
+	m_ports.write(m_memory.ADDRESS().low, m_memory.DATA());
+}
+
+void EightBit::Z80::readPort(uint8_t port, uint8_t& a) {
+	m_memory.ADDRESS().low = port;
+	m_memory.ADDRESS().high = a;
+	MEMPTR() = m_memory.ADDRESS();
+	readPort();
+	a = m_memory.DATA();
+	MEMPTR().low++;
+}
+
+void EightBit::Z80::readPort() {
+	m_memory.placeDATA(m_ports.read(m_memory.ADDRESS().low));
+}
+
+#pragma endregion I/O instructions
 
 int EightBit::Z80::step() {
 	ExecutingInstruction.fire(*this);
@@ -810,6 +812,7 @@ int EightBit::Z80::execute(uint8_t opcode) {
 }
 
 void EightBit::Z80::executeCB(int x, int y, int z) {
+	auto& a = A();
 	auto& f = F();
 	switch (x) {
 	case 0:	// rot[y] r[z]
@@ -889,6 +892,7 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 }
 
 void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
+	auto& a = A();
 	auto& f = F();
 	switch (x) {
 	case 0:
@@ -920,11 +924,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 		case 2:	// 16-bit add/subtract with carry
 			switch (q) {
 			case 0:	// SBC HL, rp[p]
-				sbcViaMemptr(HL2(), RP(p));
+				sbcViaMemptr(f, HL2(), RP(p));
 				break;
 			case 1:	// ADC HL, rp[p]
-				adcViaMemptr(HL2(), RP(p));
+				adcViaMemptr(f, HL2(), RP(p));
 				break;
+			default:
+				__assume(0);
 			}
 			cycles += 15;
 			break;
@@ -938,11 +944,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				fetchWord();
 				getWordViaMemptr(RP(p));
 				break;
+			default:
+				__assume(0);
 			}
 			cycles += 20;
 			break;
 		case 4:	// Negate accumulator
-			neg();
+			neg(a, f);
 			cycles += 8;
 			break;
 		case 5:	// Return from interrupt
@@ -973,47 +981,53 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			case 1:
 			case 5:
 				IM() = 0;
+			default:
+				__assume(0);
 			}
 			cycles += 8;
 			break;
 		case 7:	// Assorted ops
 			switch (y) {
 			case 0:	// LD I,A
-				IV() = A();
+				IV() = a;
 				cycles += 9;
 				break;
 			case 1:	// LD R,A
-				REFRESH() = A();
+				REFRESH() = a;
 				cycles += 9;
 				break;
 			case 2:	// LD A,I
-				A() = IV();
-				adjustSZXY<Z80>(f, A());
-				setFlag(f, PF, IFF2());
+				a = IV();
+				adjustSZXY<Z80>(f, a);
 				clearFlag(f, NF | HC);
+				setFlag(f, PF, IFF2());
 				cycles += 9;
 				break;
 			case 3:	// LD A,R
-				A() = REFRESH();
-				adjustSZXY<Z80>(f, A());
+				a = REFRESH();
+				adjustSZXY<Z80>(f, a);
 				clearFlag(f, NF | HC);
 				setFlag(f, PF, IFF2());
 				cycles += 9;
 				break;
 			case 4:	// RRD
-				rrd();
+				rrd(a, f);
 				cycles += 18;
 				break;
 			case 5:	// RLD
-				rld();
+				rld(a, f);
 				cycles += 18;
 				break;
 			case 6:	// NOP
 			case 7:	// NOP
 				cycles += 4;
 				break;
+			default:
+				__assume(0);
 			}
 			break;
+		default:
+			__assume(0);
 		}
 		break;
 	case 2:
@@ -1021,19 +1035,19 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 		case 0:	// LD
 			switch (y) {
 			case 4:	// LDI
-				ldi();
+				ldi(a, f);
 				break;
 			case 5:	// LDD
-				ldd();
+				ldd(a, f);
 				break;
 			case 6:	// LDIR
-				if (ldir()) {
+				if (ldir(a, f)) {
 					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
 			case 7:	// LDDR
-				if (lddr()) {
+				if (lddr(a, f)) {
 					PC().word -= 2;
 					cycles += 5;
 				}
@@ -1043,19 +1057,19 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 		case 1:	// CP
 			switch (y) {
 			case 4:	// CPI
-				cpi(A(), f);
+				cpi(a, f);
 				break;
 			case 5:	// CPD
-				cpd(A(), f);
+				cpd(a, f);
 				break;
 			case 6:	// CPIR
-				if (cpir()) {
+				if (cpir(a, f)) {
 					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
 			case 7:	// CPDR
-				if (cpdr()) {
+				if (cpdr(a, f)) {
 					PC().word -= 2;
 					cycles += 5;
 				}
@@ -1065,19 +1079,19 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 		case 2:	// IN
 			switch (y) {
 			case 4:	// INI
-				ini();
+				ini(f);
 				break;
 			case 5:	// IND
-				ind();
+				ind(f);
 				break;
 			case 6:	// INIR
-				if (inir()) {
+				if (inir(f)) {
 					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
 			case 7:	// INDR
-				if (indr()) {
+				if (indr(f)) {
 					PC().word -= 2;
 					cycles += 5;
 				}
@@ -1087,19 +1101,19 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 		case 3:	// OUT
 			switch (y) {
 			case 4:	// OUTI
-				outi();
+				outi(f);
 				break;
 			case 5:	// OUTD
-				outd();
+				outd(f);
 				break;
 			case 6:	// OTIR
-				if (otir()) {
+				if (otir(f)) {
 					PC().word -= 2;
 					cycles += 5;
 				}
 				break;
 			case 7:	// OTDR
-				if (otdr()) {
+				if (otdr(f)) {
 					PC().word -= 2;
 					cycles += 5;
 				}
@@ -1113,6 +1127,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 }
 
 void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
+	auto& a = A();
 	auto& f = F();
 	switch (x) {
 	case 0:
@@ -1149,9 +1164,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 10;
 				break;
 			case 1:	// ADD HL,rp
-				addViaMemptr(HL2(), RP(p));
+				addViaMemptr(f, HL2(), RP(p));
 				cycles += 11;
 				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 2:	// Indirect loading
@@ -1160,12 +1177,12 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				switch (p) {
 				case 0:	// LD (BC),A
 					MEMPTR() = BC();
-					MEMPTR().high = memptrReference() = A();
+					MEMPTR().high = memptrReference() = a;
 					cycles += 7;
 					break;
 				case 1:	// LD (DE),A
 					MEMPTR() = DE();
-					MEMPTR().high = memptrReference() = A();
+					MEMPTR().high = memptrReference() = a;
 					cycles += 7;
 					break;
 				case 2:	// LD (nn),HL
@@ -1175,21 +1192,23 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					break;
 				case 3: // LD (nn),A
 					fetchWord();
-					MEMPTR().high = memptrReference() = A();
+					MEMPTR().high = memptrReference() = a;
 					cycles += 13;
 					break;
+				default:
+					__assume(0);
 				}
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
 					MEMPTR() = BC();
-					A() = memptrReference();
+					a = memptrReference();
 					cycles += 7;
 					break;
 				case 1:	// LD A,(DE)
 					MEMPTR() = DE();
-					A() = memptrReference();
+					a = memptrReference();
 					cycles += 7;
 					break;
 				case 2:	// LD HL,(nn)
@@ -1199,11 +1218,15 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					break;
 				case 3:	// LD A,(nn)
 					fetchWord();
-					A() = memptrReference();
+					a = memptrReference();
 					cycles += 13;
 					break;
+				default:
+					__assume(0);
 				}
 				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 3:	// 16-bit INC/DEC
@@ -1214,6 +1237,8 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			case 1:	// DEC rp
 				--RP(p).word;
 				break;
+			default:
+				__assume(0);
 			}
 			cycles += 6;
 			break;
@@ -1237,32 +1262,36 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		} case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
 			case 0:
-				rlc(f, A());
+				rlc(f, a);
 				break;
 			case 1:
-				rrc(f, A());
+				rrc(f, a);
 				break;
 			case 2:
-				rl(f, A());
+				rl(f, a);
 				break;
 			case 3:
-				rr(f, A());
+				rr(f, a);
 				break;
 			case 4:
-				daa();
+				daa(a, f);
 				break;
 			case 5:
-				cpl();
+				cpl(a, f);
 				break;
 			case 6:
-				scf();
+				scf(a, f);
 				break;
 			case 7:
-				ccf();
+				ccf(a, f);
 				break;
+			default:
+				__assume(0);
 			}
 			cycles += 4;
 			break;
+		default:
+			__assume(0);
 		}
 		break;
 	case 1:	// 8-bit loading
@@ -1306,29 +1335,31 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 	case 2:	// Operate on accumulator and register/memory location
 		switch (y) {
 		case 0:	// ADD A,r
-			add(f, A(), R(z));
+			add(f, a, R(z));
 			break;
 		case 1:	// ADC A,r
-			adc(A(), R(z));
+			adc(f, a, R(z));
 			break;
 		case 2:	// SUB r
-			sub(f, A(), R(z));
+			sub(f, a, R(z));
 			break;
 		case 3:	// SBC A,r
-			sbc(A(), R(z));
+			sbc(f, a, R(z));
 			break;
 		case 4:	// AND r
-			andr(f, A(), R(z));
+			andr(f, a, R(z));
 			break;
 		case 5:	// XOR r
-			xorr(f, A(), R(z));
+			xorr(f, a, R(z));
 			break;
 		case 6:	// OR r
-			orr(f, A(), R(z));
+			orr(f, a, R(z));
 			break;
 		case 7:	// CP r
-			compare(f, A(), R(z));
+			compare(f, a, R(z));
 			break;
+		default:
+			__assume(0);
 		}
 		cycles += 4;
 		if (z == 6)
@@ -1365,7 +1396,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					SP() = HL2();
 					cycles += 4;
 					break;
+				default:
+					__assume(0);
 				}
+			////default:
+			////	__assume(0);
 			}
 			break;
 		case 2:	// Conditional jump
@@ -1386,25 +1421,15 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				fetchExecute();
 				break;
 			case 2:	// OUT (n),A
-				m_memory.ADDRESS().low = fetchByte();
-				m_memory.ADDRESS().high = A();
-				MEMPTR() = m_memory.ADDRESS();
-				m_memory.placeDATA(A());
-				writePort();
-				MEMPTR().low++;
+				writePort(fetchByte(), a);
 				cycles += 11;
 				break;
 			case 3:	// IN A,(n)
-				m_memory.ADDRESS().low = fetchByte();
-				m_memory.ADDRESS().high = A();
-				MEMPTR() = m_memory.ADDRESS();
-				readPort();
-				A() = m_memory.DATA();
-				MEMPTR().low++;
+				readPort(fetchByte(), a);
 				cycles += 11;
 				break;
 			case 4:	// EX (SP),HL
-				xhtl();
+				xhtl(HL2());
 				cycles += 19;
 				break;
 			case 5:	// EX DE,HL
@@ -1419,6 +1444,8 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				ei();
 				cycles += 4;
 				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
@@ -1451,35 +1478,41 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					m_displaced = m_prefixFD = true;
 					fetchExecute();
 					break;
+				default:
+					__assume(0);
 				}
+			////default:
+			////	__assume(0);
 			}
 			break;
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
 			switch (y) {
 			case 0:	// ADD A,n
-				add(f, A(), fetchByte());
+				add(f, a, fetchByte());
 				break;
 			case 1:	// ADC A,n
-				adc(A(), fetchByte());
+				adc(f, a, fetchByte());
 				break;
 			case 2:	// SUB n
-				sub(f, A(), fetchByte());
+				sub(f, a, fetchByte());
 				break;
 			case 3:	// SBC A,n
-				sbc(A(), fetchByte());
+				sbc(f, a, fetchByte());
 				break;
 			case 4:	// AND n
-				andr(f, A(), fetchByte());
+				andr(f, a, fetchByte());
 				break;
 			case 5:	// XOR n
-				xorr(f, A(), fetchByte());
+				xorr(f, a, fetchByte());
 				break;
 			case 6:	// OR n
-				orr(f, A(), fetchByte());
+				orr(f, a, fetchByte());
 				break;
 			case 7:	// CP n
-				compare(f, A(), fetchByte());
+				compare(f, a, fetchByte());
 				break;
+			default:
+				__assume(0);
 			}
 			cycles += 7;
 			break;
@@ -1487,6 +1520,8 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			restart(y << 3);
 			cycles += 11;
 			break;
+		default:
+			__assume(0);
 		}
 		break;
 	}
