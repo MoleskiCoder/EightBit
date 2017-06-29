@@ -778,12 +778,15 @@ int EightBit::Z80::execute(uint8_t opcode) {
 	auto p = decoded.p;
 	auto q = decoded.q;
 
-	if (m_prefixCB)
-		executeCB(x, y, z);
-	else if (m_prefixED)
-		executeED(x, y, z, p, q);
-	else
+	auto prefixed = m_prefixCB || m_prefixED;
+	if (!prefixed) {
 		executeOther(x, y, z, p, q);
+	} else {
+		if (m_prefixCB)
+			executeCB(x, y, z);
+		else if (m_prefixED)
+			executeED(x, y, z, p, q);
+	}
 
 	if (cycles == 0)
 		throw std::logic_error("Unhandled opcode");
@@ -822,20 +825,16 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 			adjustSZP<Z80>(f, m_displaced ? R2(z, a) = srl(f, DISPLACED()) : srl(f, R(z, a)));
 			break;
 		}
-		if (m_displaced) {
-			cycles += 23;
-		} else {
+		if (!m_displaced) {
 			cycles += 8;
 			if (z == 6)
 				cycles += 7;
+		} else {
+			cycles += 23;
 		}
 		break;
 	case 1:	// BIT y, r[z]
-		if (m_displaced) {
-			bit(f, y, DISPLACED());
-			adjustXY<Z80>(f, MEMPTR().high);
-			cycles += 20;
-		} else {
+		if (!m_displaced) {
 			auto operand = bit(f, y, R(z, a));
 			cycles += 8;
 			if (z == 6) {
@@ -844,30 +843,36 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 			} else {
 				adjustXY<Z80>(f, operand);
 			}
+		} else {
+			bit(f, y, DISPLACED());
+			adjustXY<Z80>(f, MEMPTR().high);
+			cycles += 20;
 		}
 		break;
 	case 2:	// RES y, r[z]
-		if (m_displaced) {
-			R2(z, a) = res(y, DISPLACED());
-			cycles += 23;
-		} else {
+		if (!m_displaced) {
 			res(y, R(z, a));
 			cycles += 8;
 			if (z == 6)
 				cycles += 7;
+		} else {
+			R2(z, a) = res(y, DISPLACED());
+			cycles += 23;
 		}
 		break;
 	case 3:	// SET y, r[z]
-		if (m_displaced) {
-			R2(z, a) = set(y, DISPLACED());
-			cycles += 23;
-		} else {
+		if (!m_displaced) {
 			set(y, R(z, a));
 			cycles += 8;
 			if (z == 6)
 				cycles += 7;
+		} else {
+			R2(z, a) = set(y, DISPLACED());
+			cycles += 23;
 		}
 		break;
+	default:
+		__assume(0);
 	}
 }
 
@@ -1380,8 +1385,9 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				default:
 					__assume(0);
 				}
-			////default:
-			////	__assume(0);
+				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 2:	// Conditional jump
@@ -1462,8 +1468,9 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				default:
 					__assume(0);
 				}
-			////default:
-			////	__assume(0);
+				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
