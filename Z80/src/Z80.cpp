@@ -335,22 +335,19 @@ void EightBit::Z80::sbc(uint8_t& f, uint8_t& operand, uint8_t value) {
 }
 
 void EightBit::Z80::andr(uint8_t& f, uint8_t& operand, uint8_t value) {
-	operand &= value;
 	setFlag(f, HC);
 	clearFlag(f, CF | NF);
-	adjustSZPXY<Z80>(f, operand);
+	adjustSZPXY<Z80>(f, operand &= value);
 }
 
 void EightBit::Z80::xorr(uint8_t& f, uint8_t& operand, uint8_t value) {
-	operand ^= value;
 	clearFlag(f, HC | CF | NF);
-	adjustSZPXY<Z80>(f, operand);
+	adjustSZPXY<Z80>(f, operand ^= value);
 }
 
 void EightBit::Z80::orr(uint8_t& f, uint8_t& operand, uint8_t value) {
-	operand |= value;
 	clearFlag(f, HC | CF | NF);
-	adjustSZPXY<Z80>(f, operand);
+	adjustSZPXY<Z80>(f, operand |= value);
 }
 
 void EightBit::Z80::compare(uint8_t& f, uint8_t check, uint8_t value) {
@@ -363,41 +360,35 @@ void EightBit::Z80::compare(uint8_t& f, uint8_t check, uint8_t value) {
 #pragma region Shift and rotate
 
 uint8_t& EightBit::Z80::rlc(uint8_t& f, uint8_t& operand) {
-	const auto carry = operand & Bit7;
-	operand = _rotl8(operand, 1);
-	setFlag(f, CF, carry);
 	clearFlag(f, NF | HC);
+	setFlag(f, CF, operand & Bit7);
+	operand = _rotl8(operand, 1);
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
 uint8_t& EightBit::Z80::rrc(uint8_t& f, uint8_t& operand) {
-	const auto carry = operand & Bit0;
-	operand = _rotr8(operand, 1);
-	setFlag(f, CF, carry);
 	clearFlag(f, NF | HC);
+	setFlag(f, CF, operand & Bit0);
+	operand = _rotr8(operand, 1);
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
 uint8_t& EightBit::Z80::rl(uint8_t& f, uint8_t& operand) {
-	const auto oldCarry = f & CF;
-	const auto newCarry = operand & Bit7;
-	operand <<= 1;
-	oldCarry ? operand |= Bit0 : operand &= ~Bit0;
-	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
+	const auto carry = f & CF;
+	setFlag(f, CF, operand & Bit7);
+	operand = (operand << 1) | carry;
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
 uint8_t& EightBit::Z80::rr(uint8_t& f, uint8_t& operand) {
-	const auto oldCarry = f & CF;
-	const auto newCarry = operand & Bit0;
-	operand >>= 1;
-	operand |= oldCarry << 7;
-	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
+	const auto carry = f & CF;
+	setFlag(f, CF, operand & Bit0);
+	operand = (operand >> 1) | (carry << 7);
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
@@ -405,41 +396,33 @@ uint8_t& EightBit::Z80::rr(uint8_t& f, uint8_t& operand) {
 //
 
 uint8_t& EightBit::Z80::sla(uint8_t& f, uint8_t& operand) {
-	const auto newCarry = operand & Bit7;
-	operand <<= 1;
-	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
+	setFlag(f, CF, operand & Bit7);
+	operand <<= 1;
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
 uint8_t& EightBit::Z80::sra(uint8_t& f, uint8_t& operand) {
-	const auto new7 = operand & Bit7;
-	const auto newCarry = operand & Bit0;
-	operand >>= 1;
-	operand |= new7;
-	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
+	setFlag(f, CF, operand & Bit0);
+	operand = (operand >> 1) | operand & Bit7;
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
 uint8_t& EightBit::Z80::sll(uint8_t& f, uint8_t& operand) {
-	const auto newCarry = operand & Bit7;
-	operand <<= 1;
-	operand |= 1;
-	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
+	setFlag(f, CF, operand & Bit7);
+	operand = (operand << 1) | Bit0;
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
 uint8_t& EightBit::Z80::srl(uint8_t& f, uint8_t& operand) {
-	const auto newCarry = operand & Bit0;
-	operand >>= 1;
-	operand &= ~Bit7;	// clear bit 7
-	setFlag(f, CF, newCarry);
 	clearFlag(f, NF | HC);
+	setFlag(f, CF, operand & Bit0);
+	operand = (operand >> 1) & ~Bit7;
 	adjustXY<Z80>(f, operand);
 	setFlag(f, ZF, operand);
 	return operand;
@@ -450,22 +433,20 @@ uint8_t& EightBit::Z80::srl(uint8_t& f, uint8_t& operand) {
 #pragma region BIT/SET/RES
 
 uint8_t& EightBit::Z80::bit(uint8_t& f, int n, uint8_t& operand) {
-	const uint8_t discarded = operand & (1 << n);
 	setFlag(f, HC);
 	clearFlag(f, NF);
+	const uint8_t discarded = operand & (1 << n);
 	adjustSZXY<Z80>(f, discarded);
 	clearFlag(f, PF, discarded);
 	return operand;
 }
 
 uint8_t& EightBit::Z80::res(int n, uint8_t& operand) {
-	operand &= ~(1 << n);
-	return operand;
+	return operand &= ~(1 << n);
 }
 
 uint8_t& EightBit::Z80::set(int n, uint8_t& operand) {
-	operand |= (1 << n);
-	return operand;
+	return operand |= (1 << n);
 }
 
 #pragma endregion BIT/SET/RES
@@ -514,22 +495,21 @@ void EightBit::Z80::daa(uint8_t& a, uint8_t& f) {
 }
 
 void EightBit::Z80::cpl(uint8_t& a, uint8_t& f) {
-	a = ~a;
-	adjustXY<Z80>(f, a);
 	setFlag(f, HC | NF);
+	adjustXY<Z80>(f, a = ~a);
 }
 
 void EightBit::Z80::scf(uint8_t a, uint8_t& f) {
 	setFlag(f, CF);
-	adjustXY<Z80>(f, a);
 	clearFlag(f, HC | NF);
+	adjustXY<Z80>(f, a);
 }
 
 void EightBit::Z80::ccf(uint8_t a, uint8_t& f) {
+	clearFlag(f, NF);
 	const auto carry = f & CF;
 	setFlag(f, HC, carry);
 	clearFlag(f, CF, carry);
-	clearFlag(f, NF);
 	adjustXY<Z80>(f, a);
 }
 
@@ -784,6 +764,11 @@ int EightBit::Z80::execute(uint8_t opcode) {
 	if (!M1())
 		throw std::logic_error("M1 cannot be high");
 
+	if (!(m_prefixCB && m_displaced)) {
+		++REFRESH();
+		M1() = false;
+	}
+
 	const auto& decoded = m_decodedOpcodes[opcode];
 
 	auto x = decoded.x;
@@ -792,11 +777,6 @@ int EightBit::Z80::execute(uint8_t opcode) {
 
 	auto p = decoded.p;
 	auto q = decoded.q;
-
-	if (!(m_prefixCB && m_displaced)) {
-		++REFRESH();
-		M1() = false;
-	}
 
 	if (m_prefixCB)
 		executeCB(x, y, z);
