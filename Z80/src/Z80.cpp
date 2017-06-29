@@ -981,6 +981,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			case 1:
 			case 5:
 				IM() = 0;
+				break;
 			default:
 				__assume(0);
 			}
