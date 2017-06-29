@@ -181,12 +181,12 @@ namespace EightBit {
 			case 5:
 				return HL2().low;
 			case 6:
-				if (m_displaced) {
-					m_displacement = fetchByte();
-					return DISPLACED();
+				if (!m_displaced) {
+					m_memory.ADDRESS() = HL();
+					return m_memory.reference();
 				}
-				m_memory.ADDRESS() = HL();
-				return m_memory.reference();
+				m_displacement = fetchByte();
+				return DISPLACED();
 			case 7:
 				return a;
 			default:
@@ -232,13 +232,12 @@ namespace EightBit {
 		}
 
 		register16_t& HL2() {
-			if (m_displaced) {
-				if (m_prefixDD)
-					return IX();
-				// Must be FD prefix
-				return IY();
-			}
-			return HL();
+			if (!m_displaced)
+				return HL();
+			if (m_prefixDD)
+				return IX();
+			// Must be FD prefix
+			return IY();
 		}
 
 		register16_t& RP2(int rp) {
