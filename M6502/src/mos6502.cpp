@@ -2,8 +2,7 @@
 #include "mos6502.h"
 
 EightBit::MOS6502::MOS6502(ProcessorType cpuLevel)
-:	level(cpuLevel)
-{
+: level(cpuLevel) {
 	Install6502Instructions();
 	Install65sc02Instructions();
 	Install65c02Instructions();

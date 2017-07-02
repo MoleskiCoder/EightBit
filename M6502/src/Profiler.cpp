@@ -2,9 +2,9 @@
 #include "Profiler.h"
 
 EightBit::Profiler::Profiler(MOS6502& targetProcessor, Disassembly& disassemblerTarget, Symbols& symbolsTarget)
-:	processor(targetProcessor),
-	disassembler(disassemblerTarget),
-	symbols(symbolsTarget) {
+: processor(targetProcessor),
+  disassembler(disassemblerTarget),
+  symbols(symbolsTarget) {
 
 	instructionCounts.fill(0);
 	addressProfiles.fill(0);
