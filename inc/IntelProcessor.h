@@ -54,7 +54,7 @@ namespace EightBit {
 		}
 
 		template<class T> static void adjustParity(uint8_t& f, uint8_t value) {
-			static const uint8_t lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
+			static const int lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
 			auto set = lookup[highNibble(value)] + lookup[lowNibble(value)];
 			clearFlag(f, T::PF, set % 2);
 		}
@@ -87,16 +87,19 @@ namespace EightBit {
 		//
 
 		static int buildHalfCarryIndex(uint8_t before, uint8_t value, int calculation) {
+			__assume(calculation < 0x1ffff);
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
 		static bool calculateHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
+			__assume(calculation < 0x1ffff);
 			static std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 			auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableAdd[index & Mask3];
 		}
 
 		static bool calculateHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
+			__assume(calculation < 0x1ffff);
 			std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 			auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableSub[index & Mask3];

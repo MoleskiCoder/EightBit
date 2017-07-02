@@ -148,6 +148,8 @@ bool EightBit::Z80::jrConditionalFlag(uint8_t& f, int flag) {
 		return jrConditional(!(f & SF));
 	case 7:	// M
 		return jrConditional(f & SF);
+	default:
+		__assume(0);
 	}
 	throw std::logic_error("Unhandled JR conditional");
 }
@@ -170,6 +172,8 @@ bool EightBit::Z80::jumpConditionalFlag(uint8_t& f, int flag) {
 		return jumpConditional(!(f & SF));
 	case 7:	// M
 		return jumpConditional(f & SF);
+	default:
+		__assume(0);
 	}
 	throw std::logic_error("Unhandled JP conditional");
 }
@@ -201,6 +205,8 @@ bool EightBit::Z80::returnConditionalFlag(uint8_t& f, int flag) {
 		return returnConditional(!(f & SF));
 	case 7:	// M
 		return returnConditional(f & SF);
+	default:
+		__assume(0);
 	}
 	throw std::logic_error("Unhandled RET conditional");
 }
@@ -223,6 +229,8 @@ bool EightBit::Z80::callConditionalFlag(uint8_t& f, int flag) {
 		return callConditional(!(f & SF));
 	case 7:	// M
 		return callConditional(f & SF);
+	default:
+		__assume(0);
 	}
 	throw std::logic_error("Unhandled CALL conditional");
 }
@@ -435,7 +443,7 @@ uint8_t& EightBit::Z80::srl(uint8_t& f, uint8_t& operand) {
 uint8_t& EightBit::Z80::bit(uint8_t& f, int n, uint8_t& operand) {
 	setFlag(f, HC);
 	clearFlag(f, NF);
-	const uint8_t discarded = operand & (1 << n);
+	const auto discarded = operand & (1 << n);
 	adjustSZXY<Z80>(f, discarded);
 	clearFlag(f, PF, discarded);
 	return operand;
@@ -543,8 +551,7 @@ void EightBit::Z80::blockCompare(uint8_t a, uint8_t& f) {
 	adjustHalfCarrySub(f, a, value, result);
 	setFlag(f, NF);
 
-	if (f & HC)
-		result -= 1;
+	result -= ((f & HC) >> 4);
 
 	setFlag(f, YF, result & Bit1);
 	setFlag(f, XF, result & Bit3);
@@ -825,18 +832,18 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 			adjustSZP<Z80>(f, m_displaced ? R2(z, a) = srl(f, DISPLACED()) : srl(f, R(z, a)));
 			break;
 		}
+		cycles += 8;
 		if (!m_displaced) {
-			cycles += 8;
 			if (z == 6)
 				cycles += 7;
 		} else {
-			cycles += 23;
+			cycles += 15;
 		}
 		break;
 	case 1:	// BIT y, r[z]
+		cycles += 8;
 		if (!m_displaced) {
 			auto operand = bit(f, y, R(z, a));
-			cycles += 8;
 			if (z == 6) {
 				adjustXY<Z80>(f, MEMPTR().high);
 				cycles += 4;
@@ -846,29 +853,29 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 		} else {
 			bit(f, y, DISPLACED());
 			adjustXY<Z80>(f, MEMPTR().high);
-			cycles += 20;
+			cycles += 12;
 		}
 		break;
 	case 2:	// RES y, r[z]
+		cycles += 8;
 		if (!m_displaced) {
 			res(y, R(z, a));
-			cycles += 8;
 			if (z == 6)
 				cycles += 7;
 		} else {
 			R2(z, a) = res(y, DISPLACED());
-			cycles += 23;
+			cycles += 15;
 		}
 		break;
 	case 3:	// SET y, r[z]
+		cycles += 8;
 		if (!m_displaced) {
 			set(y, R(z, a));
-			cycles += 8;
 			if (z == 6)
 				cycles += 7;
 		} else {
 			R2(z, a) = set(y, DISPLACED());
-			cycles += 23;
+			cycles += 15;
 		}
 		break;
 	default:

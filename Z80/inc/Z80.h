@@ -221,6 +221,8 @@ namespace EightBit {
 		}
 
 		register16_t& RP(int rp) {
+			__assume(rp < 4);
+			__assume(rp >= 0);
 			switch (rp) {
 			case 3:
 				return SP();
@@ -241,6 +243,8 @@ namespace EightBit {
 		}
 
 		register16_t& RP2(int rp) {
+			__assume(rp < 4);
+			__assume(rp >= 0);
 			switch (rp) {
 			case 3:
 				return AF();
