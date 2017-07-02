@@ -10,7 +10,7 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/regex.hpp>
 
-Symbols::Symbols(std::string path) {
+EightBit::Symbols::Symbols(std::string path) {
 	if (!path.empty()) {
 		Parse(path);
 		AssignSymbols();
@@ -18,7 +18,7 @@ Symbols::Symbols(std::string path) {
 	}
 }
 
-void Symbols::AssignScopes() {
+void EightBit::Symbols::AssignScopes() {
 	auto parsedScopes = parsed["scope"];
 	for(auto& parsedScopeElement : parsedScopes) {
 		auto& parsedScope = parsedScopeElement.second.element;
@@ -29,7 +29,7 @@ void Symbols::AssignScopes() {
 	}
 }
 
-void Symbols::AssignSymbols() {
+void EightBit::Symbols::AssignSymbols() {
 	auto symbols = parsed["sym"];
 	for(auto& symbolElement : symbols) {
 		auto& symbol = symbolElement.second.element;
@@ -47,7 +47,7 @@ void Symbols::AssignSymbols() {
 	}
 }
 
-void Symbols::Parse(std::string path) {
+void EightBit::Symbols::Parse(std::string path) {
 	std::string line;
 	std::ifstream reader(path);
 	while (std::getline(reader, line)) {
@@ -73,7 +73,7 @@ void Symbols::Parse(std::string path) {
 	}
 }
 
-std::vector<std::string> Symbols::split(const std::string& input, const std::vector<std::string>& delimiters) {
+std::vector<std::string> EightBit::Symbols::split(const std::string& input, const std::vector<std::string>& delimiters) {
 	std::vector<std::string> tokens;
 	boost::algorithm::split_regex(
 		tokens,

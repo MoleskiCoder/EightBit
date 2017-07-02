@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <string>
 
+#include "Signal.h"
+#include "AddressEventArgs.h"
+
 #if defined(_M_X64) || defined(_M_IX86 )
 #	define HOST_LITTLE_ENDIAN
 #else
@@ -39,6 +42,10 @@ namespace EightBit {
 
 		Memory(uint16_t addressMask);
 
+		// Only fired with read/write methods
+		Signal<AddressEventArgs> WritingByte;
+		Signal<AddressEventArgs> ReadingByte;
+
 		register16_t& ADDRESS() { return m_address; }
 		uint8_t& DATA() { return *m_data; }
 
@@ -63,6 +70,20 @@ namespace EightBit {
 
 		virtual uint16_t effectiveAddress(uint16_t address) const {
 			return address & m_addressMask;
+		}
+
+		uint8_t read(uint16_t offset) {
+			ADDRESS().word = offset;
+			const auto content = reference();
+			ReadingByte.fire(AddressEventArgs(offset, content));
+			return content;
+		}
+
+		void write(uint16_t offset, uint8_t value) {
+			AddressEventArgs e(offset, value);
+			WritingByte.fire(e);
+			ADDRESS().word = offset;
+			reference() = value;
 		}
 
 		void clear();

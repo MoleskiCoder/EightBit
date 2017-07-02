@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
 #include "mos6502.h"
 
-MOS6502::MOS6502(ProcessorType cpuLevel)
+EightBit::MOS6502::MOS6502(ProcessorType cpuLevel)
 :	level(cpuLevel)
 {
 	Install6502Instructions();
@@ -9,57 +9,57 @@ MOS6502::MOS6502(ProcessorType cpuLevel)
 	Install65c02Instructions();
 }
 
-void MOS6502::Initialise() {
+void EightBit::MOS6502::Initialise() {
 	cycles = 0;
 	ResetRegisters();
 }
 
-void MOS6502::Start(uint16_t address) {
+void EightBit::MOS6502::Start(uint16_t address) {
 	pc = address;
 }
 
-void MOS6502::Run() {
+void EightBit::MOS6502::Run() {
 	while (proceed)
 		Step();
 }
 
-void MOS6502::Step() {
+void EightBit::MOS6502::Step() {
 	Execute(FetchByte());
 }
 
-void MOS6502::Reset() {
+void EightBit::MOS6502::Reset() {
 	pc = GetWord(RSTvector);
 }
 
-void MOS6502::TriggerIRQ() {
+void EightBit::MOS6502::TriggerIRQ() {
 	Interrupt(IRQvector);
 }
 
-void MOS6502::TriggerNMI() {
+void EightBit::MOS6502::TriggerNMI() {
 	Interrupt(NMIvector);
 }
 
-uint16_t MOS6502::GetWord(uint16_t offset) const {
+uint16_t EightBit::MOS6502::GetWord(uint16_t offset) const {
 	auto low = GetByte(offset);
 	auto high = GetByte((uint16_t)(offset + 1));
 	return MakeWord(low, high);
 }
 
-void MOS6502::Interrupt(uint16_t vector) {
+void EightBit::MOS6502::Interrupt(uint16_t vector) {
 	PushWord(pc);
 	PushByte(p);
 	p.interrupt = true;
 	pc = GetWord(vector);
 }
 
-void MOS6502::Execute(uint8_t cell) {
+void EightBit::MOS6502::Execute(uint8_t cell) {
 	const auto& instruction = instructions[cell];
 	const auto& method = instruction.vector;
 	method();
 	cycles += instruction.count;
 }
 
-void MOS6502::___() {
+void EightBit::MOS6502::___() {
 	if (level >= ProcessorType::Cpu65SC02) {
 		// Generally, missing instructions act as a one byte,
 		// one cycle NOP instruction on 65c02 (ish) processors.
@@ -70,7 +70,7 @@ void MOS6502::___() {
 	}
 }
 
-void MOS6502::ResetRegisters() {
+void EightBit::MOS6502::ResetRegisters() {
 	pc = 0;
 	x = 0x80;
 	y = 0;
@@ -82,7 +82,7 @@ void MOS6502::ResetRegisters() {
 	s = 0xff;
 }
 
-MOS6502::Instruction MOS6502::INS(instruction_t method, uint64_t cycles, AddressingMode addressing, std::string display) {
+EightBit::MOS6502::Instruction EightBit::MOS6502::INS(instruction_t method, uint64_t cycles, AddressingMode addressing, std::string display) {
 	MOS6502::Instruction returnValue;
 	returnValue.vector = method;
 	returnValue.count = cycles;
@@ -91,31 +91,31 @@ MOS6502::Instruction MOS6502::INS(instruction_t method, uint64_t cycles, Address
 	return returnValue;
 }
 
-uint8_t MOS6502::LowNybble(uint8_t value) {
+uint8_t EightBit::MOS6502::LowNybble(uint8_t value) {
 	return value & 0xf;
 }
 
-uint8_t MOS6502::HighNybble(uint8_t value) {
+uint8_t EightBit::MOS6502::HighNybble(uint8_t value) {
 	return DemoteNybble(value);
 }
 
-uint8_t MOS6502::PromoteNybble(uint8_t value) {
+uint8_t EightBit::MOS6502::PromoteNybble(uint8_t value) {
 	return value << 4;
 }
 
-uint8_t MOS6502::DemoteNybble(uint8_t value) {
+uint8_t EightBit::MOS6502::DemoteNybble(uint8_t value) {
 	return value >> 4;
 }
 
-uint8_t MOS6502::LowByte(uint16_t value) {
+uint8_t EightBit::MOS6502::LowByte(uint16_t value) {
 	return value & 0xff;
 }
 
-uint8_t MOS6502::HighByte(uint16_t value) {
+uint8_t EightBit::MOS6502::HighByte(uint16_t value) {
 	return (value & ~0xff) >> 8;
 }
 
-uint16_t MOS6502::MakeWord(uint8_t low, uint8_t high) {
+uint16_t EightBit::MOS6502::MakeWord(uint8_t low, uint8_t high) {
 	return (high << 8) + low;
 }
 
@@ -123,7 +123,7 @@ uint16_t MOS6502::MakeWord(uint8_t low, uint8_t high) {
 
 #define BIND(method)	std::bind(&MOS6502:: method, this)
 
-void MOS6502::Install6502Instructions() {
+void EightBit::MOS6502::Install6502Instructions() {
 	overlay6502 = {
 		////	0															1															2															3													4															5															6															7													8														9															A															B													C															D															E															F
 		/* 0 */	INS(BIND(BRK_imp), 7, AddressingMode::Implied, "BRK"),		INS(BIND(ORA_xind), 6, AddressingMode::XIndexed, "ORA"),	INS(BIND(___), 0, AddressingMode::Illegal, "___"),			INS(BIND(___), 0, AddressingMode::Illegal, "___"),	INS(BIND(___), 0, AddressingMode::Illegal, "___"),			INS(BIND(ORA_zp), 4, AddressingMode::ZeroPage, "ORA"),		INS(BIND(ASL_zp), 5, AddressingMode::ZeroPage, "ASL"),		INS(BIND(___), 0, AddressingMode::Illegal, "___"),	INS(BIND(PHP_imp), 3, AddressingMode::Implied, "PHP"),	INS(BIND(ORA_imm), 2, AddressingMode::Immediate, "ORA"),	INS(BIND(ASL_a), 2, AddressingMode::Accumulator, "ASL"),	INS(BIND(___), 0, AddressingMode::Illegal, "___"),	INS(BIND(___), 0, AddressingMode::Illegal, "___"),			INS(BIND(ORA_abs), 4, AddressingMode::Absolute, "ORA"),		INS(BIND(ASL_abs), 6, AddressingMode::Absolute, "ASL"),		INS(BIND(___), 0, AddressingMode::Illegal, "___"),
@@ -147,7 +147,7 @@ void MOS6502::Install6502Instructions() {
 	InstallInstructionSet(overlay6502);
 }
 
-void MOS6502::Install65sc02Instructions() {
+void EightBit::MOS6502::Install65sc02Instructions() {
 	if (level >= ProcessorType::Cpu65SC02) {
 		overlay65sc02 = {
 			////	0 														1													2																	3													4															5													6													7													8													9														A															B													C																		D													E															F
@@ -173,7 +173,7 @@ void MOS6502::Install65sc02Instructions() {
 	}
 }
 
-void MOS6502::Install65c02Instructions() {
+void EightBit::MOS6502::Install65c02Instructions() {
 	if (level >= ProcessorType::Cpu65C02) {
 		overlay65c02 = {
 			////	0 													1													2													3													4													5													6													7                                                           8													9													A													B													    C													D													E													F
@@ -199,15 +199,15 @@ void MOS6502::Install65c02Instructions() {
 	}
 }
 
-void MOS6502::InstallInstructionSet(std::array<Instruction, 0x100> basis) {
+void EightBit::MOS6502::InstallInstructionSet(std::array<Instruction, 0x100> basis) {
 	OverlayInstructionSet(basis, true);
 }
 
-void MOS6502::OverlayInstructionSet(std::array<Instruction, 0x100> overlay) {
+void EightBit::MOS6502::OverlayInstructionSet(std::array<Instruction, 0x100> overlay) {
 	OverlayInstructionSet(overlay, false);
 }
 
-void MOS6502::OverlayInstructionSet(std::array<Instruction, 0x100> overlay, bool includeIllegal) {
+void EightBit::MOS6502::OverlayInstructionSet(std::array<Instruction, 0x100> overlay, bool includeIllegal) {
 	for (uint16_t i = 0; i < 0x100; ++i) {
 		auto newInstruction = overlay[i];
 		auto illegal = newInstruction.mode == AddressingMode::Illegal;
@@ -224,15 +224,15 @@ void MOS6502::OverlayInstructionSet(std::array<Instruction, 0x100> overlay, bool
 
 ////
 
-bool MOS6502::UpdateZeroFlag(uint8_t datum) {
+bool EightBit::MOS6502::UpdateZeroFlag(uint8_t datum) {
 	return p.zero = datum == 0;
 }
 
-bool MOS6502::UpdateNegativeFlag(int8_t datum) {
+bool EightBit::MOS6502::UpdateNegativeFlag(int8_t datum) {
 	return p.negative = datum < 0;
 }
 
-void MOS6502::UpdateZeroNegativeFlags(uint8_t datum) {
+void EightBit::MOS6502::UpdateZeroNegativeFlags(uint8_t datum) {
 	if (UpdateNegativeFlag((int8_t)datum))
 		p.zero = false;
 	else
@@ -241,30 +241,30 @@ void MOS6502::UpdateZeroNegativeFlags(uint8_t datum) {
 
 ////
 
-void MOS6502::PushByte(uint8_t value) {
+void EightBit::MOS6502::PushByte(uint8_t value) {
 	SetByte(PageOne + s--, value);
 }
 
-uint8_t MOS6502::PopByte() {
+uint8_t EightBit::MOS6502::PopByte() {
 	return GetByte(PageOne + ++s);
 }
 
-void MOS6502::PushWord(uint16_t value) {
+void EightBit::MOS6502::PushWord(uint16_t value) {
 	PushByte(HighByte(value));
 	PushByte(LowByte(value));
 }
 
-uint16_t MOS6502::PopWord() {
+uint16_t EightBit::MOS6502::PopWord() {
 	auto low = PopByte();
 	auto high = PopByte();
 	return MakeWord(low, high);
 }
 
-uint8_t MOS6502::FetchByte() {
+uint8_t EightBit::MOS6502::FetchByte() {
 	return GetByte(pc++);
 }
 
-uint16_t MOS6502::FetchWord() {
+uint16_t EightBit::MOS6502::FetchWord() {
 	auto word = GetWord(pc);
 	pc += 2;
 	return word;
@@ -272,42 +272,42 @@ uint16_t MOS6502::FetchWord() {
 
 ////
 
-uint16_t MOS6502::Address_ZeroPage() {
+uint16_t EightBit::MOS6502::Address_ZeroPage() {
 	return FetchByte();
 }
 
-uint16_t MOS6502::Address_ZeroPageX() {
+uint16_t EightBit::MOS6502::Address_ZeroPageX() {
 	return LowByte(FetchByte() + x);
 }
 
-uint16_t MOS6502::Address_ZeroPageY() {
+uint16_t EightBit::MOS6502::Address_ZeroPageY() {
 	return LowByte(FetchByte() + y);
 }
 
-uint16_t MOS6502::Address_IndexedIndirectX() {
+uint16_t EightBit::MOS6502::Address_IndexedIndirectX() {
 	return GetWord(Address_ZeroPageX());
 }
 
-uint16_t MOS6502::Address_IndexedIndirectY_Read() {
+uint16_t EightBit::MOS6502::Address_IndexedIndirectY_Read() {
 	auto indirection = GetWord(FetchByte());
 	if (LowByte(indirection) == 0xff)
 		++cycles;
 	return indirection + y;
 }
 
-uint16_t MOS6502::Address_IndexedIndirectY_Write() {
+uint16_t EightBit::MOS6502::Address_IndexedIndirectY_Write() {
 	return GetWord(FetchByte()) + y;
 }
 
-uint16_t MOS6502::Address_Absolute() {
+uint16_t EightBit::MOS6502::Address_Absolute() {
 	return FetchWord();
 }
 
-uint16_t MOS6502::Address_AbsoluteXIndirect() {
+uint16_t EightBit::MOS6502::Address_AbsoluteXIndirect() {
 	return GetWord(FetchWord() + x);
 }
 
-uint16_t MOS6502::Address_AbsoluteX_Read() {
+uint16_t EightBit::MOS6502::Address_AbsoluteX_Read() {
 	auto address = FetchWord();
 	auto offset = (uint16_t)(address + x);
 	if (LowByte(offset) == 0xff)
@@ -315,11 +315,11 @@ uint16_t MOS6502::Address_AbsoluteX_Read() {
 	return offset;
 }
 
-uint16_t MOS6502::Address_AbsoluteX_Write() {
+uint16_t EightBit::MOS6502::Address_AbsoluteX_Write() {
 	return FetchWord() + x;
 }
 
-uint16_t MOS6502::Address_AbsoluteY_Read() {
+uint16_t EightBit::MOS6502::Address_AbsoluteY_Read() {
 	auto address = FetchWord();
 	auto offset = (uint16_t)(address + y);
 	if (LowByte(offset) == 0xff)
@@ -327,107 +327,107 @@ uint16_t MOS6502::Address_AbsoluteY_Read() {
 	return offset;
 }
 
-uint16_t MOS6502::Address_AbsoluteY_Write() {
+uint16_t EightBit::MOS6502::Address_AbsoluteY_Write() {
 	return FetchWord() + y;
 }
 
-uint16_t MOS6502::Address_ZeroPageIndirect() {
+uint16_t EightBit::MOS6502::Address_ZeroPageIndirect() {
 	return GetWord(FetchByte());
 }
 
 ////
 
-uint8_t MOS6502::ReadByte_Immediate() {
+uint8_t EightBit::MOS6502::ReadByte_Immediate() {
 	return FetchByte();
 }
 
-int8_t MOS6502::ReadByte_ImmediateDisplacement() {
+int8_t EightBit::MOS6502::ReadByte_ImmediateDisplacement() {
 	return FetchByte();
 }
 
-uint8_t MOS6502::ReadByte_ZeroPage() {
+uint8_t EightBit::MOS6502::ReadByte_ZeroPage() {
 	return GetByte(Address_ZeroPage());
 }
 
-uint8_t MOS6502::ReadByte_ZeroPageX() {
+uint8_t EightBit::MOS6502::ReadByte_ZeroPageX() {
 	return GetByte(Address_ZeroPageX());
 }
 
-uint8_t MOS6502::ReadByte_ZeroPageY() {
+uint8_t EightBit::MOS6502::ReadByte_ZeroPageY() {
 	return GetByte(Address_ZeroPageY());
 }
 
-uint8_t MOS6502::ReadByte_Absolute() {
+uint8_t EightBit::MOS6502::ReadByte_Absolute() {
 	return GetByte(Address_Absolute());
 }
 
-uint8_t MOS6502::ReadByte_AbsoluteX() {
+uint8_t EightBit::MOS6502::ReadByte_AbsoluteX() {
 	return GetByte(Address_AbsoluteX_Read());
 }
 
-uint8_t MOS6502::ReadByte_AbsoluteY() {
+uint8_t EightBit::MOS6502::ReadByte_AbsoluteY() {
 	return GetByte(Address_AbsoluteY_Read());
 }
 
-uint8_t MOS6502::ReadByte_IndexedIndirectX() {
+uint8_t EightBit::MOS6502::ReadByte_IndexedIndirectX() {
 	return GetByte(Address_IndexedIndirectX());
 }
 
-uint8_t MOS6502::ReadByte_IndirectIndexedY() {
+uint8_t EightBit::MOS6502::ReadByte_IndirectIndexedY() {
 	return GetByte(Address_IndexedIndirectY_Read());
 }
 
-uint8_t MOS6502::ReadByte_ZeroPageIndirect() {
+uint8_t EightBit::MOS6502::ReadByte_ZeroPageIndirect() {
 	return GetByte(Address_ZeroPageIndirect());
 }
 
 ////
 
-void MOS6502::WriteByte_ZeroPage(uint8_t value) {
+void EightBit::MOS6502::WriteByte_ZeroPage(uint8_t value) {
 	SetByte(Address_ZeroPage(), value);
 }
 
-void MOS6502::WriteByte_Absolute(uint8_t value) {
+void EightBit::MOS6502::WriteByte_Absolute(uint8_t value) {
 	SetByte(Address_Absolute(), value);
 }
 
-void MOS6502::WriteByte_AbsoluteX(uint8_t value) {
+void EightBit::MOS6502::WriteByte_AbsoluteX(uint8_t value) {
 	SetByte(Address_AbsoluteX_Write(), value);
 }
 
-void MOS6502::WriteByte_AbsoluteY(uint8_t value) {
+void EightBit::MOS6502::WriteByte_AbsoluteY(uint8_t value) {
 	SetByte(Address_AbsoluteY_Write(), value);
 }
 
-void MOS6502::WriteByte_ZeroPageX(uint8_t value) {
+void EightBit::MOS6502::WriteByte_ZeroPageX(uint8_t value) {
 	SetByte(Address_ZeroPageX(), value);
 }
 
-void MOS6502::WriteByte_ZeroPageY(uint8_t value) {
+void EightBit::MOS6502::WriteByte_ZeroPageY(uint8_t value) {
 	SetByte(Address_ZeroPageY(), value);
 }
 
-void MOS6502::WriteByte_IndirectIndexedY(uint8_t value) {
+void EightBit::MOS6502::WriteByte_IndirectIndexedY(uint8_t value) {
 	SetByte(Address_IndexedIndirectY_Write(), value);
 }
 
-void MOS6502::WriteByte_IndexedIndirectX(uint8_t value) {
+void EightBit::MOS6502::WriteByte_IndexedIndirectX(uint8_t value) {
 	SetByte(Address_IndexedIndirectX(), value);
 }
 
-void MOS6502::WriteByte_ZeroPageIndirect(uint8_t value) {
+void EightBit::MOS6502::WriteByte_ZeroPageIndirect(uint8_t value) {
 	SetByte(Address_ZeroPageIndirect(), value);
 }
 
 ////
 
-void MOS6502::DEC(uint16_t offset) {
+void EightBit::MOS6502::DEC(uint16_t offset) {
 	auto content = GetByte(offset);
 	SetByte(offset, --content);
 	UpdateZeroNegativeFlags(content);
 }
 
-uint8_t MOS6502::ROR(uint8_t data) {
+uint8_t EightBit::MOS6502::ROR(uint8_t data) {
 	auto carry = p.carry;
 
 	p.carry = (data & 1) != 0;
@@ -441,11 +441,11 @@ uint8_t MOS6502::ROR(uint8_t data) {
 	return result;
 }
 
-void MOS6502::ROR(uint16_t offset) {
+void EightBit::MOS6502::ROR(uint16_t offset) {
 	SetByte(offset, ROR(GetByte(offset)));
 }
 
-uint8_t MOS6502::LSR(uint8_t data) {
+uint8_t EightBit::MOS6502::LSR(uint8_t data) {
 	p.carry = (data & 1) != 0;
 
 	auto result = (uint8_t)(data >> 1);
@@ -455,46 +455,46 @@ uint8_t MOS6502::LSR(uint8_t data) {
 	return result;
 }
 
-void MOS6502::LSR(uint16_t offset) {
+void EightBit::MOS6502::LSR(uint16_t offset) {
 	SetByte(offset, LSR(GetByte(offset)));
 }
 
-void MOS6502::BIT_immediate(uint8_t data) {
+void EightBit::MOS6502::BIT_immediate(uint8_t data) {
 	auto result = (uint8_t)(a & data);
 	UpdateZeroFlag(result);
 }
 
-void MOS6502::BIT(uint8_t data) {
+void EightBit::MOS6502::BIT(uint8_t data) {
 	BIT_immediate(data);
 	p.negative = (data & 0x80) != 0;
 	p.overflow = (data & 0x40) != 0;
 }
 
-void MOS6502::TSB(uint16_t address) {
+void EightBit::MOS6502::TSB(uint16_t address) {
 	auto content = GetByte(address);
 	BIT_immediate(content);
 	uint8_t result = content | a;
 	SetByte(address, result);
 }
 
-void MOS6502::TRB(uint16_t address) {
+void EightBit::MOS6502::TRB(uint16_t address) {
 	auto content = GetByte(address);
 	BIT_immediate(content);
 	uint8_t result = content & ~a;
 	SetByte(address, result);
 }
 
-void MOS6502::INC(uint16_t offset) {
+void EightBit::MOS6502::INC(uint16_t offset) {
 	auto content = GetByte(offset);
 	SetByte(offset, ++content);
 	UpdateZeroNegativeFlags(content);
 }
 
-void MOS6502::ROL(uint16_t offset) {
+void EightBit::MOS6502::ROL(uint16_t offset) {
 	SetByte(offset, ROL(GetByte(offset)));
 }
 
-uint8_t MOS6502::ROL(uint8_t data) {
+uint8_t EightBit::MOS6502::ROL(uint8_t data) {
 	auto carry = p.carry;
 
 	p.carry = (data & 0x80) != 0;
@@ -509,35 +509,35 @@ uint8_t MOS6502::ROL(uint8_t data) {
 	return result;
 }
 
-void MOS6502::ASL(uint16_t offset) {
+void EightBit::MOS6502::ASL(uint16_t offset) {
 	SetByte(offset, ASL(GetByte(offset)));
 }
 
-uint8_t MOS6502::ASL(uint8_t data) {
+uint8_t EightBit::MOS6502::ASL(uint8_t data) {
 	uint8_t result = data << 1;
 	UpdateZeroNegativeFlags(result);
 	p.carry = (data & 0x80) != 0;
 	return result;
 }
 
-void MOS6502::ORA(uint8_t data) {
+void EightBit::MOS6502::ORA(uint8_t data) {
 	a |= data;
 	UpdateZeroNegativeFlags(a);
 }
 
-void MOS6502::AND(uint8_t data) {
+void EightBit::MOS6502::AND(uint8_t data) {
 	a &= data;
 	UpdateZeroNegativeFlags(a);
 }
 
-void MOS6502::SBC(uint8_t data) {
+void EightBit::MOS6502::SBC(uint8_t data) {
 	if (p.decimal)
 		SBC_d(data);
 	else
 		SBC_b(data);
 }
 
-void MOS6502::SBC_b(uint8_t data) {
+void EightBit::MOS6502::SBC_b(uint8_t data) {
 	auto carry = p.carry ? 0 : 1;
 	auto difference = a - data - carry;
 
@@ -548,7 +548,7 @@ void MOS6502::SBC_b(uint8_t data) {
 	a = (uint8_t)difference;
 }
 
-void MOS6502::SBC_d(uint8_t data) {
+void EightBit::MOS6502::SBC_d(uint8_t data) {
 	auto carry = p.carry ? 0 : 1;
 	auto difference = a - data - carry;
 
@@ -574,52 +574,52 @@ void MOS6502::SBC_d(uint8_t data) {
 		UpdateZeroNegativeFlags(a);
 }
 
-void MOS6502::EOR(uint8_t data) {
+void EightBit::MOS6502::EOR(uint8_t data) {
 	a ^= data;
 	UpdateZeroNegativeFlags(a);
 }
 
-void MOS6502::CPX(uint8_t data) {
+void EightBit::MOS6502::CPX(uint8_t data) {
 	CMP(x, data);
 }
 
-void MOS6502::CPY(uint8_t data) {
+void EightBit::MOS6502::CPY(uint8_t data) {
 	CMP(y, data);
 }
 
-void MOS6502::CMP(uint8_t data) {
+void EightBit::MOS6502::CMP(uint8_t data) {
 	CMP(a, data);
 }
 
-void MOS6502::CMP(uint8_t first, uint8_t second) {
+void EightBit::MOS6502::CMP(uint8_t first, uint8_t second) {
 	uint16_t result = first - second;
 	UpdateZeroNegativeFlags((uint8_t)result);
 	p.carry = HighByte(result) == 0;
 }
 
-void MOS6502::LDA(uint8_t data) {
+void EightBit::MOS6502::LDA(uint8_t data) {
 	a = data;
 	UpdateZeroNegativeFlags(a);
 }
 
-void MOS6502::LDY(uint8_t data) {
+void EightBit::MOS6502::LDY(uint8_t data) {
 	y = data;
 	UpdateZeroNegativeFlags(y);
 }
 
-void MOS6502::LDX(uint8_t data) {
+void EightBit::MOS6502::LDX(uint8_t data) {
 	x = data;
 	UpdateZeroNegativeFlags(x);
 }
 
-void MOS6502::ADC(uint8_t data) {
+void EightBit::MOS6502::ADC(uint8_t data) {
 	if (p.decimal)
 		ADC_d(data);
 	else
 		ADC_b(data);
 }
 
-void MOS6502::ADC_b(uint8_t data) {
+void EightBit::MOS6502::ADC_b(uint8_t data) {
 	auto carry = (uint8_t)(p.carry ? 1 : 0);
 	auto sum = (uint16_t)(a + data + carry);
 
@@ -630,7 +630,7 @@ void MOS6502::ADC_b(uint8_t data) {
 	a = (uint8_t)sum;
 }
 
-void MOS6502::ADC_d(uint8_t data) {
+void EightBit::MOS6502::ADC_d(uint8_t data) {
 	auto carry = (uint8_t)(p.carry ? 1 : 0);
 	auto sum = (uint16_t)(a + data + carry);
 
@@ -656,13 +656,13 @@ void MOS6502::ADC_d(uint8_t data) {
 
 ////
 
-void MOS6502::RMB(uint16_t address, uint8_t flag) {
+void EightBit::MOS6502::RMB(uint16_t address, uint8_t flag) {
 	auto data = GetByte(address);
 	data &= (uint8_t)~flag;
 	SetByte(address, data);
 }
 
-void MOS6502::SMB(uint16_t address, uint8_t flag) {
+void EightBit::MOS6502::SMB(uint16_t address, uint8_t flag) {
 	auto data = GetByte(address);
 	data |= flag;
 	SetByte(address, data);
@@ -670,7 +670,7 @@ void MOS6502::SMB(uint16_t address, uint8_t flag) {
 
 ////
 
-void MOS6502::Branch(int8_t displacement) {
+void EightBit::MOS6502::Branch(int8_t displacement) {
 	++cycles;
 	auto oldPage = HighByte(pc);
 	pc += (uint16_t)((short)displacement);
@@ -679,18 +679,18 @@ void MOS6502::Branch(int8_t displacement) {
 		cycles += 2;
 }
 
-void MOS6502::Branch() {
+void EightBit::MOS6502::Branch() {
 	auto displacement = ReadByte_ImmediateDisplacement();
 	Branch(displacement);
 }
 
-void MOS6502::Branch(bool flag) {
+void EightBit::MOS6502::Branch(bool flag) {
 	auto displacement = ReadByte_ImmediateDisplacement();
 	if (flag)
 		Branch(displacement);
 }
 
-void MOS6502::BitBranch_Clear(uint8_t check) {
+void EightBit::MOS6502::BitBranch_Clear(uint8_t check) {
 	auto zp = FetchByte();
 	auto contents = GetByte(zp);
 	auto displacement = FetchByte();
@@ -698,7 +698,7 @@ void MOS6502::BitBranch_Clear(uint8_t check) {
 		pc += (uint16_t)displacement;
 }
 
-void MOS6502::BitBranch_Set(uint8_t check) {
+void EightBit::MOS6502::BitBranch_Set(uint8_t check) {
 	auto zp = FetchByte();
 	auto contents = GetByte(zp);
 	auto displacement = FetchByte();
@@ -708,797 +708,797 @@ void MOS6502::BitBranch_Set(uint8_t check) {
 
 //
 
-void MOS6502::NOP_imp() {
+void EightBit::MOS6502::NOP_imp() {
 }
 
-void MOS6502::NOP2_imp() {
+void EightBit::MOS6502::NOP2_imp() {
 	FetchByte();
 }
 
-void MOS6502::NOP3_imp() {
+void EightBit::MOS6502::NOP3_imp() {
 	FetchWord();
 }
 
 //
 
-void MOS6502::ORA_xind() {
+void EightBit::MOS6502::ORA_xind() {
 	ORA(ReadByte_IndexedIndirectX());
 }
 
-void MOS6502::ORA_zp() {
+void EightBit::MOS6502::ORA_zp() {
 	ORA(ReadByte_ZeroPage());
 }
 
-void MOS6502::ORA_imm() {
+void EightBit::MOS6502::ORA_imm() {
 	ORA(ReadByte_Immediate());
 }
 
-void MOS6502::ORA_abs() {
+void EightBit::MOS6502::ORA_abs() {
 	ORA(ReadByte_Absolute());
 }
 
-void MOS6502::ORA_absx() {
+void EightBit::MOS6502::ORA_absx() {
 	ORA(ReadByte_AbsoluteX());
 }
 
-void MOS6502::ORA_absy() {
+void EightBit::MOS6502::ORA_absy() {
 	ORA(ReadByte_AbsoluteY());
 }
 
-void MOS6502::ORA_zpx() {
+void EightBit::MOS6502::ORA_zpx() {
 	ORA(ReadByte_ZeroPageX());
 }
 
-void MOS6502::ORA_indy() {
+void EightBit::MOS6502::ORA_indy() {
 	ORA(ReadByte_IndirectIndexedY());
 }
 
-void MOS6502::ORA_zpind() {
+void EightBit::MOS6502::ORA_zpind() {
 	ORA(ReadByte_ZeroPageIndirect());
 }
 
 //
 
-void MOS6502::AND_zpx() {
+void EightBit::MOS6502::AND_zpx() {
 	AND(ReadByte_ZeroPageX());
 }
 
-void MOS6502::AND_indy() {
+void EightBit::MOS6502::AND_indy() {
 	AND(ReadByte_IndirectIndexedY());
 }
 
-void MOS6502::AND_zp() {
+void EightBit::MOS6502::AND_zp() {
 	AND(ReadByte_ZeroPage());
 }
 
-void MOS6502::AND_absx() {
+void EightBit::MOS6502::AND_absx() {
 	AND(ReadByte_AbsoluteX());
 }
 
-void MOS6502::AND_absy() {
+void EightBit::MOS6502::AND_absy() {
 	AND(ReadByte_AbsoluteY());
 }
 
-void MOS6502::AND_imm() {
+void EightBit::MOS6502::AND_imm() {
 	AND(ReadByte_Immediate());
 }
 
-void MOS6502::AND_xind() {
+void EightBit::MOS6502::AND_xind() {
 	AND(ReadByte_IndexedIndirectX());
 }
 
-void MOS6502::AND_abs() {
+void EightBit::MOS6502::AND_abs() {
 	AND(ReadByte_Absolute());
 }
 
-void MOS6502::AND_zpind() {
+void EightBit::MOS6502::AND_zpind() {
 	AND(ReadByte_ZeroPageIndirect());
 }
 
 //
 
-void MOS6502::EOR_absx() {
+void EightBit::MOS6502::EOR_absx() {
 	EOR(ReadByte_AbsoluteX());
 }
 
-void MOS6502::EOR_absy() {
+void EightBit::MOS6502::EOR_absy() {
 	EOR(ReadByte_AbsoluteY());
 }
 
-void MOS6502::EOR_zpx() {
+void EightBit::MOS6502::EOR_zpx() {
 	EOR(ReadByte_ZeroPageX());
 }
 
-void MOS6502::EOR_indy() {
+void EightBit::MOS6502::EOR_indy() {
 	EOR(ReadByte_IndirectIndexedY());
 }
 
-void MOS6502::EOR_abs() {
+void EightBit::MOS6502::EOR_abs() {
 	EOR(ReadByte_Absolute());
 }
 
-void MOS6502::EOR_imm() {
+void EightBit::MOS6502::EOR_imm() {
 	EOR(ReadByte_Immediate());
 }
 
-void MOS6502::EOR_zp() {
+void EightBit::MOS6502::EOR_zp() {
 	EOR(ReadByte_ZeroPage());
 }
 
-void MOS6502::EOR_xind() {
+void EightBit::MOS6502::EOR_xind() {
 	EOR(ReadByte_IndexedIndirectX());
 }
 
-void MOS6502::EOR_zpind() {
+void EightBit::MOS6502::EOR_zpind() {
 	EOR(ReadByte_ZeroPageIndirect());
 }
 
 //
 
-void MOS6502::LDA_absx() {
+void EightBit::MOS6502::LDA_absx() {
 	LDA(ReadByte_AbsoluteX());
 }
 
-void MOS6502::LDA_absy() {
+void EightBit::MOS6502::LDA_absy() {
 	LDA(ReadByte_AbsoluteY());
 }
 
-void MOS6502::LDA_zpx() {
+void EightBit::MOS6502::LDA_zpx() {
 	LDA(ReadByte_ZeroPageX());
 }
 
-void MOS6502::LDA_indy() {
+void EightBit::MOS6502::LDA_indy() {
 	LDA(ReadByte_IndirectIndexedY());
 }
 
-void MOS6502::LDA_abs() {
+void EightBit::MOS6502::LDA_abs() {
 	LDA(ReadByte_Absolute());
 }
 
-void MOS6502::LDA_imm() {
+void EightBit::MOS6502::LDA_imm() {
 	LDA(ReadByte_Immediate());
 }
 
-void MOS6502::LDA_zp() {
+void EightBit::MOS6502::LDA_zp() {
 	LDA(ReadByte_ZeroPage());
 }
 
-void MOS6502::LDA_xind() {
+void EightBit::MOS6502::LDA_xind() {
 	LDA(ReadByte_IndexedIndirectX());
 }
 
-void MOS6502::LDA_zpind() {
+void EightBit::MOS6502::LDA_zpind() {
 	LDA(ReadByte_ZeroPageIndirect());
 }
 
 //
 
-void MOS6502::LDX_imm() {
+void EightBit::MOS6502::LDX_imm() {
 	LDX(ReadByte_Immediate());
 }
 
-void MOS6502::LDX_zp() {
+void EightBit::MOS6502::LDX_zp() {
 	LDX(ReadByte_ZeroPage());
 }
 
-void MOS6502::LDX_abs() {
+void EightBit::MOS6502::LDX_abs() {
 	LDX(ReadByte_Absolute());
 }
 
-void MOS6502::LDX_zpy() {
+void EightBit::MOS6502::LDX_zpy() {
 	LDX(ReadByte_ZeroPageY());
 }
 
-void MOS6502::LDX_absy() {
+void EightBit::MOS6502::LDX_absy() {
 	LDX(ReadByte_AbsoluteY());
 }
 
 //
 
-void MOS6502::LDY_imm() {
+void EightBit::MOS6502::LDY_imm() {
 	LDY(ReadByte_Immediate());
 }
 
-void MOS6502::LDY_zp() {
+void EightBit::MOS6502::LDY_zp() {
 	LDY(ReadByte_ZeroPage());
 }
 
-void MOS6502::LDY_abs() {
+void EightBit::MOS6502::LDY_abs() {
 	LDY(ReadByte_Absolute());
 }
 
-void MOS6502::LDY_zpx() {
+void EightBit::MOS6502::LDY_zpx() {
 	LDY(ReadByte_ZeroPageX());
 }
 
-void MOS6502::LDY_absx() {
+void EightBit::MOS6502::LDY_absx() {
 	LDY(ReadByte_AbsoluteX());
 }
 
 //
 
-void MOS6502::CMP_absx() {
+void EightBit::MOS6502::CMP_absx() {
 	CMP(ReadByte_AbsoluteX());
 }
 
-void MOS6502::CMP_absy() {
+void EightBit::MOS6502::CMP_absy() {
 	CMP(ReadByte_AbsoluteY());
 }
 
-void MOS6502::CMP_zpx() {
+void EightBit::MOS6502::CMP_zpx() {
 	CMP(ReadByte_ZeroPageX());
 }
 
-void MOS6502::CMP_indy() {
+void EightBit::MOS6502::CMP_indy() {
 	CMP(ReadByte_IndirectIndexedY());
 }
 
-void MOS6502::CMP_abs() {
+void EightBit::MOS6502::CMP_abs() {
 	CMP(ReadByte_Absolute());
 }
 
-void MOS6502::CMP_imm() {
+void EightBit::MOS6502::CMP_imm() {
 	CMP(ReadByte_Immediate());
 }
 
-void MOS6502::CMP_zp() {
+void EightBit::MOS6502::CMP_zp() {
 	CMP(ReadByte_ZeroPage());
 }
 
-void MOS6502::CMP_xind() {
+void EightBit::MOS6502::CMP_xind() {
 	CMP(ReadByte_IndexedIndirectX());
 }
 
-void MOS6502::CMP_zpind() {
+void EightBit::MOS6502::CMP_zpind() {
 	CMP(ReadByte_ZeroPageIndirect());
 }
 
 //
 
-void MOS6502::CPX_abs() {
+void EightBit::MOS6502::CPX_abs() {
 	CPX(ReadByte_Absolute());
 }
 
-void MOS6502::CPX_zp() {
+void EightBit::MOS6502::CPX_zp() {
 	CPX(ReadByte_ZeroPage());
 }
 
-void MOS6502::CPX_imm() {
+void EightBit::MOS6502::CPX_imm() {
 	CPX(ReadByte_Immediate());
 }
 
 //
 
-void MOS6502::CPY_imm() {
+void EightBit::MOS6502::CPY_imm() {
 	CPY(ReadByte_Immediate());
 }
 
-void MOS6502::CPY_zp() {
+void EightBit::MOS6502::CPY_zp() {
 	CPY(ReadByte_ZeroPage());
 }
 
-void MOS6502::CPY_abs() {
+void EightBit::MOS6502::CPY_abs() {
 	CPY(ReadByte_Absolute());
 }
 
 //
 
-void MOS6502::ADC_zp() {
+void EightBit::MOS6502::ADC_zp() {
 	ADC(ReadByte_ZeroPage());
 }
 
-void MOS6502::ADC_xind() {
+void EightBit::MOS6502::ADC_xind() {
 	ADC(ReadByte_IndexedIndirectX());
 }
 
-void MOS6502::ADC_imm() {
+void EightBit::MOS6502::ADC_imm() {
 	ADC(ReadByte_Immediate());
 }
 
-void MOS6502::ADC_abs() {
+void EightBit::MOS6502::ADC_abs() {
 	ADC(ReadByte_Absolute());
 }
 
-void MOS6502::ADC_zpx() {
+void EightBit::MOS6502::ADC_zpx() {
 	ADC(ReadByte_ZeroPageX());
 }
 
-void MOS6502::ADC_indy() {
+void EightBit::MOS6502::ADC_indy() {
 	ADC(ReadByte_IndirectIndexedY());
 }
 
-void MOS6502::ADC_absx() {
+void EightBit::MOS6502::ADC_absx() {
 	ADC(ReadByte_AbsoluteX());
 }
 
-void MOS6502::ADC_absy() {
+void EightBit::MOS6502::ADC_absy() {
 	ADC(ReadByte_AbsoluteY());
 }
 
-void MOS6502::ADC_zpind() {
+void EightBit::MOS6502::ADC_zpind() {
 	ADC(ReadByte_ZeroPageIndirect());
 }
 
 //
 
-void MOS6502::SBC_xind() {
+void EightBit::MOS6502::SBC_xind() {
 	SBC(ReadByte_IndexedIndirectX());
 }
 
-void MOS6502::SBC_zp() {
+void EightBit::MOS6502::SBC_zp() {
 	SBC(ReadByte_ZeroPage());
 }
 
-void MOS6502::SBC_imm() {
+void EightBit::MOS6502::SBC_imm() {
 	SBC(ReadByte_Immediate());
 }
 
-void MOS6502::SBC_abs() {
+void EightBit::MOS6502::SBC_abs() {
 	SBC(ReadByte_Absolute());
 }
 
-void MOS6502::SBC_zpx() {
+void EightBit::MOS6502::SBC_zpx() {
 	SBC(ReadByte_ZeroPageX());
 }
 
-void MOS6502::SBC_indy() {
+void EightBit::MOS6502::SBC_indy() {
 	SBC(ReadByte_IndirectIndexedY());
 }
 
-void MOS6502::SBC_absx() {
+void EightBit::MOS6502::SBC_absx() {
 	SBC(ReadByte_AbsoluteX());
 }
 
-void MOS6502::SBC_absy() {
+void EightBit::MOS6502::SBC_absy() {
 	SBC(ReadByte_AbsoluteY());
 }
 
-void MOS6502::SBC_zpind() {
+void EightBit::MOS6502::SBC_zpind() {
 	SBC(ReadByte_ZeroPageIndirect());
 }
 
 //
 
-void MOS6502::BIT_imm() {
+void EightBit::MOS6502::BIT_imm() {
 	BIT_immediate(ReadByte_Immediate());
 }
 
-void MOS6502::BIT_zp() {
+void EightBit::MOS6502::BIT_zp() {
 	BIT(ReadByte_ZeroPage());
 }
 
-void MOS6502::BIT_zpx() {
+void EightBit::MOS6502::BIT_zpx() {
 	BIT(ReadByte_ZeroPageX());
 }
 
-void MOS6502::BIT_abs() {
+void EightBit::MOS6502::BIT_abs() {
 	BIT(ReadByte_Absolute());
 }
 
-void MOS6502::BIT_absx() {
+void EightBit::MOS6502::BIT_absx() {
 	BIT(ReadByte_AbsoluteX());
 }
 
 //
 
-void MOS6502::DEC_a() {
+void EightBit::MOS6502::DEC_a() {
 	UpdateZeroNegativeFlags(--a);
 }
 
-void MOS6502::DEC_absx() {
+void EightBit::MOS6502::DEC_absx() {
 	DEC(Address_AbsoluteX_Write());
 }
 
-void MOS6502::DEC_zpx() {
+void EightBit::MOS6502::DEC_zpx() {
 	DEC(Address_ZeroPageX());
 }
 
-void MOS6502::DEC_abs() {
+void EightBit::MOS6502::DEC_abs() {
 	DEC(Address_Absolute());
 }
 
-void MOS6502::DEC_zp() {
+void EightBit::MOS6502::DEC_zp() {
 	DEC(Address_ZeroPage());
 }
 
 //
 
-void MOS6502::DEX_imp() {
+void EightBit::MOS6502::DEX_imp() {
 	UpdateZeroNegativeFlags(--x);
 }
 
-void MOS6502::DEY_imp() {
+void EightBit::MOS6502::DEY_imp() {
 	UpdateZeroNegativeFlags(--y);
 }
 
 //
 
-void MOS6502::INC_a() {
+void EightBit::MOS6502::INC_a() {
 	UpdateZeroNegativeFlags(++a);
 }
 
-void MOS6502::INC_zp() {
+void EightBit::MOS6502::INC_zp() {
 	INC(Address_ZeroPage());
 }
 
-void MOS6502::INC_absx() {
+void EightBit::MOS6502::INC_absx() {
 	INC(Address_AbsoluteX_Write());
 }
 
-void MOS6502::INC_zpx() {
+void EightBit::MOS6502::INC_zpx() {
 	INC(Address_ZeroPageX());
 }
 
-void MOS6502::INC_abs() {
+void EightBit::MOS6502::INC_abs() {
 	INC(Address_Absolute());
 }
 
 //
 
-void MOS6502::INX_imp() {
+void EightBit::MOS6502::INX_imp() {
 	UpdateZeroNegativeFlags(++x);
 }
 
-void MOS6502::INY_imp() {
+void EightBit::MOS6502::INY_imp() {
 	UpdateZeroNegativeFlags(++y);
 }
 
 //
 
-void MOS6502::STX_zpy() {
+void EightBit::MOS6502::STX_zpy() {
 	WriteByte_ZeroPageY(x);
 }
 
-void MOS6502::STX_abs() {
+void EightBit::MOS6502::STX_abs() {
 	WriteByte_Absolute(x);
 }
 
-void MOS6502::STX_zp() {
+void EightBit::MOS6502::STX_zp() {
 	WriteByte_ZeroPage(x);
 }
 
 //
 
-void MOS6502::STY_zpx() {
+void EightBit::MOS6502::STY_zpx() {
 	WriteByte_ZeroPageX(y);
 }
 
-void MOS6502::STY_abs() {
+void EightBit::MOS6502::STY_abs() {
 	WriteByte_Absolute(y);
 }
 
-void MOS6502::STY_zp() {
+void EightBit::MOS6502::STY_zp() {
 	WriteByte_ZeroPage(y);
 }
 
 //
 
-void MOS6502::STA_absx() {
+void EightBit::MOS6502::STA_absx() {
 	WriteByte_AbsoluteX(a);
 }
 
-void MOS6502::STA_absy() {
+void EightBit::MOS6502::STA_absy() {
 	WriteByte_AbsoluteY(a);
 }
 
-void MOS6502::STA_zpx() {
+void EightBit::MOS6502::STA_zpx() {
 	WriteByte_ZeroPageX(a);
 }
 
-void MOS6502::STA_indy() {
+void EightBit::MOS6502::STA_indy() {
 	WriteByte_IndirectIndexedY(a);
 }
 
-void MOS6502::STA_abs() {
+void EightBit::MOS6502::STA_abs() {
 	WriteByte_Absolute(a);
 }
 
-void MOS6502::STA_zp() {
+void EightBit::MOS6502::STA_zp() {
 	WriteByte_ZeroPage(a);
 }
 
-void MOS6502::STA_xind() {
+void EightBit::MOS6502::STA_xind() {
 	WriteByte_IndexedIndirectX(a);
 }
 
-void MOS6502::STA_zpind() {
+void EightBit::MOS6502::STA_zpind() {
 	WriteByte_ZeroPageIndirect(a);
 }
 
 //
 
-void MOS6502::STZ_zp() {
+void EightBit::MOS6502::STZ_zp() {
 	WriteByte_ZeroPage((uint8_t)0);
 }
 
-void MOS6502::STZ_zpx() {
+void EightBit::MOS6502::STZ_zpx() {
 	WriteByte_ZeroPageX((uint8_t)0);
 }
 
-void MOS6502::STZ_abs() {
+void EightBit::MOS6502::STZ_abs() {
 	WriteByte_Absolute((uint8_t)0);
 }
 
-void MOS6502::STZ_absx() {
+void EightBit::MOS6502::STZ_absx() {
 	WriteByte_AbsoluteX((uint8_t)0);
 }
 
 //
 
-void MOS6502::TSX_imp() {
+void EightBit::MOS6502::TSX_imp() {
 	x = s;
 	UpdateZeroNegativeFlags(x);
 }
 
-void MOS6502::TAX_imp() {
+void EightBit::MOS6502::TAX_imp() {
 	x = a;
 	UpdateZeroNegativeFlags(x);
 }
 
-void MOS6502::TAY_imp() {
+void EightBit::MOS6502::TAY_imp() {
 	y = a;
 	UpdateZeroNegativeFlags(y);
 }
 
-void MOS6502::TXS_imp() {
+void EightBit::MOS6502::TXS_imp() {
 	s = x;
 }
 
-void MOS6502::TYA_imp() {
+void EightBit::MOS6502::TYA_imp() {
 	a = y;
 	UpdateZeroNegativeFlags(a);
 }
 
-void MOS6502::TXA_imp() {
+void EightBit::MOS6502::TXA_imp() {
 	a = x;
 	UpdateZeroNegativeFlags(a);
 }
 
 //
 
-void MOS6502::PHP_imp() {
+void EightBit::MOS6502::PHP_imp() {
 	p.brk = true;
 	PushByte(p);
 }
 
-void MOS6502::PLP_imp() {
+void EightBit::MOS6502::PLP_imp() {
 	p = PopByte();
 	p.reserved = true;
 }
 
-void MOS6502::PLA_imp() {
+void EightBit::MOS6502::PLA_imp() {
 	a = PopByte();
 	UpdateZeroNegativeFlags(a);
 }
 
-void MOS6502::PHA_imp() {
+void EightBit::MOS6502::PHA_imp() {
 	PushByte(a);
 }
 
-void MOS6502::PHX_imp() {
+void EightBit::MOS6502::PHX_imp() {
 	PushByte(x);
 }
 
-void MOS6502::PHY_imp() {
+void EightBit::MOS6502::PHY_imp() {
 	PushByte(y);
 }
 
-void MOS6502::PLX_imp() {
+void EightBit::MOS6502::PLX_imp() {
 	x = PopByte();
 	UpdateZeroNegativeFlags(x);
 }
 
-void MOS6502::PLY_imp() {
+void EightBit::MOS6502::PLY_imp() {
 	y = PopByte();
 	UpdateZeroNegativeFlags(y);
 }
 
 //
 
-void MOS6502::ASL_a() {
+void EightBit::MOS6502::ASL_a() {
 	a = ASL(a);
 }
 
-void MOS6502::ASL_zp() {
+void EightBit::MOS6502::ASL_zp() {
 	ASL(Address_ZeroPage());
 }
 
-void MOS6502::ASL_abs() {
+void EightBit::MOS6502::ASL_abs() {
 	ASL(Address_Absolute());
 }
 
-void MOS6502::ASL_absx() {
+void EightBit::MOS6502::ASL_absx() {
 	ASL(Address_AbsoluteX_Write());
 }
 
-void MOS6502::ASL_zpx() {
+void EightBit::MOS6502::ASL_zpx() {
 	ASL(Address_ZeroPageX());
 }
 
 //
 
-void MOS6502::LSR_absx() {
+void EightBit::MOS6502::LSR_absx() {
 	LSR(Address_AbsoluteX_Write());
 }
 
-void MOS6502::LSR_zpx() {
+void EightBit::MOS6502::LSR_zpx() {
 	LSR(Address_ZeroPageX());
 }
 
-void MOS6502::LSR_abs() {
+void EightBit::MOS6502::LSR_abs() {
 	LSR(Address_Absolute());
 }
 
-void MOS6502::LSR_a() {
+void EightBit::MOS6502::LSR_a() {
 	a = LSR(a);
 }
 
-void MOS6502::LSR_zp() {
+void EightBit::MOS6502::LSR_zp() {
 	LSR(Address_ZeroPage());
 }
 
 //
 
-void MOS6502::ROL_absx() {
+void EightBit::MOS6502::ROL_absx() {
 	ROL(Address_AbsoluteX_Write());
 }
 
-void MOS6502::ROL_zpx() {
+void EightBit::MOS6502::ROL_zpx() {
 	ROL(Address_ZeroPageX());
 }
 
-void MOS6502::ROL_abs() {
+void EightBit::MOS6502::ROL_abs() {
 	ROL(Address_Absolute());
 }
 
-void MOS6502::ROL_a() {
+void EightBit::MOS6502::ROL_a() {
 	a = ROL(a);
 }
 
-void MOS6502::ROL_zp() {
+void EightBit::MOS6502::ROL_zp() {
 	ROL(Address_ZeroPage());
 }
 
 //
 
-void MOS6502::ROR_absx() {
+void EightBit::MOS6502::ROR_absx() {
 	ROR(Address_AbsoluteX_Write());
 }
 
-void MOS6502::ROR_zpx() {
+void EightBit::MOS6502::ROR_zpx() {
 	ROR(Address_ZeroPageX());
 }
 
-void MOS6502::ROR_abs() {
+void EightBit::MOS6502::ROR_abs() {
 	ROR(Address_Absolute());
 }
 
-void MOS6502::ROR_a() {
+void EightBit::MOS6502::ROR_a() {
 	a = ROR(a);
 }
 
-void MOS6502::ROR_zp() {
+void EightBit::MOS6502::ROR_zp() {
 	ROR(Address_ZeroPage());
 }
 
 //
 
-void MOS6502::TSB_zp() {
+void EightBit::MOS6502::TSB_zp() {
 	TSB(Address_ZeroPage());
 }
 
-void MOS6502::TSB_abs() {
+void EightBit::MOS6502::TSB_abs() {
 	TSB(Address_Absolute());
 }
 
 //
 
-void MOS6502::TRB_zp() {
+void EightBit::MOS6502::TRB_zp() {
 	TRB(Address_ZeroPage());
 }
 
-void MOS6502::TRB_abs() {
+void EightBit::MOS6502::TRB_abs() {
 	TRB(Address_Absolute());
 }
 
 //
 
-void MOS6502::RMB0_zp() {
+void EightBit::MOS6502::RMB0_zp() {
 	RMB(Address_ZeroPage(), 1);
 }
 
-void MOS6502::RMB1_zp() {
+void EightBit::MOS6502::RMB1_zp() {
 	RMB(Address_ZeroPage(), 2);
 }
 
-void MOS6502::RMB2_zp() {
+void EightBit::MOS6502::RMB2_zp() {
 	RMB(Address_ZeroPage(), 4);
 }
 
-void MOS6502::RMB3_zp() {
+void EightBit::MOS6502::RMB3_zp() {
 	RMB(Address_ZeroPage(), 8);
 }
 
-void MOS6502::RMB4_zp() {
+void EightBit::MOS6502::RMB4_zp() {
 	RMB(Address_ZeroPage(), 0x10);
 }
 
-void MOS6502::RMB5_zp() {
+void EightBit::MOS6502::RMB5_zp() {
 	RMB(Address_ZeroPage(), 0x20);
 }
 
-void MOS6502::RMB6_zp() {
+void EightBit::MOS6502::RMB6_zp() {
 	RMB(Address_ZeroPage(), 0x40);
 }
 
-void MOS6502::RMB7_zp() {
+void EightBit::MOS6502::RMB7_zp() {
 	RMB(Address_ZeroPage(), 0x80);
 }
 
 //
 
-void MOS6502::SMB0_zp() {
+void EightBit::MOS6502::SMB0_zp() {
 	SMB(Address_ZeroPage(), 1);
 }
 
-void MOS6502::SMB1_zp() {
+void EightBit::MOS6502::SMB1_zp() {
 	SMB(Address_ZeroPage(), 2);
 }
 
-void MOS6502::SMB2_zp() {
+void EightBit::MOS6502::SMB2_zp() {
 	SMB(Address_ZeroPage(), 4);
 }
 
-void MOS6502::SMB3_zp() {
+void EightBit::MOS6502::SMB3_zp() {
 	SMB(Address_ZeroPage(), 8);
 }
 
-void MOS6502::SMB4_zp() {
+void EightBit::MOS6502::SMB4_zp() {
 	SMB(Address_ZeroPage(), 0x10);
 }
 
-void MOS6502::SMB5_zp() {
+void EightBit::MOS6502::SMB5_zp() {
 	SMB(Address_ZeroPage(), 0x20);
 }
 
-void MOS6502::SMB6_zp() {
+void EightBit::MOS6502::SMB6_zp() {
 	SMB(Address_ZeroPage(), 0x40);
 }
 
-void MOS6502::SMB7_zp() {
+void EightBit::MOS6502::SMB7_zp() {
 	SMB(Address_ZeroPage(), 0x80);
 }
 
 //
 
-void MOS6502::JSR_abs() {
+void EightBit::MOS6502::JSR_abs() {
 	auto destination = Address_Absolute();
 	PushWord((uint16_t)(pc - 1));
 	pc = destination;
 }
 
-void MOS6502::RTI_imp() {
+void EightBit::MOS6502::RTI_imp() {
 	PLP_imp();
 	pc = PopWord();
 }
 
-void MOS6502::RTS_imp() {
+void EightBit::MOS6502::RTS_imp() {
 	pc = (uint16_t)(PopWord() + 1);
 }
 
-void MOS6502::JMP_abs() {
+void EightBit::MOS6502::JMP_abs() {
 	pc = Address_Absolute();
 }
 
-void MOS6502::JMP_ind() {
+void EightBit::MOS6502::JMP_ind() {
 	pc = GetWord(Address_Absolute());
 }
 
-void MOS6502::JMP_absxind() {
+void EightBit::MOS6502::JMP_absxind() {
 	pc = Address_AbsoluteXIndirect();
 }
 
-void MOS6502::BRK_imp() {
+void EightBit::MOS6502::BRK_imp() {
 	PushWord((uint16_t)(pc + 1));
 	PHP_imp();
 	p.interrupt = true;
@@ -1510,144 +1510,144 @@ void MOS6502::BRK_imp() {
 
 //
 
-void MOS6502::WAI_imp() {
+void EightBit::MOS6502::WAI_imp() {
 	throw std::runtime_error("Not implemented");
 }
 
-void MOS6502::STP_imp() {
+void EightBit::MOS6502::STP_imp() {
 	throw std::runtime_error("Not implemented");
 }
 
 //
 
-void MOS6502::SED_imp() {
+void EightBit::MOS6502::SED_imp() {
 	p.decimal = true;
 }
 
-void MOS6502::CLD_imp() {
+void EightBit::MOS6502::CLD_imp() {
 	p.decimal = false;
 }
 
-void MOS6502::CLV_imp() {
+void EightBit::MOS6502::CLV_imp() {
 	p.overflow = false;
 }
 
-void MOS6502::SEI_imp() {
+void EightBit::MOS6502::SEI_imp() {
 	p.interrupt = true;
 }
 
-void MOS6502::CLI_imp() {
+void EightBit::MOS6502::CLI_imp() {
 	p.interrupt = false;
 }
 
-void MOS6502::CLC_imp() {
+void EightBit::MOS6502::CLC_imp() {
 	p.carry = false;
 }
 
-void MOS6502::SEC_imp() {
+void EightBit::MOS6502::SEC_imp() {
 	p.carry = true;
 }
 
 //
 
-void MOS6502::BMI_rel() {
+void EightBit::MOS6502::BMI_rel() {
 	Branch(p.negative);
 }
 
-void MOS6502::BPL_rel() {
+void EightBit::MOS6502::BPL_rel() {
 	Branch(!p.negative);
 }
 
-void MOS6502::BVC_rel() {
+void EightBit::MOS6502::BVC_rel() {
 	Branch(!p.overflow);
 }
 
-void MOS6502::BVS_rel() {
+void EightBit::MOS6502::BVS_rel() {
 	Branch(p.overflow);
 }
 
-void MOS6502::BCC_rel() {
+void EightBit::MOS6502::BCC_rel() {
 	Branch(!p.carry);
 }
 
-void MOS6502::BCS_rel() {
+void EightBit::MOS6502::BCS_rel() {
 	Branch(p.carry);
 }
 
-void MOS6502::BNE_rel() {
+void EightBit::MOS6502::BNE_rel() {
 	Branch(!p.zero);
 }
 
-void MOS6502::BEQ_rel() {
+void EightBit::MOS6502::BEQ_rel() {
 	Branch(p.zero);
 }
 
-void MOS6502::BRA_rel() {
+void EightBit::MOS6502::BRA_rel() {
 	Branch();
 }
 
 //
 
-void MOS6502::BBR0_zprel() {
+void EightBit::MOS6502::BBR0_zprel() {
 	BitBranch_Clear(0x1);
 }
 
-void MOS6502::BBR1_zprel() {
+void EightBit::MOS6502::BBR1_zprel() {
 	BitBranch_Clear(0x2);
 }
 
-void MOS6502::BBR2_zprel() {
+void EightBit::MOS6502::BBR2_zprel() {
 	BitBranch_Clear(0x4);
 }
 
-void MOS6502::BBR3_zprel() {
+void EightBit::MOS6502::BBR3_zprel() {
 	BitBranch_Clear(0x8);
 }
 
-void MOS6502::BBR4_zprel() {
+void EightBit::MOS6502::BBR4_zprel() {
 	BitBranch_Clear(0x10);
 }
 
-void MOS6502::BBR5_zprel() {
+void EightBit::MOS6502::BBR5_zprel() {
 	BitBranch_Clear(0x20);
 }
 
-void MOS6502::BBR6_zprel() {
+void EightBit::MOS6502::BBR6_zprel() {
 	BitBranch_Clear(0x40);
 }
 
-void MOS6502::BBR7_zprel() {
+void EightBit::MOS6502::BBR7_zprel() {
 	BitBranch_Clear(0x80);
 }
 
-void MOS6502::BBS0_zprel() {
+void EightBit::MOS6502::BBS0_zprel() {
 	BitBranch_Set(0x1);
 }
 
-void MOS6502::BBS1_zprel() {
+void EightBit::MOS6502::BBS1_zprel() {
 	BitBranch_Set(0x2);
 }
 
-void MOS6502::BBS2_zprel() {
+void EightBit::MOS6502::BBS2_zprel() {
 	BitBranch_Set(0x4);
 }
 
-void MOS6502::BBS3_zprel() {
+void EightBit::MOS6502::BBS3_zprel() {
 	BitBranch_Set(0x8);
 }
 
-void MOS6502::BBS4_zprel() {
+void EightBit::MOS6502::BBS4_zprel() {
 	BitBranch_Set(0x10);
 }
 
-void MOS6502::BBS5_zprel() {
+void EightBit::MOS6502::BBS5_zprel() {
 	BitBranch_Set(0x20);
 }
 
-void MOS6502::BBS6_zprel() {
+void EightBit::MOS6502::BBS6_zprel() {
 	BitBranch_Set(0x40);
 }
 
-void MOS6502::BBS7_zprel() {
+void EightBit::MOS6502::BBS7_zprel() {
 	BitBranch_Set(0x80);
 }
