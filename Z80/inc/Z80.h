@@ -255,21 +255,6 @@ namespace EightBit {
 			}
 		}
 
-		void addViaMemptr(uint8_t& f, register16_t& hl, register16_t operand) {
-			MEMPTR().word = hl.word + 1;
-			add(f, hl, operand);
-		}
-
-		void sbcViaMemptr(uint8_t& f, register16_t& hl, register16_t operand) {
-			MEMPTR().word = hl.word + 1;
-			sbc(f, hl, operand);
-		}
-
-		void adcViaMemptr(uint8_t& f, register16_t& hl, register16_t operand) {
-			MEMPTR().word = hl.word + 1;
-			adc(f, hl, operand);
-		}
-
 		static void adjustHalfCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
 			setFlag(f, HC, calculateHalfCarryAdd(before, value, calculation));
 		}
@@ -313,10 +298,9 @@ namespace EightBit {
 		bool jumpConditionalFlag(uint8_t& f, int flag);
 		bool callConditionalFlag(uint8_t& f, int flag);
 
-		static void sbc(uint8_t& f, register16_t& operand, register16_t value);
-		static void adc(uint8_t& f, register16_t& operand, register16_t value);
-
-		static void add(uint8_t& f, register16_t& operand, register16_t value);
+		void sbc(uint8_t& f, register16_t& operand, register16_t value);
+		void adc(uint8_t& f, register16_t& operand, register16_t value);
+		void add(uint8_t& f, register16_t& operand, register16_t value);
 
 		static void add(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
 		static void adc(uint8_t& f, uint8_t& operand, uint8_t value);
