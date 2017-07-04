@@ -1,13 +1,14 @@
 #pragma once
 
 #include <chrono>
+#include <intrin.h>
+#include <iostream>
 
 namespace EightBit {
 	template<class ConfigurationT, class BoardT> class TestHarness {
 	public:
 		TestHarness(const ConfigurationT& configuration)
-		: m_configuration(configuration),
-		  m_board(configuration) {
+		: m_board(configuration) {
 		}
 
 		~TestHarness() {
@@ -57,7 +58,6 @@ namespace EightBit {
 		}
 
 	private:
-		const ConfigurationT& m_configuration;
 		BoardT m_board;
 		long long m_totalCycles;
 		std::chrono::steady_clock::time_point m_startTime;
