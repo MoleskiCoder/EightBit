@@ -12,7 +12,7 @@ namespace EightBit {
 		}
 
 		~TestHarness() {
-			std::cout << std::endl;
+			std::cout << std::dec << std::endl;
 			std::cout.imbue(std::locale(""));
 
 			std::cout << "Guest cycles = " << m_totalCycles << std::endl;
@@ -44,7 +44,7 @@ namespace EightBit {
 			m_totalCycles = 0UL;
 			m_startHostCycles = currentHostCycles();
 
-			auto& cpu = m_board.getCPUMutable();
+			auto& cpu = m_board.CPU();
 			while (!cpu.isHalted()) {
 				m_totalCycles += cpu.step();
 			}
