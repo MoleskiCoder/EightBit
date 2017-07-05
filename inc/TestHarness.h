@@ -18,7 +18,7 @@ namespace EightBit {
 			std::cout << "Guest cycles = " << m_totalCycles << std::endl;
 			std::cout << "Seconds = " << getElapsedSeconds() << std::endl;
 
-			std::cout << getCyclesPerSecond() << " cycles/second" << std::endl;
+			std::cout << getCyclesPerSecond() << " MHz" << std::endl;
 
 			auto elapsedHostCycles = m_finishHostCycles - m_startHostCycles;
 			std::cout << "Host cycles = " << elapsedHostCycles << std::endl;
@@ -31,12 +31,12 @@ namespace EightBit {
 			return m_finishTime - m_startTime;
 		}
 
-		long long getElapsedSeconds() const {
-			return std::chrono::duration_cast<std::chrono::seconds>(getElapsedTime()).count();
+		double getElapsedSeconds() const {
+			return std::chrono::duration_cast<std::chrono::duration<double>>(getElapsedTime()).count();
 		}
 
-		long long getCyclesPerSecond() const {
-			return m_totalCycles / getElapsedSeconds();
+		double getCyclesPerSecond() const {
+			return (m_totalCycles / 1000000 ) / getElapsedSeconds();
 		}
 
 		void runLoop() {
