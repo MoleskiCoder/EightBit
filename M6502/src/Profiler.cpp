@@ -24,7 +24,7 @@ void EightBit::Profiler::EmitProfileInformation() {
 	{
 		StartingLineOutput.fire(EventArgs());
 		// For each memory address
-		for (uint16_t address = 0; address < 0x10000; ++address) {
+		for (int address = 0; address < 0x10000; ++address) {
 			// If there are any cycles associated
 			auto cycles = addressProfiles[address];
 			if (cycles > 0) {

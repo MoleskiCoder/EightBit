@@ -78,7 +78,7 @@ uint8_t EightBit::Disassembly::GetByte(uint16_t address) const {
 }
 
 uint16_t EightBit::Disassembly::GetWord(uint16_t address) const {
-	return processor.GetWord(address);
+	return processor.GetWord(address).word;
 }
 
 ////

@@ -5,34 +5,32 @@
 #include <array>
 #include <functional>
 
+#include "Memory.h"
+#include "Processor.h"
 #include "ProcessorType.h"
 #include "StatusFlags.h"
 #include "AddressingMode.h"
 #include "Signal.h"
 
 namespace EightBit {
-	class MOS6502 {
+	class MOS6502 : public Processor {
 	public:
 		typedef std::function<void()> instruction_t;
 
 		struct Instruction {
 			instruction_t vector = nullptr;
-			uint64_t count = 0;
+			int count = 0;
 			AddressingMode mode = AddressingMode::Illegal;
 			std::string display = "";
 		};
 
-		MOS6502(ProcessorType level);
+		MOS6502(Memory& memory, ProcessorType level);
 
 		Signal<MOS6502> ExecutingInstruction;
+		Signal<MOS6502> ExecutedInstruction;
 
 		ProcessorType getLevel() const { return level; }
-		uint64_t getCycles() const { return cycles; }
 
-		bool getProceed() const { return proceed; }
-		void setProceed(bool value) { proceed = value; }
-
-		uint16_t getPC() const { return pc; }
 		uint8_t getX() const { return x; }
 		uint8_t getY() const { return y; }
 		uint8_t getA() const { return a; }
@@ -44,49 +42,37 @@ namespace EightBit {
 			return instructions[code];
 		}
 
-		virtual void Initialise();
+		virtual void initialise();
 
-		virtual void Start(uint16_t address);
-		virtual void Run();
-		virtual void Step();
+		virtual int step();
 
 		virtual void Reset();
 
 		virtual void TriggerIRQ();
 		virtual void TriggerNMI();
 
-		uint16_t GetWord(uint16_t offset) const;
+		register16_t GetWord(uint16_t offset);
 
-		virtual uint8_t GetByte(uint16_t offset) const = 0;
-		virtual void SetByte(uint16_t offset, uint8_t value) = 0;
+		uint8_t GetByte(uint16_t offset) { return m_memory.read(offset); }
+		void SetByte(uint16_t offset, uint8_t value) { m_memory.write(offset, value); }
 
 	protected:
 		virtual void Interrupt(uint16_t vector);
 
-		virtual void Execute(uint8_t cell);
+		virtual int Execute(uint8_t cell);
 
 		void ___();
 
-		void ResetRegisters();
-
 	private:
-		static Instruction INS(instruction_t method, uint64_t cycles, AddressingMode addressing, std::string display);
-
-		static uint8_t LowNybble(uint8_t value);
-		static uint8_t HighNybble(uint8_t value);
-		static uint8_t PromoteNybble(uint8_t value);
-		static uint8_t DemoteNybble(uint8_t value);
-		static uint8_t LowByte(uint16_t value);
-		static uint8_t HighByte(uint16_t value);
-		static uint16_t MakeWord(uint8_t low, uint8_t high);
+		static Instruction INS(instruction_t method, int cycles, AddressingMode addressing, std::string display);
 
 		void Install6502Instructions();
 		void Install65sc02Instructions();
 		void Install65c02Instructions();
 
-		void InstallInstructionSet(std::array<Instruction, 0x100> basis);
-		void OverlayInstructionSet(std::array<Instruction, 0x100> overlay);
-		void OverlayInstructionSet(std::array<Instruction, 0x100> overlay, bool includeIllegal);
+		void InstallInstructionSet(const std::array<Instruction, 0x100>& basis);
+		void OverlayInstructionSet(const std::array<Instruction, 0x100>& overlay);
+		void OverlayInstructionSet(const std::array<Instruction, 0x100>& overlay, bool includeIllegal);
 
 		bool UpdateZeroFlag(uint8_t datum);
 		bool UpdateNegativeFlag(int8_t datum);
@@ -94,25 +80,25 @@ namespace EightBit {
 
 		void PushByte(uint8_t value);
 		uint8_t PopByte();
-		void PushWord(uint16_t value);
-		uint16_t PopWord();
+		void PushWord(register16_t value);
+		register16_t PopWord();
 
 		uint8_t FetchByte();
-		uint16_t FetchWord();
+		register16_t FetchWord();
 
-		uint16_t Address_ZeroPage();
-		uint16_t Address_ZeroPageX();
-		uint16_t Address_ZeroPageY();
-		uint16_t Address_IndexedIndirectX();
-		uint16_t Address_IndexedIndirectY_Read();
-		uint16_t Address_IndexedIndirectY_Write();
-		uint16_t Address_Absolute();
-		uint16_t Address_AbsoluteXIndirect();
-		uint16_t Address_AbsoluteX_Read();
-		uint16_t Address_AbsoluteX_Write();
-		uint16_t Address_AbsoluteY_Read();
-		uint16_t Address_AbsoluteY_Write();
-		uint16_t Address_ZeroPageIndirect();
+		register16_t Address_ZeroPage();
+		register16_t Address_ZeroPageX();
+		register16_t Address_ZeroPageY();
+		register16_t Address_IndexedIndirectX();
+		register16_t Address_IndexedIndirectY_Read();
+		register16_t Address_IndexedIndirectY_Write();
+		register16_t Address_Absolute();
+		register16_t Address_AbsoluteXIndirect();
+		register16_t Address_AbsoluteX_Read();
+		register16_t Address_AbsoluteX_Write();
+		register16_t Address_AbsoluteY_Read();
+		register16_t Address_AbsoluteY_Write();
+		register16_t Address_ZeroPageIndirect();
 
 		uint8_t ReadByte_Immediate();
 		int8_t ReadByte_ImmediateDisplacement();
@@ -446,15 +432,12 @@ namespace EightBit {
 		const uint16_t RSTvector = 0xfffc;
 		const uint16_t NMIvector = 0xfffa;
 
-		uint16_t pc;	// program counter
 		uint8_t x;		// index register X
 		uint8_t y;		// index register Y
 		uint8_t a;		// accumulator
 		uint8_t s;		// stack pointer
 
 		StatusFlags p = 0;	// processor status
-
-		uint64_t cycles;
 
 		bool proceed = true;
 
