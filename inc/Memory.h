@@ -43,7 +43,7 @@ namespace EightBit {
 		Memory(uint16_t addressMask);
 
 		// Only fired with read/write methods
-		Signal<AddressEventArgs> WritingByte;
+		Signal<AddressEventArgs> WrittenByte;
 		Signal<AddressEventArgs> ReadingByte;
 
 		register16_t& ADDRESS() { return m_address; }
@@ -80,10 +80,9 @@ namespace EightBit {
 		}
 
 		void write(uint16_t offset, uint8_t value) {
-			AddressEventArgs e(offset, value);
-			WritingByte.fire(e);
 			ADDRESS().word = offset;
 			reference() = value;
+			WrittenByte.fire(AddressEventArgs(offset, value));
 		}
 
 		void clear();
