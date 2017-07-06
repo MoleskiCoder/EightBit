@@ -25,7 +25,10 @@ void EightBit::MOS6502::initialise() {
 }
 
 int EightBit::MOS6502::step() {
-	return Execute(FetchByte());
+	ExecutingInstruction.fire(*this);
+	auto returned = Execute(FetchByte());
+	ExecutedInstruction.fire(*this);
+	return returned;
 }
 
 void EightBit::MOS6502::Reset() {
@@ -56,12 +59,10 @@ void EightBit::MOS6502::Interrupt(uint16_t vector) {
 
 int EightBit::MOS6502::Execute(uint8_t cell) {
 	cycles = 0;
-	ExecutingInstruction.fire(*this);
 	const auto& instruction = instructions[cell];
 	const auto& method = instruction.vector;
 	method();
 	cycles += instruction.count;
-	ExecutedInstruction.fire(*this);
 	return cycles;
 }
 
