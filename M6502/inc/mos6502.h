@@ -51,9 +51,13 @@ namespace EightBit {
 		virtual void TriggerIRQ();
 		virtual void TriggerNMI();
 
-		register16_t GetWord(uint16_t offset);
+		void GetWord(register16_t& output);
+		void GetWord(uint16_t offset, register16_t& output);
 
+		uint8_t GetByte() { return m_memory.read(); }
 		uint8_t GetByte(uint16_t offset) { return m_memory.read(offset); }
+
+		void SetByte(uint8_t value) { m_memory.write(value); }
 		void SetByte(uint16_t offset, uint8_t value) { m_memory.write(offset, value); }
 
 	protected:
@@ -74,31 +78,35 @@ namespace EightBit {
 		void OverlayInstructionSet(const std::array<Instruction, 0x100>& overlay);
 		void OverlayInstructionSet(const std::array<Instruction, 0x100>& overlay, bool includeIllegal);
 
-		bool UpdateZeroFlag(uint8_t datum);
-		bool UpdateNegativeFlag(int8_t datum);
-		void UpdateZeroNegativeFlags(uint8_t datum);
+		void UpdateZeroFlag(uint8_t datum) { p.zero = datum == 0; }
+		void UpdateNegativeFlag(uint8_t datum) { p.negative = (datum & StatusFlags::Negative) != 0; }
+		
+		void UpdateZeroNegativeFlags(uint8_t datum) {
+			UpdateZeroFlag(datum);
+			UpdateNegativeFlag(datum);
+		}
 
 		void PushByte(uint8_t value);
 		uint8_t PopByte();
 		void PushWord(register16_t value);
-		register16_t PopWord();
+		void PopWord(register16_t& output);
 
 		uint8_t FetchByte();
-		register16_t FetchWord();
+		void FetchWord(register16_t& output);
 
-		register16_t Address_ZeroPage();
-		register16_t Address_ZeroPageX();
-		register16_t Address_ZeroPageY();
-		register16_t Address_IndexedIndirectX();
-		register16_t Address_IndexedIndirectY_Read();
-		register16_t Address_IndexedIndirectY_Write();
-		register16_t Address_Absolute();
-		register16_t Address_AbsoluteXIndirect();
-		register16_t Address_AbsoluteX_Read();
-		register16_t Address_AbsoluteX_Write();
-		register16_t Address_AbsoluteY_Read();
-		register16_t Address_AbsoluteY_Write();
-		register16_t Address_ZeroPageIndirect();
+		void Address_ZeroPage(register16_t& output);
+		void Address_ZeroPageX(register16_t& output);
+		void Address_ZeroPageY(register16_t& output);
+		void Address_IndexedIndirectX(register16_t& output);
+		void Address_IndexedIndirectY_Read(register16_t& output);
+		void Address_IndexedIndirectY_Write(register16_t& output);
+		void Address_Absolute(register16_t& output);
+		void Address_AbsoluteXIndirect(register16_t& output);
+		void Address_AbsoluteX_Read(register16_t& output);
+		void Address_AbsoluteX_Write(register16_t& output);
+		void Address_AbsoluteY_Read(register16_t& output);
+		void Address_AbsoluteY_Write(register16_t& output);
+		void Address_ZeroPageIndirect(register16_t& output);
 
 		uint8_t ReadByte_Immediate();
 		int8_t ReadByte_ImmediateDisplacement();
@@ -438,8 +446,6 @@ namespace EightBit {
 		uint8_t s;		// stack pointer
 
 		StatusFlags p = 0;	// processor status
-
-		bool proceed = true;
 
 		std::array<Instruction, 0x100> instructions;
 

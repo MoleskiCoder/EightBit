@@ -33,6 +33,5 @@ private:
 	void Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu);
 	void Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu);
 
-	void Cpu_ExecutingInstruction_StopLoop(const EightBit::MOS6502& cpu);
 	void Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu);
 };

@@ -72,17 +72,25 @@ namespace EightBit {
 			return address & m_addressMask;
 		}
 
+		uint8_t read() {
+			const auto content = reference();
+			ReadingByte.fire(AddressEventArgs(ADDRESS().word, content));
+			return content;
+		}
+
 		uint8_t read(uint16_t offset) {
 			ADDRESS().word = offset;
-			const auto content = reference();
-			ReadingByte.fire(AddressEventArgs(offset, content));
-			return content;
+			return read();
+		}
+
+		void write(uint8_t value) {
+			reference() = value;
+			WrittenByte.fire(AddressEventArgs(ADDRESS().word, value));
 		}
 
 		void write(uint16_t offset, uint8_t value) {
 			ADDRESS().word = offset;
-			reference() = value;
-			WrittenByte.fire(AddressEventArgs(offset, value));
+			write(value);
 		}
 
 		void clear();

@@ -32,7 +32,7 @@ int EightBit::MOS6502::step() {
 }
 
 void EightBit::MOS6502::Reset() {
-	PC() = GetWord(RSTvector);
+	GetWord(RSTvector, PC());
 }
 
 void EightBit::MOS6502::TriggerIRQ() {
@@ -43,18 +43,22 @@ void EightBit::MOS6502::TriggerNMI() {
 	Interrupt(NMIvector);
 }
 
-EightBit::register16_t EightBit::MOS6502::GetWord(uint16_t offset) {
-	register16_t returned;
-	returned.low = GetByte(offset);
-	returned.high = GetByte(offset + 1);
-	return returned;
+void EightBit::MOS6502::GetWord(register16_t& output) {
+	output.low = GetByte();
+	m_memory.ADDRESS().word++;
+	output.high = GetByte();
+}
+
+void EightBit::MOS6502::GetWord(uint16_t offset, register16_t& output) {
+	m_memory.ADDRESS().word = offset;
+	GetWord(output);
 }
 
 void EightBit::MOS6502::Interrupt(uint16_t vector) {
 	PushWord(PC());
 	PushByte(p);
 	p.interrupt = true;
-	PC() = GetWord(vector);
+	GetWord(vector, PC());
 }
 
 int EightBit::MOS6502::Execute(uint8_t cell) {
@@ -191,23 +195,6 @@ void EightBit::MOS6502::OverlayInstructionSet(const std::array<Instruction, 0x10
 
 ////
 
-bool EightBit::MOS6502::UpdateZeroFlag(uint8_t datum) {
-	return p.zero = datum == 0;
-}
-
-bool EightBit::MOS6502::UpdateNegativeFlag(int8_t datum) {
-	return p.negative = datum < 0;
-}
-
-void EightBit::MOS6502::UpdateZeroNegativeFlags(uint8_t datum) {
-	if (UpdateNegativeFlag((int8_t)datum))
-		p.zero = false;
-	else
-		UpdateZeroFlag(datum);
-}
-
-////
-
 void EightBit::MOS6502::PushByte(uint8_t value) {
 	SetByte(PageOne + s--, value);
 }
@@ -221,102 +208,93 @@ void EightBit::MOS6502::PushWord(register16_t value) {
 	PushByte(value.low);
 }
 
-EightBit::register16_t EightBit::MOS6502::PopWord() {
-	register16_t returned;
-	returned.low = PopByte();
-	returned.high = PopByte();
-	return returned;
+void EightBit::MOS6502::PopWord(register16_t& output) {
+	output.low = PopByte();
+	output.high = PopByte();
 }
 
 uint8_t EightBit::MOS6502::FetchByte() {
-	return GetByte(PC().word++);
+	m_memory.ADDRESS().word = PC().word++;
+	return GetByte();
 }
 
-EightBit::register16_t EightBit::MOS6502::FetchWord() {
-	auto word = GetWord(PC().word);
-	PC().word += 2;
-	return word;
+void EightBit::MOS6502::FetchWord(register16_t& output) {
+	m_memory.ADDRESS().word = PC().word++;
+	GetWord(output);
+	PC().word++;
 }
 
 ////
 
-EightBit::register16_t EightBit::MOS6502::Address_ZeroPage() {
-	register16_t returned;
-	returned.low = FetchByte();
-	returned.high = 0;
-	return returned;
+void EightBit::MOS6502::Address_ZeroPage(register16_t& output) {
+	output.low = FetchByte();
+	output.high = 0;
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_ZeroPageX() {
-	register16_t returned;
-	returned.low = FetchByte() + x;
-	returned.high = 0;
-	return returned;
+void EightBit::MOS6502::Address_ZeroPageX(register16_t& output) {
+	output.low = FetchByte() + x;
+	output.high = 0;
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_ZeroPageY() {
-	register16_t returned;
-	returned.low = FetchByte() + y;
-	returned.high = 0;
-	return returned;
+void EightBit::MOS6502::Address_ZeroPageY(register16_t& output) {
+	output.low = FetchByte() + y;
+	output.high = 0;
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() {
-	return GetWord(Address_ZeroPageX().word);
+void EightBit::MOS6502::Address_IndexedIndirectX(register16_t& output) {
+	register16_t zp;
+	Address_ZeroPageX(zp);
+	return GetWord(zp.word, output);
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectY_Read() {
-	auto indirection = GetWord(FetchByte());
-	if (indirection.low == 0xff)
+void EightBit::MOS6502::Address_IndexedIndirectY_Read(register16_t& output) {
+	GetWord(FetchByte(), output);
+	if (output.low == 0xff)
 		++cycles;
-	indirection.word += y;
-	return indirection;
+	output.word += y;
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectY_Write() {
-	auto indirection = GetWord(FetchByte());
-	indirection.word += y;
-	return indirection;
+void EightBit::MOS6502::Address_IndexedIndirectY_Write(register16_t& output) {
+	GetWord(FetchByte(), output);
+	output.word += y;
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_Absolute() {
-	return FetchWord();
+void EightBit::MOS6502::Address_Absolute(register16_t& output) {
+	FetchWord(output);
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_AbsoluteXIndirect() {
-	return GetWord(FetchWord().word + x);
+void EightBit::MOS6502::Address_AbsoluteXIndirect(register16_t& output) {
+	register16_t address;
+	FetchWord(address);
+	GetWord(address.word + x, output);
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_AbsoluteX_Read() {
-	auto offset = FetchWord();
-	offset.word += x;
-	if (offset.low == 0xff)
+void EightBit::MOS6502::Address_AbsoluteX_Read(register16_t& output) {
+	FetchWord(output);
+	output.word += x;
+	if (output.low == 0xff)
 		++cycles;
-	return offset;
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_AbsoluteX_Write() {
-	auto address = FetchWord();
-	address.word += x;
-	return address;
+void EightBit::MOS6502::Address_AbsoluteX_Write(register16_t& output) {
+	FetchWord(output);
+	output.word += x;
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_AbsoluteY_Read() {
-	auto offset = FetchWord();
-	offset.word += y;
-	if (offset.low == 0xff)
+void EightBit::MOS6502::Address_AbsoluteY_Read(register16_t& output) {
+	FetchWord(output);
+	output.word += y;
+	if (output.low == 0xff)
 		++cycles;
-	return offset;
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_AbsoluteY_Write() {
-	auto address = FetchWord();
-	address.word += y;
-	return address;
+void EightBit::MOS6502::Address_AbsoluteY_Write(register16_t& output) {
+	FetchWord(output);
+	output.word += y;
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_ZeroPageIndirect() {
-	return GetWord(FetchByte());
+void EightBit::MOS6502::Address_ZeroPageIndirect(register16_t& output) {
+	GetWord(FetchByte(), output);
 }
 
 ////
@@ -330,77 +308,113 @@ int8_t EightBit::MOS6502::ReadByte_ImmediateDisplacement() {
 }
 
 uint8_t EightBit::MOS6502::ReadByte_ZeroPage() {
-	return GetByte(Address_ZeroPage().word);
+	register16_t address;
+	Address_ZeroPage(address);
+	return GetByte(address.word);
 }
 
 uint8_t EightBit::MOS6502::ReadByte_ZeroPageX() {
-	return GetByte(Address_ZeroPageX().word);
+	register16_t address;
+	Address_ZeroPageX(address);
+	return GetByte(address.word);
 }
 
 uint8_t EightBit::MOS6502::ReadByte_ZeroPageY() {
-	return GetByte(Address_ZeroPageY().word);
+	register16_t address;
+	Address_ZeroPageY(address);
+	return GetByte(address.word);
 }
 
 uint8_t EightBit::MOS6502::ReadByte_Absolute() {
-	return GetByte(Address_Absolute().word);
+	register16_t address;
+	Address_Absolute(address);
+	return GetByte(address.word);
 }
 
 uint8_t EightBit::MOS6502::ReadByte_AbsoluteX() {
-	return GetByte(Address_AbsoluteX_Read().word);
+	register16_t address;
+	Address_AbsoluteX_Read(address);
+	return GetByte(address.word);
 }
 
 uint8_t EightBit::MOS6502::ReadByte_AbsoluteY() {
-	return GetByte(Address_AbsoluteY_Read().word);
+	register16_t address;
+	Address_AbsoluteY_Read(address);
+	return GetByte(address.word);
 }
 
 uint8_t EightBit::MOS6502::ReadByte_IndexedIndirectX() {
-	return GetByte(Address_IndexedIndirectX().word);
+	register16_t address;
+	Address_IndexedIndirectX(address);
+	return GetByte(address.word);
 }
 
 uint8_t EightBit::MOS6502::ReadByte_IndirectIndexedY() {
-	return GetByte(Address_IndexedIndirectY_Read().word);
+	register16_t address;
+	Address_IndexedIndirectY_Read(address);
+	return GetByte(address.word);
 }
 
 uint8_t EightBit::MOS6502::ReadByte_ZeroPageIndirect() {
-	return GetByte(Address_ZeroPageIndirect().word);
+	register16_t address;
+	Address_ZeroPageIndirect(address);
+	return GetByte(address.word);
 }
 
 ////
 
 void EightBit::MOS6502::WriteByte_ZeroPage(uint8_t value) {
-	SetByte(Address_ZeroPage().word, value);
+	register16_t address;
+	Address_ZeroPage(address);
+	SetByte(address.word, value);
 }
 
 void EightBit::MOS6502::WriteByte_Absolute(uint8_t value) {
-	SetByte(Address_Absolute().word, value);
+	register16_t address;
+	Address_Absolute(address);
+	SetByte(address.word, value);
 }
 
 void EightBit::MOS6502::WriteByte_AbsoluteX(uint8_t value) {
-	SetByte(Address_AbsoluteX_Write().word, value);
+	register16_t address;
+	Address_AbsoluteX_Write(address);
+	SetByte(address.word, value);
 }
 
 void EightBit::MOS6502::WriteByte_AbsoluteY(uint8_t value) {
-	SetByte(Address_AbsoluteY_Write().word, value);
+	register16_t address;
+	Address_AbsoluteY_Write(address);
+	SetByte(address.word, value);
 }
 
 void EightBit::MOS6502::WriteByte_ZeroPageX(uint8_t value) {
-	SetByte(Address_ZeroPageX().word, value);
+	register16_t address;
+	Address_ZeroPageX(address);
+	SetByte(address.word, value);
 }
 
 void EightBit::MOS6502::WriteByte_ZeroPageY(uint8_t value) {
-	SetByte(Address_ZeroPageY().word, value);
+	register16_t address;
+	Address_ZeroPageY(address);
+	SetByte(address.word, value);
 }
 
 void EightBit::MOS6502::WriteByte_IndirectIndexedY(uint8_t value) {
-	SetByte(Address_IndexedIndirectY_Write().word, value);
+	register16_t address;
+	Address_IndexedIndirectY_Write(address);
+	SetByte(address.word, value);
 }
 
 void EightBit::MOS6502::WriteByte_IndexedIndirectX(uint8_t value) {
-	SetByte(Address_IndexedIndirectX().word, value);
+	register16_t address;
+	Address_IndexedIndirectX(address);
+	SetByte(address.word, value);
 }
 
 void EightBit::MOS6502::WriteByte_ZeroPageIndirect(uint8_t value) {
-	SetByte(Address_ZeroPageIndirect().word, value);
+	register16_t address;
+	Address_ZeroPageIndirect(address);
+	SetByte(address.word, value);
 }
 
 ////
@@ -709,7 +723,8 @@ void EightBit::MOS6502::NOP2_imp() {
 }
 
 void EightBit::MOS6502::NOP3_imp() {
-	FetchWord();
+	register16_t discarded;
+	FetchWord(discarded);
 }
 
 //
@@ -1079,19 +1094,27 @@ void EightBit::MOS6502::DEC_a() {
 }
 
 void EightBit::MOS6502::DEC_absx() {
-	DEC(Address_AbsoluteX_Write().word);
+	register16_t address;
+	Address_AbsoluteX_Write(address);
+	DEC(address.word);
 }
 
 void EightBit::MOS6502::DEC_zpx() {
-	DEC(Address_ZeroPageX().word);
+	register16_t address;
+	Address_ZeroPageX(address);
+	DEC(address.word);
 }
 
 void EightBit::MOS6502::DEC_abs() {
-	DEC(Address_Absolute().word);
+	register16_t address;
+	Address_Absolute(address);
+	DEC(address.word);
 }
 
 void EightBit::MOS6502::DEC_zp() {
-	DEC(Address_ZeroPage().word);
+	register16_t address;
+	Address_ZeroPage(address);
+	DEC(address.word);
 }
 
 //
@@ -1111,19 +1134,27 @@ void EightBit::MOS6502::INC_a() {
 }
 
 void EightBit::MOS6502::INC_zp() {
-	INC(Address_ZeroPage().word);
+	register16_t address;
+	Address_ZeroPage(address);
+	INC(address.word);
 }
 
 void EightBit::MOS6502::INC_absx() {
-	INC(Address_AbsoluteX_Write().word);
+	register16_t address;
+	Address_AbsoluteX_Write(address);
+	INC(address.word);
 }
 
 void EightBit::MOS6502::INC_zpx() {
-	INC(Address_ZeroPageX().word);
+	register16_t address;
+	Address_ZeroPageX(address);
+	INC(address.word);
 }
 
 void EightBit::MOS6502::INC_abs() {
-	INC(Address_Absolute().word);
+	register16_t address;
+	Address_Absolute(address);
+	INC(address.word);
 }
 
 //
@@ -1293,33 +1324,47 @@ void EightBit::MOS6502::ASL_a() {
 }
 
 void EightBit::MOS6502::ASL_zp() {
-	ASL(Address_ZeroPage().word);
+	register16_t address;
+	Address_ZeroPage(address);
+	ASL(address.word);
 }
 
 void EightBit::MOS6502::ASL_abs() {
-	ASL(Address_Absolute().word);
+	register16_t address;
+	Address_Absolute(address);
+	ASL(address.word);
 }
 
 void EightBit::MOS6502::ASL_absx() {
-	ASL(Address_AbsoluteX_Write().word);
+	register16_t address;
+	Address_AbsoluteX_Write(address);
+	ASL(address.word);
 }
 
 void EightBit::MOS6502::ASL_zpx() {
-	ASL(Address_ZeroPageX().word);
+	register16_t address;
+	Address_ZeroPageX(address);
+	ASL(address.word);
 }
 
 //
 
 void EightBit::MOS6502::LSR_absx() {
-	LSR(Address_AbsoluteX_Write().word);
+	register16_t address;
+	Address_AbsoluteX_Write(address);
+	LSR(address.word);
 }
 
 void EightBit::MOS6502::LSR_zpx() {
-	LSR(Address_ZeroPageX().word);
+	register16_t address;
+	Address_ZeroPageX(address);
+	LSR(address.word);
 }
 
 void EightBit::MOS6502::LSR_abs() {
-	LSR(Address_Absolute().word);
+	register16_t address;
+	Address_Absolute(address);
+	LSR(address.word);
 }
 
 void EightBit::MOS6502::LSR_a() {
@@ -1327,21 +1372,29 @@ void EightBit::MOS6502::LSR_a() {
 }
 
 void EightBit::MOS6502::LSR_zp() {
-	LSR(Address_ZeroPage().word);
+	register16_t address;
+	Address_ZeroPage(address);
+	LSR(address.word);
 }
 
 //
 
 void EightBit::MOS6502::ROL_absx() {
-	ROL(Address_AbsoluteX_Write().word);
+	register16_t address;
+	Address_AbsoluteX_Write(address);
+	ROL(address.word);
 }
 
 void EightBit::MOS6502::ROL_zpx() {
-	ROL(Address_ZeroPageX().word);
+	register16_t address;
+	Address_ZeroPageX(address);
+	ROL(address.word);
 }
 
 void EightBit::MOS6502::ROL_abs() {
-	ROL(Address_Absolute().word);
+	register16_t address;
+	Address_Absolute(address);
+	ROL(address.word);
 }
 
 void EightBit::MOS6502::ROL_a() {
@@ -1349,21 +1402,29 @@ void EightBit::MOS6502::ROL_a() {
 }
 
 void EightBit::MOS6502::ROL_zp() {
-	ROL(Address_ZeroPage().word);
+	register16_t address;
+	Address_ZeroPage(address);
+	ROL(address.word);
 }
 
 //
 
 void EightBit::MOS6502::ROR_absx() {
-	ROR(Address_AbsoluteX_Write().word);
+	register16_t address;
+	Address_AbsoluteX_Write(address);
+	ROR(address.word);
 }
 
 void EightBit::MOS6502::ROR_zpx() {
-	ROR(Address_ZeroPageX().word);
+	register16_t address;
+	Address_ZeroPageX(address);
+	ROR(address.word);
 }
 
 void EightBit::MOS6502::ROR_abs() {
-	ROR(Address_Absolute().word);
+	register16_t address;
+	Address_Absolute(address);
+	ROR(address.word);
 }
 
 void EightBit::MOS6502::ROR_a() {
@@ -1371,101 +1432,144 @@ void EightBit::MOS6502::ROR_a() {
 }
 
 void EightBit::MOS6502::ROR_zp() {
-	ROR(Address_ZeroPage().word);
+	register16_t address;
+	Address_ZeroPage(address);
+	ROR(address.word);
 }
 
 //
 
 void EightBit::MOS6502::TSB_zp() {
-	TSB(Address_ZeroPage().word);
+	register16_t address;
+	Address_ZeroPage(address);
+	TSB(address.word);
 }
 
 void EightBit::MOS6502::TSB_abs() {
-	TSB(Address_Absolute().word);
+	register16_t address;
+	Address_Absolute(address);
+	TSB(address.word);
 }
 
 //
 
 void EightBit::MOS6502::TRB_zp() {
-	TRB(Address_ZeroPage().word);
+	register16_t address;
+	Address_ZeroPage(address);
+	TRB(address.word);
 }
 
 void EightBit::MOS6502::TRB_abs() {
-	TRB(Address_Absolute().word);
+	register16_t address;
+	Address_Absolute(address);
+	TRB(address.word);
 }
 
 //
 
 void EightBit::MOS6502::RMB0_zp() {
-	RMB(Address_ZeroPage().word, 1);
+	register16_t address;
+	Address_ZeroPage(address);
+	RMB(address.word, 1);
 }
 
 void EightBit::MOS6502::RMB1_zp() {
-	RMB(Address_ZeroPage().word, 2);
+	register16_t address;
+	Address_ZeroPage(address);
+	RMB(address.word, 2);
 }
 
 void EightBit::MOS6502::RMB2_zp() {
-	RMB(Address_ZeroPage().word, 4);
+	register16_t address;
+	Address_ZeroPage(address);
+	RMB(address.word, 4);
 }
 
 void EightBit::MOS6502::RMB3_zp() {
-	RMB(Address_ZeroPage().word, 8);
+	register16_t address;
+	Address_ZeroPage(address);
+	RMB(address.word, 8);
 }
 
 void EightBit::MOS6502::RMB4_zp() {
-	RMB(Address_ZeroPage().word, 0x10);
+	register16_t address;
+	Address_ZeroPage(address);
+	RMB(address.word, 0x10);
 }
 
 void EightBit::MOS6502::RMB5_zp() {
-	RMB(Address_ZeroPage().word, 0x20);
+	register16_t address;
+	Address_ZeroPage(address);
+	RMB(address.word, 0x20);
 }
 
 void EightBit::MOS6502::RMB6_zp() {
-	RMB(Address_ZeroPage().word, 0x40);
+	register16_t address;
+	Address_ZeroPage(address);
+	RMB(address.word, 0x40);
 }
 
 void EightBit::MOS6502::RMB7_zp() {
-	RMB(Address_ZeroPage().word, 0x80);
+	register16_t address;
+	Address_ZeroPage(address);
+	RMB(address.word, 0x80);
 }
 
 //
 
 void EightBit::MOS6502::SMB0_zp() {
-	SMB(Address_ZeroPage().word, 1);
+	register16_t address;
+	Address_ZeroPage(address);
+	SMB(address.word, 1);
 }
 
 void EightBit::MOS6502::SMB1_zp() {
-	SMB(Address_ZeroPage().word, 2);
+	register16_t address;
+	Address_ZeroPage(address);
+	SMB(address.word, 2);
 }
 
 void EightBit::MOS6502::SMB2_zp() {
-	SMB(Address_ZeroPage().word, 4);
+	register16_t address;
+	Address_ZeroPage(address);
+	SMB(address.word, 4);
 }
 
 void EightBit::MOS6502::SMB3_zp() {
-	SMB(Address_ZeroPage().word, 8);
+	register16_t address;
+	Address_ZeroPage(address);
+	SMB(address.word, 8);
 }
 
 void EightBit::MOS6502::SMB4_zp() {
-	SMB(Address_ZeroPage().word, 0x10);
+	register16_t address;
+	Address_ZeroPage(address);
+	SMB(address.word, 0x10);
 }
 
 void EightBit::MOS6502::SMB5_zp() {
-	SMB(Address_ZeroPage().word, 0x20);
+	register16_t address;
+	Address_ZeroPage(address);
+	SMB(address.word, 0x20);
 }
 
 void EightBit::MOS6502::SMB6_zp() {
-	SMB(Address_ZeroPage().word, 0x40);
+	register16_t address;
+	Address_ZeroPage(address);
+	SMB(address.word, 0x40);
 }
 
 void EightBit::MOS6502::SMB7_zp() {
-	SMB(Address_ZeroPage().word, 0x80);
+	register16_t address;
+	Address_ZeroPage(address);
+	SMB(address.word, 0x80);
 }
 
 //
 
 void EightBit::MOS6502::JSR_abs() {
-	auto destination = Address_Absolute();
+	register16_t destination;
+	Address_Absolute(destination);
 	PC().word--;
 	PushWord(PC());
 	PC() = destination;
@@ -1473,24 +1577,30 @@ void EightBit::MOS6502::JSR_abs() {
 
 void EightBit::MOS6502::RTI_imp() {
 	PLP_imp();
-	PC() = PopWord();
+	PopWord(PC());
 }
 
 void EightBit::MOS6502::RTS_imp() {
-	PC() = PopWord();
+	PopWord(PC());
 	PC().word++;
 }
 
 void EightBit::MOS6502::JMP_abs() {
-	PC() = Address_Absolute();
+	register16_t address;
+	Address_Absolute(address);
+	PC() = address;
 }
 
 void EightBit::MOS6502::JMP_ind() {
-	PC() = GetWord(Address_Absolute().word);
+	register16_t address;
+	Address_Absolute(address);
+	GetWord(address.word, PC());
 }
 
 void EightBit::MOS6502::JMP_absxind() {
-	PC() = Address_AbsoluteXIndirect();
+	register16_t address;
+	Address_AbsoluteXIndirect(address);
+	PC() = address;
 }
 
 void EightBit::MOS6502::BRK_imp() {
@@ -1501,7 +1611,7 @@ void EightBit::MOS6502::BRK_imp() {
 	if (level >= ProcessorType::Cpu65SC02)
 		p.decimal = false;
 
-	PC() = GetWord(IRQvector);
+	 GetWord(IRQvector, PC());
 }
 
 //

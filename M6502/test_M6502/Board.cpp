@@ -34,7 +34,6 @@ void Board::initialise() {
 		m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
 	}
 
-	m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_StopLoop, this, std::placeholders::_1));
 	m_cpu.ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_StopLoop, this, std::placeholders::_1));
 
 	m_cpu.initialise();
@@ -49,20 +48,15 @@ void Board::Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu) {
 	//m_profiler.addInstruction(m_memory.peek(pc.word));
 }
 
-void Board::Cpu_ExecutingInstruction_StopLoop(const EightBit::MOS6502& cpu) {
+void Board::Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu) {
+
 	auto pc = m_cpu.PC().word;
 	if (m_oldPC == pc) {
 		m_cpu.halt();
-		m_stopped = true;
-	} else {
-		m_oldPC = pc;
-	}
-}
-
-void Board::Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu) {
-	if (m_stopped) {
 		auto test = m_cpu.GetByte(0x0200);
 		std::cout << std::endl << "** Test=" << std::hex << (int)test;
+	} else {
+		m_oldPC = pc;
 	}
 }
 
@@ -77,7 +71,7 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 	std::cout << std::hex;
 	std::cout << "PC=" << std::setw(4) << std::setfill('0') << address << ":";
 	std::cout << "P=" << (std::string)m_cpu.getP() << ", ";
-	std::cout << std::setw(2);
+	std::cout << std::setw(2) << std::setfill('0');
 	std::cout << "A=" << (int)m_cpu.getA() << ", ";
 	std::cout << "X=" << (int)m_cpu.getX() << ", ";
 	std::cout << "Y=" << (int)m_cpu.getY() << ", ";
@@ -90,5 +84,5 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 
 	std::cout << m_disassembler.Disassemble(address);
 
-	std::cout << std::endl;
+	std::cout << "\n";
 }
