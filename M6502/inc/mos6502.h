@@ -31,12 +31,12 @@ namespace EightBit {
 
 		ProcessorType getLevel() const { return level; }
 
-		uint8_t getX() const { return x; }
-		uint8_t getY() const { return y; }
-		uint8_t getA() const { return a; }
-		uint8_t getS() const { return s; }
+		uint8_t& X() { return x; }
+		uint8_t& Y() { return y; }
+		uint8_t& A() { return a; }
+		uint8_t& S() { return s; }
 
-		const StatusFlags& getP() const { return p; }
+		StatusFlags& P() { return p; }
 
 		const Instruction& getInstruction(uint8_t code) const {
 			return instructions[code];
