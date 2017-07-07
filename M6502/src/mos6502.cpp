@@ -77,7 +77,7 @@ void EightBit::MOS6502::___() {
 		NOP_imp();
 		cycles++;
 	} else {
-		throw new std::domain_error("Whoops: Invalid instruction.");
+		throw std::domain_error("Whoops: Invalid instruction.");
 	}
 }
 
@@ -185,7 +185,7 @@ void EightBit::MOS6502::OverlayInstructionSet(const std::array<Instruction, 0x10
 		if (includeIllegal || !illegal) {
 			auto oldInstruction = instructions[i];
 			if (oldInstruction.mode != AddressingMode::Illegal) {
-				throw new std::domain_error("Whoops: replacing a non-missing instruction.");
+				throw std::domain_error("Whoops: replacing a non-missing instruction.");
 			}
 
 			instructions[i] = newInstruction;
