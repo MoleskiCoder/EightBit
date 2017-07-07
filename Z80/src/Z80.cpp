@@ -683,9 +683,8 @@ void EightBit::Z80::blockOut(uint8_t& f) {
 	writePort();
 	postDecrement(f, --B());
 	setFlag(f, NF, value & Bit7);
-	const auto sum = L() + value;
-	setFlag(f, HC | CF, sum & Bit16);
-	adjustParity<Z80>(f, (sum & Mask3) ^ B());
+	setFlag(f, HC | CF, (L() + value) > 0xff);
+	adjustParity<Z80>(f, ((value + L()) & 7) ^ B());
 }
 
 void EightBit::Z80::outi(uint8_t& f) {
