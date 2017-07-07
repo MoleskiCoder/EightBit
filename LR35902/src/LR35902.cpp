@@ -524,7 +524,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0:	// LD rp,nn
-				Processor::fetchWord(RP(p));
+				fetchWord(RP(p));
 				cycles += 3;
 				break;
 			case 1:	// ADD HL,rp

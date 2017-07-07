@@ -47,7 +47,6 @@ namespace EightBit {
 		const Memory& getMemory() const { return m_memory; }
 
 		register16_t& PC() { return pc; }
-		register16_t& SP() { return sp; }
 
 		bool isHalted() const { return m_halted; }
 		void halt() { --PC().word;  m_halted = true; }
@@ -62,19 +61,8 @@ namespace EightBit {
 		Memory& m_memory;
 		int cycles;
 
-		uint8_t fetchByte() {
-			m_memory.ADDRESS().word = PC().word++;
-			return m_memory.reference();
-		}
-
-		void fetchWord(register16_t& output) {
-			output.low = fetchByte();
-			output.high = fetchByte();
-		}
-
 	private:
 		register16_t pc;
-		register16_t sp;
 		bool m_halted;
 	};
 }

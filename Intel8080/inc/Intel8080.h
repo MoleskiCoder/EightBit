@@ -274,9 +274,9 @@ namespace EightBit {
 			m_memory.reference() = data;
 		}
 
-		void lxi_b() { Processor::fetchWord(BC()); }
-		void lxi_d() { Processor::fetchWord(DE()); }
-		void lxi_h() { Processor::fetchWord(HL()); }
+		void lxi_b() { fetchWord(BC()); }
+		void lxi_d() { fetchWord(DE()); }
+		void lxi_h() { fetchWord(HL()); }
 
 		void stax_r(register16_t& destination) {
 			m_memory.ADDRESS() = destination;
@@ -350,7 +350,7 @@ namespace EightBit {
 		}
 
 		void lxi_sp() {
-			Processor::fetchWord(SP());
+			fetchWord(SP());
 		}
 
 		void inx_sp() { ++SP().word; }
