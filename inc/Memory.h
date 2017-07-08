@@ -43,8 +43,10 @@ namespace EightBit {
 		Memory(uint16_t addressMask);
 
 		// Only fired with read/write methods
+		Signal<AddressEventArgs> WritingByte;
 		Signal<AddressEventArgs> WrittenByte;
 		Signal<AddressEventArgs> ReadingByte;
+		Signal<AddressEventArgs> ReadByte;
 
 		register16_t& ADDRESS() { return m_address; }
 		uint8_t& DATA() { return *m_data; }
@@ -73,8 +75,10 @@ namespace EightBit {
 		}
 
 		uint8_t read() {
-			const auto content = reference();
+			auto content = reference();
 			ReadingByte.fire(AddressEventArgs(ADDRESS().word, content));
+			content = reference();
+			ReadByte.fire(AddressEventArgs(ADDRESS().word, content));
 			return content;
 		}
 
@@ -84,6 +88,7 @@ namespace EightBit {
 		}
 
 		void write(uint8_t value) {
+			WritingByte.fire(AddressEventArgs(ADDRESS().word, value));
 			reference() = value;
 			WrittenByte.fire(AddressEventArgs(ADDRESS().word, value));
 		}

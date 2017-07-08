@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <assert.h>
 
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration),
@@ -24,7 +25,7 @@ void Board::initialise() {
 	m_memory.clear();
 	auto romDirectory = m_configuration.getRomDirectory();
 
-	m_memory.loadRam(romDirectory + "/6502_functional_test.bin", 0);	// Klaus Dormann functional tests
+	m_memory.loadRam(romDirectory + "/6502_functional_test.bin", 0x400);	// Klaus Dormann functional tests
 
 	if (m_configuration.isProfileMode()) {
 		m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Profile, this, std::placeholders::_1));
@@ -35,6 +36,17 @@ void Board::initialise() {
 	}
 
 	m_cpu.ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_StopLoop, this, std::placeholders::_1));
+
+	if (m_configuration.allowInput()) {
+		m_memory.ReadByte.connect(std::bind(&Board::Memory_ReadByte_Input, this, std::placeholders::_1));
+		m_cpu.ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Poll, this, std::placeholders::_1));
+	}
+
+	if (m_configuration.allowOutput())
+		m_memory.WrittenByte.connect(std::bind(&Board::Memory_WrittenByte_Output, this, std::placeholders::_1));
+
+	m_pollCounter = 0;
+	m_pollInterval = m_configuration.getPollInterval();
 
 	m_cpu.initialise();
 	m_cpu.PC() = m_configuration.getStartAddress();
@@ -85,4 +97,35 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 	std::cout << m_disassembler.Disassemble(address);
 
 	std::cout << "\n";
+}
+
+void Board::Memory_ReadByte_Input(const EightBit::AddressEventArgs& e) {
+	auto address = e.getAddress();
+	if (address == m_configuration.getInputAddress()) {
+		auto cell = e.getCell();
+		if (cell != 0) {
+			assert(address == m_memory.ADDRESS().word);
+			m_memory.reference() = 0;
+		}
+	}
+}
+
+void Board::Memory_WrittenByte_Output(const EightBit::AddressEventArgs& e) {
+	if (e.getAddress() == m_configuration.getOutputAddress()) {
+		_putch(e.getCell());
+	}
+}
+
+void Board::Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu) {
+	if (++m_pollCounter == m_pollInterval) {
+		m_pollCounter = 0;
+		pollKeyboard();
+	}
+}
+
+void Board::pollKeyboard() {
+	if (_kbhit()) {
+		m_memory.ADDRESS().word = m_configuration.getInputAddress();
+		m_memory.reference() = _getch();
+	}
 }

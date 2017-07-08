@@ -14,9 +14,6 @@ int main(int argc, char* argv[]) {
 	configuration.setProfileMode(true);
 #endif
 
-	configuration.setDebugMode(false);
-
-
 	EightBit::TestHarness<Configuration, Board> harness(configuration);
 	harness.initialise();
 	harness.runLoop();

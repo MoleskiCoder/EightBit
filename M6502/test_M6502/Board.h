@@ -29,9 +29,18 @@ private:
 
 	uint16_t m_oldPC;
 	bool m_stopped;
+	uint64_t m_pollCounter;
+	uint64_t m_pollInterval;
+
+	void pollKeyboard();
 
 	void Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu);
 	void Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu);
 
 	void Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu);
+
+	void Memory_ReadByte_Input(const EightBit::AddressEventArgs& e);
+	void Memory_WrittenByte_Output(const EightBit::AddressEventArgs& e);
+
+	void Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu);
 };
