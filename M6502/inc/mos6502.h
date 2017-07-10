@@ -8,13 +8,23 @@
 #include "Memory.h"
 #include "Processor.h"
 #include "ProcessorType.h"
-#include "StatusFlags.h"
 #include "AddressingMode.h"
 #include "Signal.h"
 
 namespace EightBit {
 	class MOS6502 : public Processor {
 	public:
+		enum StatusBits {
+			NF = 0x80,	// Negative
+			VF = 0x40,  // Overflow
+			RF = 0x20,  // reserved
+			BF = 0x10,  // Brk
+			DF = 0x08,	// D (use BCD for arithmetic)
+			IF = 0x04,	// I (IRQ disable)
+			ZF = 0x02,	// Zero
+			CF = 0x01,	// Carry
+		};
+
 		typedef std::function<void()> instruction_t;
 
 		struct Instruction {
@@ -35,8 +45,7 @@ namespace EightBit {
 		uint8_t& Y() { return y; }
 		uint8_t& A() { return a; }
 		uint8_t& S() { return s; }
-
-		StatusFlags& P() { return p; }
+		uint8_t& P() { return p; }
 
 		const Instruction& getInstruction(uint8_t code) const {
 			return instructions[code];
@@ -78,8 +87,8 @@ namespace EightBit {
 		void OverlayInstructionSet(const std::array<Instruction, 0x100>& overlay);
 		void OverlayInstructionSet(const std::array<Instruction, 0x100>& overlay, bool includeIllegal);
 
-		void UpdateZeroFlag(uint8_t datum) { p.zero = datum == 0; }
-		void UpdateNegativeFlag(uint8_t datum) { p.negative = (datum & StatusFlags::Negative) != 0; }
+		void UpdateZeroFlag(uint8_t datum) { clearFlag(P(), ZF, datum); }
+		void UpdateNegativeFlag(uint8_t datum) { setFlag(P(), NF, datum & NF); }
 		
 		void UpdateZeroNegativeFlags(uint8_t datum) {
 			UpdateZeroFlag(datum);
@@ -444,8 +453,7 @@ namespace EightBit {
 		uint8_t y;		// index register Y
 		uint8_t a;		// accumulator
 		uint8_t s;		// stack pointer
-
-		StatusFlags p = 0;	// processor status
+		uint8_t p;		// processor status
 
 		std::array<Instruction, 0x100> instructions;
 

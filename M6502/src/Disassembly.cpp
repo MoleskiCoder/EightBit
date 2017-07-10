@@ -31,6 +31,19 @@ EightBit::Disassembly::Disassembly(MOS6502& targetProcessor, const Symbols& targ
 	};
 }
 
+std::string EightBit::Disassembly::Dump_Flags(uint8_t value) const {
+	std::string returned;
+	returned += (value & MOS6502::NF) ? "N" : "-";
+	returned += (value & MOS6502::VF) ? "O" : "-";
+	returned += (value & MOS6502::RF) ? "R" : "-";
+	returned += (value & MOS6502::BF) ? "B" : "-";
+	returned += (value & MOS6502::DF) ? "D" : "-";
+	returned += (value & MOS6502::IF) ? "I" : "-";
+	returned += (value & MOS6502::ZF) ? "Z" : "-";
+	returned += (value & MOS6502::CF) ? "C" : "-";
+	return returned;
+}
+
 std::string EightBit::Disassembly::Dump_ByteValue(uint8_t value) const {
 	std::ostringstream output;
 	output << std::hex << std::setw(2) << std::setfill('0') << (int)value;

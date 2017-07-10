@@ -82,7 +82,7 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 
 	std::cout << std::hex;
 	std::cout << "PC=" << std::setw(4) << std::setfill('0') << address << ":";
-	std::cout << "P=" << (std::string)m_cpu.P() << ", ";
+	std::cout << "P=" << m_disassembler.Dump_Flags(m_cpu.P()) << ", ";
 	std::cout << std::setw(2) << std::setfill('0');
 	std::cout << "A=" << (int)m_cpu.A() << ", ";
 	std::cout << "X=" << (int)m_cpu.X() << ", ";

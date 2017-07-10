@@ -19,7 +19,7 @@ void EightBit::MOS6502::initialise() {
 	a = 0;
 
 	p = 0;
-	p.reserved = true;
+	setFlag(P(), RF);
 
 	s = 0xff;
 }
@@ -57,7 +57,7 @@ void EightBit::MOS6502::GetWord(uint16_t offset, register16_t& output) {
 void EightBit::MOS6502::Interrupt(uint16_t vector) {
 	PushWord(PC());
 	PushByte(p);
-	p.interrupt = true;
+	setFlag(P(), IF);
 	GetWord(vector, PC());
 }
 
@@ -426,13 +426,9 @@ void EightBit::MOS6502::DEC(uint16_t offset) {
 }
 
 uint8_t EightBit::MOS6502::ROR(uint8_t data) {
-	auto carry = p.carry;
+	auto result = (data >> 1) | ((P() & CF) << 7);
 
-	p.carry = (data & 1) != 0;
-
-	auto result = (uint8_t)(data >> 1);
-	if (carry)
-		result |= 0x80;
+	setFlag(P(), CF, data & CF);
 
 	UpdateZeroNegativeFlags(result);
 
@@ -444,9 +440,9 @@ void EightBit::MOS6502::ROR(uint16_t offset) {
 }
 
 uint8_t EightBit::MOS6502::LSR(uint8_t data) {
-	p.carry = (data & 1) != 0;
+	auto result = data >> 1;
 
-	auto result = (uint8_t)(data >> 1);
+	setFlag(P(), CF, data & CF);
 
 	UpdateZeroNegativeFlags(result);
 
@@ -464,22 +460,20 @@ void EightBit::MOS6502::BIT_immediate(uint8_t data) {
 
 void EightBit::MOS6502::BIT(uint8_t data) {
 	BIT_immediate(data);
-	p.negative = (data & 0x80) != 0;
-	p.overflow = (data & 0x40) != 0;
+	UpdateNegativeFlag(data);
+	setFlag(P(), VF, data & VF);
 }
 
 void EightBit::MOS6502::TSB(uint16_t address) {
 	auto content = GetByte(address);
 	BIT_immediate(content);
-	uint8_t result = content | a;
-	SetByte(address, result);
+	SetByte(address, content | a);
 }
 
 void EightBit::MOS6502::TRB(uint16_t address) {
 	auto content = GetByte(address);
 	BIT_immediate(content);
-	uint8_t result = content & ~a;
-	SetByte(address, result);
+	SetByte(address, content & ~a);
 }
 
 void EightBit::MOS6502::INC(uint16_t offset) {
@@ -493,14 +487,9 @@ void EightBit::MOS6502::ROL(uint16_t offset) {
 }
 
 uint8_t EightBit::MOS6502::ROL(uint8_t data) {
-	auto carry = p.carry;
+	uint8_t result = (data << 1) | (P() & CF);
 
-	p.carry = (data & 0x80) != 0;
-
-	uint8_t result = data << 1;
-
-	if (carry)
-		result |= 1;
+	setFlag(P(), CF, data & Bit7);
 
 	UpdateZeroNegativeFlags(result);
 
@@ -514,42 +503,38 @@ void EightBit::MOS6502::ASL(uint16_t offset) {
 uint8_t EightBit::MOS6502::ASL(uint8_t data) {
 	uint8_t result = data << 1;
 	UpdateZeroNegativeFlags(result);
-	p.carry = (data & 0x80) != 0;
+	setFlag(P(), CF, (data & 0x80) >> 7);
 	return result;
 }
 
 void EightBit::MOS6502::ORA(uint8_t data) {
-	a |= data;
-	UpdateZeroNegativeFlags(a);
+	UpdateZeroNegativeFlags(a |= data);
 }
 
 void EightBit::MOS6502::AND(uint8_t data) {
-	a &= data;
-	UpdateZeroNegativeFlags(a);
+	UpdateZeroNegativeFlags(a &= data);
 }
 
 void EightBit::MOS6502::SBC(uint8_t data) {
-	if (p.decimal)
+	if (P() & DF)
 		SBC_d(data);
 	else
 		SBC_b(data);
 }
 
 void EightBit::MOS6502::SBC_b(uint8_t data) {
-	auto carry = p.carry ? 0 : 1;
-
 	register16_t difference;
-	difference.word = a - data - carry;
+	difference.word = a - data - (~P() & CF);
 
 	UpdateZeroNegativeFlags(difference.low);
-	p.overflow = ((a ^ data) & (a ^ difference.low) & 0x80) != 0;
-	p.carry = difference.high == 0;
+	setFlag(P(), VF, (a ^ data) & (a ^ difference.low) & 0x80);
+	clearFlag(P(), CF, difference.high);
 
 	a = difference.low;
 }
 
 void EightBit::MOS6502::SBC_d(uint8_t data) {
-	auto carry = p.carry ? 0 : 1;
+	auto carry = ~P() & CF;
 
 	register16_t difference;
 	difference.word = a - data - carry;
@@ -557,8 +542,8 @@ void EightBit::MOS6502::SBC_d(uint8_t data) {
 	if (level < ProcessorType::Cpu65SC02)
 		UpdateZeroNegativeFlags(difference.low);
 
-	p.overflow = ((a ^ data) & (a ^ difference.low) & 0x80) != 0;
-	p.carry = difference.high == 0;
+	setFlag(P(), VF, (a ^ data) & (a ^ difference.low) & 0x80);
+	clearFlag(P(), CF, difference.high);
 
 	auto low = (uint8_t)(lowNibble(a) - lowNibble(data) - carry);
 
@@ -597,46 +582,42 @@ void EightBit::MOS6502::CMP(uint8_t first, uint8_t second) {
 	register16_t result;
 	result.word = first - second;
 	UpdateZeroNegativeFlags(result.low);
-	p.carry = result.high == 0;
+	clearFlag(P(), CF, result.high);
 }
 
 void EightBit::MOS6502::LDA(uint8_t data) {
-	a = data;
-	UpdateZeroNegativeFlags(a);
+	UpdateZeroNegativeFlags(a = data);
 }
 
 void EightBit::MOS6502::LDY(uint8_t data) {
-	y = data;
-	UpdateZeroNegativeFlags(y);
+	UpdateZeroNegativeFlags(y = data);
 }
 
 void EightBit::MOS6502::LDX(uint8_t data) {
-	x = data;
-	UpdateZeroNegativeFlags(x);
+	UpdateZeroNegativeFlags(x = data);
 }
 
 void EightBit::MOS6502::ADC(uint8_t data) {
-	if (p.decimal)
+	if (P() & DF)
 		ADC_d(data);
 	else
 		ADC_b(data);
 }
 
 void EightBit::MOS6502::ADC_b(uint8_t data) {
-	auto carry = (uint8_t)(p.carry ? 1 : 0);
 
 	register16_t sum;
-	sum.word = a + data + carry;
+	sum.word = a + data + (P() & CF);
 
 	UpdateZeroNegativeFlags(sum.low);
-	p.overflow = (~(a ^ data) & (a ^ sum.low) & 0x80) != 0;
-	p.carry = sum.high != 0;
+	setFlag(P(), VF, ~(a ^ data) & (a ^ sum.low) & 0x80);
+	setFlag(P(), CF, sum.high & CF);
 
 	a = sum.low;
 }
 
 void EightBit::MOS6502::ADC_d(uint8_t data) {
-	auto carry = (uint8_t)(p.carry ? 1 : 0);
+	auto carry = P() & CF;
 
 	register16_t sum;
 	sum.word = a + data + carry;
@@ -649,12 +630,12 @@ void EightBit::MOS6502::ADC_d(uint8_t data) {
 		low += 6;
 
 	auto high = (uint8_t)(highNibble(a) + highNibble(data) + (low > 0xf ? 1 : 0));
-	p.overflow = (~(a ^ data) & (a ^ promoteNibble(high)) & 0x80) != 0;
+	setFlag(P(), VF, ~(a ^ data) & (a ^ promoteNibble(high)) & 0x80);
 
 	if (high > 9)
 		high += 6;
 
-	p.carry = high > 0xf;
+	setFlag(P(), CF, high > 0xf);
 
 	a = (uint8_t)(promoteNibble(high) | lowNibble(low));
 	if (level >= ProcessorType::Cpu65SC02)
@@ -1281,13 +1262,13 @@ void EightBit::MOS6502::TXA_imp() {
 //
 
 void EightBit::MOS6502::PHP_imp() {
-	p.brk = true;
+	setFlag(P(), BF);
 	PushByte(p);
 }
 
 void EightBit::MOS6502::PLP_imp() {
 	p = PopByte();
-	p.reserved = true;
+	setFlag(P(), RF);
 }
 
 void EightBit::MOS6502::PLA_imp() {
@@ -1607,9 +1588,9 @@ void EightBit::MOS6502::BRK_imp() {
 	PC().word++;
 	PushWord(PC());
 	PHP_imp();
-	p.interrupt = true;
+	setFlag(P(), IF);
 	if (level >= ProcessorType::Cpu65SC02)
-		p.decimal = false;
+		clearFlag(P(), DF);
 
 	 GetWord(IRQvector, PC());
 }
@@ -1627,65 +1608,65 @@ void EightBit::MOS6502::STP_imp() {
 //
 
 void EightBit::MOS6502::SED_imp() {
-	p.decimal = true;
+	setFlag(P(), DF);
 }
 
 void EightBit::MOS6502::CLD_imp() {
-	p.decimal = false;
+	clearFlag(P(), DF);
 }
 
 void EightBit::MOS6502::CLV_imp() {
-	p.overflow = false;
+	clearFlag(P(), VF);
 }
 
 void EightBit::MOS6502::SEI_imp() {
-	p.interrupt = true;
+	setFlag(P(), IF);
 }
 
 void EightBit::MOS6502::CLI_imp() {
-	p.interrupt = false;
+	clearFlag(P(), IF);
 }
 
 void EightBit::MOS6502::CLC_imp() {
-	p.carry = false;
+	clearFlag(P(), CF);
 }
 
 void EightBit::MOS6502::SEC_imp() {
-	p.carry = true;
+	setFlag(P(), CF);
 }
 
 //
 
 void EightBit::MOS6502::BMI_rel() {
-	Branch(p.negative);
+	Branch((P() & NF) != 0);
 }
 
 void EightBit::MOS6502::BPL_rel() {
-	Branch(!p.negative);
+	Branch(!(P() & NF));
 }
 
 void EightBit::MOS6502::BVC_rel() {
-	Branch(!p.overflow);
+	Branch(!(P() & VF));
 }
 
 void EightBit::MOS6502::BVS_rel() {
-	Branch(p.overflow);
+	Branch((P() & VF) != 0);
 }
 
 void EightBit::MOS6502::BCC_rel() {
-	Branch(!p.carry);
+	Branch(!(P() & CF));
 }
 
 void EightBit::MOS6502::BCS_rel() {
-	Branch(p.carry);
+	Branch((P() & CF) != 0);
 }
 
 void EightBit::MOS6502::BNE_rel() {
-	Branch(!p.zero);
+	Branch(!(P() & ZF));
 }
 
 void EightBit::MOS6502::BEQ_rel() {
-	Branch(p.zero);
+	Branch((P() & ZF) != 0);
 }
 
 void EightBit::MOS6502::BRA_rel() {

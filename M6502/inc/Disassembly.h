@@ -19,6 +19,7 @@ namespace EightBit {
 
 		Disassembly(MOS6502& processor, const Symbols& symbols);
 
+		std::string Dump_Flags(uint8_t value) const;
 		std::string Dump_ByteValue(uint8_t value) const;
 		std::string Dump_WordValue(uint16_t value) const;
 

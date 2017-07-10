@@ -44,9 +44,6 @@
     <ClInclude Include="..\inc\ProfileScopeEventArgs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\inc\StatusFlags.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\inc\Symbols.h">
       <Filter>Header Files</Filter>
     </ClInclude>

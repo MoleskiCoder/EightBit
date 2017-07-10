@@ -146,7 +146,6 @@
     <ClInclude Include="..\inc\ProfileLineEventArgs.h" />
     <ClInclude Include="..\inc\Profiler.h" />
     <ClInclude Include="..\inc\ProfileScopeEventArgs.h" />
-    <ClInclude Include="..\inc\StatusFlags.h" />
     <ClInclude Include="..\inc\Symbols.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
