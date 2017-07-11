@@ -34,19 +34,6 @@ namespace EightBit {
 	protected:
 		IntelProcessor(Memory& memory);
 
-		static void clearFlag(uint8_t& f, int flag) { f &= ~flag; }
-		static void setFlag(uint8_t& f, int flag) { f |= flag; }
-
-		static void setFlag(uint8_t& f, int flag, int condition) { setFlag(f, flag, condition != 0); }
-		static void setFlag(uint8_t& f, int flag, uint32_t condition) { setFlag(f, flag, condition != 0); }
-		static void setFlag(uint8_t& f, int flag, bool condition) { condition ? setFlag(f, flag) : clearFlag(f, flag); }
-
-		static void clearFlag(uint8_t& f, int flag, int condition) { clearFlag(f, flag, condition != 0); }
-		static void clearFlag(uint8_t& f, int flag, uint32_t condition) { clearFlag(f, flag, condition != 0); }
-		static void clearFlag(uint8_t& f, int flag, bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
-
-		//
-
 		template<class T> static void adjustSign(uint8_t& f, uint8_t value) {
 			setFlag(f, T::SF, value & T::SF);
 		}

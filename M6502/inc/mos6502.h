@@ -103,63 +103,163 @@ namespace EightBit {
 		uint8_t FetchByte();
 		void FetchWord(register16_t& output);
 
-		void Address_ZeroPage(register16_t& output);
-		void Address_ZeroPageX(register16_t& output);
-		void Address_ZeroPageY(register16_t& output);
-		void Address_IndexedIndirectX(register16_t& output);
-		void Address_IndexedIndirectY_Read(register16_t& output);
-		void Address_IndexedIndirectY_Write(register16_t& output);
-		void Address_Absolute(register16_t& output);
-		void Address_AbsoluteXIndirect(register16_t& output);
-		void Address_AbsoluteX_Read(register16_t& output);
-		void Address_AbsoluteX_Write(register16_t& output);
-		void Address_AbsoluteY_Read(register16_t& output);
-		void Address_AbsoluteY_Write(register16_t& output);
-		void Address_ZeroPageIndirect(register16_t& output);
+#pragma region 6502 addressing modes
 
-		uint8_t ReadByte_Immediate();
-		int8_t ReadByte_ImmediateDisplacement();
-		uint8_t ReadByte_ZeroPage();
-		uint8_t ReadByte_ZeroPageX();
-		uint8_t ReadByte_ZeroPageY();
-		uint8_t ReadByte_Absolute();
-		uint8_t ReadByte_AbsoluteX();
-		uint8_t ReadByte_AbsoluteY();
-		uint8_t ReadByte_IndexedIndirectX();
-		uint8_t ReadByte_IndirectIndexedY();
-		uint8_t ReadByte_ZeroPageIndirect();
+#pragma region Addresses
 
-		void WriteByte_ZeroPage(uint8_t value);
-		void WriteByte_Absolute(uint8_t value);
-		void WriteByte_AbsoluteX(uint8_t value);
-		void WriteByte_AbsoluteY(uint8_t value);
-		void WriteByte_ZeroPageX(uint8_t value);
-		void WriteByte_ZeroPageY(uint8_t value);
-		void WriteByte_IndirectIndexedY(uint8_t value);
-		void WriteByte_IndexedIndirectX(uint8_t value);
-		void WriteByte_ZeroPageIndirect(uint8_t value);
+		void Address_Absolute() {
+			FetchWord(m_memptr);
+		}
 
-		void DEC(uint16_t offset);
+		void Address_ZeroPage() {
+			m_memptr.low = FetchByte();
+			m_memptr.high = 0;
+		}
 
-		uint8_t ROR(uint8_t data);
-		void ROR(uint16_t offset);
+		void Address_ZeroPageIndirect() {
+			Address_ZeroPage();
+			m_memory.ADDRESS() = m_memptr;
+			GetWord(m_memptr);
+		}
 
-		uint8_t LSR(uint8_t data);
-		void LSR(uint16_t offset);
+		void Address_Indirect() {
+			Address_Absolute();
+			m_memory.ADDRESS() = m_memptr;
+			GetWord(m_memptr);
+		}
 
-		void BIT_immediate(uint8_t data);
+		void Address_IndirectX() {
+			Address_Absolute();
+			m_memory.ADDRESS().word = m_memptr.word + X();
+			GetWord(m_memptr);
+		}
+
+		void Address_ZeroPageX() {
+			Address_ZeroPage();
+			m_memptr.low += X();
+		}
+
+		void Address_ZeroPageY() {
+			Address_ZeroPage();
+			m_memptr.low += Y();
+		}
+
+		void Address_AbsoluteX() {
+			Address_Absolute();
+			m_memptr.word += X();
+		}
+
+		void Address_AbsoluteY() {
+			Address_Absolute();
+			m_memptr.word += Y();
+		}
+
+		void Address_IndexedIndirectX() {
+			Address_ZeroPageX();
+			m_memory.ADDRESS() = m_memptr;
+			GetWord(m_memptr);
+		}
+
+		void Address_IndirectIndexedY() {
+			Address_ZeroPageIndirect();
+			m_memptr.word += Y();
+		}
+
+#pragma endregion Addresses
+
+#pragma region References
+
+		uint8_t& AM_A() {
+			return A();
+		}
+
+		uint8_t& AM_X() {
+			return X();
+		}
+
+		uint8_t& AM_Y() {
+			return Y();
+		}
+
+		uint8_t& AM_Immediate() {
+			FetchByte();
+			return m_memory.reference();
+		}
+
+		uint8_t& AM_Absolute() {
+			Address_Absolute();
+			m_memory.ADDRESS() = m_memptr;
+			return m_memory.reference();
+		}
+
+		uint8_t& AM_ZeroPage() {
+			Address_ZeroPage();
+			m_memory.ADDRESS() = m_memptr;
+			return m_memory.reference();
+		}
+
+		uint8_t& AM_ZeroPageIndirect() {
+			Address_ZeroPageIndirect();
+			m_memory.ADDRESS() = m_memptr;
+			return m_memory.reference();
+		}
+
+		uint8_t& AM_AbsoluteX() {
+			Address_AbsoluteX();
+			m_memory.ADDRESS() = m_memptr;
+			return m_memory.reference();
+		}
+
+		uint8_t& AM_AbsoluteY() {
+			Address_AbsoluteY();
+			m_memory.ADDRESS() = m_memptr;
+			return m_memory.reference();
+		}
+
+		uint8_t& AM_ZeroPageX() {
+			Address_ZeroPageX();
+			m_memory.ADDRESS() = m_memptr;
+			return m_memory.reference();
+		}
+
+		uint8_t& AM_ZeroPageY() {
+			Address_ZeroPageY();
+			m_memory.ADDRESS() = m_memptr;
+			return m_memory.reference();
+		}
+
+		uint8_t& AM_IndexedIndirectX() {
+			Address_IndexedIndirectX();
+			m_memory.ADDRESS() = m_memptr;
+			return m_memory.reference();
+		}
+
+		uint8_t& AM_IndirectIndexedY() {
+			Address_IndirectIndexedY();
+			m_memory.ADDRESS() = m_memptr;
+			return m_memory.reference();
+		}
+
+#pragma endregion References
+
+#pragma endregion 6502 addressing modes
+
+		void DEC(uint8_t& output);
+
+		void ROR(uint8_t& output);
+
+		void LSR(uint8_t& output);
+
 		void BIT(uint8_t data);
 
-		void TSB(uint16_t address);
-		void TRB(uint16_t address);
+		void TSB(uint8_t& output);
+		void TRB(uint8_t& output);
 
-		void INC(uint16_t offset);
+		void INC(uint8_t& output);
 
-		void ROL(uint16_t offset);
-		uint8_t ROL(uint8_t data);
+		void ROL(uint8_t& output);
 
-		void ASL(uint16_t offset);
-		uint8_t ASL(uint8_t data);
+		void ASL(uint8_t& output);
 
 		void ORA(uint8_t data);
 
@@ -184,8 +284,8 @@ namespace EightBit {
 		void ADC_b(uint8_t data);
 		void ADC_d(uint8_t data);
 
-		void RMB(uint16_t address, uint8_t flag);
-		void SMB(uint16_t address, uint8_t flag);
+		void RMB(uint8_t& output, uint8_t flag);
+		void SMB(uint8_t& output, uint8_t flag);
 
 		void Branch(int8_t displacement);
 		void Branch();
@@ -454,6 +554,8 @@ namespace EightBit {
 		uint8_t a;		// accumulator
 		uint8_t s;		// stack pointer
 		uint8_t p;		// processor status
+
+		register16_t m_memptr;
 
 		std::array<Instruction, 0x100> instructions;
 
