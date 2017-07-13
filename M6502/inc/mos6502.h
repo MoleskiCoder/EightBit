@@ -242,6 +242,98 @@ namespace EightBit {
 
 #pragma endregion References
 
+#pragma region 6502 addressing mode switching
+
+		uint8_t& AM_00(int bbb) {
+			switch (bbb) {
+			case 0b000:
+				return AM_Immediate();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b011:
+				return AM_Absolute();
+			case 0b101:
+				return AM_ZeroPageX();
+			case 0b111:
+				return AM_AbsoluteX();
+			case 0b010:
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+		uint8_t& AM_01(int bbb) {
+			switch (bbb) {
+			case 0b000:
+				return AM_IndexedIndirectX();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b010:
+				return AM_Immediate();
+			case 0b011:
+				return AM_Absolute();
+			case 0b100:
+				return AM_IndirectIndexedY();
+			case 0b101:
+				return AM_ZeroPageX();
+			case 0b110:
+				return AM_AbsoluteY();
+			case 0b111:
+				return AM_AbsoluteX();
+			default:
+				__assume(0);
+			}
+		}
+
+		uint8_t& AM_10(int bbb) {
+			switch (bbb) {
+			case 0b000:
+				return AM_Immediate();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b010:
+				return AM_A();
+			case 0b011:
+				return AM_Absolute();
+			case 0b101:
+				return AM_ZeroPageX();
+			case 0b111:
+				return AM_AbsoluteX();
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+		uint8_t& AM_10_x(int bbb, bool x = false) {
+			switch (bbb) {
+			case 0b000:
+				return AM_Immediate();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b010:
+				return AM_A();
+			case 0b011:
+				return AM_Absolute();
+			case 0b101:
+				return AM_ZeroPageY();
+			case 0b111:
+				return AM_AbsoluteY();
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+#pragma endregion 6502 addressing mode switching
+
 #pragma endregion 6502 addressing modes
 
 		void DEC(uint8_t& output);

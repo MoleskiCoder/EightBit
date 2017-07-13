@@ -64,11 +64,265 @@ void EightBit::MOS6502::Interrupt(uint16_t vector) {
 }
 
 int EightBit::MOS6502::Execute(uint8_t cell) {
+
 	cycles = 0;
-	const auto& instruction = instructions[cell];
-	const auto& method = instruction.vector;
-	method();
-	cycles += instruction.count;
+
+	// http://www.llx.com/~nparker/a2/opcodes.html
+
+	// Most instructions that explicitly reference memory
+	// locations have bit patterns of the form aaabbbcc.
+	// The aaa and cc bits determine the opcode, and the bbb
+	// bits determine the addressing mode.
+
+	auto aaa =	(cell & 0b11100000) >> 5;
+	auto bbb =	(cell & 0b00011100) >> 2;
+	auto cc =	(cell & 0b00000011);
+
+	switch (cc) {
+	case 0b00:
+		switch (aaa) {
+		case 0b000:
+			switch (bbb) {
+			case 0b000:	// BRK
+				BRK_imp();
+				break;
+			case 0b010:	// PHP
+				PHP_imp();
+				break;
+			case 0b100:	// BPL
+				BPL_rel();
+				break;
+			case 0b110:	// CLC
+				CLC_imp();
+				break;
+			default:
+				throw std::domain_error("Illegal instruction");
+			}
+			break;
+		case 0b001:
+			switch (bbb) {
+			case 0b000:	// JSR
+				JSR_abs();
+				break;
+			case 0b010:	// PLP
+				PLP_imp();
+				break;
+			case 0b100:	// BMI
+				BMI_rel();
+				break;
+			case 0b110:	// SEC
+				SEC_imp();
+				break;
+			default:	// BIT
+				BIT(AM_00(bbb));
+				break;
+			}
+			break;
+		case 0b010:
+			switch (bbb) {
+			case 0b000:	// RTI
+				RTI_imp();
+				break;
+			case 0b010:	// PHA
+				PHA_imp();
+				break;
+			case 0b011:	// JMP
+				JMP_abs();
+				break;
+			case 0b100:	// BVC
+				BVC_rel();
+				break;
+			case 0b110:	// BVC
+				CLI_imp();
+				break;
+			default:
+				throw std::domain_error("Illegal addressing mode");
+			}
+			break;
+		case 0b011:
+			switch (bbb) {
+			case 0b000:	// RTS
+				RTS_imp();
+				break;
+			case 0b010:	// PLA
+				PLA_imp();
+				break;
+			case 0b011:	// JMP (abs)
+				JMP_ind();
+				break;
+			case 0b100:	// BVS
+				BVS_rel();
+				break;
+			case 0b110:	// SEI
+				SEI_imp();
+				break;
+			default:
+				throw std::domain_error("Illegal addressing mode");
+			}
+			break;
+		case 0b100:
+			switch (bbb) {
+			case 0b010:	// DEY
+				DEY_imp();
+				break;
+			case 0b100:	// BCC
+				BCC_rel();
+				break;
+			case 0b110:	// TYA
+				TYA_imp();
+				break;
+			default:	// STY
+				AM_00(bbb) = Y();
+				break;
+			}
+			break;
+		case 0b101:
+			switch (bbb) {
+			case 0b010:	// TAY
+				TAY_imp();
+				break;
+			case 0b100:	// BCS
+				BCS_rel();
+				break;
+			case 0b110:	// CLV
+				CLV_imp();
+				break;
+			default:	// LDY
+				LDY(AM_00(bbb));
+				break;
+			}
+			break;
+		case 0b110:
+			switch (bbb) {
+			case 0b010:	// INY
+				INY_imp();
+				break;
+			case 0b100:	// BNE
+				BNE_rel();
+				break;
+			case 0b110:	// CLD
+				CLD_imp();
+				break;
+			default:	// CPY
+				CPY(AM_00(bbb));
+				break;
+			}
+			break;
+		case 0b111:
+			switch (bbb) {
+			case 0b010:	// INX
+				INX_imp();
+				break;
+			case 0b100:	// BEQ
+				BEQ_rel();
+				break;
+			case 0b110:	// SED
+				SED_imp();
+				break;
+			default:	// CPX
+				CPX(AM_00(bbb));
+				break;
+			}
+			break;
+		}
+		break;
+	case 0b01:
+		switch (aaa) {
+		case 0b000:		// ORA
+			ORA(AM_01(bbb));
+			break;
+		case 0b001:		// AND
+			AND(AM_01(bbb));
+			break;
+		case 0b010:		// EOR
+			EOR(AM_01(bbb));
+			break;
+		case 0b011:		// ADC
+			ADC(AM_01(bbb));
+			break;
+		case 0b100:		// STA
+			AM_01(bbb) = A();
+			break;
+		case 0b101:		// LDA
+			LDA(AM_01(bbb));
+			break;
+		case 0b110:		// CMP
+			CMP(AM_01(bbb));
+			break;
+		case 0b111:		// SBC
+			SBC(AM_01(bbb));
+			break;
+		default:
+			__assume(0);
+		}
+		break;
+	case 0b10:
+		switch (aaa) {
+		case 0b000:		// ASL
+			ASL(AM_10(bbb));
+			break;
+		case 0b001:		// ROL
+			ROL(AM_10(bbb));
+			break;
+		case 0b010:		// LSR
+			LSR(AM_10(bbb));
+			break;
+		case 0b011:		// ROR
+			ROR(AM_10(bbb));
+			break;
+		case 0b100:
+			switch (bbb) {
+			case 0b010:	// TXA
+				TXA_imp();
+				break;
+			case 0b110:	// TXS
+				TXS_imp();
+				break;
+			default:	// STX
+				AM_10_x(bbb) = X();
+				break;
+			}
+			break;
+		case 0b101:
+			switch (bbb) {
+			case 0b110:	// TSX
+				TSX_imp();
+				break;
+			default:	// LDX
+				LDX(AM_10_x(bbb));
+				break;
+			}
+			break;
+		case 0b110:
+			switch (bbb) {
+			case 0b010:	// DEX
+				DEX_imp();
+				break;
+			default:	// DEC
+				DEC(AM_10(bbb));
+				break;
+			}
+			break;
+		case 0b111:
+			switch (bbb) {
+			case 0b010:	// NOP
+				NOP_imp();
+				break;
+			default:	// INC
+				INC(AM_10(bbb));
+				break;
+			}
+			break;
+		default:
+			__assume(0);
+		}
+		break;
+	case 0b11:
+		throw std::domain_error("Illegal instruction group");
+	default:
+		__assume(0);
+	}
+
 	return cycles;
 }
 
