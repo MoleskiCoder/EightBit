@@ -136,12 +136,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\inc\AddressingMode.h" />
-    <ClInclude Include="..\inc\AddressingModeDumper.h" />
     <ClInclude Include="..\inc\Disassembly.h" />
     <ClInclude Include="..\inc\DisassemblyEventArgs.h" />
     <ClInclude Include="..\inc\mos6502.h" />
-    <ClInclude Include="..\inc\ProcessorType.h" />
     <ClInclude Include="..\inc\ProfileEventArgs.h" />
     <ClInclude Include="..\inc\ProfileLineEventArgs.h" />
     <ClInclude Include="..\inc\Profiler.h" />

@@ -4,34 +4,319 @@
 #include <cstdint>
 
 #include "mos6502.h"
-#include "AddressingMode.h"
-
 #include "Symbols.h"
-#include "AddressingModeDumper.h"
 
 namespace EightBit {
 	class Disassembly {
 	public:
-		MOS6502& processor;
-		const Symbols& symbols;
-
-		std::map<AddressingMode, AddressingModeDumper> dumpers;
-
 		Disassembly(MOS6502& processor, const Symbols& symbols);
 
 		std::string Dump_Flags(uint8_t value) const;
 		std::string Dump_ByteValue(uint8_t value) const;
 		std::string Dump_WordValue(uint16_t value) const;
 
-		std::string DumpBytes(AddressingMode mode, uint16_t current) const;
 		std::string Disassemble(uint16_t current) const;
-		std::string DumpOperand(AddressingMode mode, uint16_t current) const;
 
 	private:
-		uint8_t GetByte(uint16_t address) const;
-		uint16_t GetWord(uint16_t address) const;
+		MOS6502& processor;
+		const Symbols& symbols;
 
-		std::string Dump_Nothing(uint16_t unused) const;
+		mutable uint16_t m_address;
+
+		std::string disassemble_Implied(const std::string& instruction) const {
+			return "\t" + instruction;
+		}
+
+		std::string disassemble_Absolute(const std::string& instruction) const {
+			return AM_Absolute_dump() + "\t" + instruction + " " + AM_Absolute();
+		}
+
+		std::string disassemble_Indirect(const std::string& instruction) const {
+			return AM_Absolute_dump() + "\t" + instruction + " (" + AM_Absolute() + ")";
+		}
+
+		std::string disassemble_Relative(const std::string& instruction, uint16_t address) const {
+			return AM_Immediate_dump() + "\t" + instruction + " $" + Dump_WordValue(address);
+		}
+
+		std::string disassemble_AM_00(int bbb, const std::string& instruction) const {
+			return AM_00_dump(bbb) + "\t" + instruction + " " + AM_00(bbb);
+		}
+
+		std::string disassemble_AM_01(int bbb, const std::string& instruction) const {
+			return AM_01_dump(bbb) + "\t" + instruction + " " + AM_01(bbb);
+		}
+
+		std::string disassemble_AM_10(int bbb, const std::string& instruction) const {
+			return AM_10_dump(bbb) + "\t" + instruction + " " + AM_10(bbb);
+		}
+
+		std::string disassemble_AM_10_x(int bbb, const std::string& instruction) const {
+			return AM_10_x_dump(bbb) + "\t" + instruction + " " + AM_10_x(bbb);
+		}
+
+#pragma region 6502 addressing modes
+
+#pragma region References
+
+		std::string AM_Immediate_dump() const {
+			return Dump_Byte(m_address + 1);
+		}
+
+		std::string AM_Immediate() const {
+			return "#" + AM_Immediate_dump();
+		}
+
+		std::string AM_Absolute_dump() const {
+			return Dump_DByte(m_address + 1);
+		}
+
+		std::string AM_Absolute() const {
+			return "$" + Dump_WordValue(processor.getMemory().peekWord(m_address + 1));
+		}
+
+		std::string AM_ZeroPage_dump() const {
+			return Dump_Byte(m_address + 1);
+		}
+
+		std::string AM_ZeroPage() const {
+			return "$" + Dump_Byte(m_address + 1);
+		}
+
+		std::string AM_ZeroPageX_dump() const {
+			return AM_ZeroPage_dump();
+		}
+
+		std::string AM_ZeroPageX() const {
+			return AM_ZeroPage() + ",X";
+		}
+
+		std::string AM_ZeroPageY_dump() const {
+			return AM_ZeroPage_dump();
+		}
+
+		std::string AM_ZeroPageY() const {
+			return AM_ZeroPage() + ",Y";
+		}
+
+		std::string AM_AbsoluteX_dump() const {
+			return AM_Absolute_dump();
+		}
+
+		std::string AM_AbsoluteX() const {
+			return AM_Absolute() + ",X";
+		}
+
+		std::string AM_AbsoluteY_dump() const {
+			return AM_Absolute_dump();
+		}
+
+		std::string AM_AbsoluteY() const {
+			return AM_Absolute() + ",Y";
+		}
+
+		std::string AM_IndexedIndirectX_dump() const {
+			return AM_ZeroPage_dump();
+		}
+
+		std::string AM_IndexedIndirectX() const {
+			return "($" + Dump_Byte(m_address + 1) + ",X)";
+		}
+
+		std::string AM_IndirectIndexedY_dump() const {
+			return AM_ZeroPage_dump();
+		}
+
+		std::string AM_IndirectIndexedY() const {
+			return "($" + Dump_Byte(m_address + 1) + "),Y";
+		}
+
+#pragma endregion References
+
+#pragma region 6502 addressing mode switching
+
+		std::string AM_00_dump(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_Immediate_dump();
+			case 0b001:
+				return AM_ZeroPage_dump();
+			case 0b011:
+				return AM_Absolute_dump();
+			case 0b101:
+				return AM_ZeroPageX_dump();
+			case 0b111:
+				return AM_AbsoluteX_dump();
+			case 0b010:
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+		std::string AM_00(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_Immediate();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b011:
+				return AM_Absolute();
+			case 0b101:
+				return AM_ZeroPageX();
+			case 0b111:
+				return AM_AbsoluteX();
+			case 0b010:
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+		std::string AM_01_dump(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_IndexedIndirectX_dump();
+			case 0b001:
+				return AM_ZeroPage_dump();
+			case 0b010:
+				return AM_Immediate_dump();
+			case 0b011:
+				return AM_Absolute_dump();
+			case 0b100:
+				return AM_IndirectIndexedY_dump();
+			case 0b101:
+				return AM_ZeroPageX_dump();
+			case 0b110:
+				return AM_AbsoluteY_dump();
+			case 0b111:
+				return AM_AbsoluteX_dump();
+			default:
+				__assume(0);
+			}
+		}
+
+		std::string AM_01(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_IndexedIndirectX();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b010:
+				return AM_Immediate();
+			case 0b011:
+				return AM_Absolute();
+			case 0b100:
+				return AM_IndirectIndexedY();
+			case 0b101:
+				return AM_ZeroPageX();
+			case 0b110:
+				return AM_AbsoluteY();
+			case 0b111:
+				return AM_AbsoluteX();
+			default:
+				__assume(0);
+			}
+		}
+
+		std::string AM_10_dump(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_Immediate_dump();
+			case 0b001:
+				return AM_ZeroPage_dump();
+			case 0b010:
+				return "";
+			case 0b011:
+				return AM_Absolute_dump();
+			case 0b101:
+				return AM_ZeroPageX_dump();
+			case 0b111:
+				return AM_AbsoluteX_dump();
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+		std::string AM_10(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_Immediate();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b010:
+				return "A";
+			case 0b011:
+				return AM_Absolute();
+			case 0b101:
+				return AM_ZeroPageX();
+			case 0b111:
+				return AM_AbsoluteX();
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+		std::string AM_10_x_dump(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_Immediate_dump();
+			case 0b001:
+				return AM_ZeroPage_dump();
+			case 0b010:
+				return "";
+			case 0b011:
+				return AM_Absolute_dump();
+			case 0b101:
+				return AM_ZeroPageY_dump();
+			case 0b111:
+				return AM_AbsoluteY_dump();
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+		std::string AM_10_x(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_Immediate();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b010:
+				return "A";
+			case 0b011:
+				return AM_Absolute();
+			case 0b101:
+				return AM_ZeroPageY();
+			case 0b111:
+				return AM_AbsoluteY();
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+#pragma endregion 6502 addressing mode switching
+
+#pragma endregion 6502 addressing modes
+
+		uint8_t GetByte(uint16_t address) const;
+
 		std::string Dump_Byte(uint16_t address) const;
 		std::string Dump_DByte(uint16_t address) const;
 
@@ -39,28 +324,5 @@ namespace EightBit {
 		std::string ConvertAddress(uint8_t address) const;
 		std::string ConvertConstant(uint16_t constant) const;
 		std::string ConvertConstant(uint8_t constant) const;
-
-		std::string Dump_A(uint16_t unused) const;
-		std::string Dump_imm(uint16_t current) const;
-		std::string Dump_abs(uint16_t current) const;
-		std::string Dump_zp(uint16_t current) const;
-		std::string Dump_zpx(uint16_t current) const;
-		std::string Dump_zpy(uint16_t current) const;
-		std::string Dump_absx(uint16_t current) const;
-		std::string Dump_absy(uint16_t current) const;
-		std::string Dump_absxind(uint16_t current) const;
-		std::string Dump_xind(uint16_t current) const;
-		std::string Dump_indy(uint16_t current) const;
-		std::string Dump_ind(uint16_t current) const;
-		std::string Dump_zpind(uint16_t current) const;
-		std::string Dump_rel(uint16_t current) const;
-		std::string Dump_zprel(uint16_t current) const;
-
-		const AddressingModeDumper& getDumper(AddressingMode mode) const {
-			auto dumper = dumpers.find(mode);
-			if (dumper == dumpers.end())
-				throw std::invalid_argument("Illegal addressing mode");
-			return dumper->second;
-		}
 	};
 }

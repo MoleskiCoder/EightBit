@@ -2,8 +2,6 @@
 #include "Board.h"
 #include "Disassembly.h"
 
-#include "ProcessorType.h"
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -12,7 +10,7 @@
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration),
   m_memory(0xffff),
-  m_cpu(EightBit::MOS6502(m_memory, EightBit::ProcessorType::Cpu6502)),
+  m_cpu(EightBit::MOS6502(m_memory)),
   m_symbols(""),
   m_disassembler(m_cpu, m_symbols),
   m_profiler(m_cpu, m_disassembler, m_symbols),
@@ -77,9 +75,6 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 	auto address = m_cpu.PC().word;
 	auto cell = m_memory.peek(address);
 
-	const auto& instruction = m_cpu.getInstruction(cell);
-	auto mode = instruction.mode;
-
 	std::cout << std::hex;
 	std::cout << "PC=" << std::setw(4) << std::setfill('0') << address << ":";
 	std::cout << "P=" << m_disassembler.Dump_Flags(m_cpu.P()) << ", ";
@@ -88,11 +83,6 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 	std::cout << "X=" << (int)m_cpu.X() << ", ";
 	std::cout << "Y=" << (int)m_cpu.Y() << ", ";
 	std::cout << "S=" << (int)m_cpu.S() << "\t";
-
-	std::cout << m_disassembler.Dump_ByteValue(cell);
-	std::cout << m_disassembler.DumpBytes(mode, address + 1);
-
-	std::cout << "\t ";
 
 	std::cout << m_disassembler.Disassemble(address);
 
