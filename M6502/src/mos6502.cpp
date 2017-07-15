@@ -3,6 +3,25 @@
 
 EightBit::MOS6502::MOS6502(Memory& memory)
 : Processor(memory) {
+	m_timings = {
+		////	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+		/* 0 */	7, 6, 0, 0, 0, 4, 5, 0, 3, 2, 2, 0, 0, 4, 6, 0,
+		/* 1 */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
+		/* 2 */	6, 6, 0, 0, 3, 3, 5, 0, 4, 2, 2, 0, 4, 4, 6, 0,
+		/* 3 */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
+		/* 4 */	6, 6, 0, 0, 0, 3, 5, 0, 3, 2, 2, 0, 3, 4, 6, 0,
+		/* 5 */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
+		/* 6 */	6, 6, 0, 0, 0, 3, 5, 0, 4, 2, 2, 0, 5, 4, 6, 0,
+		/* 7 */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
+		/* 8 */	0, 6, 0, 0, 3, 3, 3, 0, 2, 0, 2, 0, 4, 4, 4, 0,
+		/* 9 */	2, 6, 0, 0, 4, 4, 4, 0, 2, 5, 2, 0, 0, 5, 0, 0,
+		/* A */	2, 6, 2, 0, 3, 3, 3, 0, 2, 2, 2, 0, 4, 4, 4, 0,
+		/* B */	2, 5, 0, 0, 4, 4, 4, 0, 2, 4, 2, 0, 4, 4, 4, 0,
+		/* C */	2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 0, 4, 4, 6, 0,
+		/* D */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
+		/* E */	2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 0, 4, 4, 6, 0,
+		/* F */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
+	};
 }
 
 void EightBit::MOS6502::initialise() {
@@ -61,7 +80,7 @@ void EightBit::MOS6502::Interrupt(uint16_t vector) {
 
 int EightBit::MOS6502::Execute(uint8_t cell) {
 
-	cycles = 1;
+	cycles = m_timings[cell];
 
 	// http://www.llx.com/~nparker/a2/opcodes.html
 
@@ -110,7 +129,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				setFlag(P(), CF);
 				break;
 			default:	// BIT
-				BIT(AM_00(bbb));
+				BIT(AM_00(bbb, false));
 				break;
 			}
 			break;
@@ -168,7 +187,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				UpdateZeroNegativeFlags(A() = Y());
 				break;
 			default:	// STY
-				AM_00(bbb) = Y();
+				AM_00(bbb, false) = Y();
 				break;
 			}
 			break;
@@ -237,7 +256,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 			ADC(AM_01(bbb));
 			break;
 		case 0b100:		// STA
-			AM_01(bbb) = A();
+			AM_01(bbb, false) = A();
 			break;
 		case 0b101:		// LDA
 			LDA(AM_01(bbb));
@@ -255,16 +274,16 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 	case 0b10:
 		switch (aaa) {
 		case 0b000:		// ASL
-			ASL(AM_10(bbb));
+			ASL(AM_10(bbb, false));
 			break;
 		case 0b001:		// ROL
-			ROL(AM_10(bbb));
+			ROL(AM_10(bbb, false));
 			break;
 		case 0b010:		// LSR
-			LSR(AM_10(bbb));
+			LSR(AM_10(bbb, false));
 			break;
 		case 0b011:		// ROR
-			ROR(AM_10(bbb));
+			ROR(AM_10(bbb, false));
 			break;
 		case 0b100:
 			switch (bbb) {
@@ -275,7 +294,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				S() = X();
 				break;
 			default:	// STX
-				AM_10_x(bbb) = X();
+				AM_10_x(bbb, false) = X();
 				break;
 			}
 			break;
@@ -295,7 +314,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				DEC(X());
 				break;
 			default:	// DEC
-				DEC(AM_10(bbb));
+				DEC(AM_10(bbb, false));
 				break;
 			}
 			break;
@@ -304,7 +323,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 			case 0b010:	// NOP
 				break;
 			default:	// INC
-				INC(AM_10(bbb));
+				INC(AM_10(bbb, false));
 				break;
 			}
 			break;
@@ -510,7 +529,11 @@ void EightBit::MOS6502::ADC_d(uint8_t data) {
 ////
 
 void EightBit::MOS6502::Branch(int8_t displacement) {
+	auto page = PC().high;
 	PC().word += displacement;
+	if (PC().high != page)
+		cycles++;
+	cycles++;
 }
 
 void EightBit::MOS6502::Branch(bool flag) {

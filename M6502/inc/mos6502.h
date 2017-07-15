@@ -163,15 +163,19 @@ namespace EightBit {
 			return m_memory.reference();
 		}
 
-		uint8_t& AM_AbsoluteX() {
+		uint8_t& AM_AbsoluteX(bool read = true) {
 			Address_AbsoluteX();
 			m_memory.ADDRESS() = m_memptr;
+			if (read && (m_memory.ADDRESS().low == 0xff))
+				++cycles;
 			return m_memory.reference();
 		}
 
-		uint8_t& AM_AbsoluteY() {
+		uint8_t& AM_AbsoluteY(bool read = true) {
 			Address_AbsoluteY();
 			m_memory.ADDRESS() = m_memptr;
+			if (read && (m_memory.ADDRESS().low == 0xff))
+				++cycles;
 			return m_memory.reference();
 		}
 
@@ -193,9 +197,11 @@ namespace EightBit {
 			return m_memory.reference();
 		}
 
-		uint8_t& AM_IndirectIndexedY() {
+		uint8_t& AM_IndirectIndexedY(bool read = true) {
 			Address_IndirectIndexedY();
 			m_memory.ADDRESS() = m_memptr;
+			if (read && (m_memory.ADDRESS().low == 0xff))
+				++cycles;
 			return m_memory.reference();
 		}
 
@@ -203,7 +209,7 @@ namespace EightBit {
 
 #pragma region 6502 addressing mode switching
 
-		uint8_t& AM_00(int bbb) {
+		uint8_t& AM_00(int bbb, bool read = true) {
 			switch (bbb) {
 			case 0b000:
 				return AM_Immediate();
@@ -214,7 +220,7 @@ namespace EightBit {
 			case 0b101:
 				return AM_ZeroPageX();
 			case 0b111:
-				return AM_AbsoluteX();
+				return AM_AbsoluteX(read);
 			case 0b010:
 			case 0b100:
 			case 0b110:
@@ -224,7 +230,7 @@ namespace EightBit {
 			}
 		}
 
-		uint8_t& AM_01(int bbb) {
+		uint8_t& AM_01(int bbb, bool read = true) {
 			switch (bbb) {
 			case 0b000:
 				return AM_IndexedIndirectX();
@@ -235,19 +241,19 @@ namespace EightBit {
 			case 0b011:
 				return AM_Absolute();
 			case 0b100:
-				return AM_IndirectIndexedY();
+				return AM_IndirectIndexedY(read);
 			case 0b101:
 				return AM_ZeroPageX();
 			case 0b110:
-				return AM_AbsoluteY();
+				return AM_AbsoluteY(read);
 			case 0b111:
-				return AM_AbsoluteX();
+				return AM_AbsoluteX(read);
 			default:
 				__assume(0);
 			}
 		}
 
-		uint8_t& AM_10(int bbb) {
+		uint8_t& AM_10(int bbb, bool read = true) {
 			switch (bbb) {
 			case 0b000:
 				return AM_Immediate();
@@ -260,7 +266,7 @@ namespace EightBit {
 			case 0b101:
 				return AM_ZeroPageX();
 			case 0b111:
-				return AM_AbsoluteX();
+				return AM_AbsoluteX(read);
 			case 0b100:
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
@@ -269,7 +275,7 @@ namespace EightBit {
 			}
 		}
 
-		uint8_t& AM_10_x(int bbb) {
+		uint8_t& AM_10_x(int bbb, bool read = true) {
 			switch (bbb) {
 			case 0b000:
 				return AM_Immediate();
@@ -282,7 +288,7 @@ namespace EightBit {
 			case 0b101:
 				return AM_ZeroPageY();
 			case 0b111:
-				return AM_AbsoluteY();
+				return AM_AbsoluteY(read);
 			case 0b100:
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
@@ -356,5 +362,7 @@ namespace EightBit {
 		uint8_t p;		// processor status
 
 		register16_t m_memptr;
+
+		std::array<int, 0x100> m_timings;
 	};
 }
