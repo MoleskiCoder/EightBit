@@ -160,7 +160,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				RTS();
 				break;
 			case 0b010:	// PLA
-				UpdateZeroNegativeFlags(A() = PopByte());
+				adjustNZ(A() = PopByte());
 				break;
 			case 0b011:	// JMP (abs)
 				JMP_ind();
@@ -184,7 +184,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				Branch(!(P() & CF));
 				break;
 			case 0b110:	// TYA
-				UpdateZeroNegativeFlags(A() = Y());
+				adjustNZ(A() = Y());
 				break;
 			default:	// STY
 				AM_00(bbb, false) = Y();
@@ -194,7 +194,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 		case 0b101:
 			switch (bbb) {
 			case 0b010:	// TAY
-				UpdateZeroNegativeFlags(Y() = A());
+				adjustNZ(Y() = A());
 				break;
 			case 0b100:	// BCS
 				Branch((P() & CF) != 0);
@@ -288,7 +288,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 		case 0b100:
 			switch (bbb) {
 			case 0b010:	// TXA
-				UpdateZeroNegativeFlags(A() = X());
+				adjustNZ(A() = X());
 				break;
 			case 0b110:	// TXS
 				S() = X();
@@ -301,7 +301,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 		case 0b101:
 			switch (bbb) {
 			case 0b110:	// TSX
-				UpdateZeroNegativeFlags(X() = S());
+				adjustNZ(X() = S());
 				break;
 			default:	// LDX
 				LDX(AM_10_x(bbb));
@@ -374,48 +374,48 @@ void EightBit::MOS6502::FetchWord(register16_t& output) {
 ////
 
 void EightBit::MOS6502::DEC(uint8_t& target) {
-	UpdateZeroNegativeFlags(--target);
+	adjustNZ(--target);
 }
 
 void EightBit::MOS6502::ROR(uint8_t& output) {
 	auto carry = P() & CF;
 	setFlag(P(), CF, output & CF);
 	output = (output >> 1) | (carry << 7);
-	UpdateZeroNegativeFlags(output);
+	adjustNZ(output);
 }
 
 void EightBit::MOS6502::LSR(uint8_t& output) {
 	setFlag(P(), CF, output & CF);
-	UpdateZeroNegativeFlags(output >>= 1);
+	adjustNZ(output >>= 1);
 }
 
 void EightBit::MOS6502::BIT(uint8_t data) {
-	UpdateZeroFlag(A() & data);
-	UpdateNegativeFlag(data);
+	adjustZero(A() & data);
+	adjustNegative(data);
 	setFlag(P(), VF, data & VF);
 }
 
 void EightBit::MOS6502::INC(uint8_t& output) {
-	UpdateZeroNegativeFlags(++output);
+	adjustNZ(++output);
 }
 
 void EightBit::MOS6502::ROL(uint8_t& output) {
 	uint8_t result = (output << 1) | (P() & CF);
 	setFlag(P(), CF, output & Bit7);
-	UpdateZeroNegativeFlags(output = result);
+	adjustNZ(output = result);
 }
 
 void EightBit::MOS6502::ASL(uint8_t& output) {
 	setFlag(P(), CF, (output & 0x80) >> 7);
-	UpdateZeroNegativeFlags(output <<= 1);
+	adjustNZ(output <<= 1);
 }
 
 void EightBit::MOS6502::ORA(uint8_t data) {
-	UpdateZeroNegativeFlags(A() |= data);
+	adjustNZ(A() |= data);
 }
 
 void EightBit::MOS6502::AND(uint8_t data) {
-	UpdateZeroNegativeFlags(A() &= data);
+	adjustNZ(A() &= data);
 }
 
 void EightBit::MOS6502::SBC(uint8_t data) {
@@ -429,7 +429,7 @@ void EightBit::MOS6502::SBC_b(uint8_t data) {
 	register16_t difference;
 	difference.word = A() - data - (~P() & CF);
 
-	UpdateZeroNegativeFlags(difference.low);
+	adjustNZ(difference.low);
 	setFlag(P(), VF, (A() ^ data) & (A() ^ difference.low) & 0x80);
 	clearFlag(P(), CF, difference.high);
 
@@ -442,7 +442,7 @@ void EightBit::MOS6502::SBC_d(uint8_t data) {
 	register16_t difference;
 	difference.word = A() - data - carry;
 
-	UpdateZeroNegativeFlags(difference.low);
+	adjustNZ(difference.low);
 
 	setFlag(P(), VF, (A() ^ data) & (A() ^ difference.low) & 0x80);
 	clearFlag(P(), CF, difference.high);
@@ -462,26 +462,26 @@ void EightBit::MOS6502::SBC_d(uint8_t data) {
 }
 
 void EightBit::MOS6502::EOR(uint8_t data) {
-	UpdateZeroNegativeFlags(A() ^= data);
+	adjustNZ(A() ^= data);
 }
 
 void EightBit::MOS6502::CMP(uint8_t first, uint8_t second) {
 	register16_t result;
 	result.word = first - second;
-	UpdateZeroNegativeFlags(result.low);
+	adjustNZ(result.low);
 	clearFlag(P(), CF, result.high);
 }
 
 void EightBit::MOS6502::LDA(uint8_t data) {
-	UpdateZeroNegativeFlags(A() = data);
+	adjustNZ(A() = data);
 }
 
 void EightBit::MOS6502::LDY(uint8_t data) {
-	UpdateZeroNegativeFlags(Y() = data);
+	adjustNZ(Y() = data);
 }
 
 void EightBit::MOS6502::LDX(uint8_t data) {
-	UpdateZeroNegativeFlags(X() = data);
+	adjustNZ(X() = data);
 }
 
 void EightBit::MOS6502::ADC(uint8_t data) {
@@ -496,7 +496,7 @@ void EightBit::MOS6502::ADC_b(uint8_t data) {
 	register16_t sum;
 	sum.word = A() + data + (P() & CF);
 
-	UpdateZeroNegativeFlags(sum.low);
+	adjustNZ(sum.low);
 	setFlag(P(), VF, ~(A() ^ data) & (A() ^ sum.low) & 0x80);
 	setFlag(P(), CF, sum.high & CF);
 
@@ -509,7 +509,7 @@ void EightBit::MOS6502::ADC_d(uint8_t data) {
 	register16_t sum;
 	sum.word = A() + data + carry;
 
-	UpdateZeroNegativeFlags(sum.low);
+	adjustNZ(sum.low);
 
 	auto low = (uint8_t)(lowNibble(A()) + lowNibble(data) + carry);
 	if (low > 9)

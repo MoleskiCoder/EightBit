@@ -58,12 +58,12 @@ namespace EightBit {
 		virtual int Execute(uint8_t cell);
 
 	private:
-		void UpdateZeroFlag(uint8_t datum) { clearFlag(P(), ZF, datum); }
-		void UpdateNegativeFlag(uint8_t datum) { setFlag(P(), NF, datum & NF); }
+		void adjustZero(uint8_t datum) { clearFlag(P(), ZF, datum); }
+		void adjustNegative(uint8_t datum) { setFlag(P(), NF, datum & NF); }
 		
-		void UpdateZeroNegativeFlags(uint8_t datum) {
-			UpdateZeroFlag(datum);
-			UpdateNegativeFlag(datum);
+		void adjustNZ(uint8_t datum) {
+			adjustZero(datum);
+			adjustNegative(datum);
 		}
 
 		void PushByte(uint8_t value);
