@@ -130,6 +130,8 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				break;
 			default:	// BIT
 				BIT(AM_00(bbb, false));
+				assert(m_busRW);
+				m_memory.read();
 				break;
 			}
 			break;
@@ -187,7 +189,9 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				adjustNZ(A() = Y());
 				break;
 			default:	// STY
-				AM_00(bbb, false) = Y();
+				AM_00(bbb, false);
+				assert(m_busRW);
+				m_memory.write(Y());
 				break;
 			}
 			break;
@@ -204,6 +208,8 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				break;
 			default:	// LDY
 				LDY(AM_00(bbb));
+				if (m_busRW)
+					m_memory.read();
 				break;
 			}
 			break;
@@ -220,6 +226,8 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				break;
 			default:	// CPY
 				CMP(Y(), AM_00(bbb));
+				if (m_busRW)
+					m_memory.read();
 				break;
 			}
 			break;
@@ -236,6 +244,8 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				break;
 			default:	// CPX
 				CMP(X(), AM_00(bbb));
+				if (m_busRW)
+					m_memory.read();
 				break;
 			}
 			break;
@@ -245,27 +255,43 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 		switch (aaa) {
 		case 0b000:		// ORA
 			ORA(AM_01(bbb));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		case 0b001:		// AND
 			AND(AM_01(bbb));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		case 0b010:		// EOR
 			EOR(AM_01(bbb));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		case 0b011:		// ADC
 			ADC(AM_01(bbb));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		case 0b100:		// STA
-			AM_01(bbb, false) = A();
+			AM_01(bbb, false);
+			assert(m_busRW);
+			m_memory.write(A());
 			break;
 		case 0b101:		// LDA
 			LDA(AM_01(bbb));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		case 0b110:		// CMP
 			CMP(A(), AM_01(bbb));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		case 0b111:		// SBC
 			SBC(AM_01(bbb));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		default:
 			__assume(0);
@@ -275,15 +301,23 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 		switch (aaa) {
 		case 0b000:		// ASL
 			ASL(AM_10(bbb, false));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		case 0b001:		// ROL
 			ROL(AM_10(bbb, false));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		case 0b010:		// LSR
 			LSR(AM_10(bbb, false));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		case 0b011:		// ROR
 			ROR(AM_10(bbb, false));
+			if (m_busRW)
+				m_memory.read();
 			break;
 		case 0b100:
 			switch (bbb) {
@@ -294,7 +328,9 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				S() = X();
 				break;
 			default:	// STX
-				AM_10_x(bbb, false) = X();
+				AM_10_x(bbb, false);
+				assert(m_busRW);
+				m_memory.write(X());
 				break;
 			}
 			break;
@@ -305,6 +341,8 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				break;
 			default:	// LDX
 				LDX(AM_10_x(bbb));
+				if (m_busRW)
+					m_memory.read();
 				break;
 			}
 			break;
@@ -315,6 +353,8 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				break;
 			default:	// DEC
 				DEC(AM_10(bbb, false));
+				if (m_busRW)
+					m_memory.read();
 				break;
 			}
 			break;
@@ -324,6 +364,8 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				break;
 			default:	// INC
 				INC(AM_10(bbb, false));
+				if (m_busRW)
+					m_memory.read();
 				break;
 			}
 			break;

@@ -140,30 +140,33 @@ namespace EightBit {
 
 #pragma region References
 
+		uint8_t& AM_A() {
+			m_busRW = false;
+			return A();
+		}
+
 		uint8_t& AM_Immediate() {
+			m_busRW = false;
 			FetchByte();
 			return m_memory.reference();
 		}
 
 		uint8_t& AM_Absolute() {
+			m_busRW = true;
 			Address_Absolute();
 			m_memory.ADDRESS() = m_memptr;
 			return m_memory.reference();
 		}
 
 		uint8_t& AM_ZeroPage() {
+			m_busRW = true;
 			Address_ZeroPage();
 			m_memory.ADDRESS() = m_memptr;
 			return m_memory.reference();
 		}
 
-		uint8_t& AM_ZeroPageIndirect() {
-			Address_ZeroPageIndirect();
-			m_memory.ADDRESS() = m_memptr;
-			return m_memory.reference();
-		}
-
 		uint8_t& AM_AbsoluteX(bool read = true) {
+			m_busRW = true;
 			Address_AbsoluteX();
 			m_memory.ADDRESS() = m_memptr;
 			if (read && (m_memory.ADDRESS().low == 0xff))
@@ -172,6 +175,7 @@ namespace EightBit {
 		}
 
 		uint8_t& AM_AbsoluteY(bool read = true) {
+			m_busRW = true;
 			Address_AbsoluteY();
 			m_memory.ADDRESS() = m_memptr;
 			if (read && (m_memory.ADDRESS().low == 0xff))
@@ -180,24 +184,28 @@ namespace EightBit {
 		}
 
 		uint8_t& AM_ZeroPageX() {
+			m_busRW = true;
 			Address_ZeroPageX();
 			m_memory.ADDRESS() = m_memptr;
 			return m_memory.reference();
 		}
 
 		uint8_t& AM_ZeroPageY() {
+			m_busRW = true;
 			Address_ZeroPageY();
 			m_memory.ADDRESS() = m_memptr;
 			return m_memory.reference();
 		}
 
 		uint8_t& AM_IndexedIndirectX() {
+			m_busRW = true;
 			Address_IndexedIndirectX();
 			m_memory.ADDRESS() = m_memptr;
 			return m_memory.reference();
 		}
 
 		uint8_t& AM_IndirectIndexedY(bool read = true) {
+			m_busRW = true;
 			Address_IndirectIndexedY();
 			m_memory.ADDRESS() = m_memptr;
 			if (read && (m_memory.ADDRESS().low == 0xff))
@@ -260,7 +268,7 @@ namespace EightBit {
 			case 0b001:
 				return AM_ZeroPage();
 			case 0b010:
-				return A();
+				return AM_A();
 			case 0b011:
 				return AM_Absolute();
 			case 0b101:
@@ -282,7 +290,7 @@ namespace EightBit {
 			case 0b001:
 				return AM_ZeroPage();
 			case 0b010:
-				return A();
+				return AM_A();
 			case 0b011:
 				return AM_Absolute();
 			case 0b101:
@@ -364,5 +372,7 @@ namespace EightBit {
 		register16_t m_memptr;
 
 		std::array<int, 0x100> m_timings;
+
+		bool m_busRW;
 	};
 }
