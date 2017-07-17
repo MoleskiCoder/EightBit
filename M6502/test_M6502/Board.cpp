@@ -21,9 +21,19 @@ Board::Board(const Configuration& configuration)
 void Board::initialise() {
 
 	m_memory.clear();
-	auto romDirectory = m_configuration.getRomDirectory();
 
-	m_memory.loadRam(romDirectory + "/6502_functional_test.bin", 0x400);	// Klaus Dormann functional tests
+	auto programFilename = m_configuration.getProgram();
+	auto programPath = m_configuration.getRomDirectory() + "\\" + m_configuration.getProgram();
+	auto loadAddress = m_configuration.getLoadAddress();
+
+	switch (m_configuration.getLoadMethod()) {
+	case Configuration::LoadMethod::Ram:
+		m_memory.loadRam(programPath, loadAddress);
+		break;
+	case Configuration::LoadMethod::Rom:
+		m_memory.loadRom(programPath, loadAddress);
+		break;
+	}
 
 	if (m_configuration.isProfileMode()) {
 		m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Profile, this, std::placeholders::_1));
@@ -33,7 +43,16 @@ void Board::initialise() {
 		m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
 	}
 
-	m_cpu.ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_StopLoop, this, std::placeholders::_1));
+	switch (m_configuration.getStopCondition()) {
+	case Configuration::StopCondition::Loop:
+		m_cpu.ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_StopLoop, this, std::placeholders::_1));
+		break;
+	case Configuration::StopCondition::Halt:
+
+		break;
+	default:
+		throw std::domain_error("Unknown stop condition");
+	}
 
 	if (m_configuration.allowInput()) {
 		m_memory.ReadByte.connect(std::bind(&Board::Memory_ReadByte_Input, this, std::placeholders::_1));
@@ -47,7 +66,7 @@ void Board::initialise() {
 	m_pollInterval = m_configuration.getPollInterval();
 
 	m_cpu.initialise();
-	m_cpu.PC() = m_configuration.getStartAddress();
+	m_cpu.PC().word = m_configuration.getStartAddress();
 }
 
 void Board::Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu) {

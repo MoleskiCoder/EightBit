@@ -1,52 +1,58 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
-
-#include "Memory.h"
 
 class Configuration {
 public:
+	enum StopCondition {
+		Halt,
+		Loop
+	};
+
+	enum LoadMethod {
+		Ram,
+		Rom
+	};
+
 	Configuration();
 
-	bool isDebugMode() const {
-		return m_debugMode;
-	}
+	bool isDebugMode() const { return m_debugMode; }
+	void setDebugMode(bool value) { m_debugMode = value; }
 
-	void setDebugMode(bool value) {
-		m_debugMode = value;
-	}
+	bool isProfileMode() const { return m_profileMode; }
+	void setProfileMode(bool value) { m_profileMode = value; }
 
-	bool isProfileMode() const {
-		return m_profileMode;
-	}
+	uint16_t getLoadAddress() const { return m_loadAddress; }
+	uint16_t getStartAddress() const { return m_startAddress; }
 
-	void setProfileMode(bool value) {
-		m_profileMode = value;
-	}
+	bool allowInput() const { return m_allowInput; }
+	uint16_t getInputAddress() const { return m_inputAddress; }
 
-	std::string getRomDirectory() const {
-		return m_romDirectory;
-	}
+	bool allowOutput() const { return m_allowOutput; }
+	uint16_t getOutputAddress() const { return m_outputAddress; }
 
-	EightBit::register16_t getStartAddress() const {
-		EightBit::register16_t returned;
-		returned.word = 0x400;
-		return returned;
-	}
+	uint64_t getPollInterval() const { return m_pollInterval; }
 
-	bool allowInput() const { return false; }
-	uint16_t getInputAddress() const { return 0xbff0; }
+	StopCondition getStopCondition() const { return m_stopCondition; }
 
-	bool allowOutput() const { return false; }
-	uint16_t getOutputAddress() const { return 0xbff0; }
+	std::string getRomDirectory() const { return m_romDirectory; }
+	std::string getProgram() const { return m_program; }
 
-	uint64_t getPollInterval() const {
-		return 2000000 / 50; // 2Mhz, 50 times a second;
-	}
+	LoadMethod getLoadMethod() const { return m_loadMethod; }
 
 private:
 	bool m_debugMode;
 	bool m_profileMode;
-
+	uint16_t m_loadAddress;
+	uint16_t m_startAddress;
+	bool m_allowInput;
+	uint16_t m_inputAddress;
+	bool m_allowOutput;
+	uint16_t m_outputAddress;
+	uint64_t m_pollInterval;
+	StopCondition m_stopCondition;
 	std::string m_romDirectory;
+	std::string m_program;
+	LoadMethod m_loadMethod;
 };
