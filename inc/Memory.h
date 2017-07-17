@@ -65,9 +65,13 @@ namespace EightBit {
 			return address & m_addressMask;
 		}
 
+		void fireReadBusEvent() {
+			ReadByte.fire(AddressEventArgs(ADDRESS().word, DATA()));
+		}
+
 		uint8_t read() {
 			auto content = reference();
-			ReadByte.fire(AddressEventArgs(ADDRESS().word, content));
+			fireReadBusEvent();
 			return content;
 		}
 
@@ -76,9 +80,13 @@ namespace EightBit {
 			return read();
 		}
 
+		void fireWriteBusEvent() {
+			WrittenByte.fire(AddressEventArgs(ADDRESS().word, DATA()));
+		}
+
 		void write(uint8_t value) {
 			reference() = value;
-			WrittenByte.fire(AddressEventArgs(ADDRESS().word, value));
+			fireWriteBusEvent();
 		}
 
 		void write(uint16_t offset, uint8_t value) {

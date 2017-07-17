@@ -48,7 +48,6 @@ void Board::initialise() {
 		m_cpu.ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_StopLoop, this, std::placeholders::_1));
 		break;
 	case Configuration::StopCondition::Halt:
-
 		break;
 	default:
 		throw std::domain_error("Unknown stop condition");

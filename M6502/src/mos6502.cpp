@@ -135,8 +135,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				break;
 			default:	// BIT
 				BIT(AM_00(decoded.bbb));
-				assert(m_busRW);
-				m_memory.read();
+				firePendingBusEvents(BusDirection::Read);
 				break;
 			}
 			break;
@@ -194,9 +193,8 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				adjustNZ(A() = Y());
 				break;
 			default:	// STY
-				AM_00(decoded.bbb, false);
-				assert(m_busRW);
-				m_memory.write(Y());
+				AM_00(decoded.bbb, BusDirection::Write) = Y();
+				firePendingBusEvents(BusDirection::Write);
 				break;
 			}
 			break;
@@ -213,8 +211,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				break;
 			default:	// LDY
 				adjustNZ(Y() = AM_00(decoded.bbb));
-				if (m_busRW)
-					m_memory.read();
+				firePendingBusEvents(BusDirection::Read);
 				break;
 			}
 			break;
@@ -231,8 +228,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				break;
 			default:	// CPY
 				CMP(Y(), AM_00(decoded.bbb));
-				if (m_busRW)
-					m_memory.read();
+				firePendingBusEvents(BusDirection::Read);
 				break;
 			}
 			break;
@@ -249,8 +245,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				break;
 			default:	// CPX
 				CMP(X(), AM_00(decoded.bbb));
-				if (m_busRW)
-					m_memory.read();
+				firePendingBusEvents(BusDirection::Read);
 				break;
 			}
 			break;
@@ -260,43 +255,35 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 		switch (decoded.aaa) {
 		case 0b000:		// ORA
 			adjustNZ(A() |= AM_01(decoded.bbb));
-			if (m_busRW)
-				m_memory.read();
+			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b001:		// AND
 			adjustNZ(A() &= AM_01(decoded.bbb));
-			if (m_busRW)
-				m_memory.read();
+			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b010:		// EOR
 			adjustNZ(A() ^= AM_01(decoded.bbb));
-			if (m_busRW)
-				m_memory.read();
+			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b011:		// ADC
 			ADC(AM_01(decoded.bbb));
-			if (m_busRW)
-				m_memory.read();
+			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b100:		// STA
-			AM_01(decoded.bbb, false);
-			assert(m_busRW);
-			m_memory.write(A());
+			AM_01(decoded.bbb, BusDirection::Write) = A();
+			firePendingBusEvents(BusDirection::Write);
 			break;
 		case 0b101:		// LDA
 			adjustNZ(A() = AM_01(decoded.bbb));
-			if (m_busRW)
-				m_memory.read();
+			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b110:		// CMP
 			CMP(A(), AM_01(decoded.bbb));
-			if (m_busRW)
-				m_memory.read();
+			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b111:		// SBC
 			SBC(AM_01(decoded.bbb));
-			if (m_busRW)
-				m_memory.read();
+			firePendingBusEvents(BusDirection::Read);
 			break;
 		default:
 			__assume(0);
@@ -305,24 +292,16 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0b10:
 		switch (decoded.aaa) {
 		case 0b000:		// ASL
-			ASL(AM_10(decoded.bbb, false));
-			if (m_busRW)
-				m_memory.read();
+			ASL(decoded.bbb);
 			break;
 		case 0b001:		// ROL
-			ROL(AM_10(decoded.bbb, false));
-			if (m_busRW)
-				m_memory.read();
+			ROL(decoded.bbb);
 			break;
 		case 0b010:		// LSR
-			LSR(AM_10(decoded.bbb, false));
-			if (m_busRW)
-				m_memory.read();
+			LSR(decoded.bbb);
 			break;
 		case 0b011:		// ROR
-			ROR(AM_10(decoded.bbb, false));
-			if (m_busRW)
-				m_memory.read();
+			ROR(decoded.bbb);
 			break;
 		case 0b100:
 			switch (decoded.bbb) {
@@ -333,9 +312,8 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				S() = X();
 				break;
 			default:	// STX
-				AM_10_x(decoded.bbb, false);
-				assert(m_busRW);
-				m_memory.write(X());
+				AM_10_x(decoded.bbb, BusDirection::Write) = X();
+				firePendingBusEvents(BusDirection::Write);
 				break;
 			}
 			break;
@@ -346,8 +324,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				break;
 			default:	// LDX
 				adjustNZ(X() = AM_10_x(decoded.bbb));
-				if (m_busRW)
-					m_memory.read();
+				firePendingBusEvents(BusDirection::Read);
 				break;
 			}
 			break;
@@ -357,9 +334,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				adjustNZ(--X());
 				break;
 			default:	// DEC
-				adjustNZ(--AM_10(decoded.bbb, false));
-				if (m_busRW)
-					m_memory.read();
+				DEC(decoded.bbb);
 				break;
 			}
 			break;
@@ -368,9 +343,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			case 0b010:	// NOP
 				break;
 			default:	// INC
-				adjustNZ(++AM_10(decoded.bbb, false));
-				if (m_busRW)
-					m_memory.read();
+				INC(decoded.bbb);
 				break;
 			}
 			break;
