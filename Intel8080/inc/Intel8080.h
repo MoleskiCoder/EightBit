@@ -79,8 +79,7 @@ namespace EightBit {
 		}
 
 		void adjustReservedFlags() {
-			F() &= ~(Bit5 | Bit3);
-			F() |= Bit1;
+			F() = (F() | Bit1) & ~(Bit5 | Bit3);
 		}
 
 		static void adjustAuxiliaryCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
@@ -150,9 +149,9 @@ namespace EightBit {
 
 		void dad(uint16_t value) {
 			auto& f = F();
-			uint32_t sum = HL().word + value;
-			setFlag(f, CF, sum > 0xffff);
-			HL().word = (uint16_t)sum;
+			auto sum = HL().word + value;
+			setFlag(f, CF, sum & Bit16);
+			HL().word = sum;
 		}
 
 		void sub(uint8_t& operand, uint8_t value, int carry = 0) {
@@ -275,9 +274,9 @@ namespace EightBit {
 			m_memory.reference() = data;
 		}
 
-		void lxi_b() { Processor::fetchWord(BC()); }
-		void lxi_d() { Processor::fetchWord(DE()); }
-		void lxi_h() { Processor::fetchWord(HL()); }
+		void lxi_b() { fetchWord(BC()); }
+		void lxi_d() { fetchWord(DE()); }
+		void lxi_h() { fetchWord(HL()); }
 
 		void stax_r(register16_t& destination) {
 			m_memory.ADDRESS() = destination;
@@ -351,7 +350,7 @@ namespace EightBit {
 		}
 
 		void lxi_sp() {
-			Processor::fetchWord(SP());
+			fetchWord(SP());
 		}
 
 		void inx_sp() { ++SP().word; }
@@ -527,13 +526,11 @@ namespace EightBit {
 		}
 
 		void sbi() {
-			auto value = fetchByte();
-			sbb(value);
+			sbb(fetchByte());
 		}
 
 		void sui() {
-			auto value = fetchByte();
-			sub(value);
+			sub(fetchByte());
 		}
 
 		// logical
@@ -603,35 +600,31 @@ namespace EightBit {
 		void rlc() {
 			auto& a = A();
 			auto carry = a & Bit7;
-			a <<= 1;
-			carry ? a |= Bit0 : a &= ~Bit0;
+			a = (a << 1) | (carry >> 7);
 			setFlag(F(), CF, carry);
 		}
 
 		void rrc() {
 			auto& a = A();
 			auto carry = a & Bit0;
-			a >>= 1;
-			carry ? a |= Bit7 : a &= ~Bit7;
+			a = (a >> 1) | (carry << 7);
 			setFlag(F(), CF, carry);
 		}
 
 		void ral() {
 			auto& a = A();
 			auto& f = F();
-			auto carry = a & Bit7;
-			a <<= 1;
-			a |= (f & CF);
-			setFlag(f, CF, carry);
+			const auto carry = f & CF;
+			setFlag(f, CF, a & Bit7);
+			a = (a << 1) | carry;
 		}
 
 		void rar() {
 			auto& a = A();
 			auto& f = F();
-			auto carry = a & 1;
-			a >>= 1;
-			a |= (f & CF) << 7;
-			setFlag(f, CF, carry);
+			const auto carry = f & CF;
+			setFlag(f, CF, a & Bit0);
+			a = (a >> 1) | (carry << 7);
 		}
 
 		// specials

@@ -14,6 +14,9 @@ EightBit::Memory::Memory(uint16_t addressMask)
 	m_data = &(m_bus[m_address.word]);
 }
 
+EightBit::Memory::~Memory() {
+}
+
 uint8_t EightBit::Memory::peek(uint16_t address) const {
 	return m_bus[address];
 }

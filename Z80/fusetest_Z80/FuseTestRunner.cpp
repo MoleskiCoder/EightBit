@@ -263,7 +263,7 @@ void Fuse::TestRunner::checkregisters() {
 				<< "**** R, Expected: "
 				<< EightBit::Disassembler::hex((uint8_t)expectedState.r)
 				<< ", Got: "
-				<< EightBit::Disassembler::hex(m_cpu.REFRESH())
+				<< EightBit::Disassembler::hex((uint8_t)m_cpu.REFRESH())
 				<< std::endl;
 		}
 

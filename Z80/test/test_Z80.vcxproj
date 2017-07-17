@@ -84,6 +84,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>..\inc;..\..\inc;C:\local\boost_1_64_0;$(IncludePath)</IncludePath>
     <LibraryPath>C:\local\boost_1_64_0\lib64-msvc-14.0;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

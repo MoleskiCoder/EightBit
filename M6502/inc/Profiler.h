@@ -5,58 +5,55 @@
 #include <cstdint>
 #include <functional>
 
-#include <system6502.h>
-#include <EventArgs.h>
-#include <Signal.h>
+#include "EventArgs.h"
+#include "Signal.h"
 
 #include "Disassembly.h"
 #include "Symbols.h"
 
+#include "AddressEventArgs.h"
 #include "ProfileLineEventArgs.h"
 #include "ProfileScopeEventArgs.h"
 
-class Profiler
-{
-public:
-	std::array<uint64_t, 0x100> instructionCounts;
-	std::array<uint64_t, 0x10000> addressProfiles;
-	std::array<uint64_t, 0x10000> addressCounts;
+#include "mos6502.h"
 
-	std::array<std::string, 0x10000> addressScopes;
-	std::map<std::string, uint64_t> scopeCycles;
+namespace EightBit {
+	class Profiler {
+	public:
+		std::array<uint64_t, 0x100> instructionCounts;
+		std::array<uint64_t, 0x10000> addressProfiles;
+		std::array<uint64_t, 0x10000> addressCounts;
 
-	System6502& processor;
-	const Disassembly& disassembler;
-	const Symbols& symbols;
+		std::array<std::string, 0x10000> addressScopes;
+		std::map<std::string, uint64_t> scopeCycles;
 
-	bool countInstructions;
-	bool profileAddresses;
+		MOS6502& processor;
+		const Disassembly& disassembler;
+		const Symbols& symbols;
 
-	uint64_t priorCycleCount = 0;
+		Profiler(MOS6502& processor, Disassembly& disassembler, Symbols& symbols);
 
-	Profiler(System6502& processor, Disassembly& disassembler, Symbols& symbols, bool countInstructions, bool profileAddresses);
+		Signal<EventArgs> StartingOutput;
+		Signal<EventArgs> FinishedOutput;
 
-	Signal<EventArgs> StartingOutput;
-	Signal<EventArgs> FinishedOutput;
+		Signal<EventArgs> StartingLineOutput;
+		Signal<EventArgs> FinishedLineOutput;
 
-	Signal<EventArgs> StartingLineOutput;
-	Signal<EventArgs> FinishedLineOutput;
+		Signal<ProfileLineEventArgs> EmitLine;
 
-	Signal<ProfileLineEventArgs> EmitLine;
+		Signal<EventArgs> StartingScopeOutput;
+		Signal<EventArgs> FinishedScopeOutput;
 
-	Signal<EventArgs> StartingScopeOutput;
-	Signal<EventArgs> FinishedScopeOutput;
+		Signal<ProfileScopeEventArgs> EmitScope;
 
-	Signal<ProfileScopeEventArgs> EmitScope;
+		void addInstruction(uint8_t instruction);
+		void addAddress(uint16_t address, int cycles);
 
-	void Generate();
+		void Generate();
 
-private:
-	void EmitProfileInformation();
+	private:
+		void EmitProfileInformation();
 
-	void Processor_ExecutingInstruction_ProfileAddresses(const AddressEventArgs& addressEvent);
-	void Processor_ExecutingInstruction_CountInstructions(const AddressEventArgs& addressEvent);
-	void Processor_ExecutedInstruction_ProfileAddresses(const AddressEventArgs& addressEvent);
-
-	void BuildAddressScopes();
-};
+		void BuildAddressScopes();
+	};
+}

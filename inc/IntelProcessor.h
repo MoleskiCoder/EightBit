@@ -13,6 +13,8 @@ namespace EightBit {
 
 		virtual void initialise();
 
+		register16_t& SP() { return sp; }
+
 		virtual register16_t& AF() = 0;
 		uint8_t& A() { return AF().high; }
 		uint8_t& F() { return AF().low; }
@@ -32,19 +34,6 @@ namespace EightBit {
 	protected:
 		IntelProcessor(Memory& memory);
 
-		static void clearFlag(uint8_t& f, int flag) { f &= ~flag; }
-		static void setFlag(uint8_t& f, int flag) { f |= flag; }
-
-		static void setFlag(uint8_t& f, int flag, int condition) { setFlag(f, flag, condition != 0); }
-		static void setFlag(uint8_t& f, int flag, uint32_t condition) { setFlag(f, flag, condition != 0); }
-		static void setFlag(uint8_t& f, int flag, bool condition) { condition ? setFlag(f, flag) : clearFlag(f, flag); }
-
-		static void clearFlag(uint8_t& f, int flag, int condition) { clearFlag(f, flag, condition != 0); }
-		static void clearFlag(uint8_t& f, int flag, uint32_t condition) { clearFlag(f, flag, condition != 0); }
-		static void clearFlag(uint8_t& f, int flag, bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
-
-		//
-
 		template<class T> static void adjustSign(uint8_t& f, uint8_t value) {
 			setFlag(f, T::SF, value & T::SF);
 		}
@@ -54,7 +43,7 @@ namespace EightBit {
 		}
 
 		template<class T> static void adjustParity(uint8_t& f, uint8_t value) {
-			static const uint8_t lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
+			static const int lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
 			auto set = lookup[highNibble(value)] + lookup[lowNibble(value)];
 			clearFlag(f, T::PF, set % 2);
 		}
@@ -87,19 +76,32 @@ namespace EightBit {
 		//
 
 		static int buildHalfCarryIndex(uint8_t before, uint8_t value, int calculation) {
+			__assume(calculation < 0x1ffff);
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
 		static bool calculateHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
+			__assume(calculation < 0x1ffff);
 			static std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 			auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableAdd[index & Mask3];
 		}
 
 		static bool calculateHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
+			__assume(calculation < 0x1ffff);
 			std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 			auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableSub[index & Mask3];
+		}
+
+		uint8_t fetchByte() {
+			m_memory.ADDRESS().word = PC().word++;
+			return m_memory.reference();
+		}
+
+		void fetchWord(register16_t& output) {
+			output.low = fetchByte();
+			output.high = fetchByte();
 		}
 
 		void push(uint8_t value) {
@@ -107,7 +109,7 @@ namespace EightBit {
 			m_memory.reference() = value;
 		}
 
-		void pushWord(register16_t value) {
+		void pushWord(const register16_t& value) {
 			push(value.high);
 			push(value.low);
 		}
@@ -123,7 +125,7 @@ namespace EightBit {
 		}
 
 		void fetchWord() {
-			Processor::fetchWord(MEMPTR());
+			fetchWord(MEMPTR());
 		}
 
 		//
@@ -202,5 +204,6 @@ namespace EightBit {
 
 	private:
 		register16_t m_memptr;
+		register16_t sp;
 	};
 }

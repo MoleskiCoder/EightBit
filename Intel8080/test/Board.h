@@ -14,9 +14,8 @@ class Board {
 public:
 	Board(const Configuration& configuration);
 
-	EightBit::Memory& getMemory() { return m_memory; }
-	const EightBit::Intel8080& getCPU() const { return m_cpu; }
-	EightBit::Intel8080& getCPUMutable() { return m_cpu; }
+	EightBit::Memory& Memory() { return m_memory; }
+	EightBit::Intel8080& CPU() { return m_cpu; }
 
 	void initialise();
 

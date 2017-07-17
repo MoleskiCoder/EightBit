@@ -31,7 +31,7 @@ std::string EightBit::Disassembler::state(Z80& cpu) {
 	auto l = cpu.L();
 
 	auto i = cpu.IV();
-	auto r = cpu.REFRESH();
+	uint8_t r = cpu.REFRESH();
 
 	auto im = cpu.IM();
 

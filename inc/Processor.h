@@ -38,16 +38,15 @@ namespace EightBit {
 			Bit0 = 0x1,
 		};
 
-		static uint8_t highNibble(uint8_t value) { return value >> 4; }
-		static uint8_t lowNibble(uint8_t value) { return value & Mask4; }
+		static int highNibble(int value) { return value >> 4; }
+		static int lowNibble(int value) { return value & Mask4; }
 
-		static uint8_t promoteNibble(uint8_t value) { return value << 4; }
-		static uint8_t demoteNibble(uint8_t value) { return highNibble(value); }
+		static int promoteNibble(int value) { return value << 4; }
+		static int demoteNibble(int value) { return highNibble(value); }
 
 		const Memory& getMemory() const { return m_memory; }
 
 		register16_t& PC() { return pc; }
-		register16_t& SP() { return sp; }
 
 		bool isHalted() const { return m_halted; }
 		void halt() { --PC().word;  m_halted = true; }
@@ -57,24 +56,24 @@ namespace EightBit {
 		void reset();
 
 	protected:
+		static void clearFlag(uint8_t& f, int flag) { f &= ~flag; }
+		static void setFlag(uint8_t& f, int flag) { f |= flag; }
+
+		static void setFlag(uint8_t& f, int flag, int condition) { setFlag(f, flag, condition != 0); }
+		static void setFlag(uint8_t& f, int flag, uint32_t condition) { setFlag(f, flag, condition != 0); }
+		static void setFlag(uint8_t& f, int flag, bool condition) { condition ? setFlag(f, flag) : clearFlag(f, flag); }
+
+		static void clearFlag(uint8_t& f, int flag, int condition) { clearFlag(f, flag, condition != 0); }
+		static void clearFlag(uint8_t& f, int flag, uint32_t condition) { clearFlag(f, flag, condition != 0); }
+		static void clearFlag(uint8_t& f, int flag, bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
+
 		Processor(Memory& memory);
 
 		Memory& m_memory;
 		int cycles;
 
-		uint8_t fetchByte() {
-			m_memory.ADDRESS().word = PC().word++;
-			return m_memory.reference();
-		}
-
-		void fetchWord(register16_t& output) {
-			output.low = fetchByte();
-			output.high = fetchByte();
-		}
-
 	private:
 		register16_t pc;
-		register16_t sp;
 		bool m_halted;
 	};
 }

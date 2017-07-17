@@ -2,14 +2,15 @@
 
 #include <string>
 
-class ProfileEventArgs
-{
-private:
-	std::string m_output;
+namespace EightBit {
+	class ProfileEventArgs {
+	private:
+		std::string m_output;
 
-public:
-	ProfileEventArgs(std::string output)
-	: m_output(output) {}
+	public:
+		ProfileEventArgs(std::string output)
+			: m_output(output) {}
 
-	const std::string& getOutput() const { return m_output;	 }
-};
+		const std::string& getOutput() const { return m_output; }
+	};
+}
