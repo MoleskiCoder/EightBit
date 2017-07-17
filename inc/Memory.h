@@ -32,15 +32,8 @@ namespace EightBit {
 	class Memory {
 	public:
 
-		static uint8_t highByte(uint16_t value) {
-			return value >> 8;
-		}
-
-		static uint8_t lowByte(uint16_t value) {
-			return value & 0xff;
-		}
-
 		Memory(uint16_t addressMask);
+		virtual ~Memory();
 
 		// Only fired with read/write methods
 		Signal<AddressEventArgs> WrittenByte;
@@ -68,7 +61,7 @@ namespace EightBit {
 			return m_locked[effective] ? placeDATA(m_bus[effective]) : referenceDATA(m_bus[effective]);
 		}
 
-		virtual uint16_t effectiveAddress(uint16_t address) const {
+		virtual int effectiveAddress(int address) const {
 			return address & m_addressMask;
 		}
 

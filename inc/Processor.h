@@ -38,11 +38,11 @@ namespace EightBit {
 			Bit0 = 0x1,
 		};
 
-		static uint8_t highNibble(uint8_t value) { return value >> 4; }
-		static uint8_t lowNibble(uint8_t value) { return value & Mask4; }
+		static int highNibble(int value) { return value >> 4; }
+		static int lowNibble(int value) { return value & Mask4; }
 
-		static uint8_t promoteNibble(uint8_t value) { return value << 4; }
-		static uint8_t demoteNibble(uint8_t value) { return highNibble(value); }
+		static int promoteNibble(int value) { return value << 4; }
+		static int demoteNibble(int value) { return highNibble(value); }
 
 		const Memory& getMemory() const { return m_memory; }
 

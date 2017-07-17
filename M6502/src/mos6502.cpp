@@ -24,21 +24,28 @@ EightBit::MOS6502::MOS6502(Memory& memory)
 	};
 }
 
+EightBit::MOS6502::~MOS6502() {
+}
+
 void EightBit::MOS6502::initialise() {
 
 	Processor::initialise();
 
+	for (int i = 0; i < 0x100; ++i) {
+		m_decodedOpcodes[i] = i;
+	}
+
 	PC().word = 0;
-	X() = 0x80;
+	X() = Bit7;
 	Y() = 0;
 	A() = 0;
 
 	P() = 0;
 	setFlag(P(), RF);
 
-	S() = 0xff;
+	S() = Mask8;
 
-	m_memptr.word = 0;
+	MEMPTR().word = 0;
 }
 
 int EightBit::MOS6502::step() {
@@ -89,15 +96,13 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 	// The aaa and cc bits determine the opcode, and the bbb
 	// bits determine the addressing mode.
 
-	auto aaa =	(cell & 0b11100000) >> 5;
-	auto bbb =	(cell & 0b00011100) >> 2;
-	auto cc =	(cell & 0b00000011);
+	const auto& decoded = m_decodedOpcodes[cell];
 
-	switch (cc) {
+	switch (decoded.cc) {
 	case 0b00:
-		switch (aaa) {
+		switch (decoded.aaa) {
 		case 0b000:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b000:	// BRK
 				BRK();
 				break;
@@ -115,7 +120,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 			}
 			break;
 		case 0b001:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b000:	// JSR
 				JSR_abs();
 				break;
@@ -129,14 +134,14 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				setFlag(P(), CF);
 				break;
 			default:	// BIT
-				BIT(AM_00(bbb, false));
+				BIT(AM_00(decoded.bbb));
 				assert(m_busRW);
 				m_memory.read();
 				break;
 			}
 			break;
 		case 0b010:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b000:	// RTI
 				RTI();
 				break;
@@ -157,7 +162,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 			}
 			break;
 		case 0b011:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b000:	// RTS
 				RTS();
 				break;
@@ -178,9 +183,9 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 			}
 			break;
 		case 0b100:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b010:	// DEY
-				DEC(Y());
+				adjustNZ(--Y());
 				break;
 			case 0b100:	// BCC
 				Branch(!(P() & CF));
@@ -189,14 +194,14 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				adjustNZ(A() = Y());
 				break;
 			default:	// STY
-				AM_00(bbb, false);
+				AM_00(decoded.bbb, false);
 				assert(m_busRW);
 				m_memory.write(Y());
 				break;
 			}
 			break;
 		case 0b101:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b010:	// TAY
 				adjustNZ(Y() = A());
 				break;
@@ -207,16 +212,16 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				clearFlag(P(), VF);
 				break;
 			default:	// LDY
-				LDY(AM_00(bbb));
+				adjustNZ(Y() = AM_00(decoded.bbb));
 				if (m_busRW)
 					m_memory.read();
 				break;
 			}
 			break;
 		case 0b110:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b010:	// INY
-				INC(Y());
+				adjustNZ(++Y());
 				break;
 			case 0b100:	// BNE
 				Branch(!(P() & ZF));
@@ -225,16 +230,16 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				clearFlag(P(), DF);
 				break;
 			default:	// CPY
-				CMP(Y(), AM_00(bbb));
+				CMP(Y(), AM_00(decoded.bbb));
 				if (m_busRW)
 					m_memory.read();
 				break;
 			}
 			break;
 		case 0b111:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b010:	// INX
-				INC(X());
+				adjustNZ(++X());
 				break;
 			case 0b100:	// BEQ
 				Branch((P() & ZF) != 0);
@@ -243,7 +248,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				setFlag(P(), DF);
 				break;
 			default:	// CPX
-				CMP(X(), AM_00(bbb));
+				CMP(X(), AM_00(decoded.bbb));
 				if (m_busRW)
 					m_memory.read();
 				break;
@@ -252,44 +257,44 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 		}
 		break;
 	case 0b01:
-		switch (aaa) {
+		switch (decoded.aaa) {
 		case 0b000:		// ORA
-			ORA(AM_01(bbb));
+			adjustNZ(A() |= AM_01(decoded.bbb));
 			if (m_busRW)
 				m_memory.read();
 			break;
 		case 0b001:		// AND
-			AND(AM_01(bbb));
+			adjustNZ(A() &= AM_01(decoded.bbb));
 			if (m_busRW)
 				m_memory.read();
 			break;
 		case 0b010:		// EOR
-			EOR(AM_01(bbb));
+			adjustNZ(A() ^= AM_01(decoded.bbb));
 			if (m_busRW)
 				m_memory.read();
 			break;
 		case 0b011:		// ADC
-			ADC(AM_01(bbb));
+			ADC(AM_01(decoded.bbb));
 			if (m_busRW)
 				m_memory.read();
 			break;
 		case 0b100:		// STA
-			AM_01(bbb, false);
+			AM_01(decoded.bbb, false);
 			assert(m_busRW);
 			m_memory.write(A());
 			break;
 		case 0b101:		// LDA
-			LDA(AM_01(bbb));
+			adjustNZ(A() = AM_01(decoded.bbb));
 			if (m_busRW)
 				m_memory.read();
 			break;
 		case 0b110:		// CMP
-			CMP(A(), AM_01(bbb));
+			CMP(A(), AM_01(decoded.bbb));
 			if (m_busRW)
 				m_memory.read();
 			break;
 		case 0b111:		// SBC
-			SBC(AM_01(bbb));
+			SBC(AM_01(decoded.bbb));
 			if (m_busRW)
 				m_memory.read();
 			break;
@@ -298,29 +303,29 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 		}
 		break;
 	case 0b10:
-		switch (aaa) {
+		switch (decoded.aaa) {
 		case 0b000:		// ASL
-			ASL(AM_10(bbb, false));
+			ASL(AM_10(decoded.bbb, false));
 			if (m_busRW)
 				m_memory.read();
 			break;
 		case 0b001:		// ROL
-			ROL(AM_10(bbb, false));
+			ROL(AM_10(decoded.bbb, false));
 			if (m_busRW)
 				m_memory.read();
 			break;
 		case 0b010:		// LSR
-			LSR(AM_10(bbb, false));
+			LSR(AM_10(decoded.bbb, false));
 			if (m_busRW)
 				m_memory.read();
 			break;
 		case 0b011:		// ROR
-			ROR(AM_10(bbb, false));
+			ROR(AM_10(decoded.bbb, false));
 			if (m_busRW)
 				m_memory.read();
 			break;
 		case 0b100:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b010:	// TXA
 				adjustNZ(A() = X());
 				break;
@@ -328,42 +333,42 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				S() = X();
 				break;
 			default:	// STX
-				AM_10_x(bbb, false);
+				AM_10_x(decoded.bbb, false);
 				assert(m_busRW);
 				m_memory.write(X());
 				break;
 			}
 			break;
 		case 0b101:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b110:	// TSX
 				adjustNZ(X() = S());
 				break;
 			default:	// LDX
-				LDX(AM_10_x(bbb));
+				adjustNZ(X() = AM_10_x(decoded.bbb));
 				if (m_busRW)
 					m_memory.read();
 				break;
 			}
 			break;
 		case 0b110:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b010:	// DEX
-				DEC(X());
+				adjustNZ(--X());
 				break;
 			default:	// DEC
-				DEC(AM_10(bbb, false));
+				adjustNZ(--AM_10(decoded.bbb, false));
 				if (m_busRW)
 					m_memory.read();
 				break;
 			}
 			break;
 		case 0b111:
-			switch (bbb) {
+			switch (decoded.bbb) {
 			case 0b010:	// NOP
 				break;
 			default:	// INC
-				INC(AM_10(bbb, false));
+				adjustNZ(++AM_10(decoded.bbb, false));
 				if (m_busRW)
 					m_memory.read();
 				break;
@@ -415,10 +420,6 @@ void EightBit::MOS6502::FetchWord(register16_t& output) {
 
 ////
 
-void EightBit::MOS6502::DEC(uint8_t& target) {
-	adjustNZ(--target);
-}
-
 void EightBit::MOS6502::ROR(uint8_t& output) {
 	auto carry = P() & CF;
 	setFlag(P(), CF, output & CF);
@@ -437,10 +438,6 @@ void EightBit::MOS6502::BIT(uint8_t data) {
 	setFlag(P(), VF, data & VF);
 }
 
-void EightBit::MOS6502::INC(uint8_t& output) {
-	adjustNZ(++output);
-}
-
 void EightBit::MOS6502::ROL(uint8_t& output) {
 	uint8_t result = (output << 1) | (P() & CF);
 	setFlag(P(), CF, output & Bit7);
@@ -448,16 +445,8 @@ void EightBit::MOS6502::ROL(uint8_t& output) {
 }
 
 void EightBit::MOS6502::ASL(uint8_t& output) {
-	setFlag(P(), CF, (output & 0x80) >> 7);
+	setFlag(P(), CF, (output & Bit7) >> 7);
 	adjustNZ(output <<= 1);
-}
-
-void EightBit::MOS6502::ORA(uint8_t data) {
-	adjustNZ(A() |= data);
-}
-
-void EightBit::MOS6502::AND(uint8_t data) {
-	adjustNZ(A() &= data);
 }
 
 void EightBit::MOS6502::SBC(uint8_t data) {
@@ -472,7 +461,7 @@ void EightBit::MOS6502::SBC_b(uint8_t data) {
 	difference.word = A() - data - (~P() & CF);
 
 	adjustNZ(difference.low);
-	setFlag(P(), VF, (A() ^ data) & (A() ^ difference.low) & 0x80);
+	setFlag(P(), VF, (A() ^ data) & (A() ^ difference.low) & NF);
 	clearFlag(P(), CF, difference.high);
 
 	A() = difference.low;
@@ -486,7 +475,7 @@ void EightBit::MOS6502::SBC_d(uint8_t data) {
 
 	adjustNZ(difference.low);
 
-	setFlag(P(), VF, (A() ^ data) & (A() ^ difference.low) & 0x80);
+	setFlag(P(), VF, (A() ^ data) & (A() ^ difference.low) & NF);
 	clearFlag(P(), CF, difference.high);
 
 	auto low = (uint8_t)(lowNibble(A()) - lowNibble(data) - carry);
@@ -503,27 +492,11 @@ void EightBit::MOS6502::SBC_d(uint8_t data) {
 	A() = promoteNibble(high) | lowNibble(low);
 }
 
-void EightBit::MOS6502::EOR(uint8_t data) {
-	adjustNZ(A() ^= data);
-}
-
 void EightBit::MOS6502::CMP(uint8_t first, uint8_t second) {
 	register16_t result;
 	result.word = first - second;
 	adjustNZ(result.low);
 	clearFlag(P(), CF, result.high);
-}
-
-void EightBit::MOS6502::LDA(uint8_t data) {
-	adjustNZ(A() = data);
-}
-
-void EightBit::MOS6502::LDY(uint8_t data) {
-	adjustNZ(Y() = data);
-}
-
-void EightBit::MOS6502::LDX(uint8_t data) {
-	adjustNZ(X() = data);
 }
 
 void EightBit::MOS6502::ADC(uint8_t data) {
@@ -539,7 +512,7 @@ void EightBit::MOS6502::ADC_b(uint8_t data) {
 	sum.word = A() + data + (P() & CF);
 
 	adjustNZ(sum.low);
-	setFlag(P(), VF, ~(A() ^ data) & (A() ^ sum.low) & 0x80);
+	setFlag(P(), VF, ~(A() ^ data) & (A() ^ sum.low) & NF);
 	setFlag(P(), CF, sum.high & CF);
 
 	A() = sum.low;
@@ -558,7 +531,7 @@ void EightBit::MOS6502::ADC_d(uint8_t data) {
 		low += 6;
 
 	auto high = (uint8_t)(highNibble(A()) + highNibble(data) + (low > 0xf ? 1 : 0));
-	setFlag(P(), VF, ~(A() ^ data) & (A() ^ promoteNibble(high)) & 0x80);
+	setFlag(P(), VF, ~(A() ^ data) & (A() ^ promoteNibble(high)) & NF);
 
 	if (high > 9)
 		high += 6;
@@ -602,7 +575,7 @@ void EightBit::MOS6502::JSR_abs() {
 	Address_Absolute();
 	PC().word--;
 	PushWord(PC());
-	PC() = m_memptr;
+	PC() = MEMPTR();
 }
 
 void EightBit::MOS6502::RTI() {
@@ -617,17 +590,12 @@ void EightBit::MOS6502::RTS() {
 
 void EightBit::MOS6502::JMP_abs() {
 	Address_Absolute();
-	PC() = m_memptr;
+	PC() = MEMPTR();
 }
 
 void EightBit::MOS6502::JMP_ind() {
 	Address_Indirect();
-	PC() = m_memptr;
-}
-
-void EightBit::MOS6502::JMP_absxind() {
-	Address_IndirectX();
-	PC() = m_memptr;
+	PC() = MEMPTR();
 }
 
 void EightBit::MOS6502::BRK() {

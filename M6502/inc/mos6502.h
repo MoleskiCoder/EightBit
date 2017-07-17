@@ -12,18 +12,36 @@
 namespace EightBit {
 	class MOS6502 : public Processor {
 	public:
+		struct opcode_decoded_t {
+
+			int aaa;
+			int bbb;
+			int cc;
+
+			opcode_decoded_t() {
+				aaa = bbb = cc = 0;
+			}
+
+			opcode_decoded_t(uint8_t opcode) {
+				aaa = (opcode & 0b11100000) >> 5;	// 0 - 7
+				bbb = (opcode & 0b00011100) >> 2;	// 0 - 7
+				cc = (opcode & 0b00000011);			// 0 - 3
+			}
+		};
+
 		enum StatusBits {
-			NF = 0x80,	// Negative
-			VF = 0x40,  // Overflow
-			RF = 0x20,  // reserved
-			BF = 0x10,  // Brk
-			DF = 0x08,	// D (use BCD for arithmetic)
-			IF = 0x04,	// I (IRQ disable)
-			ZF = 0x02,	// Zero
-			CF = 0x01,	// Carry
+			NF = Bit7,	// Negative
+			VF = Bit6,  // Overflow
+			RF = Bit5,  // reserved
+			BF = Bit4,  // Brk
+			DF = Bit3,	// D (use BCD for arithmetic)
+			IF = Bit2,	// I (IRQ disable)
+			ZF = Bit1,	// Zero
+			CF = Bit0,	// Carry
 		};
 
 		MOS6502(Memory& memory);
+		virtual ~MOS6502();
 
 		Signal<MOS6502> ExecutingInstruction;
 		Signal<MOS6502> ExecutedInstruction;
@@ -58,6 +76,8 @@ namespace EightBit {
 		virtual int Execute(uint8_t cell);
 
 	private:
+		register16_t& MEMPTR() { return m_memptr; }
+
 		void adjustZero(uint8_t datum) { clearFlag(P(), ZF, datum); }
 		void adjustNegative(uint8_t datum) { setFlag(P(), NF, datum & NF); }
 		
@@ -79,61 +99,55 @@ namespace EightBit {
 #pragma region Addresses
 
 		void Address_Absolute() {
-			FetchWord(m_memptr);
+			FetchWord(MEMPTR());
 		}
 
 		void Address_ZeroPage() {
-			m_memptr.low = FetchByte();
-			m_memptr.high = 0;
+			MEMPTR().low = FetchByte();
+			MEMPTR().high = 0;
 		}
 
 		void Address_ZeroPageIndirect() {
 			Address_ZeroPage();
-			m_memory.ADDRESS() = m_memptr;
-			GetWord(m_memptr);
+			m_memory.ADDRESS() = MEMPTR();
+			GetWord(MEMPTR());
 		}
 
 		void Address_Indirect() {
 			Address_Absolute();
-			m_memory.ADDRESS() = m_memptr;
-			GetWord(m_memptr);
-		}
-
-		void Address_IndirectX() {
-			Address_Absolute();
-			m_memory.ADDRESS().word = m_memptr.word + X();
-			GetWord(m_memptr);
+			m_memory.ADDRESS() = MEMPTR();
+			GetWord(MEMPTR());
 		}
 
 		void Address_ZeroPageX() {
 			Address_ZeroPage();
-			m_memptr.low += X();
+			MEMPTR().low += X();
 		}
 
 		void Address_ZeroPageY() {
 			Address_ZeroPage();
-			m_memptr.low += Y();
+			MEMPTR().low += Y();
 		}
 
 		void Address_AbsoluteX() {
 			Address_Absolute();
-			m_memptr.word += X();
+			MEMPTR().word += X();
 		}
 
 		void Address_AbsoluteY() {
 			Address_Absolute();
-			m_memptr.word += Y();
+			MEMPTR().word += Y();
 		}
 
 		void Address_IndexedIndirectX() {
 			Address_ZeroPageX();
-			m_memory.ADDRESS() = m_memptr;
-			GetWord(m_memptr);
+			m_memory.ADDRESS() = MEMPTR();
+			GetWord(MEMPTR());
 		}
 
 		void Address_IndirectIndexedY() {
 			Address_ZeroPageIndirect();
-			m_memptr.word += Y();
+			MEMPTR().word += Y();
 		}
 
 #pragma endregion Addresses
@@ -154,22 +168,22 @@ namespace EightBit {
 		uint8_t& AM_Absolute() {
 			m_busRW = true;
 			Address_Absolute();
-			m_memory.ADDRESS() = m_memptr;
+			m_memory.ADDRESS() = MEMPTR();
 			return m_memory.reference();
 		}
 
 		uint8_t& AM_ZeroPage() {
 			m_busRW = true;
 			Address_ZeroPage();
-			m_memory.ADDRESS() = m_memptr;
+			m_memory.ADDRESS() = MEMPTR();
 			return m_memory.reference();
 		}
 
 		uint8_t& AM_AbsoluteX(bool read = true) {
 			m_busRW = true;
 			Address_AbsoluteX();
-			m_memory.ADDRESS() = m_memptr;
-			if (read && (m_memory.ADDRESS().low == 0xff))
+			m_memory.ADDRESS() = MEMPTR();
+			if (read && (m_memory.ADDRESS().low == Mask8))
 				++cycles;
 			return m_memory.reference();
 		}
@@ -177,8 +191,8 @@ namespace EightBit {
 		uint8_t& AM_AbsoluteY(bool read = true) {
 			m_busRW = true;
 			Address_AbsoluteY();
-			m_memory.ADDRESS() = m_memptr;
-			if (read && (m_memory.ADDRESS().low == 0xff))
+			m_memory.ADDRESS() = MEMPTR();
+			if (read && (m_memory.ADDRESS().low == Mask8))
 				++cycles;
 			return m_memory.reference();
 		}
@@ -186,29 +200,29 @@ namespace EightBit {
 		uint8_t& AM_ZeroPageX() {
 			m_busRW = true;
 			Address_ZeroPageX();
-			m_memory.ADDRESS() = m_memptr;
+			m_memory.ADDRESS() = MEMPTR();
 			return m_memory.reference();
 		}
 
 		uint8_t& AM_ZeroPageY() {
 			m_busRW = true;
 			Address_ZeroPageY();
-			m_memory.ADDRESS() = m_memptr;
+			m_memory.ADDRESS() = MEMPTR();
 			return m_memory.reference();
 		}
 
 		uint8_t& AM_IndexedIndirectX() {
 			m_busRW = true;
 			Address_IndexedIndirectX();
-			m_memory.ADDRESS() = m_memptr;
+			m_memory.ADDRESS() = MEMPTR();
 			return m_memory.reference();
 		}
 
 		uint8_t& AM_IndirectIndexedY(bool read = true) {
 			m_busRW = true;
 			Address_IndirectIndexedY();
-			m_memory.ADDRESS() = m_memptr;
-			if (read && (m_memory.ADDRESS().low == 0xff))
+			m_memory.ADDRESS() = MEMPTR();
+			if (read && (m_memory.ADDRESS().low == Mask8))
 				++cycles;
 			return m_memory.reference();
 		}
@@ -309,35 +323,21 @@ namespace EightBit {
 
 #pragma endregion 6502 addressing modes
 
-		void DEC(uint8_t& output);
-
 		void ROR(uint8_t& output);
 
 		void LSR(uint8_t& output);
 
 		void BIT(uint8_t data);
 
-		void INC(uint8_t& output);
-
 		void ROL(uint8_t& output);
 
 		void ASL(uint8_t& output);
-
-		void ORA(uint8_t data);
-
-		void AND(uint8_t data);
 
 		void SBC(uint8_t data);
 		void SBC_b(uint8_t data);
 		void SBC_d(uint8_t data);
 
-		void EOR(uint8_t data);
-
 		void CMP(uint8_t first, uint8_t second);
-
-		void LDA(uint8_t data);
-		void LDY(uint8_t data);
-		void LDX(uint8_t data);
 
 		void ADC(uint8_t data);
 		void ADC_b(uint8_t data);
@@ -355,7 +355,6 @@ namespace EightBit {
 		void RTS();
 		void JMP_abs();
 		void JMP_ind();
-		void JMP_absxind();
 		void BRK();
 
 		const uint16_t PageOne = 0x100;
@@ -372,6 +371,7 @@ namespace EightBit {
 		register16_t m_memptr;
 
 		std::array<int, 0x100> m_timings;
+		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
 
 		bool m_busRW;
 	};
