@@ -616,15 +616,19 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			switch (y) {
 			case 0:
 				rlc(A());
+				clearFlag(F(), ZF);
 				break;
 			case 1:
 				rrc(A());
+				clearFlag(F(), ZF);
 				break;
 			case 2:
 				rl(A());
+				clearFlag(F(), ZF);
 				break;
 			case 3:
 				rr(A());
+				clearFlag(F(), ZF);
 				break;
 			case 4:
 				daa();
