@@ -6,6 +6,7 @@
 
 EightBit::LR35902::LR35902(Bus& memory)
 : IntelProcessor(memory),
+  m_bus(memory),
   m_ime(false),
   m_prefixCB(false) {
 }
@@ -464,26 +465,34 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 		}
 		adjustZero<LR35902>(F(), R(z));
 		cycles += 2;
-		if (z == 6)
+		if (z == 6) {
+			m_bus.fireWriteBusEvent();
 			cycles += 2;
+		}
 		break;
 	case 1: // BIT y, r[z]
 			bit(y, R(z));
 			cycles += 2;
-			if (z == 6)
+			if (z == 6) {
+				m_bus.fireReadBusEvent();
 				cycles += 2;
+			}
 		break;
 	case 2:	// RES y, r[z]
 		res(y, R(z));
 		cycles += 2;
-		if (z == 6)
+		if (z == 6) {
+			m_bus.fireWriteBusEvent();
 			cycles += 2;
+		}
 		break;
 	case 3:	// SET y, r[z]
 		set(y, R(z));
 		cycles += 2;
-		if (z == 6)
+		if (z == 6) {
+			m_bus.fireWriteBusEvent();
 			cycles += 2;
+		}
 		break;
 	}
 }
@@ -538,23 +547,19 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					m_memory.ADDRESS() = BC();
-					m_memory.reference() = A();
+					m_memory.write(BC().word, A());
 					cycles += 2;
 					break;
 				case 1:	// LD (DE),A
-					m_memory.ADDRESS() = DE();
-					m_memory.reference() = A();
+					m_memory.write(DE().word, A());
 					cycles += 2;
 					break;
 				case 2:	// GB: LDI (HL),A
-					m_memory.ADDRESS().word = HL().word++;
-					m_memory.reference() = A();
+					m_memory.write(HL().word++, A());
 					cycles += 2;
 					break;
 				case 3: // GB: LDD (HL),A
-					m_memory.ADDRESS().word = HL().word--;
-					m_memory.reference() = A();
+					m_memory.write(HL().word--, A());
 					cycles += 2;
 					break;
 				}
@@ -562,23 +567,19 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					m_memory.ADDRESS() = BC();
-					A() = m_memory.reference();
+					A() = m_memory.read(BC().word);
 					cycles += 2;
 					break;
 				case 1:	// LD A,(DE)
-					m_memory.ADDRESS() = DE();
-					A() = m_memory.reference();
+					A() = m_memory.read(DE().word);
 					cycles += 2;
 					break;
 				case 2:	// GB: LDI A,(HL)
-					m_memory.ADDRESS().word = HL().word++;
-					A() = m_memory.reference();
+					A() = m_memory.read(HL().word++);
 					cycles += 2;
 					break;
 				case 3:	// GB: LDD A,(HL)
-					m_memory.ADDRESS().word = HL().word--;
-					A() = m_memory.reference();
+					A() = m_memory.read(HL().word--);
 					cycles += 2;
 					break;
 				}
@@ -599,17 +600,23 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 4:	// 8-bit INC
 			postIncrement(F(), ++R(y));	// INC r
 			cycles++;
-			if (y == 6)
+			if (y == 6) {
+				m_bus.fireWriteBusEvent();
 				cycles += 2;
+			}
 			break;
 		case 5:	// 8-bit DEC
 			postDecrement(F(), --R(y));	// DEC r
 			cycles++;
-			if (y == 6)
+			if (y == 6) {
+				m_bus.fireWriteBusEvent();
 				cycles += 2;
+			}
 			break;
 		case 6: // 8-bit load immediate
 			R(y) = fetchByte();
+			if (y == 6)
+				m_bus.fireWriteBusEvent();
 			cycles += 2;
 			break;
 		case 7:	// Assorted operations on accumulator/flags
@@ -652,8 +659,13 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			halt();
 		} else {
 			R(y) = R(z);
-			if ((y == 6) || (z == 6))	// M operations
+			if ((y == 6) || (z == 6)) { // M operations
+				if (y == 6)
+					m_bus.fireWriteBusEvent();
+				else
+					m_bus.fireReadBusEvent();
 				cycles++;
+			}
 		}
 		cycles++;
 		break;
@@ -685,8 +697,10 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			break;
 		}
 		cycles++;
-		if (z == 6)
+		if (z == 6) {
+			m_bus.fireReadBusEvent();
 			cycles++;
+		}
 		break;
 	case 3:
 		switch (z) {
@@ -698,8 +712,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			} else {
 				switch (y) {
 				case 4:	// GB: LD (FF00 + n),A
-					m_memory.ADDRESS().word = 0xff00 + fetchByte();
-					m_memory.reference() = A();
+					m_bus.REG(fetchByte()) = A();
+					m_bus.fireWriteBusEvent();
 					cycles += 3;
 					break;
 				case 5: { // GB: ADD SP,dd
@@ -715,8 +729,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 4;
 					break;
 				case 6:	// GB: LD A,(FF00 + n)
-					m_memory.ADDRESS().word = 0xff00 + fetchByte();
-					A() = m_memory.reference();
+					A() = m_bus.REG(fetchByte());
+					m_bus.fireReadBusEvent();
 					cycles += 3;
 					break;
 				case 7: { // GB: LD HL,SP + dd
@@ -768,25 +782,27 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			} else {
 				switch (y) {
 				case 4:	// GB: LD (FF00 + C),A
-					m_memory.ADDRESS().word = 0xff00 + C();
-					m_memory.reference() = A();
+					m_bus.REG(C()) = A();
+					m_bus.fireWriteBusEvent();
 					cycles += 2;
 					break;
 				case 5:	// GB: LD (nn),A
 					fetchWord();
 					m_memory.ADDRESS() = MEMPTR();
 					m_memory.reference() = A();
+					m_bus.fireWriteBusEvent();
 					cycles += 4;
 					break;
 				case 6:	// GB: LD A,(FF00 + C)
-					m_memory.ADDRESS().word = 0xff00 + C();
-					A() = m_memory.reference();
+					A() = m_bus.REG(C());
+					m_bus.fireReadBusEvent();
 					cycles += 2;
 					break;
 				case 7:	// GB: LD A,(nn)
 					fetchWord();
 					m_memory.ADDRESS() = MEMPTR();
 					A() = m_memory.reference();
+					m_bus.fireReadBusEvent();
 					cycles += 4;
 					break;
 				}

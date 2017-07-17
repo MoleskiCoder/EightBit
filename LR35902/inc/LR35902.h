@@ -56,8 +56,44 @@ namespace EightBit {
 		virtual void reset();
 		virtual void initialise();
 
+	protected:
+		virtual uint8_t fetchByte() {
+			auto returned = IntelProcessor::fetchByte();
+			m_memory.fireReadBusEvent();
+			return returned;
+		}
+
+		virtual void push(uint8_t value) {
+			IntelProcessor::push(value);
+			m_memory.fireWriteBusEvent();
+		}
+
+		virtual uint8_t pop() {
+			auto returned = IntelProcessor::pop();
+			m_memory.fireReadBusEvent();
+			return returned;
+		}
+
+		virtual void getWordViaMemptr(register16_t& value) {
+			value.low = memptrReference();
+			m_memory.fireReadBusEvent();
+			m_memory.ADDRESS().word++;
+			value.high = m_memory.reference();
+			m_memory.fireReadBusEvent();
+		}
+
+		virtual void setWordViaMemptr(register16_t value) {
+			memptrReference() = value.low;
+			m_memory.fireWriteBusEvent();
+			m_memory.ADDRESS().word++;
+			m_memory.reference() = value.high;
+			m_memory.fireWriteBusEvent();
+		}
+
 	private:
 		enum { BC_IDX, DE_IDX, HL_IDX };
+
+		Bus& m_bus;
 
 		std::array<register16_t, 3> m_registers;
 		register16_t m_accumulatorFlag;

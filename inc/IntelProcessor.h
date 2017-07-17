@@ -94,7 +94,7 @@ namespace EightBit {
 			return m_halfCarryTableSub[index & Mask3];
 		}
 
-		uint8_t fetchByte() {
+		virtual uint8_t fetchByte() {
 			m_memory.ADDRESS().word = PC().word++;
 			return m_memory.reference();
 		}
@@ -104,7 +104,7 @@ namespace EightBit {
 			output.high = fetchByte();
 		}
 
-		void push(uint8_t value) {
+		virtual void push(uint8_t value) {
 			m_memory.ADDRESS().word = --SP().word;
 			m_memory.reference() = value;
 		}
@@ -114,7 +114,7 @@ namespace EightBit {
 			push(value.low);
 		}
 
-		uint8_t pop() {
+		virtual uint8_t pop() {
 			m_memory.ADDRESS().word = SP().word++;
 			return m_memory.reference();
 		}
@@ -136,13 +136,13 @@ namespace EightBit {
 			return m_memory.reference();
 		}
 
-		void getWordViaMemptr(register16_t& value) {
+		virtual void getWordViaMemptr(register16_t& value) {
 			value.low = memptrReference();
 			m_memory.ADDRESS().word++;
 			value.high = m_memory.reference();
 		}
 
-		void setWordViaMemptr(register16_t value) {
+		virtual void setWordViaMemptr(register16_t value) {
 			memptrReference() = value.low;
 			m_memory.ADDRESS().word++;
 			m_memory.reference() = value.high;
