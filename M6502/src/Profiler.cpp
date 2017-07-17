@@ -29,7 +29,7 @@ void EightBit::Profiler::EmitProfileInformation() {
 			auto cycles = addressProfiles[address];
 			if (cycles > 0) {
 				// Dump a profile/disassembly line
-				auto source = disassembler.Disassemble(address);
+				auto source = disassembler.disassemble(address);
 				EmitLine.fire(ProfileLineEventArgs(source, cycles));
 			}
 		}

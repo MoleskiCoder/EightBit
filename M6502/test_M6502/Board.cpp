@@ -82,7 +82,7 @@ void Board::Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu) {
 	auto pc = m_cpu.PC().word;
 	if (m_oldPC == pc) {
 		m_cpu.halt();
-		auto test = m_cpu.GetByte(0x0200);
+		auto test = m_memory.peek(0x0200);
 		std::cout << std::endl << "** Test=" << std::hex << (int)test;
 	} else {
 		m_oldPC = pc;
@@ -96,14 +96,14 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 
 	std::cout << std::hex;
 	std::cout << "PC=" << std::setw(4) << std::setfill('0') << address << ":";
-	std::cout << "P=" << m_disassembler.Dump_Flags(m_cpu.P()) << ", ";
+	std::cout << "P=" << m_disassembler.dump_Flags(m_cpu.P()) << ", ";
 	std::cout << std::setw(2) << std::setfill('0');
 	std::cout << "A=" << (int)m_cpu.A() << ", ";
 	std::cout << "X=" << (int)m_cpu.X() << ", ";
 	std::cout << "Y=" << (int)m_cpu.Y() << ", ";
 	std::cout << "S=" << (int)m_cpu.S() << "\t";
 
-	std::cout << m_disassembler.Disassemble(address);
+	std::cout << m_disassembler.disassemble(address);
 
 	std::cout << "\n";
 }

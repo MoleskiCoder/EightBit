@@ -12,7 +12,7 @@ EightBit::Disassembly::Disassembly(MOS6502& targetProcessor, const Symbols& targ
 	symbols(targetSymbols) {
 }
 
-std::string EightBit::Disassembly::Dump_Flags(uint8_t value) const {
+std::string EightBit::Disassembly::dump_Flags(uint8_t value) const {
 	std::string returned;
 	returned += (value & MOS6502::NF) ? "N" : "-";
 	returned += (value & MOS6502::VF) ? "O" : "-";
@@ -25,19 +25,19 @@ std::string EightBit::Disassembly::Dump_Flags(uint8_t value) const {
 	return returned;
 }
 
-std::string EightBit::Disassembly::Dump_ByteValue(uint8_t value) const {
+std::string EightBit::Disassembly::dump_ByteValue(uint8_t value) const {
 	std::ostringstream output;
 	output << std::hex << std::setw(2) << std::setfill('0') << (int)value;
 	return output.str();
 }
 
-std::string EightBit::Disassembly::Dump_WordValue(uint16_t value) const {
+std::string EightBit::Disassembly::dump_WordValue(uint16_t value) const {
 	std::ostringstream output;
 	output << std::hex << std::setw(4) << std::setfill('0') << (int)value;
 	return output.str();
 }
 
-std::string EightBit::Disassembly::Disassemble(uint16_t current) const {
+std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 
 	m_address = current;
 
@@ -47,7 +47,7 @@ std::string EightBit::Disassembly::Disassemble(uint16_t current) const {
 
 	auto cell = memory.peek(current);
 
-	output << Dump_ByteValue(cell);
+	output << dump_ByteValue(cell);
 
 	auto byte = memory.peek(current + 1);
 	uint16_t relative = processor.PC().word + 2 + (int8_t)byte;
@@ -321,51 +321,51 @@ std::string EightBit::Disassembly::Disassemble(uint16_t current) const {
 
 ////
 
-uint8_t EightBit::Disassembly::GetByte(uint16_t address) const {
+uint8_t EightBit::Disassembly::getByte(uint16_t address) const {
 	return processor.getMemory().peek(address);
 }
 
 ////
 
-std::string EightBit::Disassembly::Dump_Byte(uint16_t address) const {
-	return Dump_ByteValue(GetByte(address));
+std::string EightBit::Disassembly::dump_Byte(uint16_t address) const {
+	return dump_ByteValue(getByte(address));
 }
 
-std::string EightBit::Disassembly::Dump_DByte(uint16_t address) const {
-	return Dump_Byte(address) + Dump_Byte(address + 1);
+std::string EightBit::Disassembly::dump_DByte(uint16_t address) const {
+	return dump_Byte(address) + dump_Byte(address + 1);
 }
 
 ////
 
-std::string EightBit::Disassembly::ConvertAddress(uint16_t address) const {
+std::string EightBit::Disassembly::convertAddress(uint16_t address) const {
 	auto label = symbols.getLabels().find(address);
 	if (label != symbols.getLabels().end())
 		return label->second;
 	std::ostringstream output;
-	output << "$" << Dump_WordValue(address);
+	output << "$" << dump_WordValue(address);
 	return output.str();
 }
 
-std::string EightBit::Disassembly::ConvertAddress(uint8_t address) const {
+std::string EightBit::Disassembly::convertAddress(uint8_t address) const {
 	auto label = symbols.getLabels().find(address);
 	if (label != symbols.getLabels().end())
 		return label->second;
 	std::ostringstream output;
-	output << "$" << Dump_ByteValue(address);
+	output << "$" << dump_ByteValue(address);
 	return output.str();
 }
 
-std::string EightBit::Disassembly::ConvertConstant(uint16_t constant) const {
+std::string EightBit::Disassembly::convertConstant(uint16_t constant) const {
 	auto label = symbols.getConstants().find(constant);
 	if (label != symbols.getConstants().end())
 		return label->second;
-	return Dump_DByte(constant);
+	return dump_DByte(constant);
 }
 
-std::string EightBit::Disassembly::ConvertConstant(uint8_t constant) const {
+std::string EightBit::Disassembly::convertConstant(uint8_t constant) const {
 	auto label = symbols.getConstants().find(constant);
 	if (label != symbols.getConstants().end())
 		return label->second;
-	return Dump_ByteValue(constant);
+	return dump_ByteValue(constant);
 }
  

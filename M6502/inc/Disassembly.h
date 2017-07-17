@@ -11,11 +11,11 @@ namespace EightBit {
 	public:
 		Disassembly(MOS6502& processor, const Symbols& symbols);
 
-		std::string Dump_Flags(uint8_t value) const;
-		std::string Dump_ByteValue(uint8_t value) const;
-		std::string Dump_WordValue(uint16_t value) const;
+		std::string dump_Flags(uint8_t value) const;
+		std::string dump_ByteValue(uint8_t value) const;
+		std::string dump_WordValue(uint16_t value) const;
 
-		std::string Disassemble(uint16_t current) const;
+		std::string disassemble(uint16_t current) const;
 
 	private:
 		MOS6502& processor;
@@ -36,7 +36,7 @@ namespace EightBit {
 		}
 
 		std::string disassemble_Relative(const std::string& instruction, uint16_t address) const {
-			return AM_Immediate_dump() + "\t" + instruction + " $" + Dump_WordValue(address);
+			return AM_Immediate_dump() + "\t" + instruction + " $" + dump_WordValue(address);
 		}
 
 		std::string disassemble_AM_00(int bbb, const std::string& instruction) const {
@@ -60,7 +60,7 @@ namespace EightBit {
 #pragma region References
 
 		std::string AM_Immediate_dump() const {
-			return Dump_Byte(m_address + 1);
+			return dump_Byte(m_address + 1);
 		}
 
 		std::string AM_Immediate() const {
@@ -68,19 +68,19 @@ namespace EightBit {
 		}
 
 		std::string AM_Absolute_dump() const {
-			return Dump_DByte(m_address + 1);
+			return dump_DByte(m_address + 1);
 		}
 
 		std::string AM_Absolute() const {
-			return "$" + Dump_WordValue(processor.getMemory().peekWord(m_address + 1));
+			return "$" + dump_WordValue(processor.getMemory().peekWord(m_address + 1));
 		}
 
 		std::string AM_ZeroPage_dump() const {
-			return Dump_Byte(m_address + 1);
+			return dump_Byte(m_address + 1);
 		}
 
 		std::string AM_ZeroPage() const {
-			return "$" + Dump_Byte(m_address + 1);
+			return "$" + dump_Byte(m_address + 1);
 		}
 
 		std::string AM_ZeroPageX_dump() const {
@@ -120,7 +120,7 @@ namespace EightBit {
 		}
 
 		std::string AM_IndexedIndirectX() const {
-			return "($" + Dump_Byte(m_address + 1) + ",X)";
+			return "($" + dump_Byte(m_address + 1) + ",X)";
 		}
 
 		std::string AM_IndirectIndexedY_dump() const {
@@ -128,7 +128,7 @@ namespace EightBit {
 		}
 
 		std::string AM_IndirectIndexedY() const {
-			return "($" + Dump_Byte(m_address + 1) + "),Y";
+			return "($" + dump_Byte(m_address + 1) + "),Y";
 		}
 
 #pragma endregion References
@@ -315,14 +315,14 @@ namespace EightBit {
 
 #pragma endregion 6502 addressing modes
 
-		uint8_t GetByte(uint16_t address) const;
+		uint8_t getByte(uint16_t address) const;
 
-		std::string Dump_Byte(uint16_t address) const;
-		std::string Dump_DByte(uint16_t address) const;
+		std::string dump_Byte(uint16_t address) const;
+		std::string dump_DByte(uint16_t address) const;
 
-		std::string ConvertAddress(uint16_t address) const;
-		std::string ConvertAddress(uint8_t address) const;
-		std::string ConvertConstant(uint16_t constant) const;
-		std::string ConvertConstant(uint8_t constant) const;
+		std::string convertAddress(uint16_t address) const;
+		std::string convertAddress(uint8_t address) const;
+		std::string convertConstant(uint16_t constant) const;
+		std::string convertConstant(uint8_t constant) const;
 	};
 }

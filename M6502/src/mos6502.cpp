@@ -50,42 +50,42 @@ void EightBit::MOS6502::initialise() {
 
 int EightBit::MOS6502::step() {
 	ExecutingInstruction.fire(*this);
-	auto returned = Execute(FetchByte());
+	auto returned = execute(fetchByte());
 	ExecutedInstruction.fire(*this);
 	return returned;
 }
 
-void EightBit::MOS6502::Reset() {
-	GetWord(RSTvector, PC());
+void EightBit::MOS6502::reset() {
+	getWord(RSTvector, PC());
 }
 
-void EightBit::MOS6502::TriggerIRQ() {
-	Interrupt(IRQvector);
+void EightBit::MOS6502::triggerIRQ() {
+	interrupt(IRQvector);
 }
 
-void EightBit::MOS6502::TriggerNMI() {
-	Interrupt(NMIvector);
+void EightBit::MOS6502::triggerNMI() {
+	interrupt(NMIvector);
 }
 
-void EightBit::MOS6502::GetWord(register16_t& output) {
-	output.low = GetByte();
+void EightBit::MOS6502::getWord(register16_t& output) {
+	output.low = getByte();
 	m_memory.ADDRESS().word++;
-	output.high = GetByte();
+	output.high = getByte();
 }
 
-void EightBit::MOS6502::GetWord(uint16_t offset, register16_t& output) {
+void EightBit::MOS6502::getWord(uint16_t offset, register16_t& output) {
 	m_memory.ADDRESS().word = offset;
-	GetWord(output);
+	getWord(output);
 }
 
-void EightBit::MOS6502::Interrupt(uint16_t vector) {
-	PushWord(PC());
-	PushByte(P());
+void EightBit::MOS6502::interrupt(uint16_t vector) {
+	pushWord(PC());
+	pushByte(P());
 	setFlag(P(), IF);
-	GetWord(vector, PC());
+	getWord(vector, PC());
 }
 
-int EightBit::MOS6502::Execute(uint8_t cell) {
+int EightBit::MOS6502::execute(uint8_t cell) {
 
 	cycles = m_timings[cell];
 
@@ -146,7 +146,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				RTI();
 				break;
 			case 0b010:	// PHA
-				PushByte(A());
+				pushByte(A());
 				break;
 			case 0b011:	// JMP
 				JMP_abs();
@@ -167,7 +167,7 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 				RTS();
 				break;
 			case 0b010:	// PLA
-				adjustNZ(A() = PopByte());
+				adjustNZ(A() = popByte());
 				break;
 			case 0b011:	// JMP (abs)
 				JMP_ind();
@@ -389,32 +389,32 @@ int EightBit::MOS6502::Execute(uint8_t cell) {
 
 ////
 
-void EightBit::MOS6502::PushByte(uint8_t value) {
-	SetByte(PageOne + S()--, value);
+void EightBit::MOS6502::pushByte(uint8_t value) {
+	setByte(PageOne + S()--, value);
 }
 
-uint8_t EightBit::MOS6502::PopByte() {
-	return GetByte(PageOne + ++S());
+uint8_t EightBit::MOS6502::popByte() {
+	return getByte(PageOne + ++S());
 }
 
-void EightBit::MOS6502::PushWord(register16_t value) {
-	PushByte(value.high);
-	PushByte(value.low);
+void EightBit::MOS6502::pushWord(register16_t value) {
+	pushByte(value.high);
+	pushByte(value.low);
 }
 
-void EightBit::MOS6502::PopWord(register16_t& output) {
-	output.low = PopByte();
-	output.high = PopByte();
+void EightBit::MOS6502::popWord(register16_t& output) {
+	output.low = popByte();
+	output.high = popByte();
 }
 
-uint8_t EightBit::MOS6502::FetchByte() {
+uint8_t EightBit::MOS6502::fetchByte() {
 	m_memory.ADDRESS().word = PC().word++;
-	return GetByte();
+	return getByte();
 }
 
-void EightBit::MOS6502::FetchWord(register16_t& output) {
+void EightBit::MOS6502::fetchWord(register16_t& output) {
 	m_memory.ADDRESS().word = PC().word++;
-	GetWord(output);
+	getWord(output);
 	PC().word++;
 }
 
@@ -561,11 +561,11 @@ void EightBit::MOS6502::Branch(bool flag) {
 
 void EightBit::MOS6502::PHP() {
 	setFlag(P(), BF);
-	PushByte(P());
+	pushByte(P());
 }
 
 void EightBit::MOS6502::PLP() {
-	P() = PopByte();
+	P() = popByte();
 	setFlag(P(), RF);
 }
 
@@ -574,17 +574,17 @@ void EightBit::MOS6502::PLP() {
 void EightBit::MOS6502::JSR_abs() {
 	Address_Absolute();
 	PC().word--;
-	PushWord(PC());
+	pushWord(PC());
 	PC() = MEMPTR();
 }
 
 void EightBit::MOS6502::RTI() {
 	PLP();
-	PopWord(PC());
+	popWord(PC());
 }
 
 void EightBit::MOS6502::RTS() {
-	PopWord(PC());
+	popWord(PC());
 	PC().word++;
 }
 
@@ -600,8 +600,8 @@ void EightBit::MOS6502::JMP_ind() {
 
 void EightBit::MOS6502::BRK() {
 	PC().word++;
-	PushWord(PC());
+	pushWord(PC());
 	PHP();
 	setFlag(P(), IF);
-	GetWord(IRQvector, PC());
+	getWord(IRQvector, PC());
 }

@@ -56,24 +56,24 @@ namespace EightBit {
 
 		virtual int step();
 
-		virtual void Reset();
+		virtual void reset();
 
-		virtual void TriggerIRQ();
-		virtual void TriggerNMI();
+		virtual void triggerIRQ();
+		virtual void triggerNMI();
 
-		void GetWord(register16_t& output);
-		void GetWord(uint16_t offset, register16_t& output);
+		void getWord(register16_t& output);
+		void getWord(uint16_t offset, register16_t& output);
 
-		uint8_t GetByte() { return m_memory.read(); }
-		uint8_t GetByte(uint16_t offset) { return m_memory.read(offset); }
+		uint8_t getByte() { return m_memory.read(); }
+		uint8_t getByte(uint16_t offset) { return m_memory.read(offset); }
 
-		void SetByte(uint8_t value) { m_memory.write(value); }
-		void SetByte(uint16_t offset, uint8_t value) { m_memory.write(offset, value); }
+		void setByte(uint8_t value) { m_memory.write(value); }
+		void setByte(uint16_t offset, uint8_t value) { m_memory.write(offset, value); }
 
 	protected:
-		virtual void Interrupt(uint16_t vector);
+		virtual void interrupt(uint16_t vector);
 
-		virtual int Execute(uint8_t cell);
+		virtual int execute(uint8_t cell);
 
 	private:
 		register16_t& MEMPTR() { return m_memptr; }
@@ -86,37 +86,37 @@ namespace EightBit {
 			adjustNegative(datum);
 		}
 
-		void PushByte(uint8_t value);
-		uint8_t PopByte();
-		void PushWord(register16_t value);
-		void PopWord(register16_t& output);
+		void pushByte(uint8_t value);
+		uint8_t popByte();
+		void pushWord(register16_t value);
+		void popWord(register16_t& output);
 
-		uint8_t FetchByte();
-		void FetchWord(register16_t& output);
+		uint8_t fetchByte();
+		void fetchWord(register16_t& output);
 
 #pragma region 6502 addressing modes
 
 #pragma region Addresses
 
 		void Address_Absolute() {
-			FetchWord(MEMPTR());
+			fetchWord(MEMPTR());
 		}
 
 		void Address_ZeroPage() {
-			MEMPTR().low = FetchByte();
+			MEMPTR().low = fetchByte();
 			MEMPTR().high = 0;
 		}
 
 		void Address_ZeroPageIndirect() {
 			Address_ZeroPage();
 			m_memory.ADDRESS() = MEMPTR();
-			GetWord(MEMPTR());
+			getWord(MEMPTR());
 		}
 
 		void Address_Indirect() {
 			Address_Absolute();
 			m_memory.ADDRESS() = MEMPTR();
-			GetWord(MEMPTR());
+			getWord(MEMPTR());
 		}
 
 		void Address_ZeroPageX() {
@@ -142,7 +142,7 @@ namespace EightBit {
 		void Address_IndexedIndirectX() {
 			Address_ZeroPageX();
 			m_memory.ADDRESS() = MEMPTR();
-			GetWord(MEMPTR());
+			getWord(MEMPTR());
 		}
 
 		void Address_IndirectIndexedY() {
@@ -161,7 +161,7 @@ namespace EightBit {
 
 		uint8_t& AM_Immediate() {
 			m_busRW = false;
-			FetchByte();
+			fetchByte();
 			return m_memory.reference();
 		}
 
