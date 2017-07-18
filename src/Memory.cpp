@@ -35,7 +35,7 @@ void EightBit::Memory::clear() {
 
 void EightBit::Memory::loadRom(const std::string& path, uint16_t offset) {
 	auto size = loadMemory(path, offset);
-	std::fill(m_locked.begin() + offset, m_locked.begin() + offset + size, true);
+	lock(offset, size);
 }
 
 void EightBit::Memory::loadRam(const std::string& path, uint16_t offset) {

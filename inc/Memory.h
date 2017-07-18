@@ -98,6 +98,10 @@ namespace EightBit {
 		void loadRom(const std::string& path, uint16_t offset);
 		void loadRam(const std::string& path, uint16_t offset);
 
+		void lock(int address, int size) {
+			std::fill(m_locked.begin() + address, m_locked.begin() + address + size, true);
+		}
+
 	protected:
 		std::array<uint8_t, 0x10000> m_bus;
 		std::array<bool, 0x10000> m_locked;
