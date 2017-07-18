@@ -712,8 +712,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			} else {
 				switch (y) {
 				case 4:	// GB: LD (FF00 + n),A
-					m_bus.REG(fetchByte()) = A();
-					m_bus.fireWriteBusEvent();
+					m_bus.writeRegister(fetchByte(), A());
 					cycles += 3;
 					break;
 				case 5: { // GB: ADD SP,dd
@@ -729,8 +728,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 4;
 					break;
 				case 6:	// GB: LD A,(FF00 + n)
-					A() = m_bus.REG(fetchByte());
-					m_bus.fireReadBusEvent();
+					A() = m_bus.readRegister(fetchByte());
 					cycles += 3;
 					break;
 				case 7: { // GB: LD HL,SP + dd
@@ -782,8 +780,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			} else {
 				switch (y) {
 				case 4:	// GB: LD (FF00 + C),A
-					m_bus.REG(C()) = A();
-					m_bus.fireWriteBusEvent();
+					m_bus.writeRegister(C(), A());
 					cycles += 2;
 					break;
 				case 5:	// GB: LD (nn),A
@@ -792,8 +789,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 4;
 					break;
 				case 6:	// GB: LD A,(FF00 + C)
-					A() = m_bus.REG(C());
-					m_bus.fireReadBusEvent();
+					A() = m_bus.readRegister(C());
 					cycles += 2;
 					break;
 				case 7:	// GB: LD A,(nn)

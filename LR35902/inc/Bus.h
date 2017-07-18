@@ -79,9 +79,15 @@ namespace EightBit {
 
 		void reset();
 
-		uint8_t& REG(int offset) {
-			ADDRESS().word = BASE + offset;
-			return Memory::reference();
+		void writeRegister(int offset, uint8_t content) {
+			REG(offset) = content;
+			fireWriteBusEvent();
+		}
+
+		uint8_t readRegister(int offset) {
+			auto returned = REG(offset);
+			fireReadBusEvent();
+			return returned;
 		}
 
 		void incrementLY() {
@@ -104,5 +110,10 @@ namespace EightBit {
 
 	private:
 		std::array<uint8_t, 0x100> m_boot;
+
+		uint8_t& REG(int offset) {
+			ADDRESS().word = BASE + offset;
+			return Memory::reference();
+		}
 	};
 }
