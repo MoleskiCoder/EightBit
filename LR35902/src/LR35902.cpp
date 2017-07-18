@@ -471,12 +471,12 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 		}
 		break;
 	case 1: // BIT y, r[z]
-			bit(y, R(z));
+		bit(y, R(z));
+		cycles += 2;
+		if (z == 6) {
+			m_bus.fireReadBusEvent();
 			cycles += 2;
-			if (z == 6) {
-				m_bus.fireReadBusEvent();
-				cycles += 2;
-			}
+		}
 		break;
 	case 2:	// RES y, r[z]
 		res(y, R(z));
@@ -788,9 +788,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					break;
 				case 5:	// GB: LD (nn),A
 					fetchWord();
-					m_memory.ADDRESS() = MEMPTR();
-					m_memory.reference() = A();
-					m_bus.fireWriteBusEvent();
+					m_bus.write(MEMPTR().word, A());
 					cycles += 4;
 					break;
 				case 6:	// GB: LD A,(FF00 + C)
@@ -800,9 +798,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					break;
 				case 7:	// GB: LD A,(nn)
 					fetchWord();
-					m_memory.ADDRESS() = MEMPTR();
-					A() = m_memory.reference();
-					m_bus.fireReadBusEvent();
+					A() = m_bus.read(MEMPTR().word);
 					cycles += 4;
 					break;
 				}
