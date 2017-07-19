@@ -136,7 +136,8 @@ void EightBit::LR35902::sbc(uint8_t& f, register16_t& operand, register16_t valu
 
 	auto before = operand;
 
-	auto result = before.word - value.word - (f & CF);
+	auto carry = (f & CF) >> 4;
+	auto result = before.word - value.word - carry;
 	operand.word = result;
 
 	clearFlag(f, ZF, operand.word);
@@ -149,7 +150,8 @@ void EightBit::LR35902::adc(uint8_t& f, register16_t& operand, register16_t valu
 
 	auto before = operand;
 
-	auto result = before.word + value.word + (f & CF);
+	auto carry = (f & CF) >> 4;
+	auto result = before.word + value.word + carry;
 	operand.word = result;
 
 	clearFlag(f, ZF, result);
@@ -190,7 +192,7 @@ void EightBit::LR35902::add(uint8_t& f, uint8_t& operand, uint8_t value, int car
 }
 
 void EightBit::LR35902::adc(uint8_t& f, uint8_t& operand, uint8_t value) {
-	add(operand, value, f & CF);
+	add(operand, value, (f & CF) >> 4);
 }
 
 void EightBit::LR35902::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
@@ -208,7 +210,7 @@ void EightBit::LR35902::subtract(uint8_t& f, uint8_t& operand, uint8_t value, in
 }
 
 void EightBit::LR35902::sbc(uint8_t& f, uint8_t& operand, uint8_t value) {
-	subtract(operand, value, f & CF);
+	subtract(operand, value, (f & CF) >> 4);
 }
 
 void EightBit::LR35902::andr(uint8_t& f, uint8_t& operand, uint8_t value) {
@@ -254,7 +256,7 @@ void EightBit::LR35902::rrc(uint8_t& f, uint8_t& operand) {
 
 void EightBit::LR35902::rl(uint8_t& f, uint8_t& operand) {
 	clearFlag(f, NF | HC);
-	const auto carry = f & CF;
+	const auto carry = (f & CF) >> 4;
 	setFlag(f, CF, operand & Bit7);
 	operand = (operand << 1) | carry;
 	adjustZero<LR35902>(f, operand);
@@ -262,7 +264,7 @@ void EightBit::LR35902::rl(uint8_t& f, uint8_t& operand) {
 
 void EightBit::LR35902::rr(uint8_t& f, uint8_t& operand) {
 	clearFlag(f, NF | HC);
-	const auto carry = f & CF;
+	const auto carry = (f & CF) >> 4;
 	setFlag(f, CF, operand & Bit0);
 	operand = (operand >> 1) | (carry << 7);
 	adjustZero<LR35902>(f, operand);
