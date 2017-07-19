@@ -108,7 +108,7 @@ namespace EightBit {
 			return execute(fetchByte());
 		}
 
-		uint8_t& R(int r) {
+		uint8_t& R(int r, uint8_t& a) {
 			switch (r) {
 			case 0:
 				return B();
@@ -126,7 +126,7 @@ namespace EightBit {
 				m_memory.ADDRESS() = HL();
 				return m_memory.reference();
 			case 7:
-				return A();
+				return a;
 			}
 			throw std::logic_error("Unhandled registry mechanism");
 		}
@@ -157,6 +157,8 @@ namespace EightBit {
 			setFlag(f, HC, calculateHalfCarrySub(before, value, calculation));
 		}
 
+		static void subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
+
 		void executeCB(int x, int y, int z, int p, int q);
 		void executeOther(int x, int y, int z, int p, int q);
 
@@ -165,43 +167,41 @@ namespace EightBit {
 
 		void reti();
 
-		bool jrConditionalFlag(int flag);
-		bool returnConditionalFlag(int flag);
-		bool jumpConditionalFlag(int flag);
-		bool callConditionalFlag(int flag);
+		bool jrConditionalFlag(uint8_t& f, int flag);
+		bool returnConditionalFlag(uint8_t& f, int flag);
+		bool jumpConditionalFlag(uint8_t& f, int flag);
+		bool callConditionalFlag(uint8_t& f, int flag);
 
-		void sbc(register16_t& operand, register16_t value);
-		void adc(register16_t& operand, register16_t value);
+		void sbc(uint8_t& f, register16_t& operand, register16_t value);
+		void adc(uint8_t& f, register16_t& operand, register16_t value);
+		void add(uint8_t& f, register16_t& operand, register16_t value);
 
-		void add(register16_t& operand, register16_t value);
+		static void add(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
+		static void adc(uint8_t& f, uint8_t& operand, uint8_t value);
+		static void sbc(uint8_t& f, uint8_t& operand, uint8_t value);
+		static void andr(uint8_t& f, uint8_t& operand, uint8_t value);
+		static void xorr(uint8_t& f, uint8_t& operand, uint8_t value);
+		static void orr(uint8_t& f, uint8_t& operand, uint8_t value);
+		static void compare(uint8_t& f, uint8_t check, uint8_t value);
 
-		void add(uint8_t& operand, uint8_t value, int carry = 0);
-		void adc(uint8_t& operand, uint8_t value);
-		void sub(uint8_t& operand, uint8_t value, int carry = 0);
-		void sbc(uint8_t& operand, uint8_t value);
-		void andr(uint8_t& operand, uint8_t value);
-		void xorr(uint8_t& operand, uint8_t value);
-		void orr(uint8_t& operand, uint8_t value);
-		void compare(uint8_t value);
+		static void rlc(uint8_t& f, uint8_t& operand);
+		static void rrc(uint8_t& f, uint8_t& operand);
+		static void rl(uint8_t& f, uint8_t& operand);
+		static void rr(uint8_t& f, uint8_t& operand);
+		static void sla(uint8_t& f, uint8_t& operand);
+		static void sra(uint8_t& f, uint8_t& operand);
+		static void srl(uint8_t& f, uint8_t& operand);
 
-		void rlc(uint8_t& operand);
-		void rrc(uint8_t& operand);
-		void rl(uint8_t& operand);
-		void rr(uint8_t& operand);
-		void sla(uint8_t& operand);
-		void sra(uint8_t& operand);
-		void srl(uint8_t& operand);
+		static void bit(uint8_t& f, int n, uint8_t& operand);
+		static void res(int n, uint8_t& operand);
+		static void set(int n, uint8_t& operand);
 
-		void bit(int n, uint8_t& operand);
-		void res(int n, uint8_t& operand);
-		void set(int nit, uint8_t& operand);
+		static void daa(uint8_t& a, uint8_t& f);
 
-		void daa();
+		static void scf(uint8_t& a, uint8_t& f);
+		static void ccf(uint8_t& a, uint8_t& f);
+		static void cpl(uint8_t& a, uint8_t& f);
 
-		void scf();
-		void ccf();
-		void cpl();
-
-		void swap(uint8_t& operand);
+		void swap(uint8_t& f, uint8_t& operand);
 	};
 }

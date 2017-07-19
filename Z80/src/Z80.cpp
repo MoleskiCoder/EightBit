@@ -140,14 +140,6 @@ bool EightBit::Z80::jrConditionalFlag(uint8_t& f, int flag) {
 		return jrConditional(!(f & CF));
 	case 3:	// C
 		return jrConditional(f & CF);
-	case 4:	// PO
-		return jrConditional(!(f & PF));
-	case 5:	// PE
-		return jrConditional(f & PF);
-	case 6:	// P
-		return jrConditional(!(f & SF));
-	case 7:	// M
-		return jrConditional(f & SF);
 	default:
 		__assume(0);
 	}
@@ -1149,11 +1141,16 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				jr(fetchByte());
 				cycles += 12;
 				break;
-			default:	// JR cc,d
+			case 4: // JR cc,d
+			case 5:
+			case 6:
+			case 7:
 				if (jrConditionalFlag(f, y - 4))
 					cycles += 5;
 				cycles += 5;
 				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 1:	// 16-bit load immediate/add

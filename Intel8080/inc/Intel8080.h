@@ -107,9 +107,8 @@ namespace EightBit {
 
 		//
 
-		void compare(uint8_t value) {
-			auto check = A();
-			sub(check, value);
+		void compare(uint8_t& f, uint8_t check, uint8_t value) {
+			subtract(f, check, value);
 		}
 
 		void anda(uint8_t value) {
@@ -154,22 +153,21 @@ namespace EightBit {
 			HL().word = sum;
 		}
 
-		void sub(uint8_t& operand, uint8_t value, int carry = 0) {
-			auto& f = F();
-			register16_t difference;
-			difference.word = operand - value - carry;
-			adjustAuxiliaryCarrySub(f, operand, value, difference.word);
-			operand = difference.low;
-			setFlag(f, CF, difference.word & Bit8);
+		void subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0) {
+
+			register16_t result;
+			result.word = operand - value - carry;
+
+			adjustAuxiliaryCarrySub(f, operand, value, result.word);
+
+			operand = result.low;
+
+			setFlag(f, CF, result.word & Bit8);
 			adjustSZP<Intel8080>(f, operand);
 		}
 
-		void sub(uint8_t value, int carry = 0) {
-			sub(A(), value, carry);
-		}
-
 		void sbb(uint8_t value) {
-			sub(value, F() & CF);
+			subtract(F(), A(), value, F() & CF);
 		}
 
 		void mov_m_r(uint8_t value) {
@@ -499,17 +497,17 @@ namespace EightBit {
 
 		// subtract
 
-		void sub_a() { sub(A()); }
-		void sub_b() { sub(B()); }
-		void sub_c() { sub(C()); }
-		void sub_d() { sub(D()); }
-		void sub_e() { sub(E()); }
-		void sub_h() { sub(H()); }
-		void sub_l() { sub(L()); }
+		void sub_a() { subtract(F(), A(), A()); }
+		void sub_b() { subtract(F(), A(), B()); }
+		void sub_c() { subtract(F(), A(), C()); }
+		void sub_d() { subtract(F(), A(), D()); }
+		void sub_e() { subtract(F(), A(), E()); }
+		void sub_h() { subtract(F(), A(), H()); }
+		void sub_l() { subtract(F(), A(), L()); }
 
 		void sub_m() {
 			m_memory.ADDRESS() = HL();
-			sub(m_memory.reference());
+			subtract(F(), A(), m_memory.reference());
 		}
 
 		void sbb_a() { sbb(A()); }
@@ -530,7 +528,7 @@ namespace EightBit {
 		}
 
 		void sui() {
-			sub(fetchByte());
+			subtract(F(), A(), fetchByte());
 		}
 
 		// logical
@@ -580,20 +578,20 @@ namespace EightBit {
 
 		void ori() { ora(fetchByte()); }
 
-		void cmp_a() { compare(A()); }
-		void cmp_b() { compare(B()); }
-		void cmp_c() { compare(C()); }
-		void cmp_d() { compare(D()); }
-		void cmp_e() { compare(E()); }
-		void cmp_h() { compare(H()); }
-		void cmp_l() { compare(L()); }
+		void cmp_a() { compare(F(), A(), A()); }
+		void cmp_b() { compare(F(), A(), B()); }
+		void cmp_c() { compare(F(), A(), C()); }
+		void cmp_d() { compare(F(), A(), D()); }
+		void cmp_e() { compare(F(), A(), E()); }
+		void cmp_h() { compare(F(), A(), H()); }
+		void cmp_l() { compare(F(), A(), L()); }
 
 		void cmp_m() {
 			m_memory.ADDRESS() = HL();
-			compare(m_memory.reference());
+			compare(F(), A(), m_memory.reference());
 		}
 
-		void cpi() { compare(fetchByte()); }
+		void cpi() { compare(F(), A(), fetchByte()); }
 
 		// rotate
 

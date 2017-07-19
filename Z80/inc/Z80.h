@@ -322,7 +322,7 @@ namespace EightBit {
 
 		static uint8_t& bit(uint8_t& f, int n, uint8_t& operand);
 		static uint8_t& res(int n, uint8_t& operand);
-		static uint8_t& set(int nit, uint8_t& operand);
+		static uint8_t& set(int n, uint8_t& operand);
 
 		static void daa(uint8_t& a, uint8_t& f);
 
