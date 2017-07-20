@@ -479,8 +479,8 @@ void EightBit::Z80::daa(uint8_t& a, uint8_t& f) {
 
 	auto updated = a;
 
-	auto lowAdjust = (f & HC) | (lowNibble(a) > 9);
-	auto highAdjust = (f & CF) | (a > 0x99);
+	auto lowAdjust = (f & HC) || (lowNibble(a) > 9);
+	auto highAdjust = (f & CF) || (a > 0x99);
 
 	if (f & NF) {
 		if (lowAdjust)
@@ -494,7 +494,7 @@ void EightBit::Z80::daa(uint8_t& a, uint8_t& f) {
 			updated += 0x60;
 	}
 
-	f = (f & (CF | NF)) | (a > 0x99) | ((a ^ updated) & HC);
+	f = (f & (CF | NF)) | (a > 0x99 ? CF : 0) | ((a ^ updated) & HC);
 	a = updated;
 
 	adjustSZPXY<Z80>(f, a);
