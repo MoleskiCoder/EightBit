@@ -41,6 +41,9 @@
     <ClInclude Include="FuseTestSuite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FuseExpectedTestResult.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
