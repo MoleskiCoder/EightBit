@@ -320,25 +320,23 @@ void EightBit::LR35902::set(int n, uint8_t& operand) {
 
 void EightBit::LR35902::daa(uint8_t& a, uint8_t& f) {
 
-	auto updated = a;
-
-	auto lowAdjust = (f & HC) | (lowNibble(a) > 9);
-	auto highAdjust = (f & CF) | (a > 0x99);
+	int updated = a;
 
 	if (f & NF) {
-		if (lowAdjust)
-			updated -= 6;
-		if (highAdjust)
+		if (f & HC)
+			updated = (updated - 6) & Mask8;
+		if (f & CF)
 			updated -= 0x60;
 	} else {
-		if (lowAdjust)
+		if ((f & HC) || lowNibble(updated) > 9)
 			updated += 6;
-		if (highAdjust)
+		if ((f & CF) || updated > 0x9F)
 			updated += 0x60;
 	}
 
-	f = (f & (CF | NF)) | (a > 0x99) | ((a ^ updated) & HC);
-	a = updated;
+	clearFlag(f, HC | ZF);
+	setFlag(f, CF, (f & CF) || (updated & Bit8));
+	a = updated & Mask8;
 
 	adjustZero<LR35902>(f, a);
 }
