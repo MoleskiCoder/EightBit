@@ -184,17 +184,17 @@ namespace EightBit {
 		static void orr(uint8_t& f, uint8_t& operand, uint8_t value);
 		static void compare(uint8_t& f, uint8_t check, uint8_t value);
 
-		static uint8_t& rlc(uint8_t& f, uint8_t& operand);
-		static uint8_t& rrc(uint8_t& f, uint8_t& operand);
-		static uint8_t& rl(uint8_t& f, uint8_t& operand);
-		static uint8_t& rr(uint8_t& f, uint8_t& operand);
-		static uint8_t& sla(uint8_t& f, uint8_t& operand);
-		static uint8_t& sra(uint8_t& f, uint8_t& operand);
-		static uint8_t& srl(uint8_t& f, uint8_t& operand);
+		static void rlc(uint8_t& f, uint8_t& operand);
+		static void rrc(uint8_t& f, uint8_t& operand);
+		static void rl(uint8_t& f, uint8_t& operand);
+		static void rr(uint8_t& f, uint8_t& operand);
+		static void sla(uint8_t& f, uint8_t& operand);
+		static void sra(uint8_t& f, uint8_t& operand);
+		static void srl(uint8_t& f, uint8_t& operand);
 
-		static uint8_t& bit(uint8_t& f, int n, uint8_t& operand);
-		static uint8_t& res(int n, uint8_t& operand);
-		static uint8_t& set(int n, uint8_t& operand);
+		static void bit(uint8_t& f, int n, uint8_t& operand);
+		static void res(int n, uint8_t& operand);
+		static void set(int n, uint8_t& operand);
 
 		static void daa(uint8_t& a, uint8_t& f);
 
@@ -202,6 +202,6 @@ namespace EightBit {
 		static void ccf(uint8_t& a, uint8_t& f);
 		static void cpl(uint8_t& a, uint8_t& f);
 
-		uint8_t& swap(uint8_t& f, uint8_t& operand);
+		static void swap(uint8_t& f, uint8_t& operand);
 	};
 }
