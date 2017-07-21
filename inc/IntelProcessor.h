@@ -9,6 +9,31 @@ namespace EightBit {
 	class IntelProcessor : public Processor
 	{
 	public:
+		struct opcode_decoded_t {
+
+			int x;
+			int y;
+			int z;
+			int p;
+			int q;
+
+			opcode_decoded_t() {
+				x = y = z = p = q = 0;
+			}
+
+			opcode_decoded_t(uint8_t opcode) {
+				x = (opcode & 0b11000000) >> 6;	// 0 - 3
+				y = (opcode & 0b00111000) >> 3;	// 0 - 7
+				z = (opcode & 0b00000111);		// 0 - 7
+				p = (y & 0b110) >> 1;			// 0 - 3
+				q = (y & 1);					// 0 - 1
+			}
+		};
+
+		const opcode_decoded_t& getDecodedOpcode(const int i) const {
+			return m_decodedOpcodes[i];
+		}
+
 		register16_t& MEMPTR() { return m_memptr; }
 
 		virtual void initialise();
@@ -203,6 +228,8 @@ namespace EightBit {
 		}
 
 	private:
+		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
+
 		register16_t m_memptr;
 		register16_t sp;
 	};

@@ -383,12 +383,14 @@ int EightBit::LR35902::step() {
 
 int EightBit::LR35902::execute(uint8_t opcode) {
 
-	auto x = (opcode & 0b11000000) >> 6;
-	auto y = (opcode & 0b111000) >> 3;
-	auto z = (opcode & 0b111);
+	const auto& decoded = getDecodedOpcode(opcode);
 
-	auto p = (y & 0b110) >> 1;
-	auto q = (y & 1);
+	auto x = decoded.x;
+	auto y = decoded.y;
+	auto z = decoded.z;
+
+	auto p = decoded.p;
+	auto q = decoded.q;
 
 	if (m_prefixCB)
 		executeCB(x, y, z, p, q);
@@ -431,6 +433,8 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 		case 7:
 			adjustZero<LR35902>(f, srl(f, R(z, a)));
 			break;
+		default:
+			__assume(0);
 		}
 		cycles += 2;
 		if (z == 6) {
@@ -462,6 +466,8 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 			cycles += 2;
 		}
 		break;
+	default:
+		__assume(0);
 	}
 }
 
@@ -497,6 +503,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					cycles++;
 				cycles += 2;
 				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 1:	// 16-bit load immediate/add
@@ -509,6 +517,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				add(f, HL(), RP(p));
 				cycles += 2;
 				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 2:	// Indirect loading
@@ -531,6 +541,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					m_memory.write(HL().word--, a);
 					cycles += 2;
 					break;
+				default:
+					__assume(0);
 				}
 				break;
 			case 1:
@@ -551,6 +563,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					a = m_memory.read(HL().word--);
 					cycles += 2;
 					break;
+				default:
+					__assume(0);
 				}
 				break;
 			}
@@ -563,6 +577,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 1:	// DEC rp
 				--RP(p).word;
 				break;
+			default:
+				__assume(0);
 			}
 			cycles += 2;
 			break;
@@ -614,6 +630,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 7:
 				ccf(a, f);
 				break;
+			default:
+				__assume(0);
 			}
 			cycles++;
 			break;
@@ -660,6 +678,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 7:	// CP r
 			compare(f, a, R(z, a));
 			break;
+		default:
+			__assume(0);
 		}
 		cycles++;
 		if (z == 6) {
@@ -709,6 +729,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				}
 				cycles += 3;
 				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 1:	// POP & various ops
@@ -735,7 +757,12 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					SP() = HL();
 					cycles += 2;
 					break;
+				default:
+					__assume(0);
 				}
+				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 2:	// Conditional jump
@@ -765,6 +792,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				a = m_bus.read(MEMPTR().word);
 				cycles += 4;
 				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 3:	// Assorted operations
@@ -807,6 +836,9 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 6;
 					break;
 				}
+				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
@@ -835,6 +867,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 7:	// CP n
 				compare(f, a, fetchByte());
 				break;
+			default:
+				__assume(0);
 			}
 			cycles += 2;
 			break;
@@ -842,6 +876,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			restart(y << 3);
 			cycles += 4;
 			break;
+		default:
+			__assume(0);
 		}
 		break;
 	}

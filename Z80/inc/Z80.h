@@ -29,27 +29,6 @@ namespace EightBit {
 			}
 		};
 
-		struct opcode_decoded_t {
-
-			int x;
-			int y;
-			int z;
-			int p;
-			int q;
-
-			opcode_decoded_t() {
-				x = y = z = p = q = 0;
-			}
-
-			opcode_decoded_t(uint8_t opcode) {
-				x = (opcode & 0b11000000) >> 6;	// 0 - 3
-				y = (opcode & 0b00111000) >> 3;	// 0 - 7
-				z = (opcode & 0b00000111);		// 0 - 7
-				p = (y & 0b110) >> 1;			// 0 - 3
-				q = (y & 1);					// 0 - 1
-			}
-		};
-
 		enum StatusBits {
 			SF = Bit7,
 			ZF = Bit6,
@@ -153,8 +132,6 @@ namespace EightBit {
 
 		int8_t m_displacement;
 		bool m_displaced;
-
-		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
 
 		int fetchExecute() {
 			M1() = true;

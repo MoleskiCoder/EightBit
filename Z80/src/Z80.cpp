@@ -34,10 +34,6 @@ void EightBit::Z80::initialise() {
 
 	IntelProcessor::initialise();
 
-	for (int i = 0; i < 0x100; ++i) {
-		m_decodedOpcodes[i] = i;
-	}
-
 	IM() = 0;
 
 	AF().word = 0xffff;
@@ -774,7 +770,7 @@ int EightBit::Z80::execute(uint8_t opcode) {
 		M1() = false;
 	}
 
-	const auto& decoded = m_decodedOpcodes[opcode];
+	const auto& decoded = getDecodedOpcode(opcode);
 
 	auto x = decoded.x;
 	auto y = decoded.y;
