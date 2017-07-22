@@ -90,14 +90,14 @@ namespace EightBit {
 			clearFlag(f, AC, calculateHalfCarrySub(before, value, calculation));
 		}
 
-		static void postIncrement(uint8_t& f, uint8_t value) {
-			adjustSZP<Intel8080>(f, value);
-			clearFlag(f, AC, lowNibble(value));
+		static void increment(uint8_t& f, uint8_t& operand) {
+			adjustSZP<Intel8080>(f, ++operand);
+			clearFlag(f, AC, lowNibble(operand));
 		}
 
-		static void postDecrement(uint8_t& f, uint8_t value) {
-			adjustSZP<Intel8080>(f, value);
-			setFlag(f, AC, lowNibble(value) != Mask4);
+		static void decrement(uint8_t& f, uint8_t& operand) {
+			adjustSZP<Intel8080>(f, --operand);
+			setFlag(f, AC, lowNibble(operand) != Mask4);
 		}
 
 		static Instruction INS(instruction_t method, AddressingMode mode, std::string disassembly, int cycles);
@@ -420,34 +420,30 @@ namespace EightBit {
 
 		// increment and decrement
 
-		void inr_a() { postIncrement(F(), ++A()); }
-		void inr_b() { postIncrement(F(), ++B()); }
-		void inr_c() { postIncrement(F(), ++C()); }
-		void inr_d() { postIncrement(F(), ++D()); }
-		void inr_e() { postIncrement(F(), ++E()); }
-		void inr_h() { postIncrement(F(), ++H()); }
-		void inr_l() { postIncrement(F(), ++L()); }
+		void inr_a() { increment(F(), A()); }
+		void inr_b() { increment(F(), B()); }
+		void inr_c() { increment(F(), C()); }
+		void inr_d() { increment(F(), D()); }
+		void inr_e() { increment(F(), E()); }
+		void inr_h() { increment(F(), H()); }
+		void inr_l() { increment(F(), L()); }
 
 		void inr_m() {
 			m_memory.ADDRESS() = HL();
-			auto value = m_memory.reference();
-			postIncrement(F(), ++value);
-			m_memory.reference() = value;
+			increment(F(), m_memory.reference());
 		}
 
-		void dcr_a() { postDecrement(F(), --A()); }
-		void dcr_b() { postDecrement(F(), --B()); }
-		void dcr_c() { postDecrement(F(), --C()); }
-		void dcr_d() { postDecrement(F(), --D()); }
-		void dcr_e() { postDecrement(F(), --E()); }
-		void dcr_h() { postDecrement(F(), --H()); }
-		void dcr_l() { postDecrement(F(), --L()); }
+		void dcr_a() { decrement(F(), A()); }
+		void dcr_b() { decrement(F(), B()); }
+		void dcr_c() { decrement(F(), C()); }
+		void dcr_d() { decrement(F(), D()); }
+		void dcr_e() { decrement(F(), E()); }
+		void dcr_h() { decrement(F(), H()); }
+		void dcr_l() { decrement(F(), L()); }
 
 		void dcr_m() {
 			m_memory.ADDRESS() = HL();
-			auto value = m_memory.reference();
-			postDecrement(F(), --value);
-			m_memory.reference() = value;
+			decrement(F(), m_memory.reference());
 		}
 
 		void inx_b() { ++BC().word; }

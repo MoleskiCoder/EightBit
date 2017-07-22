@@ -51,16 +51,16 @@ int EightBit::LR35902::interrupt(uint8_t value) {
 
 #pragma region Flag manipulation helpers
 
-void EightBit::LR35902::postIncrement(uint8_t& f, uint8_t value) {
-	adjustZero<LR35902>(f, value);
+void EightBit::LR35902::increment(uint8_t& f, uint8_t& operand) {
 	clearFlag(f, NF);
-	clearFlag(f, HC, lowNibble(value));
+	adjustZero<LR35902>(f, ++operand);
+	clearFlag(f, HC, lowNibble(operand));
 }
 
-void EightBit::LR35902::postDecrement(uint8_t& f, uint8_t value) {
-	adjustZero<LR35902>(f, value);
+void EightBit::LR35902::decrement(uint8_t& f, uint8_t& operand) {
 	setFlag(f, NF);
-	clearFlag(f, HC, lowNibble(value + 1));
+	clearFlag(f, HC, lowNibble(operand));
+	adjustZero<LR35902>(f, --operand);
 }
 
 #pragma endregion Flag manipulation helpers
@@ -573,7 +573,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			cycles += 2;
 			break;
 		case 4:	// 8-bit INC
-			postIncrement(f, ++R(y, a));	// INC r
+			increment(f, R(y, a));	// INC r
 			cycles++;
 			if (y == 6) {
 				m_bus.fireWriteBusEvent();
@@ -581,7 +581,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			}
 			break;
 		case 5:	// 8-bit DEC
-			postDecrement(f, --R(y, a));	// DEC r
+			decrement(f, R(y, a));	// DEC r
 			cycles++;
 			if (y == 6) {
 				m_bus.fireWriteBusEvent();
