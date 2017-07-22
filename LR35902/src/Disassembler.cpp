@@ -404,7 +404,7 @@ void EightBit::Disassembler::disassembleOther(
 				dumpCount++;
 				break;
 			case 7:
-				specification = "LD HL,SP+%3$04XH";
+				specification = "LD HL,SP%4$+i";
 				dumpCount++;
 				break;
 			}
