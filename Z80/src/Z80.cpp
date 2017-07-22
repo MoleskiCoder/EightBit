@@ -108,18 +108,18 @@ int EightBit::Z80::interrupt(bool maskable, uint8_t value) {
 
 #pragma region Flag manipulation helpers
 
-void EightBit::Z80::postIncrement(uint8_t& f, uint8_t value) {
-	adjustSZXY<Z80>(f, value);
+void EightBit::Z80::increment(uint8_t& f, uint8_t& operand) {
 	clearFlag(f, NF);
-	setFlag(f, VF, value == Bit7);
-	clearFlag(f, HC, lowNibble(value));
+	adjustSZXY<Z80>(f, ++operand);
+	setFlag(f, VF, operand == Bit7);
+	clearFlag(f, HC, lowNibble(operand));
 }
 
-void EightBit::Z80::postDecrement(uint8_t& f, uint8_t value) {
-	adjustSZXY<Z80>(f, value);
+void EightBit::Z80::decrement(uint8_t& f, uint8_t& operand) {
 	setFlag(f, NF);
-	setFlag(f, VF, value == Mask7);
-	clearFlag(f, HC, lowNibble(value + 1));
+	clearFlag(f, HC, lowNibble(operand));
+	adjustSZXY<Z80>(f, --operand);
+	setFlag(f, VF, operand == Mask7);
 }
 
 #pragma endregion Flag manipulation helpers
@@ -636,7 +636,7 @@ void EightBit::Z80::ini(uint8_t& f) {
 	auto value = m_memory.DATA();
 	m_memory.ADDRESS().word = HL().word++;
 	m_memory.reference() = value;
-	postDecrement(f, --B());
+	decrement(f, B());
 	setFlag(f, NF);
 }
 
@@ -647,7 +647,7 @@ void EightBit::Z80::ind(uint8_t& f) {
 	auto value = m_memory.DATA();
 	m_memory.ADDRESS().word = HL().word--;
 	m_memory.reference() = value;
-	postDecrement(f, --B());
+	decrement(f, B());
 	setFlag(f, NF);
 }
 
@@ -669,7 +669,7 @@ void EightBit::Z80::blockOut(uint8_t& f) {
 	auto value = m_memory.reference();
 	m_memory.ADDRESS().word = BC().word;
 	writePort();
-	postDecrement(f, --B());
+	decrement(f, B());
 	setFlag(f, NF, value & Bit7);
 	setFlag(f, HC | CF, (L() + value) > 0xff);
 	adjustParity<Z80>(f, ((value + L()) & 7) ^ B());
@@ -1235,11 +1235,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			cycles += 6;
 			break;
 		case 4:	// 8-bit INC
-			postIncrement(f, ++R(y, a));	// INC r
+			increment(f, R(y, a));	// INC r
 			cycles += 4;
 			break;
 		case 5:	// 8-bit DEC
-			postDecrement(f, --R(y, a));	// DEC r
+			decrement(f, R(y, a));	// DEC r
 			cycles += 4;
 			if (y == 6)
 				cycles += 7;

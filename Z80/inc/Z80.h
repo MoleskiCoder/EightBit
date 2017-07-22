@@ -264,8 +264,8 @@ namespace EightBit {
 		void executeED(int x, int y, int z, int p, int q);
 		void executeOther(int x, int y, int z, int p, int q);
 
-		static void postIncrement(uint8_t& f, uint8_t value);
-		static void postDecrement(uint8_t& f, uint8_t value);
+		static void increment(uint8_t& f, uint8_t& operand);
+		static void decrement(uint8_t& f, uint8_t& operand);
 
 		void retn();
 		void reti();
