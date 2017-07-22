@@ -43,17 +43,9 @@ namespace EightBit {
 		virtual register16_t& DE() override { return de; }
 		virtual register16_t& HL() override { return hl; }
 
-		bool isInterruptable() const {
-			return m_interrupt;
-		}
+		bool isInterruptable() const;
 
-		int interrupt(uint8_t value) {
-			if (isInterruptable()) {
-				di();
-				return execute(value);
-			}
-			return 0;
-		}
+		int interrupt(uint8_t value);
 
 		virtual void initialise();
 		int step();
@@ -72,11 +64,7 @@ namespace EightBit {
 
 		int execute(uint8_t opcode);
 
-		int execute(const Instruction& instruction) {
-			cycles = 0;
-			instruction.vector();
-			return cycles + instruction.count;
-		}
+		int execute(const Instruction& instruction);
 
 		void adjustReservedFlags() {
 			F() = (F() | Bit1) & ~(Bit5 | Bit3);
@@ -90,15 +78,9 @@ namespace EightBit {
 			clearFlag(f, AC, calculateHalfCarrySub(before, value, calculation));
 		}
 
-		static void increment(uint8_t& f, uint8_t& operand) {
-			adjustSZP<Intel8080>(f, ++operand);
-			clearFlag(f, AC, lowNibble(operand));
-		}
+		static void increment(uint8_t& f, uint8_t& operand);
 
-		static void decrement(uint8_t& f, uint8_t& operand) {
-			adjustSZP<Intel8080>(f, --operand);
-			setFlag(f, AC, lowNibble(operand) != Mask4);
-		}
+		static void decrement(uint8_t& f, uint8_t& operand);
 
 		static Instruction INS(instruction_t method, AddressingMode mode, std::string disassembly, int cycles);
 		Instruction UNKNOWN();
@@ -107,68 +89,18 @@ namespace EightBit {
 
 		//
 
-		void compare(uint8_t& f, uint8_t check, uint8_t value) {
-			subtract(f, check, value);
-		}
+		void compare(uint8_t& f, uint8_t check, uint8_t value);
+		void anda(uint8_t value);
+		void ora(uint8_t value);
+		void xra(uint8_t value);
 
-		void anda(uint8_t value) {
-			auto& a = A();
-			auto& f = F();
-			setFlag(f, AC, (a | value) & Bit3);
-			clearFlag(f, CF);
-			adjustSZP<Intel8080>(f, a &= value);
-		}
+		void add(uint8_t value, int carry = 0);
+		void adc(uint8_t value);
 
-		void ora(uint8_t value) {
-			auto& f = F();
-			clearFlag(f, AC | CF);
-			adjustSZP<Intel8080>(f, A() |= value);
-		}
+		void dad(uint16_t value);
 
-		void xra(uint8_t value) {
-			auto& f = F();
-			clearFlag(f, AC | CF);
-			adjustSZP<Intel8080>(f, A() ^= value);
-		}
-
-		void add(uint8_t value, int carry = 0) {
-			auto& a = A();
-			auto& f = F();
-			register16_t sum;
-			sum.word = a + value + carry;
-			adjustAuxiliaryCarryAdd(f, a, value, sum.word);
-			a = sum.low;
-			setFlag(f, CF, sum.word & Bit8);
-			adjustSZP<Intel8080>(f, a);
-		}
-
-		void adc(uint8_t value) {
-			add(value, F() & CF);
-		}
-
-		void dad(uint16_t value) {
-			auto& f = F();
-			auto sum = HL().word + value;
-			setFlag(f, CF, sum & Bit16);
-			HL().word = sum;
-		}
-
-		void subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0) {
-
-			register16_t result;
-			result.word = operand - value - carry;
-
-			adjustAuxiliaryCarrySub(f, operand, value, result.word);
-
-			operand = result.low;
-
-			setFlag(f, CF, result.word & Bit8);
-			adjustSZP<Intel8080>(f, operand);
-		}
-
-		void sbb(uint8_t value) {
-			subtract(F(), A(), value, F() & CF);
-		}
+		void subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
+		void sbb(uint8_t value);
 
 		void mov_m_r(uint8_t value) {
 			m_memory.ADDRESS() = HL();
@@ -332,16 +264,7 @@ namespace EightBit {
 			adjustReservedFlags();
 		}
 
-		void xhtl() {
-			m_memory.ADDRESS() = SP();
-			MEMPTR().low = m_memory.reference();
-			m_memory.reference() = L();
-			L() = MEMPTR().low;
-			m_memory.ADDRESS().word++;
-			MEMPTR().high = m_memory.reference();
-			m_memory.reference() = H();
-			H() = MEMPTR().high;
-		}
+		void xhtl();
 
 		void sphl() {
 			SP() = HL();
@@ -356,56 +279,51 @@ namespace EightBit {
 
 		// jump
 
-		void jmp() { jumpConditional(true); }
+		void jmp();
 
-		void jc() { jumpConditional(F() & CF); }
-		void jnc() { jumpConditional(!(F() & CF)); }
+		void jc();
+		void jnc();
 
-		void jz() { jumpConditional(F() & ZF); }
-		void jnz() { jumpConditional(!(F() & ZF)); }
+		void jz();
+		void jnz();
 
-		void jpe() { jumpConditional(F() & PF); }
-		void jpo() { jumpConditional(!(F() & PF)); }
+		void jpe();
+		void jpo();
 
-		void jm() { jumpConditional(F() & SF); }
-		void jp() { jumpConditional(!(F() & SF)); }
+		void jm();
+		void jp();
 
-		void pchl() {
-			PC() = HL();
-		}
+		void pchl();
 
 		// call
 
-		void callDirect() {
-			fetchWord();
-			call();
-		}
+		void callDirect();
 
-		void cc() { if (callConditional(F() & CF)) cycles += 6; }
-		void cnc() { if (callConditional(!(F() & CF))) cycles += 6; }
+		void cc();
+		void cnc();
 
-		void cpe() { if (callConditional(F() & PF)) cycles += 6; }
-		void cpo() { if (callConditional(!(F() & PF))) cycles += 6; }
+		void cpe();
+		void cpo();
 
-		void cz() { if (callConditional(F() & ZF)) cycles += 6; }
-		void cnz() { if (callConditional(!(F() & ZF))) cycles += 6; }
+		void cz();
+		void cnz();
 
-		void cm() { if (callConditional(F() & SF)) cycles += 6; }
-		void cp() { if (callConditional(!(F() & SF))) cycles += 6; }
+		void cm();
+		void cp();
 
 		// return
 
-		void rc() { if (returnConditional(F() & CF)) cycles += 6; }
-		void rnc() { if (returnConditional(!(F() & CF))) cycles += 6; }
+		void rc();
+		void rnc();
 
-		void rz() { if (returnConditional(F() & ZF)) cycles += 6; }
-		void rnz() { if (returnConditional(!(F() & ZF))) cycles += 6; }
+		void rz();
+		void rnz();
 
-		void rpe() { if (returnConditional(F() & PF)) cycles += 6; }
-		void rpo() { if (returnConditional(!(F() & PF))) cycles += 6; }
+		void rpe();
+		void rpo();
 
-		void rm() { if (returnConditional(F() & SF)) cycles += 6; }
-		void rp() { if (returnConditional(!(F() & SF))) cycles += 6; }
+		void rm();
+		void rp();
 
 		// restart
 
@@ -591,67 +509,27 @@ namespace EightBit {
 
 		// rotate
 
-		void rlc() {
-			auto& a = A();
-			auto carry = a & Bit7;
-			a = (a << 1) | (carry >> 7);
-			setFlag(F(), CF, carry);
-		}
-
-		void rrc() {
-			auto& a = A();
-			auto carry = a & Bit0;
-			a = (a >> 1) | (carry << 7);
-			setFlag(F(), CF, carry);
-		}
-
-		void ral() {
-			auto& a = A();
-			auto& f = F();
-			const auto carry = f & CF;
-			setFlag(f, CF, a & Bit7);
-			a = (a << 1) | carry;
-		}
-
-		void rar() {
-			auto& a = A();
-			auto& f = F();
-			const auto carry = f & CF;
-			setFlag(f, CF, a & Bit0);
-			a = (a >> 1) | (carry << 7);
-		}
+		void rlc();
+		void rrc();
+		void ral();
+		void rar();
 
 		// specials
 
-		void cma() { A() ^= Mask8; }
-		void stc() { setFlag(F(), CF); }
-		void cmc() { clearFlag(F(), CF, F() & CF); }
-
-		void daa() {
-			const auto& a = A();
-			auto& f = F();
-			auto carry = f & CF;
-			uint8_t addition = 0;
-			if ((f & AC) || lowNibble(a) > 9) {
-				addition = 0x6;
-			}
-			if ((f & CF) || highNibble(a) > 9 || (highNibble(a) >= 9 && lowNibble(a) > 9)) {
-				addition |= 0x60;
-				carry = true;
-			}
-			add(addition);
-			setFlag(f, CF, carry);
-		}
+		void cma();
+		void stc();
+		void cmc();
+		void daa();
 
 		// input/output
 
-		void out() { m_ports.write(fetchByte(), A()); }
-		void in() { A() = m_ports.read(fetchByte()); }
+		void out();
+		void in();
 
 		// control
 
-		void ei() { m_interrupt = true; }
-		void di() { m_interrupt = false; }
+		void ei();
+		void di();
 
 		void nop() {}
 

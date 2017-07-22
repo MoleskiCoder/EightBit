@@ -62,6 +62,329 @@ void EightBit::Intel8080::initialise() {
 	AF().word = BC().word = DE().word = HL().word = 0;
 }
 
+#pragma region Interrupt routines
+
+void EightBit::Intel8080::di() {
+	m_interrupt = false;
+}
+
+void EightBit::Intel8080::ei() {
+	m_interrupt = true;
+}
+
+int EightBit::Intel8080::interrupt(uint8_t value) {
+	if (isInterruptable()) {
+		di();
+		return execute(value);
+	}
+	return 0;
+}
+
+bool EightBit::Intel8080::isInterruptable() const {
+	return m_interrupt;
+}
+
+#pragma endregion Interrupt routines
+
+#pragma region Flag manipulation helpers
+
+void EightBit::Intel8080::increment(uint8_t& f, uint8_t& operand) {
+	adjustSZP<Intel8080>(f, ++operand);
+	clearFlag(f, AC, lowNibble(operand));
+}
+
+void EightBit::Intel8080::decrement(uint8_t& f, uint8_t& operand) {
+	adjustSZP<Intel8080>(f, --operand);
+	setFlag(f, AC, lowNibble(operand) != Mask4);
+}
+
+#pragma endregion Flag manipulation helpers
+
+#pragma region PC manipulation: call/ret/jp/jr
+
+void EightBit::Intel8080::jmp() {
+	jumpConditional(true);
+}
+
+void EightBit::Intel8080::jc() {
+	jumpConditional(F() & CF);
+}
+
+void EightBit::Intel8080::jnc() {
+	jumpConditional(!(F() & CF));
+}
+
+void EightBit::Intel8080::jz() {
+	jumpConditional(F() & ZF);
+}
+
+void EightBit::Intel8080::jnz() {
+	jumpConditional(!(F() & ZF));
+}
+
+void EightBit::Intel8080::jpe() {
+	jumpConditional(F() & PF);
+}
+
+void EightBit::Intel8080::jpo() {
+	jumpConditional(!(F() & PF));
+}
+
+void EightBit::Intel8080::jm() {
+	jumpConditional(F() & SF);
+}
+
+void EightBit::Intel8080::jp() {
+	jumpConditional(!(F() & SF));
+}
+
+void EightBit::Intel8080::pchl() {
+	PC() = HL();
+}
+
+void EightBit::Intel8080::rc() {
+	if (returnConditional(F() & CF))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::rnc() {
+	if (returnConditional(!(F() & CF)))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::rz() {
+	if (returnConditional(F() & ZF))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::rnz() {
+	if (returnConditional(!(F() & ZF)))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::rpe() {
+	if (returnConditional(F() & PF))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::rpo() {
+	if (returnConditional(!(F() & PF)))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::rm() {
+	if (returnConditional(F() & SF))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::rp() {
+	if (returnConditional(!(F() & SF)))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::callDirect() {
+	fetchWord();
+	call();
+}
+
+void EightBit::Intel8080::cc() {
+	if (callConditional(F() & CF))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::cnc() {
+	if (callConditional(!(F() & CF)))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::cpe() {
+	if (callConditional(F() & PF))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::cpo() {
+	if (callConditional(!(F() & PF)))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::cz() {
+	if (callConditional(F() & ZF))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::cnz() {
+	if (callConditional(!(F() & ZF)))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::cm() {
+	if (callConditional(F() & SF))
+		cycles += 6;
+}
+
+void EightBit::Intel8080::cp() {
+	if (callConditional(!(F() & SF)))
+		cycles += 6;
+}
+
+#pragma endregion PC manipulation: call/ret/jp/jr
+
+#pragma region 16-bit arithmetic
+
+void EightBit::Intel8080::dad(uint16_t value) {
+	auto& f = F();
+	auto sum = HL().word + value;
+	setFlag(f, CF, sum & Bit16);
+	HL().word = sum;
+}
+
+#pragma endregion 16-bit arithmetic
+
+#pragma region ALU
+
+void EightBit::Intel8080::add(uint8_t value, int carry) {
+	auto& a = A();
+	auto& f = F();
+	register16_t sum;
+	sum.word = a + value + carry;
+	adjustAuxiliaryCarryAdd(f, a, value, sum.word);
+	a = sum.low;
+	setFlag(f, CF, sum.word & Bit8);
+	adjustSZP<Intel8080>(f, a);
+}
+
+void EightBit::Intel8080::adc(uint8_t value) {
+	add(value, F() & CF);
+}
+
+void EightBit::Intel8080::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
+
+	register16_t result;
+	result.word = operand - value - carry;
+
+	adjustAuxiliaryCarrySub(f, operand, value, result.word);
+
+	operand = result.low;
+
+	setFlag(f, CF, result.word & Bit8);
+	adjustSZP<Intel8080>(f, operand);
+}
+
+void EightBit::Intel8080::sbb(uint8_t value) {
+	subtract(F(), A(), value, F() & CF);
+}
+
+void EightBit::Intel8080::anda(uint8_t value) {
+	auto& a = A();
+	auto& f = F();
+	setFlag(f, AC, (a | value) & Bit3);
+	clearFlag(f, CF);
+	adjustSZP<Intel8080>(f, a &= value);
+}
+
+void EightBit::Intel8080::xra(uint8_t value) {
+	auto& f = F();
+	clearFlag(f, AC | CF);
+	adjustSZP<Intel8080>(f, A() ^= value);
+}
+
+void EightBit::Intel8080::ora(uint8_t value) {
+	auto& f = F();
+	clearFlag(f, AC | CF);
+	adjustSZP<Intel8080>(f, A() |= value);
+}
+
+void EightBit::Intel8080::compare(uint8_t& f, uint8_t check, uint8_t value) {
+	subtract(f, check, value);
+}
+
+#pragma endregion ALU
+
+#pragma region Shift and rotate
+
+void EightBit::Intel8080::rlc() {
+	auto& a = A();
+	auto carry = a & Bit7;
+	a = (a << 1) | (carry >> 7);
+	setFlag(F(), CF, carry);
+}
+
+void EightBit::Intel8080::rrc() {
+	auto& a = A();
+	auto carry = a & Bit0;
+	a = (a >> 1) | (carry << 7);
+	setFlag(F(), CF, carry);
+}
+
+void EightBit::Intel8080::ral() {
+	auto& a = A();
+	auto& f = F();
+	const auto carry = f & CF;
+	setFlag(f, CF, a & Bit7);
+	a = (a << 1) | carry;
+}
+
+void EightBit::Intel8080::rar() {
+	auto& a = A();
+	auto& f = F();
+	const auto carry = f & CF;
+	setFlag(f, CF, a & Bit0);
+	a = (a >> 1) | (carry << 7);
+}
+
+#pragma endregion Shift and rotate
+
+#pragma region Miscellaneous instructions
+
+void EightBit::Intel8080::daa() {
+	const auto& a = A();
+	auto& f = F();
+	auto carry = f & CF;
+	uint8_t addition = 0;
+	if ((f & AC) || lowNibble(a) > 9) {
+		addition = 0x6;
+	}
+	if ((f & CF) || highNibble(a) > 9 || (highNibble(a) >= 9 && lowNibble(a) > 9)) {
+		addition |= 0x60;
+		carry = true;
+	}
+	add(addition);
+	setFlag(f, CF, carry);
+}
+
+void EightBit::Intel8080::cma() {
+	A() ^= Mask8;
+}
+
+void EightBit::Intel8080::stc() {
+	setFlag(F(), CF);
+}
+
+void EightBit::Intel8080::cmc() {
+	clearFlag(F(), CF, F() & CF);
+}
+
+void EightBit::Intel8080::xhtl() {
+	m_memory.ADDRESS() = SP();
+	MEMPTR().low = m_memory.reference();
+	m_memory.reference() = L();
+	L() = MEMPTR().low;
+	m_memory.ADDRESS().word++;
+	MEMPTR().high = m_memory.reference();
+	m_memory.reference() = H();
+	H() = MEMPTR().high;
+}
+
+#pragma endregion Miscellaneous instructions
+
+void EightBit::Intel8080::out() {
+	m_ports.write(fetchByte(), A());
+}
+
+void EightBit::Intel8080::in() {
+	A() = m_ports.read(fetchByte());
+}
+
 int EightBit::Intel8080::step() {
 	ExecutingInstruction.fire(*this);
 	return execute(fetchByte());
@@ -70,6 +393,12 @@ int EightBit::Intel8080::step() {
 int EightBit::Intel8080::execute(uint8_t opcode) {
 	const auto& instruction = instructions[opcode];
 	return execute(instruction);
+}
+
+int EightBit::Intel8080::execute(const Instruction& instruction) {
+	cycles = 0;
+	instruction.vector();
+	return cycles + instruction.count;
 }
 
 //
