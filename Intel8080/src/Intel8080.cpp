@@ -377,6 +377,8 @@ void EightBit::Intel8080::xhtl() {
 
 #pragma endregion Miscellaneous instructions
 
+#pragma region I/O instructions
+
 void EightBit::Intel8080::out() {
 	m_ports.write(fetchByte(), A());
 }
@@ -384,6 +386,8 @@ void EightBit::Intel8080::out() {
 void EightBit::Intel8080::in() {
 	A() = m_ports.read(fetchByte());
 }
+
+#pragma endregion I/O instructions
 
 int EightBit::Intel8080::step() {
 	ExecutingInstruction.fire(*this);
