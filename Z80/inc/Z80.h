@@ -57,8 +57,6 @@ namespace EightBit {
 		int execute(uint8_t opcode);
 		int step();
 
-		// Mutable access to processor!!
-
 		virtual register16_t& AF() override {
 			return m_accumulatorFlags[m_accumulatorFlagsSet];
 		}
