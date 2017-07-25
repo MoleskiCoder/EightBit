@@ -323,19 +323,6 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 			case 0:	// NOP
 				cycles += 4;
 				break;
-			case 1:	// EX AF AF'
-				break;
-			case 2:	// DJNZ d
-				break;
-			case 3:	// JR d
-				break;
-			case 4: // JR cc,d
-			case 5:
-			case 6:
-			case 7:
-				break;
-			default:
-				__assume(0);
 			}
 			break;
 		case 1:	// 16-bit load immediate/add
@@ -431,14 +418,12 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 			if (y == 6)
 				cycles += 7;
 			break;
-		case 6: { // 8-bit load immediate
-			auto& r = R(y);	// LD r,n
-			r = fetchByte();
+		case 6:	// 8-bit load immediate
+			R(y) = fetchByte();
 			cycles += 7;
 			if (y == 6)
 				cycles += 3;
 			break;
-		}
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
 			case 0:
@@ -536,8 +521,6 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 					ret();
 					cycles += 10;
 					break;
-				case 1:	// EXX
-					break;
 				case 2:	// JP HL
 					PC() = HL();
 					cycles += 4;
@@ -546,8 +529,6 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 					SP() = HL();
 					cycles += 4;
 					break;
-				default:
-					__assume(0);
 				}
 				break;
 			default:
@@ -564,8 +545,6 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				fetchWord();
 				jump();
 				cycles += 10;
-				break;
-			case 1:	// CB prefix
 				break;
 			case 2:	// OUT (n),A
 				out();
@@ -591,8 +570,6 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				ei();
 				cycles += 4;
 				break;
-			default:
-				__assume(0);
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
@@ -613,14 +590,6 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 					call();
 					cycles += 17;
 					break;
-				case 1:	// DD prefix
-					break;
-				case 2:	// ED prefix
-					break;
-				case 3:	// FD prefix
-					break;
-				default:
-					__assume(0);
 				}
 				break;
 			default:
