@@ -18,25 +18,9 @@ namespace EightBit {
 			CF = Bit0,
 		};
 
-		enum AddressingMode {
-			Unknown,
-			Implied,	// zero bytes
-			Immediate,	// single byte
-			Absolute	// two bytes, little endian
-		};
-
-		struct Instruction {
-			instruction_t vector = nullptr;
-			AddressingMode mode = Unknown;
-			std::string disassembly;
-			int count = 0;
-		};
-
 		Intel8080(Memory& memory, InputOutput& ports);
 
 		Signal<Intel8080> ExecutingInstruction;
-
-		const std::array<Instruction, 0x100>& getInstructions() const { return instructions; }
 
 		bool isInterruptable() const;
 
@@ -64,8 +48,6 @@ namespace EightBit {
 
 	private:
 		InputOutput& m_ports;
-
-		std::array<Instruction, 0x100> instructions;
 
 		register16_t af;
 		register16_t bc;
@@ -183,23 +165,10 @@ namespace EightBit {
 
 		void xhtl();
 
-		// input/output
-
 		void out();
 		void in();
 
-		// control
-
 		void ei();
 		void di();
-
-		//
-
-		void ___();
-		void nop() {}
-
-		static Instruction INS(instruction_t method, AddressingMode mode, std::string disassembly, int cycles);
-		Instruction UNKNOWN();
-		void installInstructions();
 	};
 }

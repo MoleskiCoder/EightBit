@@ -9,7 +9,6 @@ EightBit::Intel8080::Intel8080(Memory& memory, InputOutput& ports)
   m_interrupt(false),
   m_ports(ports) {
 	bc.word = de.word = hl.word = 0;
-	installInstructions();
 }
 
 void EightBit::Intel8080::initialise() {
@@ -672,58 +671,4 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 		}
 		break;
 	}
-}
-
-//
-
-EightBit::Intel8080::Instruction EightBit::Intel8080::INS(instruction_t method, AddressingMode mode, std::string disassembly, int cycles) {
-	Intel8080::Instruction returnValue;
-	returnValue.vector = method;
-	returnValue.mode = mode;
-	returnValue.disassembly = disassembly;
-	returnValue.count = cycles;
-	return returnValue;
-}
-
-EightBit::Intel8080::Instruction EightBit::Intel8080::UNKNOWN() {
-	Intel8080::Instruction returnValue;
-	returnValue.vector = std::bind(&Intel8080::___, this);
-	returnValue.mode = Unknown;
-	returnValue.disassembly = "";
-	returnValue.count = 0;
-	return returnValue;
-}
-
-#define BIND(method)	std::bind(&Intel8080:: method, this)
-
-void EightBit::Intel8080::installInstructions() {
-	instructions = {
-		////	0											1											2											3											4											5												6											7											8											9											A											B											C											D											E											F
-		/* 0 */	INS(BIND(nop), Implied, "NOP", 4),			INS(BIND(nop), Absolute, "LXI B,", 10),		INS(BIND(nop), Implied, "STAX B", 7),		INS(BIND(nop), Implied, "INX B", 5),		INS(BIND(nop), Implied, "INR B", 5),		INS(BIND(nop), Implied, "DCR B", 5),			INS(BIND(nop), Immediate, "MVI B,", 7),		INS(BIND(nop), Implied, "RLC", 4),			UNKNOWN(),									INS(BIND(nop), Implied, "DAD B", 10),		INS(BIND(nop), Implied, "LDAX B", 7),		INS(BIND(nop), Implied, "DCX B", 5),		INS(BIND(nop), Implied, "INR C", 5),		INS(BIND(nop), Implied, "DCR C", 5),		INS(BIND(nop), Immediate, "MVI C,", 7),		INS(BIND(nop), Implied, "RRC", 4),			//	0
-		/* 1 */	UNKNOWN(),									INS(BIND(nop), Absolute, "LXI D,", 10),		INS(BIND(nop), Implied, "STAX D", 7),		INS(BIND(nop), Implied, "INX D", 5),		INS(BIND(nop), Implied, "INR D", 5),		INS(BIND(nop), Implied, "DCR D", 5),			INS(BIND(nop), Immediate, "MVI D,", 7),		INS(BIND(nop), Implied, "RAL", 4),			UNKNOWN(),									INS(BIND(nop), Implied, "DAD D", 10),		INS(BIND(nop), Implied, "LDAX D", 7),		INS(BIND(nop), Implied, "DCX D", 5),		INS(BIND(nop), Implied, "INR E", 5),		INS(BIND(nop), Implied, "DCR E", 5),		INS(BIND(nop), Immediate, "MVI E,", 7),		INS(BIND(nop), Implied, "RAR", 4),			//	1
-		/* 2 */	UNKNOWN(),									INS(BIND(nop), Absolute, "LXI H,", 10),		INS(BIND(nop), Absolute, "SHLD", 16),		INS(BIND(nop), Implied, "INX H", 5),		INS(BIND(nop), Implied, "INR H", 5),		INS(BIND(nop), Implied, "DCR H", 5),			INS(BIND(nop), Immediate, "MVI H,",7),		INS(BIND(nop), Implied, "DAA", 4),			UNKNOWN(),									INS(BIND(nop), Implied, "DAD H", 10),		INS(BIND(nop), Absolute, "LHLD ", 16),		INS(BIND(nop), Implied, "DCX H", 5),		INS(BIND(nop), Implied, "INR L", 5),		INS(BIND(nop), Implied, "DCR L", 5),		INS(BIND(nop), Immediate, "MVI L,", 7),		INS(BIND(nop), Implied, "CMA", 4),			//	2
-		/* 3 */	UNKNOWN(),									INS(BIND(nop), Absolute, "LXI SP,", 10),	INS(BIND(nop), Absolute, "STA ", 13),		INS(BIND(nop), Implied, "INX SP", 5),		INS(BIND(nop), Implied, "INR M", 10),		INS(BIND(nop), Implied, "DCR M", 10),			INS(BIND(nop), Immediate, "MVI M,", 10),	INS(BIND(nop), Implied, "STC", 4),			UNKNOWN(),									INS(BIND(nop), Implied, "DAD SP", 10),		INS(BIND(nop), Absolute, "LDA ", 13),		INS(BIND(nop), Implied, "DCX SP", 5),		INS(BIND(nop), Implied, "INR A", 5),		INS(BIND(nop), Implied, "DCR A", 5),		INS(BIND(nop), Immediate, "MVI A,", 7),		INS(BIND(nop), Implied, "CMC", 4),			//	3
-
-		/* 4 */	INS(BIND(nop), Implied, "MOV B,B", 5),		INS(BIND(nop), Implied, "MOV B,C", 5),		INS(BIND(nop), Implied, "MOV B,D", 5),		INS(BIND(nop), Implied, "MOV B,E", 5),		INS(BIND(nop), Implied, "MOV B,H", 5),		INS(BIND(nop), Implied, "MOV B,L", 5),			INS(BIND(nop), Implied, "MOV B,M", 7),		INS(BIND(nop), Implied, "MOV B,A", 5),		INS(BIND(nop), Implied, "MOV C,B", 5),		INS(BIND(nop), Implied, "MOV C,C", 5),		INS(BIND(nop), Implied, "MOV C,D", 5),		INS(BIND(nop), Implied, "MOV C,E", 5),		INS(BIND(nop), Implied, "MOV C,H", 5),		INS(BIND(nop), Implied, "MOV C,L", 5),		INS(BIND(nop), Implied, "MOV C,M", 7),		INS(BIND(nop), Implied, "MOV C,A", 5),		//	4
-		/* 5 */	INS(BIND(nop), Implied, "MOV D,B", 5),		INS(BIND(nop), Implied, "MOV D,C", 5),		INS(BIND(nop), Implied, "MOV D,D", 5),		INS(BIND(nop), Implied, "MOV D,E", 5),		INS(BIND(nop), Implied, "MOV D,H", 5),		INS(BIND(nop), Implied, "MOV D,L", 5),			INS(BIND(nop), Implied, "MOV D,M", 7),		INS(BIND(nop), Implied, "MOV D,A", 5),		INS(BIND(nop), Implied, "MOV E,B", 5),		INS(BIND(nop), Implied, "MOV E,C", 5),		INS(BIND(nop), Implied, "MOV E,D", 5),		INS(BIND(nop), Implied, "MOV E,E", 5),		INS(BIND(nop), Implied, "MOV E,H", 5),		INS(BIND(nop), Implied, "MOV E,L", 5),		INS(BIND(nop), Implied, "MOV E,M", 7),		INS(BIND(nop), Implied, "MOV E,A", 5),		//	5
-		/* 6 */	INS(BIND(nop), Implied, "MOV H,B", 5),		INS(BIND(nop), Implied, "MOV H,C", 5),		INS(BIND(nop), Implied, "MOV H,D", 5),		INS(BIND(nop), Implied, "MOV H,E", 5),		INS(BIND(nop), Implied, "MOV H,H", 5),		INS(BIND(nop), Implied, "MOV H,L", 5),			INS(BIND(nop), Implied, "MOV H,M", 7),		INS(BIND(nop), Implied, "MOV H,A", 5),		INS(BIND(nop), Implied, "MOV L,B", 5),		INS(BIND(nop), Implied, "MOV L,C", 5),		INS(BIND(nop), Implied, "MOV L,D", 5),		INS(BIND(nop), Implied, "MOV L,E", 5),		INS(BIND(nop), Implied, "MOV L,H", 5),		INS(BIND(nop), Implied, "MOV L,L", 5),		INS(BIND(nop), Implied, "MOV L,M", 7),		INS(BIND(nop), Implied, "MOV L,A", 5),		//	6
-		/* 7 */	INS(BIND(nop), Implied, "MOV M,B", 7),		INS(BIND(nop), Implied, "MOV M,C", 7),		INS(BIND(nop), Implied, "MOV M,D", 7),		INS(BIND(nop), Implied, "MOV M,E", 7),		INS(BIND(nop), Implied, "MOV M,H", 7),		INS(BIND(nop), Implied, "MOV M,L", 7),			INS(BIND(nop), Implied, "HLT", 7),			INS(BIND(nop), Implied, "MOV M,A", 7),		INS(BIND(nop), Implied, "MOV A,B", 5),		INS(BIND(nop), Implied, "MOV A,C", 5),		INS(BIND(nop), Implied, "MOV A,D", 5),		INS(BIND(nop), Implied, "MOV A,E", 5),		INS(BIND(nop), Implied, "MOV A,H", 5),		INS(BIND(nop), Implied, "MOV A,L", 5),		INS(BIND(nop), Implied, "MOV A,M", 7),		INS(BIND(nop), Implied, "MOV A,A", 5),		//	7
-
-		/* 8 */	INS(BIND(nop), Implied, "ADD B", 4),		INS(BIND(nop), Implied, "ADD C", 4),		INS(BIND(nop), Implied, "ADD D", 4),		INS(BIND(nop), Implied, "ADD E", 4),		INS(BIND(nop), Implied, "ADD H", 4),		INS(BIND(nop), Implied, "ADD L", 4),			INS(BIND(nop), Implied, "ADD M", 7),		INS(BIND(nop), Implied, "ADD A", 4),		INS(BIND(nop), Implied, "ADC B", 4),		INS(BIND(nop), Implied, "ADC C", 4),		INS(BIND(nop), Implied, "ADC D", 4),		INS(BIND(nop), Implied, "ADC E", 4),		INS(BIND(nop), Implied, "ADC H", 4),		INS(BIND(nop), Implied, "ADC L", 4),		INS(BIND(nop), Implied, "ADC M", 4),		INS(BIND(nop), Implied, "ADC A", 4),		//	8
-		/* 9 */	INS(BIND(nop), Implied, "SUB B", 4),		INS(BIND(nop), Implied, "SUB C", 4),		INS(BIND(nop), Implied, "SUB D", 4),		INS(BIND(nop), Implied, "SUB E", 4),		INS(BIND(nop), Implied, "SUB H", 4),		INS(BIND(nop), Implied, "SUB L", 4),			INS(BIND(nop), Implied, "SUB M", 7),		INS(BIND(nop), Implied, "SUB A", 4),		INS(BIND(nop), Implied, "SBB B", 4),		INS(BIND(nop), Implied, "SBB C", 4),		INS(BIND(nop), Implied, "SBB D", 4),		INS(BIND(nop), Implied, "SBB E", 4),		INS(BIND(nop), Implied, "SBB H", 4),		INS(BIND(nop), Implied, "SBB L", 4),		INS(BIND(nop), Implied, "SBB M", 4),		INS(BIND(nop), Implied, "SBB A", 4),		//	9
-		/* A */	INS(BIND(nop), Implied, "ANA B", 4),		INS(BIND(nop), Implied, "ANA C", 4),		INS(BIND(nop), Implied, "ANA D", 4),		INS(BIND(nop), Implied, "ANA E", 4),		INS(BIND(nop), Implied, "ANA H", 4),		INS(BIND(nop), Implied, "ANA L", 4),			INS(BIND(nop), Implied, "ANA M", 7),		INS(BIND(nop), Implied, "ANA A", 4),		INS(BIND(nop), Implied, "XRA B", 4),		INS(BIND(nop), Implied, "XRA C", 4),		INS(BIND(nop), Implied, "XRA D", 4),		INS(BIND(nop), Implied, "XRA E", 4),		INS(BIND(nop), Implied, "XRA H", 4),		INS(BIND(nop), Implied, "XRA L", 4),		INS(BIND(nop), Implied, "XRA M", 4),		INS(BIND(nop), Implied, "XRA A", 4),		//	A
-		/* B */	INS(BIND(nop), Implied, "ORA B", 4),		INS(BIND(nop), Implied, "ORA C", 4),		INS(BIND(nop), Implied, "ORA D", 4),		INS(BIND(nop), Implied, "ORA E", 4),		INS(BIND(nop), Implied, "ORA H", 4),		INS(BIND(nop), Implied, "ORA L", 4),			INS(BIND(nop), Implied, "ORA M", 7),		INS(BIND(nop), Implied, "ORA A", 4),		INS(BIND(nop), Implied, "CMP B", 4),		INS(BIND(nop), Implied, "CMP C", 4),		INS(BIND(nop), Implied, "CMP D", 4),		INS(BIND(nop), Implied, "CMP E", 4),		INS(BIND(nop), Implied, "CMP H", 4),		INS(BIND(nop), Implied, "CMP L", 4),		INS(BIND(nop), Implied, "CMP M", 4),		INS(BIND(nop), Implied, "CMP A", 4),		//	B
-
-		/* C */	INS(BIND(nop), Implied, "RNZ", 5),			INS(BIND(nop), Implied, "POP B", 10),		INS(BIND(nop), Absolute, "JNZ ", 10),		INS(BIND(nop), Absolute, "JMP ", 10),		INS(BIND(nop), Absolute, "CNZ ", 11),		INS(BIND(nop), Implied, "PUSH B", 11),			INS(BIND(nop), Immediate, "ADI ", 7),		INS(BIND(nop), Implied, "RST 0", 11),		INS(BIND(nop), Implied, "RZ", 11),			INS(BIND(nop), Implied, "RET", 10),			INS(BIND(nop), Absolute, "JZ ", 10),		UNKNOWN(),									INS(BIND(nop), Absolute, "CZ ", 11),		INS(BIND(nop), Absolute, "CALL ", 17),		INS(BIND(nop), Immediate, "ACI ", 7),		INS(BIND(nop), Implied, "RST 1", 11),		//	C
-		/* D */	INS(BIND(nop), Implied, "RNC", 5),			INS(BIND(nop), Implied, "POP D", 10),		INS(BIND(nop), Absolute, "JNC ", 10),		INS(BIND(nop), Immediate, "OUT ", 10),		INS(BIND(nop), Absolute, "CNC ", 11),		INS(BIND(nop), Implied, "PUSH D", 11),			INS(BIND(nop), Immediate, "SUI ", 7),		INS(BIND(nop), Implied, "RST 2", 11),		INS(BIND(nop), Implied, "RC", 11),			UNKNOWN(),									INS(BIND(nop), Absolute, "JC ", 10),		INS(BIND(nop), Immediate, "IN ", 10),		INS(BIND(nop), Absolute, "CC ", 11),		UNKNOWN(),									INS(BIND(nop), Immediate, "SBI ", 7),		INS(BIND(nop), Implied, "RST 3", 11),		//	D
-		/* E */	INS(BIND(nop), Implied, "RPO", 5),			INS(BIND(nop), Implied, "POP H", 10),		INS(BIND(nop), Absolute, "JPO ", 10),		INS(BIND(nop), Implied, "XHTL", 18),		INS(BIND(nop), Absolute, "CPO ", 11),		INS(BIND(nop), Implied, "PUSH H", 11),			INS(BIND(nop), Immediate, "ANI ", 7),		INS(BIND(nop), Implied, "RST 4", 11),		INS(BIND(nop), Implied, "RPE", 11),			INS(BIND(nop), Implied, "PCHL", 5),			INS(BIND(nop), Absolute, "JPE ", 10),		INS(BIND(nop), Implied, "XCHG", 4),			INS(BIND(nop), Absolute, "CPE ", 11),		UNKNOWN(),									INS(BIND(nop), Immediate, "XRI ", 7),		INS(BIND(nop), Implied, "RST 5", 11),		//	E
-		/* F */	INS(BIND(nop), Implied, "RP", 5),			INS(BIND(nop), Implied, "POP PSW", 10),		INS(BIND(nop), Absolute, "JP ", 10),		INS(BIND(nop), Implied, "DI ", 4),			INS(BIND(nop), Absolute, "CP ", 11),		INS(BIND(nop), Implied, "PUSH PSW", 11),		INS(BIND(nop), Immediate, "ORI ", 7),		INS(BIND(nop), Implied, "RST 6", 11),		INS(BIND(nop), Implied, "RM", 11),			INS(BIND(nop), Implied, "SPHL", 5),			INS(BIND(nop), Absolute, "JM ", 10),		INS(BIND(nop), Implied, "EI", 4),			INS(BIND(nop), Absolute, "CM ", 11),		UNKNOWN(),									INS(BIND(nop), Immediate, "CPI ", 7),		INS(BIND(nop), Implied, "RST 7", 11),		//	F
-	};
-}
-
-void EightBit::Intel8080::___() {
-	m_memory.ADDRESS().word = PC().word - 1;
-	auto opcode = m_memory.reference();
-	auto message = Disassembler::invalid(opcode);
-	throw std::domain_error(message);
 }
