@@ -148,16 +148,16 @@ namespace EightBit {
 		static void orr(uint8_t& f, uint8_t& operand, uint8_t value);
 		static void compare(uint8_t& f, uint8_t check, uint8_t value);
 
-		void rlc();
-		void rrc();
-		void ral();
-		void rar();
+		static void rlc(uint8_t& f, uint8_t& operand);
+		static void rrc(uint8_t& f, uint8_t& operand);
+		static void rl(uint8_t& f, uint8_t& operand);
+		static void rr(uint8_t& f, uint8_t& operand);
 
-		void daa();
+		static void daa(uint8_t& a, uint8_t& f);
 
-		void cma();
-		void stc();
-		void cmc();
+		static void cma(uint8_t& a, uint8_t& f);
+		static void stc(uint8_t& a, uint8_t& f);
+		static void cmc(uint8_t& a, uint8_t& f);
 
 		void xhtl();
 

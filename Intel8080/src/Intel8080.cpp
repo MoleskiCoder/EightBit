@@ -200,66 +200,59 @@ void EightBit::Intel8080::compare(uint8_t& f, uint8_t check, uint8_t value) {
 
 #pragma region Shift and rotate
 
-void EightBit::Intel8080::rlc() {
-	auto& a = A();
-	auto carry = a & Bit7;
-	a = (a << 1) | (carry >> 7);
-	setFlag(F(), CF, carry);
+void EightBit::Intel8080::rlc(uint8_t& f, uint8_t& operand) {
+	auto carry = operand & Bit7;
+	operand = (operand << 1) | (carry >> 7);
+	setFlag(f, CF, carry);
 }
 
-void EightBit::Intel8080::rrc() {
-	auto& a = A();
-	auto carry = a & Bit0;
-	a = (a >> 1) | (carry << 7);
-	setFlag(F(), CF, carry);
+void EightBit::Intel8080::rrc(uint8_t& f, uint8_t& operand) {
+	auto carry = operand & Bit0;
+	operand = (operand >> 1) | (carry << 7);
+	setFlag(f, CF, carry);
 }
 
-void EightBit::Intel8080::ral() {
-	auto& a = A();
-	auto& f = F();
+void EightBit::Intel8080::rl(uint8_t& f, uint8_t& operand) {
 	const auto carry = f & CF;
-	setFlag(f, CF, a & Bit7);
-	a = (a << 1) | carry;
+	setFlag(f, CF, operand & Bit7);
+	operand = (operand << 1) | carry;
 }
 
-void EightBit::Intel8080::rar() {
-	auto& a = A();
-	auto& f = F();
+void EightBit::Intel8080::rr(uint8_t& f, uint8_t& operand) {
 	const auto carry = f & CF;
-	setFlag(f, CF, a & Bit0);
-	a = (a >> 1) | (carry << 7);
+	setFlag(f, CF, operand & Bit0);
+	operand = (operand >> 1) | (carry << 7);
 }
 
 #pragma endregion Shift and rotate
 
 #pragma region Miscellaneous instructions
 
-void EightBit::Intel8080::daa() {
-	const auto& a = A();
-	auto& f = F();
+void EightBit::Intel8080::daa(uint8_t& a, uint8_t& f) {
+	const auto& before = a;
 	auto carry = f & CF;
 	uint8_t addition = 0;
-	if ((f & AC) || lowNibble(a) > 9) {
+	if ((f & AC) || lowNibble(before) > 9) {
 		addition = 0x6;
 	}
-	if ((f & CF) || highNibble(a) > 9 || (highNibble(a) >= 9 && lowNibble(a) > 9)) {
+	if ((f & CF) || highNibble(before) > 9 || (highNibble(before) >= 9 && lowNibble(before) > 9)) {
 		addition |= 0x60;
 		carry = true;
 	}
-	add(f, A(), addition);
+	add(f, a, addition);
 	setFlag(f, CF, carry);
 }
 
-void EightBit::Intel8080::cma() {
-	A() = ~A();
+void EightBit::Intel8080::cma(uint8_t& a, uint8_t& f) {
+	a = ~a;
 }
 
-void EightBit::Intel8080::stc() {
-	setFlag(F(), CF);
+void EightBit::Intel8080::stc(uint8_t& a, uint8_t& f) {
+	setFlag(f, CF);
 }
 
-void EightBit::Intel8080::cmc() {
-	clearFlag(F(), CF, F() & CF);
+void EightBit::Intel8080::cmc(uint8_t& a, uint8_t& f) {
+	clearFlag(f, CF, f & CF);
 }
 
 void EightBit::Intel8080::xhtl() {
@@ -290,7 +283,7 @@ void EightBit::Intel8080::in() {
 int EightBit::Intel8080::step() {
 	ExecutingInstruction.fire(*this);
 	cycles = 0;
-	return execute(fetchByte());
+	return fetchExecute();
 }
 
 int EightBit::Intel8080::execute(uint8_t opcode) {
@@ -427,28 +420,28 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
 			case 0:
-				rlc();
+				rlc(f, a);
 				break;
 			case 1:
-				rrc();
+				rrc(f, a);
 				break;
 			case 2:
-				ral();
+				rl(f, a);
 				break;
 			case 3:
-				rar();
+				rr(f, a);
 				break;
 			case 4:
-				daa();
+				daa(a, f);
 				break;
 			case 5:
-				cma();
+				cma(a, f);
 				break;
 			case 6:
-				stc();
+				stc(a, f);
 				break;
 			case 7:
-				cmc();
+				cmc(a, f);
 				break;
 			default:
 				__assume(0);
