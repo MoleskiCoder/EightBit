@@ -138,15 +138,15 @@ namespace EightBit {
 		bool jumpConditionalFlag(uint8_t& f, int flag);
 		bool callConditionalFlag(uint8_t& f, int flag);
 
-		void dad(uint16_t value);
+		static void add(uint8_t& f, register16_t& operand, register16_t value);
 
-		void add(uint8_t value, int carry = 0);
-		void adc(uint8_t value);
-		void sbb(uint8_t value);
-		void anda(uint8_t value);
-		void xra(uint8_t value);
-		void ora(uint8_t value);
-		void compare(uint8_t& f, uint8_t check, uint8_t value);
+		static void add(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
+		static void adc(uint8_t& f, uint8_t& operand, uint8_t value);
+		static void sbb(uint8_t& f, uint8_t& operand, uint8_t value);
+		static void andr(uint8_t& f, uint8_t& operand, uint8_t value);
+		static void xorr(uint8_t& f, uint8_t& operand, uint8_t value);
+		static void orr(uint8_t& f, uint8_t& operand, uint8_t value);
+		static void compare(uint8_t& f, uint8_t check, uint8_t value);
 
 		void rlc();
 		void rrc();

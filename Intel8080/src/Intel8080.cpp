@@ -132,30 +132,31 @@ bool EightBit::Intel8080::callConditionalFlag(uint8_t& f, int flag) {
 
 #pragma region 16-bit arithmetic
 
-void EightBit::Intel8080::dad(uint16_t value) {
-	auto& f = F();
-	auto sum = HL().word + value;
-	setFlag(f, CF, sum & Bit16);
-	HL().word = sum;
+void EightBit::Intel8080::add(uint8_t& f, register16_t& operand, register16_t value) {
+	const auto result = operand.word + value.word;
+	setFlag(f, CF, result & Bit16);
+	operand.word = result;
 }
 
 #pragma endregion 16-bit arithmetic
 
 #pragma region ALU
 
-void EightBit::Intel8080::add(uint8_t value, int carry) {
-	auto& a = A();
-	auto& f = F();
-	register16_t sum;
-	sum.word = a + value + carry;
-	adjustAuxiliaryCarryAdd(f, a, value, sum.word);
-	a = sum.low;
-	setFlag(f, CF, sum.word & Bit8);
-	adjustSZP<Intel8080>(f, a);
+void EightBit::Intel8080::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
+
+	register16_t result;
+	result.word = operand + value + carry;
+
+	adjustAuxiliaryCarryAdd(f, operand, value, result.word);
+
+	operand = result.low;
+
+	setFlag(f, CF, result.word & Bit8);
+	adjustSZP<Intel8080>(f, operand);
 }
 
-void EightBit::Intel8080::adc(uint8_t value) {
-	add(value, F() & CF);
+void EightBit::Intel8080::adc(uint8_t& f, uint8_t& operand, uint8_t value) {
+	add(f, operand, value, f & CF);
 }
 
 void EightBit::Intel8080::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
@@ -171,28 +172,24 @@ void EightBit::Intel8080::subtract(uint8_t& f, uint8_t& operand, uint8_t value, 
 	adjustSZP<Intel8080>(f, operand);
 }
 
-void EightBit::Intel8080::sbb(uint8_t value) {
-	subtract(F(), A(), value, F() & CF);
+void EightBit::Intel8080::sbb(uint8_t& f, uint8_t& operand, uint8_t value) {
+	subtract(f, operand, value, f & CF);
 }
 
-void EightBit::Intel8080::anda(uint8_t value) {
-	auto& a = A();
-	auto& f = F();
-	setFlag(f, AC, (a | value) & Bit3);
+void EightBit::Intel8080::andr(uint8_t& f, uint8_t& operand, uint8_t value) {
+	setFlag(f, AC, (operand | value) & Bit3);
 	clearFlag(f, CF);
-	adjustSZP<Intel8080>(f, a &= value);
+	adjustSZP<Intel8080>(f, operand &= value);
 }
 
-void EightBit::Intel8080::xra(uint8_t value) {
-	auto& f = F();
+void EightBit::Intel8080::xorr(uint8_t& f, uint8_t& operand, uint8_t value) {
 	clearFlag(f, AC | CF);
-	adjustSZP<Intel8080>(f, A() ^= value);
+	adjustSZP<Intel8080>(f, operand ^= value);
 }
 
-void EightBit::Intel8080::ora(uint8_t value) {
-	auto& f = F();
+void EightBit::Intel8080::orr(uint8_t& f, uint8_t& operand, uint8_t value) {
 	clearFlag(f, AC | CF);
-	adjustSZP<Intel8080>(f, A() |= value);
+	adjustSZP<Intel8080>(f, operand |= value);
 }
 
 void EightBit::Intel8080::compare(uint8_t& f, uint8_t check, uint8_t value) {
@@ -249,7 +246,7 @@ void EightBit::Intel8080::daa() {
 		addition |= 0x60;
 		carry = true;
 	}
-	add(addition);
+	add(f, A(), addition);
 	setFlag(f, CF, carry);
 }
 
@@ -348,7 +345,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				cycles += 10;
 				break;
 			case 1:	// ADD HL,rp
-				dad(RP(p).word);
+				add(f, HL(), RP(p));
 				cycles += 11;
 				break;
 			}
@@ -490,25 +487,25 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 	case 2:	// Operate on accumulator and register/memory location
 		switch (y) {
 		case 0:	// ADD A,r
-			add(R(z));
+			add(f, a, R(z));
 			break;
 		case 1:	// ADC A,r
-			adc(R(z));
+			adc(f, a, R(z));
 			break;
 		case 2:	// SUB r
 			subtract(f, a, R(z));
 			break;
 		case 3:	// SBC A,r
-			sbb(R(z));
+			sbb(f, a, R(z));
 			break;
 		case 4:	// AND r
-			anda(R(z));
+			andr(f, a, R(z));
 			break;
 		case 5:	// XOR r
-			xra(R(z));
+			xorr(f, a, R(z));
 			break;
 		case 6:	// OR r
-			ora(R(z));
+			orr(f, a, R(z));
 			break;
 		case 7:	// CP r
 			compare(f, a, R(z));
@@ -633,25 +630,25 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
 			switch (y) {
 			case 0:	// ADD A,n
-				add(fetchByte());
+				add(f, a, fetchByte());
 				break;
 			case 1:	// ADC A,n
-				adc(fetchByte());
+				adc(f, a, fetchByte());
 				break;
 			case 2:	// SUB n
 				subtract(f, a, fetchByte());
 				break;
 			case 3:	// SBC A,n
-				sbb(fetchByte());
+				sbb(f, a, fetchByte());
 				break;
 			case 4:	// AND n
-				anda(fetchByte());
+				andr(f, a, fetchByte());
 				break;
 			case 5:	// XOR n
-				xra(fetchByte());
+				xorr(f, a, fetchByte());
 				break;
 			case 6:	// OR n
-				ora(fetchByte());
+				orr(f, a, fetchByte());
 				break;
 			case 7:	// CP n
 				compare(f, a, fetchByte());
