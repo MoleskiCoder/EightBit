@@ -31,44 +31,42 @@ namespace EightBit {
 
 		int interrupt(uint8_t value);
 
-		int execute(uint8_t opcode);
+		virtual int execute(uint8_t opcode);
 		int step();
 
-		// Mutable access to processor!!
-
 		virtual register16_t& AF() override {
-			m_accumulatorFlag.low &= 0xf0;
-			return m_accumulatorFlag;
+			af.low &= 0xf0;
+			return af;
 		}
 
 		virtual register16_t& BC() override  {
-			return m_registers[BC_IDX];
+			return bc;
 		}
 
 		virtual register16_t& DE() override {
-			return m_registers[DE_IDX];
+			return de;
 		}
 
 		virtual register16_t& HL() override {
-			return m_registers[HL_IDX];
+			return hl;
 		}
 
 		virtual void reset();
 		virtual void initialise();
 
 	protected:
-		virtual uint8_t fetchByte() {
+		virtual uint8_t fetchByte() override {
 			auto returned = IntelProcessor::fetchByte();
 			m_memory.fireReadBusEvent();
 			return returned;
 		}
 
-		virtual void push(uint8_t value) {
+		virtual void push(uint8_t value) override {
 			IntelProcessor::push(value);
 			m_memory.fireWriteBusEvent();
 		}
 
-		virtual uint8_t pop() {
+		virtual uint8_t pop() override {
 			auto returned = IntelProcessor::pop();
 			m_memory.fireReadBusEvent();
 			return returned;
@@ -91,22 +89,18 @@ namespace EightBit {
 		}
 
 	private:
-		enum { BC_IDX, DE_IDX, HL_IDX };
-
 		Bus& m_bus;
 
-		std::array<register16_t, 3> m_registers;
-		register16_t m_accumulatorFlag;
+		register16_t af;
+		register16_t bc;
+		register16_t de;
+		register16_t hl;
 
 		bool m_ime;
 
 		bool m_prefixCB;
 
 		bool m_stopped;
-
-		int fetchExecute() {
-			return execute(fetchByte());
-		}
 
 		uint8_t& R(int r, uint8_t& a) {
 			switch (r) {
@@ -132,20 +126,36 @@ namespace EightBit {
 		}
 
 		register16_t& RP(int rp) {
+			__assume(rp < 4);
+			__assume(rp >= 0);
 			switch (rp) {
-			case 3:
+			case 0b00:
+				return BC();
+			case 0b01:
+				return DE();
+			case 0b10:
+				return HL();
+			case 0b11:
 				return SP();
 			default:
-				return m_registers[rp];
+				__assume(0);
 			}
 		}
 
 		register16_t& RP2(int rp) {
+			__assume(rp < 4);
+			__assume(rp >= 0);
 			switch (rp) {
-			case 3:
+			case 0b00:
+				return BC();
+			case 0b01:
+				return DE();
+			case 0b10:
+				return HL();
+			case 0b11:
 				return AF();
 			default:
-				return m_registers[rp];
+				__assume(0);
 			}
 		}
 

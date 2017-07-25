@@ -54,7 +54,7 @@ namespace EightBit {
 
 		int interrupt(bool maskable, uint8_t value);
 
-		int execute(uint8_t opcode);
+		virtual int execute(uint8_t opcode);
 		int step();
 
 		virtual register16_t& AF() override {
@@ -131,9 +131,9 @@ namespace EightBit {
 		int8_t m_displacement;
 		bool m_displaced;
 
-		int fetchExecute() {
+		virtual int fetchExecute() override{
 			M1() = true;
-			return execute(fetchByte());
+			return IntelProcessor::fetchExecute();
 		}
 
 		uint8_t& DISPLACED() {

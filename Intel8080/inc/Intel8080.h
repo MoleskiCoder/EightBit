@@ -8,8 +8,6 @@
 namespace EightBit {
 	class Intel8080 : public IntelProcessor {
 	public:
-		typedef std::function<void()> instruction_t;
-
 		enum StatusBits {
 			SF = Bit7,
 			ZF = Bit6,
@@ -29,6 +27,8 @@ namespace EightBit {
 		int step();
 
 		virtual register16_t& AF() override {
+			auto& f = af.low;
+			f = (f | Bit1) & ~(Bit5 | Bit3);
 			return af;
 		}
 
@@ -117,10 +117,6 @@ namespace EightBit {
 			}
 		}
 
-		void adjustReservedFlags() {
-			F() = (F() | Bit1) & ~(Bit5 | Bit3);
-		}
-
 		static void adjustAuxiliaryCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
 			setFlag(f, AC, calculateHalfCarryAdd(before, value, calculation));
 		}
@@ -131,7 +127,7 @@ namespace EightBit {
 
 		static void subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
 
-		int execute(uint8_t opcode);
+		virtual int execute(uint8_t opcode);
 		void execute(int x, int y, int z, int p, int q);
 
 		static void increment(uint8_t& f, uint8_t& operand);

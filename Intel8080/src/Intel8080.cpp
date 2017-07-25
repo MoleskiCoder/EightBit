@@ -14,7 +14,6 @@ EightBit::Intel8080::Intel8080(Memory& memory, InputOutput& ports)
 void EightBit::Intel8080::initialise() {
 	IntelProcessor::initialise();
 	AF().word = BC().word = DE().word = HL().word = 0;
-	adjustReservedFlags();
 }
 
 #pragma region Interrupt routines
@@ -345,7 +344,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0: // LD rp,nn
-				fetchWord(RP(p));
+				Processor::fetchWord(RP(p));
 				cycles += 10;
 				break;
 			case 1:	// ADD HL,rp
@@ -532,7 +531,6 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 			switch (q) {
 			case 0:	// POP rp2[p]
 				popWord(RP2(p));
-				adjustReservedFlags();
 				cycles += 10;
 				break;
 			case 1:

@@ -55,6 +55,8 @@ namespace EightBit {
 
 		void reset();
 
+		virtual int execute(uint8_t opcode) = 0;
+
 	protected:
 		static void clearFlag(uint8_t& f, int flag) { f &= ~flag; }
 		static void setFlag(uint8_t& f, int flag) { f |= flag; }
@@ -71,6 +73,20 @@ namespace EightBit {
 
 		Memory& m_memory;
 		int cycles;
+
+		virtual uint8_t fetchByte() {
+			m_memory.ADDRESS().word = PC().word++;
+			return m_memory.reference();
+		}
+
+		virtual void fetchWord(register16_t& output) {
+			output.low = fetchByte();
+			output.high = fetchByte();
+		}
+
+		virtual int fetchExecute() {
+			return execute(fetchByte());
+		}
 
 	private:
 		register16_t pc;
