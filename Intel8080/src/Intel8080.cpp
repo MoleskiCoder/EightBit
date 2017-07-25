@@ -14,6 +14,7 @@ EightBit::Intel8080::Intel8080(Memory& memory, InputOutput& ports)
 void EightBit::Intel8080::initialise() {
 	IntelProcessor::initialise();
 	AF().word = BC().word = DE().word = HL().word = 0;
+	adjustReservedFlags();
 }
 
 #pragma region Interrupt routines

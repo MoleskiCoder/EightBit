@@ -339,7 +339,7 @@ void EightBit::Disassembler::disassemble(
 		}
 		break;
 	case 2:	// Operate on accumulator and register/memory location
-		specification = alu(y) + " A," + R(z);
+		specification = alu(y) + " " + R(z);
 		break;
 	case 3:
 		switch (z) {
@@ -426,7 +426,7 @@ void EightBit::Disassembler::disassemble(
 			}
 			break;
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
-			specification = alu2(y) + "  %1$02XH";
+			specification = alu2(y) + " %1$02XH";
 			dumpCount++;
 			break;
 		case 7:	// Restart: RST y * 8
@@ -437,9 +437,9 @@ void EightBit::Disassembler::disassemble(
 	}
 }
 
-std::string EightBit::Disassembler::flag(uint8_t value, int flag, const std::string& represents) {
+std::string EightBit::Disassembler::flag(uint8_t value, int flag, std::string represents, std::string off) {
 	std::ostringstream output;
-	output << (value & flag ? represents : "-");
+	output << (value & flag ? represents : off);
 	return output.str();
 }
 
@@ -448,11 +448,11 @@ std::string EightBit::Disassembler::flags(uint8_t value) {
 	output
 		<< flag(value, Intel8080::SF, "S")
 		<< flag(value, Intel8080::ZF, "Z")
-		<< flag(value, Processor::Bit5, "5")
+		<< flag(value, Processor::Bit5, "1", "0")
 		<< flag(value, Intel8080::AC, "A")
-		<< flag(value, Processor::Bit3, "3")
+		<< flag(value, Processor::Bit3, "1", "0")
 		<< flag(value, Intel8080::PF, "P")
-		<< flag(value, Processor::Bit1, "1")
+		<< flag(value, Processor::Bit1, "1", "0")
 		<< flag(value, Intel8080::CF, "C");
 	return output.str();
 }
