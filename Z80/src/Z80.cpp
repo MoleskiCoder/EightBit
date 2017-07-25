@@ -1152,7 +1152,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0: // LD rp,nn
-				fetchWord(RP(p));
+				Processor::fetchWord(RP(p));
 				cycles += 10;
 				break;
 			case 1:	// ADD HL,rp

@@ -119,16 +119,6 @@ namespace EightBit {
 			return m_halfCarryTableSub[index & Mask3];
 		}
 
-		virtual uint8_t fetchByte() {
-			m_memory.ADDRESS().word = PC().word++;
-			return m_memory.reference();
-		}
-
-		void fetchWord(register16_t& output) {
-			output.low = fetchByte();
-			output.high = fetchByte();
-		}
-
 		virtual void push(uint8_t value) {
 			m_memory.ADDRESS().word = --SP().word;
 			m_memory.reference() = value;
@@ -150,7 +140,7 @@ namespace EightBit {
 		}
 
 		void fetchWord() {
-			fetchWord(MEMPTR());
+			Processor::fetchWord(MEMPTR());
 		}
 
 		//

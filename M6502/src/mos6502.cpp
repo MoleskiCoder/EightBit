@@ -385,12 +385,6 @@ uint8_t EightBit::MOS6502::fetchByte() {
 	return getByte();
 }
 
-void EightBit::MOS6502::fetchWord(register16_t& output) {
-	m_memory.ADDRESS().word = PC().word++;
-	getWord(output);
-	PC().word++;
-}
-
 ////
 
 void EightBit::MOS6502::ROR(uint8_t& output) {

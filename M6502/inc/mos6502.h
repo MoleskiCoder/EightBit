@@ -78,7 +78,7 @@ namespace EightBit {
 	protected:
 		virtual void interrupt(uint16_t vector);
 
-		virtual int execute(uint8_t cell);
+		virtual int execute(uint8_t opcode);
 
 	private:
 		register16_t& MEMPTR() { return m_memptr; }
@@ -96,8 +96,7 @@ namespace EightBit {
 		void pushWord(register16_t value);
 		void popWord(register16_t& output);
 
-		uint8_t fetchByte();
-		void fetchWord(register16_t& output);
+		virtual uint8_t fetchByte() override;
 
 #pragma region 6502 addressing modes
 
