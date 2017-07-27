@@ -132,34 +132,6 @@ bool EightBit::LR35902::callConditionalFlag(uint8_t& f, int flag) {
 
 #pragma region 16-bit arithmetic
 
-void EightBit::LR35902::sbc(uint8_t& f, register16_t& operand, register16_t value) {
-
-	auto before = operand;
-
-	auto carry = (f & CF) >> 4;
-	auto result = before.word - value.word - carry;
-	operand.word = result;
-
-	clearFlag(f, ZF, operand.word);
-	adjustHalfCarrySub(f, before.high, value.high, operand.high);
-	setFlag(f, NF);
-	setFlag(f, CF, result & Bit16);
-}
-
-void EightBit::LR35902::adc(uint8_t& f, register16_t& operand, register16_t value) {
-
-	auto before = operand;
-
-	auto carry = (f & CF) >> 4;
-	auto result = before.word + value.word + carry;
-	operand.word = result;
-
-	clearFlag(f, ZF, result);
-	adjustHalfCarryAdd(f, before.high, value.high, operand.high);
-	clearFlag(f, NF);
-	setFlag(f, CF, result & Bit16);
-}
-
 void EightBit::LR35902::add(uint8_t& f, register16_t& operand, register16_t value) {
 
 	auto before = operand;

@@ -182,8 +182,6 @@ namespace EightBit {
 		bool jumpConditionalFlag(uint8_t& f, int flag);
 		bool callConditionalFlag(uint8_t& f, int flag);
 
-		void sbc(uint8_t& f, register16_t& operand, register16_t value);
-		void adc(uint8_t& f, register16_t& operand, register16_t value);
 		void add(uint8_t& f, register16_t& operand, register16_t value);
 
 		static void add(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
