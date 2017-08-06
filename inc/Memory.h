@@ -56,17 +56,8 @@ namespace EightBit {
 		virtual uint8_t peek(uint16_t address) const;
 		virtual uint16_t peekWord(uint16_t address) const;
 
-		virtual uint8_t& reference() {
-			auto effective = effectiveAddress(ADDRESS().word);
-			return m_locked[effective] ? placeDATA(m_bus[effective]) : referenceDATA(m_bus[effective]);
-		}
-
 		virtual int effectiveAddress(int address) const {
 			return address & m_addressMask;
-		}
-
-		void fireReadBusEvent() {
-			ReadByte.fire(AddressEventArgs(ADDRESS().word, DATA()));
 		}
 
 		uint8_t read() {
@@ -80,8 +71,9 @@ namespace EightBit {
 			return read();
 		}
 
-		void fireWriteBusEvent() {
-			WrittenByte.fire(AddressEventArgs(ADDRESS().word, DATA()));
+		uint8_t read(register16_t address) {
+			ADDRESS() = address;
+			return read();
 		}
 
 		void write(uint8_t value) {
@@ -91,6 +83,11 @@ namespace EightBit {
 
 		void write(uint16_t offset, uint8_t value) {
 			ADDRESS().word = offset;
+			write(value);
+		}
+
+		void write(register16_t address, uint8_t value) {
+			ADDRESS() = address;
 			write(value);
 		}
 
@@ -110,6 +107,19 @@ namespace EightBit {
 		uint8_t m_temporary;	// Used to simulate ROM
 		register16_t m_address;
 		uint8_t* m_data;
+
+		void fireReadBusEvent() {
+			ReadByte.fire(AddressEventArgs(ADDRESS().word, DATA()));
+		}
+
+		void fireWriteBusEvent() {
+			WrittenByte.fire(AddressEventArgs(ADDRESS().word, DATA()));
+		}
+
+		virtual uint8_t& reference() {
+			auto effective = effectiveAddress(ADDRESS().word);
+			return m_locked[effective] ? placeDATA(m_bus[effective]) : referenceDATA(m_bus[effective]);
+		}
 
 		int loadMemory(const std::string& path, uint16_t offset);
 	};

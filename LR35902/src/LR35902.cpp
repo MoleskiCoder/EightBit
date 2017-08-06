@@ -212,76 +212,84 @@ void EightBit::LR35902::compare(uint8_t& f, uint8_t check, uint8_t value) {
 
 #pragma region Shift and rotate
 
-void EightBit::LR35902::rlc(uint8_t& f, uint8_t& operand) {
+uint8_t EightBit::LR35902::rlc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
 	setFlag(f, CF, operand & Bit7);
 	operand = _rotl8(operand, 1);
 	adjustZero<LR35902>(f, operand);
+	return operand;
 }
 
-void EightBit::LR35902::rrc(uint8_t& f, uint8_t& operand) {
+uint8_t EightBit::LR35902::rrc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
 	setFlag(f, CF, operand & Bit0);
 	operand = _rotr8(operand, 1);
 	adjustZero<LR35902>(f, operand);
+	return operand;
 }
 
-void EightBit::LR35902::rl(uint8_t& f, uint8_t& operand) {
+uint8_t EightBit::LR35902::rl(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
 	const auto carry = (f & CF) >> 4;
 	setFlag(f, CF, operand & Bit7);
 	operand = (operand << 1) | carry;
 	adjustZero<LR35902>(f, operand);
+	return operand;
 }
 
-void EightBit::LR35902::rr(uint8_t& f, uint8_t& operand) {
+uint8_t EightBit::LR35902::rr(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
 	const auto carry = (f & CF) >> 4;
 	setFlag(f, CF, operand & Bit0);
 	operand = (operand >> 1) | (carry << 7);
 	adjustZero<LR35902>(f, operand);
+	return operand;
 }
 
 //
 
-void EightBit::LR35902::sla(uint8_t& f, uint8_t& operand) {
+uint8_t EightBit::LR35902::sla(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
 	setFlag(f, CF, operand & Bit7);
 	operand <<= 1;
 	adjustZero<LR35902>(f, operand);
+	return operand;
 }
 
-void EightBit::LR35902::sra(uint8_t& f, uint8_t& operand) {
+uint8_t EightBit::LR35902::sra(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
 	setFlag(f, CF, operand & Bit0);
 	operand = (operand >> 1) | operand & Bit7;
 	adjustZero<LR35902>(f, operand);
+	return operand;
 }
 
-void EightBit::LR35902::srl(uint8_t& f, uint8_t& operand) {
+uint8_t EightBit::LR35902::srl(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
 	setFlag(f, CF, operand & Bit0);
 	operand = (operand >> 1) & ~Bit7;
 	adjustZero<LR35902>(f, operand);
+	return operand;
 }
 
 #pragma endregion Shift and rotate
 
 #pragma region BIT/SET/RES
 
-void EightBit::LR35902::bit(uint8_t& f, int n, uint8_t& operand) {
+uint8_t EightBit::LR35902::bit(uint8_t& f, int n, uint8_t operand) {
 	auto carry = f & CF;
 	uint8_t discarded = operand;
 	andr(f, discarded, 1 << n);
 	setFlag(f, CF, carry);
+	return operand;
 }
 
-void EightBit::LR35902::res(int n, uint8_t& operand) {
-	operand &= ~(1 << n);
+uint8_t EightBit::LR35902::res(int n, uint8_t operand) {
+	return operand & ~(1 << n);
 }
 
-void EightBit::LR35902::set(int n, uint8_t& operand) {
-	operand |= (1 << n);
+uint8_t EightBit::LR35902::set(int n, uint8_t operand) {
+	return operand | (1 << n);
 }
 
 #pragma endregion BIT/SET/RES
@@ -326,12 +334,13 @@ void EightBit::LR35902::ccf(uint8_t& a, uint8_t& f) {
 	clearFlag(f, CF, f & CF);
 }
 
-void EightBit::LR35902::swap(uint8_t& f, uint8_t& operand) {
+uint8_t EightBit::LR35902::swap(uint8_t& f, uint8_t operand) {
 	auto low = lowNibble(operand);
 	auto high = highNibble(operand);
 	operand = promoteNibble(low) | demoteNibble(high);
 	adjustZero<LR35902>(f, operand);
 	clearFlag(f, NF | HC | CF);
+	return operand;
 }
 
 #pragma endregion Miscellaneous instructions
@@ -369,64 +378,58 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 	auto& a = A();
 	auto& f = F();
 	switch (x) {
-	case 0:	// rot[y] r[z]
+	case 0: { // rot[y] r[z]
+		auto operand = R(z, a);
 		switch (y) {
 		case 0:
-			rlc(f, R(z, a));
+			operand = rlc(f, operand);
 			break;
 		case 1:
-			rrc(f, R(z, a));
+			operand = rrc(f, operand);
 			break;
 		case 2:
-			rl(f, R(z, a));
+			operand = rl(f, operand);
 			break;
 		case 3:
-			rr(f, R(z, a));
+			operand = rr(f, operand);
 			break;
 		case 4:
-			sla(f, R(z, a));
+			operand = sla(f, operand);
 			break;
 		case 5:
-			sra(f, R(z, a));
+			operand = sra(f, operand);
 			break;
 		case 6:
-			swap(f, R(z, a));
+			operand = swap(f, operand);
 			break;
 		case 7:
-			srl(f, R(z, a));
+			operand = srl(f, operand);
 			break;
 		default:
 			__assume(0);
 		}
 		cycles += 2;
-		if (z == 6) {
-			m_bus.fireWriteBusEvent();
+		R(z, a, operand);
+		if (z == 6)
 			cycles += 2;
-		}
 		break;
-	case 1: // BIT y, r[z]
+	} case 1: // BIT y, r[z]
 		bit(f, y, R(z, a));
 		cycles += 2;
-		if (z == 6) {
-			m_bus.fireReadBusEvent();
+		if (z == 6)
 			cycles += 2;
-		}
 		break;
 	case 2:	// RES y, r[z]
-		res(y, R(z, a));
+		R(z, a, res(y, R(z, a)));
 		cycles += 2;
-		if (z == 6) {
-			m_bus.fireWriteBusEvent();
+		if (z == 6)
 			cycles += 2;
-		}
 		break;
 	case 3:	// SET y, r[z]
-		set(y, R(z, a));
+		R(z, a, set(y, R(z, a)));
 		cycles += 2;
-		if (z == 6) {
-			m_bus.fireWriteBusEvent();
+		if (z == 6)
 			cycles += 2;
-		}
 		break;
 	default:
 		__assume(0);
@@ -544,26 +547,24 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			}
 			cycles += 2;
 			break;
-		case 4:	// 8-bit INC
-			increment(f, R(y, a));	// INC r
+		case 4: { // 8-bit INC
+			auto operand = R(y, a);
+			increment(f, operand);
+			R(y, a, operand);
 			cycles++;
-			if (y == 6) {
-				m_bus.fireWriteBusEvent();
-				cycles += 2;
-			}
-			break;
-		case 5:	// 8-bit DEC
-			decrement(f, R(y, a));	// DEC r
-			cycles++;
-			if (y == 6) {
-				m_bus.fireWriteBusEvent();
-				cycles += 2;
-			}
-			break;
-		case 6: // 8-bit load immediate
-			R(y, a) = fetchByte();
 			if (y == 6)
-				m_bus.fireWriteBusEvent();
+				cycles += 2;
+			break;
+		} case 5: {	// 8-bit DEC
+			auto operand = R(y, a);
+			decrement(f, operand);
+			R(y, a, operand);
+			cycles++;
+			if (y == 6)
+				cycles += 2;
+			break;
+		} case 6: // 8-bit load immediate
+			R(y, a, fetchByte());	// LD r,n
 			cycles += 2;
 			break;
 		case 7:	// Assorted operations on accumulator/flags
@@ -603,14 +604,9 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		if (z == 6 && y == 6) { 	// Exception (replaces LD (HL), (HL))
 			halt();
 		} else {
-			R(y, a) = R(z, a);
-			if ((y == 6) || (z == 6)) { // M operations
-				if (y == 6)
-					m_bus.fireWriteBusEvent();
-				else
-					m_bus.fireReadBusEvent();
+			R(y, a, R(z, a));
+			if ((y == 6) || (z == 6)) // M operations
 				cycles++;
-			}
 		}
 		cycles++;
 		break;
@@ -644,10 +640,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			__assume(0);
 		}
 		cycles++;
-		if (z == 6) {
-			m_bus.fireReadBusEvent();
+		if (z == 6)
 			cycles++;
-		}
 		break;
 	case 3:
 		switch (z) {

@@ -113,7 +113,7 @@ void Board::Memory_ReadByte_Input(const EightBit::AddressEventArgs& e) {
 		auto cell = e.getCell();
 		if (cell != 0) {
 			assert(address == m_memory.ADDRESS().word);
-			m_memory.reference() = 0;
+			m_memory.write(0);
 		}
 	}
 }
@@ -132,8 +132,6 @@ void Board::Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu) {
 }
 
 void Board::pollKeyboard() {
-	if (_kbhit()) {
-		m_memory.ADDRESS().word = m_configuration.getInputAddress();
-		m_memory.reference() = _getch();
-	}
+	if (_kbhit())
+		m_memory.write(m_configuration.getInputAddress(), _getch());
 }

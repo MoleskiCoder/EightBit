@@ -257,12 +257,12 @@ void EightBit::Intel8080::cmc(uint8_t& a, uint8_t& f) {
 
 void EightBit::Intel8080::xhtl() {
 	m_memory.ADDRESS() = SP();
-	MEMPTR().low = m_memory.reference();
-	m_memory.reference() = L();
+	MEMPTR().low = m_memory.read(SP());
+	m_memory.write(L());
 	L() = MEMPTR().low;
 	m_memory.ADDRESS().word++;
-	MEMPTR().high = m_memory.reference();
-	m_memory.reference() = H();
+	MEMPTR().high = m_memory.read();
+	m_memory.write(H());
 	H() = MEMPTR().high;
 }
 
@@ -336,12 +336,14 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				switch (p) {
 				case 0:	// LD (BC),A
 					MEMPTR() = BC();
-					MEMPTR().high = memptrReference() = a;
+					memptrReference();
+					m_memory.write(MEMPTR().high = a);
 					cycles += 7;
 					break;
 				case 1:	// LD (DE),A
 					MEMPTR() = DE();
-					MEMPTR().high = memptrReference() = a;
+					memptrReference();
+					m_memory.write(MEMPTR().high = a);
 					cycles += 7;
 					break;
 				case 2:	// LD (nn),HL
@@ -351,7 +353,8 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 					break;
 				case 3: // LD (nn),A
 					fetchWord();
-					MEMPTR().high = memptrReference() = a;
+					memptrReference();
+					m_memory.write(MEMPTR().high = a);
 					cycles += 13;
 					break;
 				default:
@@ -362,12 +365,14 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				switch (p) {
 				case 0:	// LD A,(BC)
 					MEMPTR() = BC();
-					a = memptrReference();
+					memptrReference();
+					a = m_memory.read();
 					cycles += 7;
 					break;
 				case 1:	// LD A,(DE)
 					MEMPTR() = DE();
-					a = memptrReference();
+					memptrReference();
+					a = m_memory.read();
 					cycles += 7;
 					break;
 				case 2:	// LD HL,(nn)
@@ -377,7 +382,8 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 					break;
 				case 3:	// LD A,(nn)
 					fetchWord();
-					a = memptrReference();
+					memptrReference();
+					a = m_memory.read();
 					cycles += 13;
 					break;
 				default:
@@ -401,18 +407,22 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 			}
 			cycles += 6;
 			break;
-		case 4:	// 8-bit INC
-			increment(f, R(y));	// INC r
+		case 4: { // 8-bit INC
+			auto operand = R(y);
+			increment(f, operand);
+			R(y, operand);
 			cycles += 4;
 			break;
-		case 5:	// 8-bit DEC
-			decrement(f, R(y));	// DEC r
+		} case 5: {	// 8-bit DEC
+			auto operand = R(y);
+			decrement(f, operand);
+			R(y, operand);
 			cycles += 4;
 			if (y == 6)
 				cycles += 7;
 			break;
-		case 6:	// 8-bit load immediate
-			R(y) = fetchByte();
+		} case 6:	// 8-bit load immediate
+			R(y, fetchByte());
 			cycles += 7;
 			if (y == 6)
 				cycles += 3;
@@ -456,7 +466,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 		if (z == 6 && y == 6) { 	// Exception (replaces LD (HL), (HL))
 			halt();
 		} else {
-			R(y) = R(z);
+			R(y, R(z));
 			if ((y == 6) || (z == 6))	// M operations
 				cycles += 3;
 		}

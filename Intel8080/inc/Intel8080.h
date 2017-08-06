@@ -56,7 +56,7 @@ namespace EightBit {
 
 		bool m_interrupt;
 
-		uint8_t& R(int r) {
+		uint8_t R(int r) {
 			__assume(r < 8);
 			__assume(r >= 0);
 			switch (r) {
@@ -73,14 +73,46 @@ namespace EightBit {
 			case 0b101:
 				return L();
 			case 0b110:
-				m_memory.ADDRESS() = HL();
-				return m_memory.reference();
+				return m_memory.read(HL());
 			case 0b111:
 				return A();
 			default:
 				__assume(0);
 			}
 			throw std::logic_error("Unhandled registry mechanism");
+		}
+
+		void R(int r, uint8_t value) {
+			__assume(r < 8);
+			__assume(r >= 0);
+			switch (r) {
+			case 0b000:
+				B() = value;
+				break;
+			case 0b001:
+				C() = value;
+				break;
+			case 0b010:
+				D() = value;
+				break;
+			case 0b011:
+				E() = value;
+				break;
+			case 0b100:
+				H() = value;
+				break;
+			case 0b101:
+				L() = value;
+				break;
+			case 0b110:
+				m_memory.write(HL(), value);
+				break;
+			case 0b111:
+				A() = value;
+				break;
+			default:
+				__assume(0);
+			}
 		}
 
 		register16_t& RP(int rp) {

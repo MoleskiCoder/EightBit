@@ -40,11 +40,6 @@ namespace EightBit {
 			CF = Bit0,	// Carry
 		};
 
-		enum BusDirection {
-			Read,
-			Write
-		};
-
 		MOS6502(Memory& memory);
 		virtual ~MOS6502();
 
@@ -156,86 +151,118 @@ namespace EightBit {
 
 #pragma endregion Addresses
 
-#pragma region References
+#pragma region Addressing modes, read
 
-		uint8_t& AM_A() {
-			m_busRW = false;
+		uint8_t AM_A() {
 			return A();
 		}
 
-		uint8_t& AM_Immediate() {
-			m_busRW = false;
-			fetchByte();
-			return m_memory.reference();
+		uint8_t AM_Immediate() {
+			return fetchByte();
 		}
 
-		uint8_t& AM_Absolute() {
-			m_busRW = true;
+		uint8_t AM_Absolute() {
 			Address_Absolute();
-			m_memory.ADDRESS() = MEMPTR();
-			return m_memory.reference();
+			return m_memory.read(MEMPTR());
 		}
 
-		uint8_t& AM_ZeroPage() {
-			m_busRW = true;
+		uint8_t AM_ZeroPage() {
 			Address_ZeroPage();
-			m_memory.ADDRESS() = MEMPTR();
-			return m_memory.reference();
+			return m_memory.read(MEMPTR());
 		}
 
-		uint8_t& AM_AbsoluteX(BusDirection direction = BusDirection::Read) {
-			m_busRW = true;
+		uint8_t AM_AbsoluteX() {
 			Address_AbsoluteX();
 			m_memory.ADDRESS() = MEMPTR();
-			if ((direction == BusDirection::Read) && (m_memory.ADDRESS().low == Mask8))
+			if (m_memory.ADDRESS().low == Mask8)
 				++cycles;
-			return m_memory.reference();
+			return m_memory.read();
 		}
 
-		uint8_t& AM_AbsoluteY(BusDirection direction = BusDirection::Read) {
-			m_busRW = true;
+		uint8_t AM_AbsoluteY() {
 			Address_AbsoluteY();
 			m_memory.ADDRESS() = MEMPTR();
-			if ((direction == BusDirection::Read) && (m_memory.ADDRESS().low == Mask8))
+			if (m_memory.ADDRESS().low == Mask8)
 				++cycles;
-			return m_memory.reference();
+			return m_memory.read();
 		}
 
-		uint8_t& AM_ZeroPageX() {
-			m_busRW = true;
+		uint8_t AM_ZeroPageX() {
 			Address_ZeroPageX();
-			m_memory.ADDRESS() = MEMPTR();
-			return m_memory.reference();
+			return m_memory.read(MEMPTR());
 		}
 
-		uint8_t& AM_ZeroPageY() {
-			m_busRW = true;
+		uint8_t AM_ZeroPageY() {
 			Address_ZeroPageY();
-			m_memory.ADDRESS() = MEMPTR();
-			return m_memory.reference();
+			return m_memory.read(MEMPTR());
 		}
 
-		uint8_t& AM_IndexedIndirectX() {
-			m_busRW = true;
+		uint8_t AM_IndexedIndirectX() {
 			Address_IndexedIndirectX();
-			m_memory.ADDRESS() = MEMPTR();
-			return m_memory.reference();
+			return m_memory.read(MEMPTR());
 		}
 
-		uint8_t& AM_IndirectIndexedY(BusDirection direction = BusDirection::Read) {
-			m_busRW = true;
+		uint8_t AM_IndirectIndexedY() {
 			Address_IndirectIndexedY();
 			m_memory.ADDRESS() = MEMPTR();
-			if ((direction == BusDirection::Read) && (m_memory.ADDRESS().low == Mask8))
+			if (m_memory.ADDRESS().low == Mask8)
 				++cycles;
-			return m_memory.reference();
+			return m_memory.read();
 		}
 
-#pragma endregion References
+#pragma endregion Addressing modes, read
+
+#pragma region Addressing modes, write
+
+		void AM_A(uint8_t value) {
+			A() = value;
+		}
+
+		void AM_Absolute(uint8_t value) {
+			Address_Absolute();
+			m_memory.write(MEMPTR(), value);
+		}
+
+		void AM_ZeroPage(uint8_t value) {
+			Address_ZeroPage();
+			m_memory.write(MEMPTR(), value);
+		}
+
+		void AM_AbsoluteX(uint8_t value) {
+			Address_AbsoluteX();
+			m_memory.write(MEMPTR(), value);
+		}
+
+		void AM_AbsoluteY(uint8_t value) {
+			Address_AbsoluteY();
+			m_memory.write(MEMPTR(), value);
+		}
+
+		void AM_ZeroPageX(uint8_t value) {
+			Address_ZeroPageX();
+			m_memory.write(MEMPTR(), value);
+		}
+
+		void AM_ZeroPageY(uint8_t value) {
+			Address_ZeroPageY();
+			m_memory.write(MEMPTR(), value);
+		}
+
+		void AM_IndexedIndirectX(uint8_t value) {
+			Address_IndexedIndirectX();
+			m_memory.write(MEMPTR(), value);
+		}
+
+		void AM_IndirectIndexedY(uint8_t value) {
+			Address_IndirectIndexedY();
+			m_memory.write(MEMPTR(), value);
+		}
+
+#pragma endregion Addressing modes, write
 
 #pragma region 6502 addressing mode switching
 
-		uint8_t& AM_00(int bbb, BusDirection direction = BusDirection::Read) {
+		uint8_t AM_00(int bbb) {
 			switch (bbb) {
 			case 0b000:
 				return AM_Immediate();
@@ -246,7 +273,7 @@ namespace EightBit {
 			case 0b101:
 				return AM_ZeroPageX();
 			case 0b111:
-				return AM_AbsoluteX(direction);
+				return AM_AbsoluteX();
 			case 0b010:
 			case 0b100:
 			case 0b110:
@@ -256,7 +283,33 @@ namespace EightBit {
 			}
 		}
 
-		uint8_t& AM_01(int bbb, BusDirection direction = BusDirection::Read) {
+		void AM_00(int bbb, uint8_t value) {
+			switch (bbb) {
+			case 0b000:
+				assert(false);
+				break;
+			case 0b001:
+				AM_ZeroPage(value);
+				break;
+			case 0b011:
+				AM_Absolute(value);
+				break;
+			case 0b101:
+				AM_ZeroPageX(value);
+				break;
+			case 0b111:
+				AM_AbsoluteX(value);
+				break;
+			case 0b010:
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+		uint8_t AM_01(int bbb) {
 			switch (bbb) {
 			case 0b000:
 				return AM_IndexedIndirectX();
@@ -267,19 +320,50 @@ namespace EightBit {
 			case 0b011:
 				return AM_Absolute();
 			case 0b100:
-				return AM_IndirectIndexedY(direction);
+				return AM_IndirectIndexedY();
 			case 0b101:
 				return AM_ZeroPageX();
 			case 0b110:
-				return AM_AbsoluteY(direction);
+				return AM_AbsoluteY();
 			case 0b111:
-				return AM_AbsoluteX(direction);
+				return AM_AbsoluteX();
 			default:
 				__assume(0);
 			}
 		}
 
-		uint8_t& AM_10(int bbb, BusDirection direction = BusDirection::Read) {
+		uint8_t AM_01(int bbb, uint8_t value) {
+			switch (bbb) {
+			case 0b000:
+				AM_IndexedIndirectX(value);
+				break;
+			case 0b001:
+				AM_ZeroPage(value);
+				break;
+			case 0b010:
+				assert(false);
+				break;
+			case 0b011:
+				AM_Absolute(value);
+				break;
+			case 0b100:
+				AM_IndirectIndexedY(value);
+				break;
+			case 0b101:
+				AM_ZeroPageX(value);
+				break;
+			case 0b110:
+				AM_AbsoluteY(value);
+				break;
+			case 0b111:
+				AM_AbsoluteX(value);
+				break;
+			default:
+				__assume(0);
+			}
+		}
+
+		uint8_t AM_10(int bbb) {
 			switch (bbb) {
 			case 0b000:
 				return AM_Immediate();
@@ -292,7 +376,36 @@ namespace EightBit {
 			case 0b101:
 				return AM_ZeroPageX();
 			case 0b111:
-				return AM_AbsoluteX(direction);
+				return AM_AbsoluteX();
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+			return 0xff;
+		}
+
+		void AM_10(int bbb, uint8_t value) {
+			switch (bbb) {
+			case 0b000:
+				assert(false);
+				break;
+			case 0b001:
+				AM_ZeroPage(value);
+				break;
+			case 0b010:
+				AM_A(value);
+				break;
+			case 0b011:
+				AM_Absolute(value);
+				break;
+			case 0b101:
+				AM_ZeroPageX(value);
+				break;
+			case 0b111:
+				AM_AbsoluteX(value);
+				break;
 			case 0b100:
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
@@ -301,7 +414,7 @@ namespace EightBit {
 			}
 		}
 
-		uint8_t& AM_10_x(int bbb, BusDirection direction = BusDirection::Read) {
+		uint8_t AM_10_x(int bbb) {
 			switch (bbb) {
 			case 0b000:
 				return AM_Immediate();
@@ -314,7 +427,35 @@ namespace EightBit {
 			case 0b101:
 				return AM_ZeroPageY();
 			case 0b111:
-				return AM_AbsoluteY(direction);
+				return AM_AbsoluteY();
+			case 0b100:
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			default:
+				__assume(0);
+			}
+		}
+
+		void AM_10_x(int bbb, uint8_t value) {
+			switch (bbb) {
+			case 0b000:
+				assert(false);
+				break;
+			case 0b001:
+				AM_ZeroPage(value);
+				break;
+			case 0b010:
+				AM_A(value);
+				break;
+			case 0b011:
+				AM_Absolute(value);
+				break;
+			case 0b101:
+				AM_ZeroPageY(value);
+				break;
+			case 0b111:
+				AM_AbsoluteY(value);
+				break;
 			case 0b100:
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
@@ -327,59 +468,40 @@ namespace EightBit {
 
 #pragma endregion 6502 addressing modes
 
-		void firePendingBusEvents(BusDirection direction) {
-			if (m_busRW) {
-				switch (direction) {
-				case BusDirection::Read:
-					m_memory.fireReadBusEvent();
-					break;
-				case BusDirection::Write:
-					m_memory.fireWriteBusEvent();
-					break;
-				}
-			}
-		}
-
 		void ASL(int bbb) {
-			auto& reference = AM_10(bbb, BusDirection::Write);
-			firePendingBusEvents(BusDirection::Read);
-			ASL(reference);
-			firePendingBusEvents(BusDirection::Write);
+			auto operand = AM_10(bbb);
+			ASL(operand);
+			AM_10(bbb, operand);
 		}
 
 		void ROL(int bbb) {
-			auto& reference = AM_10(bbb, BusDirection::Write);
-			firePendingBusEvents(BusDirection::Read);
-			ROL(reference);
-			firePendingBusEvents(BusDirection::Write);
+			auto operand = AM_10(bbb);
+			ROL(operand);
+			AM_10(bbb, operand);
 		}
 
 		void LSR(int bbb) {
-			auto& reference = AM_10(bbb, BusDirection::Write);
-			firePendingBusEvents(BusDirection::Read);
-			LSR(reference);
-			firePendingBusEvents(BusDirection::Write);
+			auto operand = AM_10(bbb);
+			LSR(operand);
+			AM_10(bbb, operand);
 		}
 
 		void ROR(int bbb) {
-			auto& reference = AM_10(bbb, BusDirection::Write);
-			firePendingBusEvents(BusDirection::Read);
-			ROR(reference);
-			firePendingBusEvents(BusDirection::Write);
+			auto operand = AM_10(bbb);
+			ROR(operand);
+			AM_10(bbb, operand);
 		}
 
 		void DEC(int bbb) {
-			auto& reference = AM_10(bbb, BusDirection::Write);
-			firePendingBusEvents(BusDirection::Read);
-			adjustNZ(--reference);
-			firePendingBusEvents(BusDirection::Write);
+			auto operand = AM_10(bbb);
+			adjustNZ(--operand);
+			AM_10(bbb, operand);
 		}
 
 		void INC(int bbb) {
-			auto& reference = AM_10(bbb, BusDirection::Write);
-			firePendingBusEvents(BusDirection::Read);
-			adjustNZ(++reference);
-			firePendingBusEvents(BusDirection::Write);
+			auto operand = AM_10(bbb);
+			adjustNZ(++operand);
+			AM_10(bbb, operand);
 		}
 
 		void ROR(uint8_t& output);
@@ -431,7 +553,5 @@ namespace EightBit {
 
 		std::array<int, 0x100> m_timings;
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
-
-		bool m_busRW;
 	};
 }

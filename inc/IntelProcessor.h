@@ -120,8 +120,7 @@ namespace EightBit {
 		}
 
 		virtual void push(uint8_t value) {
-			m_memory.ADDRESS().word = --SP().word;
-			m_memory.reference() = value;
+			m_memory.write(--SP().word, value);
 		}
 
 		void pushWord(const register16_t& value) {
@@ -130,8 +129,7 @@ namespace EightBit {
 		}
 
 		virtual uint8_t pop() {
-			m_memory.ADDRESS().word = SP().word++;
-			return m_memory.reference();
+			return m_memory.read(SP().word++);
 		}
 
 		void popWord(register16_t& output) {
@@ -145,22 +143,23 @@ namespace EightBit {
 
 		//
 
-		uint8_t& memptrReference() {
+		void memptrReference() {
 			m_memory.ADDRESS() = MEMPTR();
 			MEMPTR().word++;
-			return m_memory.reference();
 		}
 
 		virtual void getWordViaMemptr(register16_t& value) {
-			value.low = memptrReference();
+			memptrReference();
+			value.low = m_memory.read();
 			m_memory.ADDRESS().word++;
-			value.high = m_memory.reference();
+			value.high = m_memory.read();
 		}
 
 		virtual void setWordViaMemptr(register16_t value) {
-			memptrReference() = value.low;
+			memptrReference();
+			m_memory.write(value.low);
 			m_memory.ADDRESS().word++;
-			m_memory.reference() = value.high;
+			m_memory.write(value.high);
 		}
 
 		//

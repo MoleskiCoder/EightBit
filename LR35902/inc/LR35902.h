@@ -54,40 +54,6 @@ namespace EightBit {
 		virtual void reset();
 		virtual void initialise();
 
-	protected:
-		virtual uint8_t fetchByte() override {
-			auto returned = IntelProcessor::fetchByte();
-			m_memory.fireReadBusEvent();
-			return returned;
-		}
-
-		virtual void push(uint8_t value) override {
-			IntelProcessor::push(value);
-			m_memory.fireWriteBusEvent();
-		}
-
-		virtual uint8_t pop() override {
-			auto returned = IntelProcessor::pop();
-			m_memory.fireReadBusEvent();
-			return returned;
-		}
-
-		virtual void getWordViaMemptr(register16_t& value) {
-			value.low = memptrReference();
-			m_memory.fireReadBusEvent();
-			m_memory.ADDRESS().word++;
-			value.high = m_memory.reference();
-			m_memory.fireReadBusEvent();
-		}
-
-		virtual void setWordViaMemptr(register16_t value) {
-			memptrReference() = value.low;
-			m_memory.fireWriteBusEvent();
-			m_memory.ADDRESS().word++;
-			m_memory.reference() = value.high;
-			m_memory.fireWriteBusEvent();
-		}
-
 	private:
 		Bus& m_bus;
 
@@ -102,7 +68,7 @@ namespace EightBit {
 
 		bool m_stopped;
 
-		uint8_t& R(int r, uint8_t& a) {
+		uint8_t R(int r, uint8_t& a) {
 			switch (r) {
 			case 0:
 				return B();
@@ -117,12 +83,40 @@ namespace EightBit {
 			case 5:
 				return L();
 			case 6:
-				m_memory.ADDRESS() = HL();
-				return m_memory.reference();
+				return m_memory.read(HL());
 			case 7:
 				return a;
 			}
 			throw std::logic_error("Unhandled registry mechanism");
+		}
+
+		void R(int r, uint8_t& a, uint8_t value) {
+			switch (r) {
+			case 0:
+				B() = value;
+				break;
+			case 1:
+				C() = value;
+				break;
+			case 2:
+				D() = value;
+				break;
+			case 3:
+				E() = value;
+				break;
+			case 4:
+				H() = value;
+				break;
+			case 5:
+				L() = value;
+				break;
+			case 6:
+				m_memory.write(HL(), value);
+				break;
+			case 7:
+				a = value;
+				break;
+			}
 		}
 
 		register16_t& RP(int rp) {
@@ -192,17 +186,17 @@ namespace EightBit {
 		static void orr(uint8_t& f, uint8_t& operand, uint8_t value);
 		static void compare(uint8_t& f, uint8_t check, uint8_t value);
 
-		static void rlc(uint8_t& f, uint8_t& operand);
-		static void rrc(uint8_t& f, uint8_t& operand);
-		static void rl(uint8_t& f, uint8_t& operand);
-		static void rr(uint8_t& f, uint8_t& operand);
-		static void sla(uint8_t& f, uint8_t& operand);
-		static void sra(uint8_t& f, uint8_t& operand);
-		static void srl(uint8_t& f, uint8_t& operand);
+		static uint8_t rlc(uint8_t& f, uint8_t operand);
+		static uint8_t rrc(uint8_t& f, uint8_t operand);
+		static uint8_t rl(uint8_t& f, uint8_t operand);
+		static uint8_t rr(uint8_t& f, uint8_t operand);
+		static uint8_t sla(uint8_t& f, uint8_t operand);
+		static uint8_t sra(uint8_t& f, uint8_t operand);
+		static uint8_t srl(uint8_t& f, uint8_t operand);
 
-		static void bit(uint8_t& f, int n, uint8_t& operand);
-		static void res(int n, uint8_t& operand);
-		static void set(int n, uint8_t& operand);
+		static uint8_t bit(uint8_t& f, int n, uint8_t operand);
+		static uint8_t res(int n, uint8_t operand);
+		static uint8_t set(int n, uint8_t operand);
 
 		static void daa(uint8_t& a, uint8_t& f);
 
@@ -210,6 +204,6 @@ namespace EightBit {
 		static void ccf(uint8_t& a, uint8_t& f);
 		static void cpl(uint8_t& a, uint8_t& f);
 
-		static void swap(uint8_t& f, uint8_t& operand);
+		static uint8_t swap(uint8_t& f, uint8_t operand);
 	};
 }

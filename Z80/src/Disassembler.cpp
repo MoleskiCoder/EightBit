@@ -181,15 +181,14 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, const Z80& 
 	const auto& memory = cpu.getMemory();
 	auto opcode = memory.peek(pc);
 
-	// hex opcode
-	output << hex(opcode);
+	const auto& decoded = cpu.getDecodedOpcode(opcode);
 
-	auto x = (opcode & 0b11000000) >> 6;
-	auto y = (opcode & 0b111000) >> 3;
-	auto z = (opcode & 0b111);
+	auto x = decoded.x;
+	auto y = decoded.y;
+	auto z = decoded.z;
 
-	auto p = (y & 0b110) >> 1;
-	auto q = (y & 1);
+	auto p = decoded.p;
+	auto q = decoded.q;
 
 	auto immediate = memory.peek(pc + 1);
 	auto absolute = memory.peekWord(pc + 1);
@@ -198,6 +197,8 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, const Z80& 
 	auto indexedImmediate = memory.peek(pc + 1);
 
 	auto dumpCount = 0;
+
+	output << hex(opcode);
 
 	std::string specification = "";
 

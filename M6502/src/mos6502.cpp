@@ -135,7 +135,6 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				break;
 			default:	// BIT
 				BIT(AM_00(decoded.bbb));
-				firePendingBusEvents(BusDirection::Read);
 				break;
 			}
 			break;
@@ -193,8 +192,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				adjustNZ(A() = Y());
 				break;
 			default:	// STY
-				AM_00(decoded.bbb, BusDirection::Write) = Y();
-				firePendingBusEvents(BusDirection::Write);
+				AM_00(decoded.bbb, Y());
 				break;
 			}
 			break;
@@ -211,7 +209,6 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				break;
 			default:	// LDY
 				adjustNZ(Y() = AM_00(decoded.bbb));
-				firePendingBusEvents(BusDirection::Read);
 				break;
 			}
 			break;
@@ -228,7 +225,6 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				break;
 			default:	// CPY
 				CMP(Y(), AM_00(decoded.bbb));
-				firePendingBusEvents(BusDirection::Read);
 				break;
 			}
 			break;
@@ -245,7 +241,6 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				break;
 			default:	// CPX
 				CMP(X(), AM_00(decoded.bbb));
-				firePendingBusEvents(BusDirection::Read);
 				break;
 			}
 			break;
@@ -255,35 +250,27 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 		switch (decoded.aaa) {
 		case 0b000:		// ORA
 			adjustNZ(A() |= AM_01(decoded.bbb));
-			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b001:		// AND
 			adjustNZ(A() &= AM_01(decoded.bbb));
-			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b010:		// EOR
 			adjustNZ(A() ^= AM_01(decoded.bbb));
-			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b011:		// ADC
 			ADC(AM_01(decoded.bbb));
-			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b100:		// STA
-			AM_01(decoded.bbb, BusDirection::Write) = A();
-			firePendingBusEvents(BusDirection::Write);
+			AM_01(decoded.bbb, A());
 			break;
 		case 0b101:		// LDA
 			adjustNZ(A() = AM_01(decoded.bbb));
-			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b110:		// CMP
 			CMP(A(), AM_01(decoded.bbb));
-			firePendingBusEvents(BusDirection::Read);
 			break;
 		case 0b111:		// SBC
 			SBC(AM_01(decoded.bbb));
-			firePendingBusEvents(BusDirection::Read);
 			break;
 		default:
 			__assume(0);
@@ -312,8 +299,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				S() = X();
 				break;
 			default:	// STX
-				AM_10_x(decoded.bbb, BusDirection::Write) = X();
-				firePendingBusEvents(BusDirection::Write);
+				AM_10_x(decoded.bbb, X());
 				break;
 			}
 			break;
@@ -324,7 +310,6 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				break;
 			default:	// LDX
 				adjustNZ(X() = AM_10_x(decoded.bbb));
-				firePendingBusEvents(BusDirection::Read);
 				break;
 			}
 			break;

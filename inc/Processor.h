@@ -75,8 +75,7 @@ namespace EightBit {
 		int cycles;
 
 		virtual uint8_t fetchByte() {
-			m_memory.ADDRESS().word = PC().word++;
-			return m_memory.reference();
+			return m_memory.read(PC().word++);
 		}
 
 		virtual void fetchWord(register16_t& output) {

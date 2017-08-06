@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cassert>
 
 #include "IntelProcessor.h"
 #include "InputOutput.h"
@@ -136,12 +137,16 @@ namespace EightBit {
 			return IntelProcessor::fetchExecute();
 		}
 
-		uint8_t& DISPLACED() {
-			m_memory.ADDRESS().word = MEMPTR().word = (m_prefixDD ? IX() : IY()).word + m_displacement;
-			return m_memory.reference();
+		uint16_t displacedAddress() {
+			assert(m_displaced);
+			return MEMPTR().word = (m_prefixDD ? IX() : IY()).word + m_displacement;
 		}
 
-		uint8_t& R(int r, uint8_t& a) {
+		void fetchDisplacement() {
+			m_displacement = fetchByte();
+		}
+
+		uint8_t R(int r, uint8_t a) {
 			switch (r) {
 			case 0:
 				return B();
@@ -156,12 +161,7 @@ namespace EightBit {
 			case 5:
 				return HL2().low;
 			case 6:
-				if (!m_displaced) {
-					m_memory.ADDRESS() = HL();
-					return m_memory.reference();
-				}
-				m_displacement = fetchByte();
-				return DISPLACED();
+				return m_memory.read(m_displaced ? displacedAddress() : HL().word);
 			case 7:
 				return a;
 			default:
@@ -170,7 +170,38 @@ namespace EightBit {
 			throw std::logic_error("Unhandled registry mechanism");
 		}
 
-		uint8_t& R2(int r, uint8_t& a) {
+		void R(int r, uint8_t& a, uint8_t value) {
+			switch (r) {
+			case 0:
+				B() = value;
+				break;
+			case 1:
+				C() = value;
+				break;
+			case 2:
+				D() = value;
+				break;
+			case 3:
+				E() = value;
+				break;
+			case 4:
+				HL2().high = value;
+				break;
+			case 5:
+				HL2().low = value;
+				break;
+			case 6:
+				m_memory.write(m_displaced ? displacedAddress() : HL().word, value);
+				break;
+			case 7:
+				a = value;
+				break;
+			default:
+				__assume(0);
+			}
+		}
+
+		uint8_t R2(int r, const uint8_t& a) {
 			switch (r) {
 			case 0:
 				return B();
@@ -185,14 +216,44 @@ namespace EightBit {
 			case 5:
 				return L();
 			case 6:
-				m_memory.ADDRESS() = HL();
-				return m_memory.reference();
+				return m_memory.read(HL());
 			case 7:
 				return a;
 			default:
 				__assume(0);
 			}
 			throw std::logic_error("Unhandled registry mechanism");
+		}
+
+		void R2(int r, uint8_t& a, uint8_t value) {
+			switch (r) {
+			case 0:
+				B() = value;
+				break;
+			case 1:
+				C() = value;
+				break;
+			case 2:
+				D() = value;
+				break;
+			case 3:
+				E() = value;
+				break;
+			case 4:
+				H() = value;
+				break;
+			case 5:
+				L() = value;
+				break;
+			case 6:
+				m_memory.write(HL(), value);
+				break;
+			case 7:
+				a = value;
+				break;
+			default:
+				__assume(0);
+			}
 		}
 
 		register16_t& RP(int rp) {
@@ -286,18 +347,18 @@ namespace EightBit {
 		static void orr(uint8_t& f, uint8_t& operand, uint8_t value);
 		static void compare(uint8_t& f, uint8_t check, uint8_t value);
 
-		static uint8_t& rlc(uint8_t& f, uint8_t& operand);
-		static uint8_t& rrc(uint8_t& f, uint8_t& operand);
-		static uint8_t& rl(uint8_t& f, uint8_t& operand);
-		static uint8_t& rr(uint8_t& f, uint8_t& operand);
-		static uint8_t& sla(uint8_t& f, uint8_t& operand);
-		static uint8_t& sra(uint8_t& f, uint8_t& operand);
-		static uint8_t& sll(uint8_t& f, uint8_t& operand);
-		static uint8_t& srl(uint8_t& f, uint8_t& operand);
+		static uint8_t rlc(uint8_t& f, uint8_t operand);
+		static uint8_t rrc(uint8_t& f, uint8_t operand);
+		static uint8_t rl(uint8_t& f, uint8_t operand);
+		static uint8_t rr(uint8_t& f, uint8_t operand);
+		static uint8_t sla(uint8_t& f, uint8_t operand);
+		static uint8_t sra(uint8_t& f, uint8_t operand);
+		static uint8_t sll(uint8_t& f, uint8_t operand);
+		static uint8_t srl(uint8_t& f, uint8_t operand);
 
-		static uint8_t& bit(uint8_t& f, int n, uint8_t& operand);
-		static uint8_t& res(int n, uint8_t& operand);
-		static uint8_t& set(int n, uint8_t& operand);
+		static uint8_t bit(uint8_t& f, int n, uint8_t operand);
+		static uint8_t res(int n, uint8_t operand);
+		static uint8_t set(int n, uint8_t operand);
 
 		static void daa(uint8_t& a, uint8_t& f);
 
