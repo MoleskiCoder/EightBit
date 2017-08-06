@@ -570,16 +570,16 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
 			case 0:
-				rlc(f, a);
+				a = rlc(f, a);
 				break;
 			case 1:
-				rrc(f, a);
+				a = rrc(f, a);
 				break;
 			case 2:
-				rl(f, a);
+				a = rl(f, a);
 				break;
 			case 3:
-				rr(f, a);
+				a = rr(f, a);
 				break;
 			case 4:
 				daa(a, f);

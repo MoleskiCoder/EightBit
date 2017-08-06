@@ -6,8 +6,8 @@ EightBit::Bus::Bus()
 }
 
 void EightBit::Bus::reset() {
-	REG(NR52) = 0xf1;
-	REG(LCDC) = 0x91;
+	writeRegister(NR52, 0xf1);
+	writeRegister(LCDC, 0x91);
 }
 
 void EightBit::Bus::loadBootRom(const std::string& path) {

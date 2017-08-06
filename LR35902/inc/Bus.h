@@ -80,22 +80,19 @@ namespace EightBit {
 		void reset();
 
 		void writeRegister(int offset, uint8_t content) {
-			REG(offset) = content;
-			fireWriteBusEvent();
+			return Memory::write(BASE + offset, content);
 		}
 
 		uint8_t readRegister(int offset) {
-			auto returned = REG(offset);
-			fireReadBusEvent();
-			return returned;
+			return Memory::read(BASE + offset);
 		}
 
 		void incrementLY() {
-			REG(LY) = (REG(LY) + 1) % TotalLineCount;
+			writeRegister(LY, (readRegister(LY) + 1) % TotalLineCount);
 		}
 
 		void resetLY() {
-			REG(LY) = 0;
+			writeRegister(LY, 0);
 		}
 
 		void loadBootRom(const std::string& path);
@@ -110,10 +107,5 @@ namespace EightBit {
 
 	private:
 		std::array<uint8_t, 0x100> m_boot;
-
-		uint8_t& REG(int offset) {
-			ADDRESS().word = BASE + offset;
-			return Memory::reference();
-		}
 	};
 }
