@@ -4,6 +4,7 @@
 #include <string>
 #include <array>
 #include <functional>
+#include <cassert>
 
 #include "Memory.h"
 #include "Processor.h"
@@ -90,8 +91,6 @@ namespace EightBit {
 		uint8_t popByte();
 		void pushWord(register16_t value);
 		void popWord(register16_t& output);
-
-		virtual uint8_t fetchByte() override;
 
 #pragma region 6502 addressing modes
 
@@ -386,25 +385,25 @@ namespace EightBit {
 			return 0xff;
 		}
 
-		void AM_10(int bbb, uint8_t value) {
+		void AM_10(int bbb, uint8_t value, bool fetched = false) {
 			switch (bbb) {
 			case 0b000:
 				assert(false);
 				break;
 			case 0b001:
-				AM_ZeroPage(value);
+				fetched ? m_memory.write(MEMPTR(), value) : AM_ZeroPage(value);
 				break;
 			case 0b010:
 				AM_A(value);
 				break;
 			case 0b011:
-				AM_Absolute(value);
+				fetched ? m_memory.write(MEMPTR(), value) : AM_Absolute(value);
 				break;
 			case 0b101:
-				AM_ZeroPageX(value);
+				fetched ? m_memory.write(MEMPTR(), value) : AM_ZeroPageX(value);
 				break;
 			case 0b111:
-				AM_AbsoluteX(value);
+				fetched ? m_memory.write(MEMPTR(), value) : AM_AbsoluteX(value);
 				break;
 			case 0b100:
 			case 0b110:
@@ -471,37 +470,37 @@ namespace EightBit {
 		void ASL(int bbb) {
 			auto operand = AM_10(bbb);
 			ASL(operand);
-			AM_10(bbb, operand);
+			AM_10(bbb, operand, true);
 		}
 
 		void ROL(int bbb) {
 			auto operand = AM_10(bbb);
 			ROL(operand);
-			AM_10(bbb, operand);
+			AM_10(bbb, operand, true);
 		}
 
 		void LSR(int bbb) {
 			auto operand = AM_10(bbb);
 			LSR(operand);
-			AM_10(bbb, operand);
+			AM_10(bbb, operand, true);
 		}
 
 		void ROR(int bbb) {
 			auto operand = AM_10(bbb);
 			ROR(operand);
-			AM_10(bbb, operand);
+			AM_10(bbb, operand, true);
 		}
 
 		void DEC(int bbb) {
 			auto operand = AM_10(bbb);
 			adjustNZ(--operand);
-			AM_10(bbb, operand);
+			AM_10(bbb, operand, true);
 		}
 
 		void INC(int bbb) {
 			auto operand = AM_10(bbb);
 			adjustNZ(++operand);
-			AM_10(bbb, operand);
+			AM_10(bbb, operand, true);
 		}
 
 		void ROR(uint8_t& output);

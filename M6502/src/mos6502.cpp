@@ -365,11 +365,6 @@ void EightBit::MOS6502::popWord(register16_t& output) {
 	output.high = popByte();
 }
 
-uint8_t EightBit::MOS6502::fetchByte() {
-	m_memory.ADDRESS().word = PC().word++;
-	return getByte();
-}
-
 ////
 
 void EightBit::MOS6502::ROR(uint8_t& output) {
