@@ -77,6 +77,8 @@ bool EightBit::LR35902::jrConditionalFlag(uint8_t& f, int flag) {
 		return jrConditional(!(f & CF));
 	case 3:	// C
 		return jrConditional(f & CF);
+	default:
+		__assume(0);
 	}
 	throw std::logic_error("Unhandled JR conditional");
 }
@@ -91,6 +93,8 @@ bool EightBit::LR35902::jumpConditionalFlag(uint8_t& f, int flag) {
 		return jumpConditional(!(f & CF));
 	case 3:	// C
 		return jumpConditional(f & CF);
+	default:
+		__assume(0);
 	}
 	throw std::logic_error("Unhandled JP conditional");
 }
@@ -110,6 +114,8 @@ bool EightBit::LR35902::returnConditionalFlag(uint8_t& f, int flag) {
 		return returnConditional(!(f & CF));
 	case 3:	// C
 		return returnConditional(f & CF);
+	default:
+		__assume(0);
 	}
 	throw std::logic_error("Unhandled RET conditional");
 }
@@ -124,6 +130,8 @@ bool EightBit::LR35902::callConditionalFlag(uint8_t& f, int flag) {
 		return callConditional(!(f & CF));
 	case 3:	// C
 		return callConditional(f & CF);
+	default:
+		__assume(0);
 	}
 	throw std::logic_error("Unhandled CALL conditional");
 }
@@ -134,15 +142,15 @@ bool EightBit::LR35902::callConditionalFlag(uint8_t& f, int flag) {
 
 void EightBit::LR35902::add(uint8_t& f, register16_t& operand, register16_t value) {
 
-	auto before = operand;
+	MEMPTR() = operand;
 
-	auto result = before.word + value.word;
+	const auto result = MEMPTR().word + value.word;
 
 	operand.word = result;
 
 	clearFlag(f, NF);
 	setFlag(f, CF, result & Bit16);
-	adjustHalfCarryAdd(f, before.high, value.high, operand.high);
+	adjustHalfCarryAdd(f, MEMPTR().high, value.high, operand.high);
 }
 
 #pragma endregion 16-bit arithmetic
@@ -164,7 +172,7 @@ void EightBit::LR35902::add(uint8_t& f, uint8_t& operand, uint8_t value, int car
 }
 
 void EightBit::LR35902::adc(uint8_t& f, uint8_t& operand, uint8_t value) {
-	add(operand, value, (f & CF) >> 4);
+	add(f, operand, value, (f & CF) >> 4);
 }
 
 void EightBit::LR35902::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
@@ -182,26 +190,23 @@ void EightBit::LR35902::subtract(uint8_t& f, uint8_t& operand, uint8_t value, in
 }
 
 void EightBit::LR35902::sbc(uint8_t& f, uint8_t& operand, uint8_t value) {
-	subtract(operand, value, (f & CF) >> 4);
+	subtract(f, operand, value, (f & CF) >> 4);
 }
 
 void EightBit::LR35902::andr(uint8_t& f, uint8_t& operand, uint8_t value) {
-	operand &= value;
 	setFlag(f, HC);
 	clearFlag(f, CF | NF);
-	adjustZero<LR35902>(f, operand);
+	adjustZero<LR35902>(f, operand &= value);
 }
 
 void EightBit::LR35902::xorr(uint8_t& f, uint8_t& operand, uint8_t value) {
-	operand ^= value;
 	clearFlag(f, HC | CF | NF);
-	adjustZero<LR35902>(f, operand);
+	adjustZero<LR35902>(f, operand ^= value);
 }
 
 void EightBit::LR35902::orr(uint8_t& f, uint8_t& operand, uint8_t value) {
-	operand |= value;
 	clearFlag(f, HC | CF | NF);
-	adjustZero<LR35902>(f, operand);
+	adjustZero<LR35902>(f, operand |= value);
 }
 
 void EightBit::LR35902::compare(uint8_t& f, uint8_t check, uint8_t value) {
@@ -320,8 +325,8 @@ void EightBit::LR35902::daa(uint8_t& a, uint8_t& f) {
 }
 
 void EightBit::LR35902::cpl(uint8_t& a, uint8_t& f) {
-	a = ~a;
 	setFlag(f, HC | NF);
+	a = ~a;
 }
 
 void EightBit::LR35902::scf(uint8_t& a, uint8_t& f) {
@@ -378,7 +383,7 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 	auto& a = A();
 	auto& f = F();
 	switch (x) {
-	case 0: { // rot[y] r[z]
+	case 0:	{ // rot[y] r[z]
 		auto operand = R(z, a);
 		switch (y) {
 		case 0:
@@ -413,7 +418,7 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 		if (z == 6)
 			cycles += 2;
 		break;
-	} case 1: // BIT y, r[z]
+	} case 1:	// BIT y, r[z]
 		bit(f, y, R(z, a));
 		cycles += 2;
 		if (z == 6)
@@ -474,7 +479,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			break;
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
-			case 0:	// LD rp,nn
+			case 0: // LD rp,nn
 				Processor::fetchWord(RP(p));
 				cycles += 3;
 				break;
@@ -532,6 +537,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					__assume(0);
 				}
 				break;
+			default:
+				__assume(0);
 			}
 			break;
 		case 3:	// 16-bit INC/DEC
@@ -563,7 +570,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			if (y == 6)
 				cycles += 2;
 			break;
-		} case 6: // 8-bit load immediate
+		} case 6:	// 8-bit load immediate
 			R(y, a, fetchByte());	// LD r,n
 			cycles += 2;
 			break;
@@ -598,6 +605,8 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			}
 			cycles++;
 			break;
+		default:
+			__assume(0);
 		}
 		break;
 	case 1:	// 8-bit loading
@@ -707,7 +716,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 					break;
 				case 2:	// JP HL
 					PC() = HL();
-					cycles += 1;
+					cycles++;
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL();
