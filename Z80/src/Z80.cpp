@@ -821,6 +821,8 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 		case 7:
 			operand = srl(f, operand);
 			break;
+		default:
+			__assume(0);
 		}
 		adjustSZP<Z80>(f, operand);
 		if (m_displaced) {
