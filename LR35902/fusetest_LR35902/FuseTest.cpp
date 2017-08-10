@@ -23,3 +23,18 @@ void Fuse::Test::read(std::ifstream& file) {
 			memoryData.push_back(memoryDatum);
 	} while (!complete);
 }
+
+void Fuse::Test::write(std::ofstream& file) {
+
+	file << description << std::endl;
+
+	registerState.write(file);
+	file << std::endl;
+
+	for (auto memoryDatum : memoryData) {
+		memoryDatum.write(file);
+		file << std::endl;
+	}
+
+	file << -1 << std::endl;
+}

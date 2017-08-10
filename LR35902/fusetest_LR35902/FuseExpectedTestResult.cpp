@@ -46,3 +46,17 @@ void Fuse::ExpectedTestResult::read(std::ifstream& file) {
 		}
 	} while (!line.empty());
 }
+
+void Fuse::ExpectedTestResult::write(std::ofstream& file) {
+
+	file << description << std::endl;
+
+	events.write(file);
+	registerState.write(file);
+
+	file << std::endl;
+
+	for (auto memoryDatum : memoryData) {
+		memoryDatum.write(file);
+	}
+}

@@ -12,9 +12,22 @@ void Fuse::Tests::read(std::ifstream& file) {
 	}
 }
 
+void Fuse::Tests::write(std::ofstream& file) {
+	for (auto test : tests) {
+		test.second.write(file);
+		file << std::endl;
+	}
+}
+
 void Fuse::Tests::read(std::string path) {
 	std::ifstream file;
 	file >> std::hex;
 	file.open(path);
 	read(file);
+}
+
+void Fuse::Tests::write(std::string path) {
+	std::ofstream file;
+	file.open(path);
+	write(file);
 }

@@ -19,5 +19,6 @@ namespace Fuse {
 
 		bool finished() const { return finish; }
 		void read(std::ifstream& file);
+		void write(std::ofstream& file);
 	};
 }

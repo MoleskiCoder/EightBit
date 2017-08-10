@@ -3,8 +3,11 @@
 #include "FuseTestRunner.h"
 
 Fuse::TestSuite::TestSuite(std::string path) {
-	m_tests.read(path + ".in");
-	m_results.read(path + ".expected");
+	m_tests.read(path + ".in.z80");
+	m_tests.write(path + ".in");
+
+	m_results.read(path + ".expected.z80");
+	m_results.write(path + ".expected");
 }
 
 void Fuse::TestSuite::run() {
