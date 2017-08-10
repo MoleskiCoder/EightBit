@@ -91,7 +91,7 @@ namespace EightBit {
 			write(value);
 		}
 
-		void clear();
+		virtual void clear();
 		void loadRom(const std::string& path, uint16_t offset);
 		void loadRam(const std::string& path, uint16_t offset);
 

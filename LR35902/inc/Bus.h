@@ -79,6 +79,8 @@ namespace EightBit {
 
 		void reset();
 
+		virtual void clear() override;
+
 		void writeRegister(int offset, uint8_t content) {
 			return Memory::write(BASE + offset, content);
 		}
@@ -95,10 +97,13 @@ namespace EightBit {
 			writeRegister(LY, 0);
 		}
 
+		void disableBootRom() { m_disableBootRom = true; }
+		void enableBootRom() { m_disableBootRom = false; }
+
 		void loadBootRom(const std::string& path);
 
 		bool isBootRom(uint16_t address) const {
-			return (address < m_boot.size()) && !peek(BASE + BOOT_DISABLE);
+			return !m_disableBootRom && (address < m_boot.size()) && !peek(BASE + BOOT_DISABLE);
 		}
 
 		virtual uint8_t peek(uint16_t address) const;
@@ -107,5 +112,6 @@ namespace EightBit {
 
 	private:
 		std::array<uint8_t, 0x100> m_boot;
+		bool m_disableBootRom;
 	};
 }

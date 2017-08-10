@@ -2,12 +2,18 @@
 #include "Bus.h"
 
 EightBit::Bus::Bus()
-: Memory(0xffff) {
+: Memory(0xffff),
+  m_disableBootRom(false) {
 }
 
 void EightBit::Bus::reset() {
 	writeRegister(NR52, 0xf1);
 	writeRegister(LCDC, 0x91);
+}
+
+void EightBit::Bus::clear() {
+	Memory::clear();
+	m_boot.fill(0);
 }
 
 void EightBit::Bus::loadBootRom(const std::string& path) {
