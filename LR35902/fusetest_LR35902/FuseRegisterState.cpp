@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FuseRegisterState.h"
+#include <Processor.h>
 
 Fuse::RegisterState::RegisterState()
 : registers(NUMBER_OF_REGISTERS) {
@@ -47,7 +48,26 @@ std::string Fuse::RegisterState::hex(int value) {
 
 void Fuse::RegisterState::writeExternal(std::ofstream& file) {
 
-	file << hex(registers[AF].word) << " ";
+	const auto z80_af = registers[AF];
+	const auto z80_a = z80_af.high;
+	const auto z80_f = z80_af.low;
+	EightBit::register16_t lr35902_af;
+	auto& lr35902_a = lr35902_af.high;
+	auto& lr35902_f = lr35902_af.low;
+
+	lr35902_a = z80_a;
+	lr35902_f = 0;
+
+	if (z80_f & EightBit::Processor::Bit6)	// ZF
+		lr35902_f |= EightBit::Processor::Bit7;
+	if (z80_f & EightBit::Processor::Bit1)	// NF
+		lr35902_f |= EightBit::Processor::Bit6;
+	if (z80_f & EightBit::Processor::Bit4)	// HC
+		lr35902_f |= EightBit::Processor::Bit5;
+	if (z80_f & EightBit::Processor::Bit0)	// CF
+		lr35902_f |= EightBit::Processor::Bit4;
+
+	file << hex(lr35902_af.word) << " ";
 	file << hex(registers[BC].word) << " ";
 	file << hex(registers[DE].word) << " ";
 	file << hex(registers[HL].word) << " ";
