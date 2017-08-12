@@ -7,6 +7,8 @@ void Fuse::Test::read(std::ifstream& file) {
 	do {
 		std::getline(file, description);
 		finish = file.eof();
+		if (!description.empty() && (description[0] == ';'))	// ignore comments
+			description.clear();
 	} while (description.empty() && !finish);
 
 	if (finish)
