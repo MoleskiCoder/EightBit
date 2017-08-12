@@ -20,11 +20,6 @@ void Fuse::RegisterState::readExternal(std::ifstream& file) {
 }
 
 void Fuse::RegisterState::readInternal(std::ifstream& file) {
-	file >> i;
-	file >> r;
-	file >> iff1;
-	file >> iff2;
-	file >> im;
 	file >> halted;
 
 	file >> std::dec;

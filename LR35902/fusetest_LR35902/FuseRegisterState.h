@@ -10,12 +10,9 @@ namespace Fuse {
 	class RegisterState {
 	public:
 		enum {
-			AF, BC, DE, HL, AF_, BC_, DE_, HL_, IX, IY, SP, PC, MEMPTR, NUMBER_OF_REGISTERS
+			AF, BC, DE, HL, SP, PC, NUMBER_OF_REGISTERS
 		};
 		std::vector<EightBit::register16_t> registers;
-		int i, r;
-		bool iff1, iff2;
-		int im;
 		bool halted;
 		int tstates;
 
