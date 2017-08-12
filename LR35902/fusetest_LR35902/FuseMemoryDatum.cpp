@@ -18,15 +18,3 @@ void Fuse::MemoryDatum::read(std::ifstream& file) {
 			bytes.push_back(byte);
 	} while (!completed);
 }
-
-void Fuse::MemoryDatum::write(std::ofstream& file) {
-	file
-		<< std::hex
-		<< std::setfill('0');
-
-	file << std::setw(4) << address << " ";
-	for (auto byte : bytes) {
-		file << std::setw(2) << (int)byte << " ";
-	}
-	file << std::dec << -1;
-}

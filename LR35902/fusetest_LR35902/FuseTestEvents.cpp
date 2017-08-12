@@ -11,10 +11,3 @@ void Fuse::TestEvents::read(std::ifstream& file) {
 			events.push_back(event);
 	}  while (!complete);
 }
-
-void Fuse::TestEvents::write(std::ofstream& file) {
-	for (auto event : events) {
-		event.write(file);
-		file << std::endl;
-	}
-}

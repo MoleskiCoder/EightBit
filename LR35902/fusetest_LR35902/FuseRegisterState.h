@@ -20,14 +20,10 @@ namespace Fuse {
 		RegisterState();
 
 		void read(std::ifstream& file);
-		void write(std::ofstream& file);
 
 	private:
 		void readInternal(std::ifstream& file);
 		void readExternal(std::ifstream& file);
-
-		void writeInternal(std::ofstream& file);
-		void writeExternal(std::ofstream& file);
 
 		static std::string hex(int value);
 	};

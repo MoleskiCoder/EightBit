@@ -32,21 +32,3 @@ void Fuse::TestEvent::read(std::ifstream& file) {
 		file.seekg(prior);
 	}
 }
-
-void Fuse::TestEvent::write(std::ofstream& file) {
-
-	file << std::dec << cycles;
-	file << " " << specifier << " ";
-
-	file << std::hex << std::setfill('0');
-
-	if (specifier == "MR" || specifier == "MW") {
-		file << std::setw(4) << address << " " << std::setw(2) << value;
-	}
-	else if (specifier == "MC" || specifier == "PC") {
-		file << std::setw(4) << address;
-	}
-	else if (specifier == "PR" || specifier == "PW") {
-		file << std::setw(4) << address << " " << std::setw(2) << value;
-	}
-}

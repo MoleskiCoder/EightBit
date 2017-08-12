@@ -9,6 +9,5 @@ namespace Fuse {
 		std::vector<TestEvent> events;
 
 		void read(std::ifstream& file);
-		void write(std::ofstream& file);
 	};
 }

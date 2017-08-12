@@ -7,8 +7,8 @@ tests.in
 Each test has the format:
 
 <arbitrary test description>
-AF BC DE HL AF' BC' DE' HL' IX IY SP PC MEMPTR
-I R IFF1 IFF2 IM <halted> <tstates>
+AF BC DE HL SP PC
+<halted> <tstates>
 
 <halted> specifies whether the Z80 is halted.
 <tstates> specifies the number of tstates to run the test for, in

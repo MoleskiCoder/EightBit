@@ -23,6 +23,5 @@ namespace Fuse {
 		: finish(false) {}
 
 		void read(std::ifstream& file);
-		void write(std::ofstream& file);
 	};
 }
