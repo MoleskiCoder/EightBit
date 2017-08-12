@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<!-- saved from url=(0058)http://gbdev.gg8.se/wiki/articles/CPU_Comparision_with_Z80 -->
+<html lang="en" dir="ltr" class="client-js"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>CPU Comparision with Z80 - GbdevWiki</title>
+<meta name="generator" content="MediaWiki 1.25.1">
+<link rel="shortcut icon" href="http://gbdev.gg8.se/favicon.ico">
+<link rel="search" type="application/opensearchdescription+xml" href="http://gbdev.gg8.se/wiki/opensearch_desc.php" title="GbdevWiki (en)">
+<link rel="EditURI" type="application/rsd+xml" href="http://gbdev.gg8.se/wiki/api.php?action=rsd">
+<link rel="alternate" hreflang="x-default" href="http://gbdev.gg8.se/wiki/articles/CPU_Comparision_with_Z80">
+<link rel="alternate" type="application/atom+xml" title="GbdevWiki Atom feed" href="http://gbdev.gg8.se/wiki/index.php?title=Special:RecentChanges&amp;feed=atom">
+<link rel="stylesheet" href="./CPU Comparision with Z80 - GbdevWiki_files/load.php">
+<!--[if IE 6]><link rel="stylesheet" href="/wiki/skins/MonoBook/IE60Fixes.css?303" media="screen" /><![endif]-->
+<!--[if IE 7]><link rel="stylesheet" href="/wiki/skins/MonoBook/IE70Fixes.css?303" media="screen" /><![endif]--><style>
+.mw-collapsible-toggle{float:right;-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;user-select:none}  .mw-content-ltr .mw-collapsible-toggle,.mw-content-rtl .mw-content-ltr .mw-collapsible-toggle{float:right} .mw-content-rtl .mw-collapsible-toggle,.mw-content-ltr .mw-content-rtl .mw-collapsible-toggle{float:left}.mw-customtoggle,.mw-collapsible-toggle{cursor:pointer} caption .mw-collapsible-toggle,.mw-content-ltr caption .mw-collapsible-toggle,.mw-content-rtl caption .mw-collapsible-toggle,.mw-content-rtl .mw-content-ltr caption .mw-collapsible-toggle,.mw-content-ltr .mw-content-rtl caption .mw-collapsible-toggle{float:none} li .mw-collapsible-toggle,.mw-content-ltr li .mw-collapsible-toggle,.mw-content-rtl li .mw-collapsible-toggle,.mw-content-rtl .mw-content-ltr li .mw-collapsible-toggle,.mw-content-ltr .mw-content-rtl li .mw-collapsible-toggle{float:none} .mw-collapsible-toggle-li{list-style:none}
+/* cache key: gbdevwiki-gbdevwiki_:resourceloader:filter:minify-css:7:e1ffd603cbaaa5f1a36e0d13fe843535 */
+.suggestions{overflow:hidden;position:absolute;top:0;left:0;width:0;border:none;z-index:1099;padding:0;margin:-1px 0 0 0}.suggestions-special{position:relative;background-color:white;cursor:pointer;border:solid 1px #aaaaaa;padding:0;margin:0;margin-top:-2px;display:none;padding:0.25em 0.25em;line-height:1.25em}.suggestions-results{background-color:white;cursor:pointer;border:solid 1px #aaaaaa;padding:0;margin:0}.suggestions-result{color:black;margin:0;line-height:1.5em;padding:0.01em 0.25em;text-align:left; overflow:hidden;-o-text-overflow:ellipsis; text-overflow:ellipsis;white-space:nowrap}.suggestions-result-current{background-color:#4C59A6;color:white}.suggestions-special .special-label{color:gray;text-align:left}.suggestions-special .special-query{color:black;font-style:italic;text-align:left}.suggestions-special .special-hover{background-color:silver}.suggestions-result-current .special-label,.suggestions-result-current .special-query{color:white}.highlight{font-weight:bold}
+/* cache key: gbdevwiki-gbdevwiki_:resourceloader:filter:minify-css:7:f8d0c6895ce3ae14434c16b8fca59432 */
+.postedit-container{margin:0 auto;position:fixed;top:0;height:0;left:50%;z-index:1000;font-size:13px}.postedit-container:hover{cursor:pointer}.postedit{position:relative;top:0.6em;left:-50%;padding:.6em 3.6em .6em 1.1em;line-height:1.5625em;color:#626465;background-color:#f4f4f4;border:1px solid #dcd9d9;text-shadow:0 0.0625em 0 rgba(255,255,255,0.5);border-radius:5px;box-shadow:0 2px 5px 0 #ccc;-webkit-transition:all 0.25s ease-in-out;-moz-transition:all 0.25s ease-in-out;-ms-transition:all 0.25s ease-in-out;-o-transition:all 0.25s ease-in-out;transition:all 0.25s ease-in-out}.skin-monobook .postedit{top:6em !important}.postedit-faded{opacity:0}.postedit-icon{padding-left:41px;  line-height:25px;background-repeat:no-repeat;background-position:8px 50%}.postedit-icon-checkmark{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABblBMVEUAAAD///////9PfTf///80aRdTgjn///9Feij///////////9Rfzf///////////9PfjZRgDh1o1xOfTb///////+bwYqLtnj///////9PfTa82K////9WhT6YxIL///9QgDdTgzr////////j7uDl7eLq8efi693k7OH///////9UhjuBr2rp9uRUhjr///9YljVKgir///9WiTlYjT3////9/v57vFlbkT5PjC9dlD/5/fhuq09stUTs9uhxuElctCpfnT1huDFloEZloUZmpENmvDZpvDxpvTxqvjxrvT5rvT9rwTxsqktswD5uwkBvuUdxw0NztFBztU9ztVBzwkp0tlJ1xkd2t1R3uVR4w1F4xk54x014yE15uVZ5v1R5xVB6v1R7yFJ8wVh9xVl9yFR9yVd9ylN+xVh+yFd/x1l/yFeAylmEx1+Ny2uY0Hqe04Wj1Ymv3Ze33qLD47TJ5L3O6cPU7Mrq9eb2+/Q4j37OAAAAQHRSTlMAAQIEBAUFBQwPFB4fJCUoKiosQEhJS01RUlZZXmdydXaChYuSlJSWmJmoq6uur8LExcvM19fg5ejt8fX2+Pr7SljgewAAAKpJREFUGBkFwQNCAwAAAMDLtl3LtrG4rWXbtvX77gAgZ6grFwC0bhwNVgKgdPZx8b0dgLi+s7Wn0VoAqpfOI9+BNADZI7fLrz2pSEwGHZuH+78lSK8ZLkLezF3ooyUG3VPXq2USei9WngeyoG195yBYWDF3E/2pAhl1e9Gr8bGT+bfOFCC2fnvh4X7rcqIAQNNu+HT6sxkAjceTL/2ZAIhv+PorBwBJxfkA//dFHSCBy/UTAAAAAElFTkSuQmCC);background-image:url(http://gbdev.gg8.se/wiki/resources/src/mediawiki.action/images/green-checkmark.png?2015-05-25T21:00:00Z)!ie;background-position:left}.postedit-close{position:absolute;padding:0 .8em;right:0;top:0;font-size:1.25em;font-weight:bold;line-height:2.3em;color:black;text-shadow:0 0.0625em 0 white;text-decoration:none;opacity:0.2;filter:alpha(opacity=20)}.postedit-close:hover{color:black;text-decoration:none;opacity:0.4;filter:alpha(opacity=40)}
+/* cache key: gbdevwiki-gbdevwiki_:resourceloader:filter:minify-css:7:13d4fa21bba270816326a4ec1d0f0753 */</style><style>
+.suggestions a.mw-searchSuggest-link,.suggestions a.mw-searchSuggest-link:hover,.suggestions a.mw-searchSuggest-link:active,.suggestions a.mw-searchSuggest-link:focus{color:black;text-decoration:none}.suggestions-result-current a.mw-searchSuggest-link,.suggestions-result-current a.mw-searchSuggest-link:hover,.suggestions-result-current a.mw-searchSuggest-link:active,.suggestions-result-current a.mw-searchSuggest-link:focus{color:white}.suggestions a.mw-searchSuggest-link .special-query{ overflow:hidden;-o-text-overflow:ellipsis; text-overflow:ellipsis;white-space:nowrap}
+/* cache key: gbdevwiki-gbdevwiki_:resourceloader:filter:minify-css:7:ae3fa4570b5ac0c6cf7b3776c8ae4d6f */</style><meta name="ResourceLoaderDynamicStyles" content="">
+<link rel="stylesheet" href="./CPU Comparision with Z80 - GbdevWiki_files/load(1).php">
+<style>a:lang(ar),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}
+/* cache key: gbdevwiki-gbdevwiki_:resourceloader:filter:minify-css:7:6e7fe7968357bf072d7ae91837483523 */</style>
+<script src="./CPU Comparision with Z80 - GbdevWiki_files/load(2).php"></script><style type="text/css">
+:root #ads > .dose > .dosesingle,
+:root .adsbygoogle
+{ display: none !important; }</style><script src="./CPU Comparision with Z80 - GbdevWiki_files/load(3).php"></script>
+<script>if(window.mw){
+mw.config.set({"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"CPU_Comparision_with_Z80","wgTitle":"CPU Comparision with Z80","wgCurRevisionId":177,"wgRevisionId":177,"wgArticleId":54,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pandocs Article"],"wgBreakFrames":false,"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgMonthNamesShort":["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"wgRelevantPageName":"CPU_Comparision_with_Z80","wgRelevantArticleId":54,"wgIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[]});
+}</script><script>if(window.mw){
+mw.loader.implement("user.options",function($,jQuery){mw.user.options.set({"variant":"en"});});mw.loader.implement("user.tokens",function($,jQuery){mw.user.tokens.set({"editToken":"+\\","patrolToken":"+\\","watchToken":"+\\"});});
+/* cache key: gbdevwiki-gbdevwiki_:resourceloader:filter:minify-js:7:a5c52c063dc436c1ca7c9f456936a5e9 */
+}</script>
+<script>if(window.mw){
+mw.loader.load(["mediawiki.page.startup","mediawiki.legacy.wikibits","mediawiki.legacy.ajax"]);
+}</script><script src="./CPU Comparision with Z80 - GbdevWiki_files/load(4).php"></script>
+<style type="text/css">
+:root #content > #center > .dose > .dosesingle,
+:root #content > #right > .dose > .dosesingle
+{ display: none !important; }</style></head>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-CPU_Comparision_with_Z80 skin-monobook action-view">
+<div id="globalWrapper">
+		<div id="column-content">
+			<div id="content" class="mw-body" role="main">
+				<a id="top"></a>
+				
+				<div class="mw-indicators">
+</div>
+				<h1 id="firstHeading" class="firstHeading" lang="en">CPU Comparision with Z80</h1>
+
+				<div id="bodyContent" class="mw-body-content">
+					<div id="siteSub">From GbdevWiki</div>
+					<div id="contentSub"></div>
+										<div id="jump-to-nav" class="mw-jump">Jump to: <a href="http://gbdev.gg8.se/wiki/articles/CPU_Comparision_with_Z80#column-one">navigation</a>, <a href="http://gbdev.gg8.se/wiki/articles/CPU_Comparision_with_Z80#searchInput">search</a></div>
+
+					<!-- start content -->
+					<div id="mw-content-text" lang="en" dir="ltr" class="mw-content-ltr"><div class="wikitable" style="border: 1px solid #ccc; margin:0.5em auto; font-size:95%; text-align: center;">
+<p><b>This article is part of <a href="http://gbdev.gg8.se/wiki/articles/Pan_Docs" title="Pan Docs">Pan Docs</a>.</b>
+</p><p>Please read more about Pan Docs, and what you can do to improve this article by clicking <a href="http://gbdev.gg8.se/wiki/articles/Pan_Docs" title="Pan Docs">here</a>.
+</p><p>To view this information in its original context, click here: <a rel="nofollow" class="external free" href="http://gbdev.gg8.se/files/docs/mirrors/pandocs.html#cpucomparisionwithz80">http://gbdev.gg8.se/files/docs/mirrors/pandocs.html#cpucomparisionwithz80</a>
+</p>
+</div>
+<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="http://gbdev.gg8.se/wiki/articles/CPU_Comparision_with_Z80#" id="togglelink">hide</a>]&nbsp;</span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="http://gbdev.gg8.se/wiki/articles/CPU_Comparision_with_Z80#Comparision_with_8080"><span class="tocnumber">1</span> <span class="toctext">Comparision with 8080</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="http://gbdev.gg8.se/wiki/articles/CPU_Comparision_with_Z80#Comparision_with_Z80"><span class="tocnumber">2</span> <span class="toctext">Comparision with Z80</span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="http://gbdev.gg8.se/wiki/articles/CPU_Comparision_with_Z80#Moved.2C_Removed.2C_and_Added_Opcodes"><span class="tocnumber">3</span> <span class="toctext">Moved, Removed, and Added Opcodes</span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="http://gbdev.gg8.se/wiki/articles/CPU_Comparision_with_Z80#Note:"><span class="tocnumber">4</span> <span class="toctext">Note:</span></a></li>
+</ul>
+</div>
+
+<h3><span class="mw-headline" id="Comparision_with_8080">Comparision with 8080</span></h3>
+<p>Basically, the gameboy CPU works more like an older 8080 CPU rather than like a more powerful Z80 CPU. It is, however, supporting CB-prefixed instructions. Also, all known gameboy assemblers using the more obvious Z80-style syntax, rather than the chaotic 8080-style syntax.
+</p>
+<h3><span class="mw-headline" id="Comparision_with_Z80">Comparision with Z80</span></h3>
+<p>Any DD-, ED-, and FD-prefixed instructions are missing, that means no IX-, IY-registers, no block commands, and some other missing commands.
+All exchange instructions have been removed (including total absence of second register set), 16bit memory accesses are mostly missing, and 16bit arithmetic functions are heavily cut-down.
+The gameboy has no IN/OUT instructions, instead I/O ports are accessed directly by normal LD instructions, or by special LD (FF00+n) opcodes.
+The sign and parity/overflow flags have been removed.
+The gameboy operates approximately as fast as a 4MHz Z80 (8MHz in CGB double speed mode), execution time of all instructions has been rounded up to a multiple of 4 cycles though.
+</p>
+<h3><span class="mw-headline" id="Moved.2C_Removed.2C_and_Added_Opcodes">Moved, Removed, and Added Opcodes</span></h3>
+<pre> Opcode  Z80             GMB
+ ---------------------------------------
+ 08      EX   AF,AF      LD   (nn),SP
+ 10      DJNZ PC+dd      STOP
+ 22      LD   (nn),HL    LDI  (HL),A
+ 2A      LD   HL,(nn)    LDI  A,(HL)
+ 32      LD   (nn),A     LDD  (HL),A
+ 3A      LD   A,(nn)     LDD  A,(HL)
+ D3      OUT  (n),A      -
+ D9      EXX             RETI
+ DB      IN   A,(n)      -
+ DD      &lt;IX&gt;            -
+ E0      RET  PO         LD   (FF00+n),A
+ E2      JP   PO,nn      LD   (FF00+C),A
+ E3      EX   (SP),HL    -
+ E4      CALL P0,nn      -
+ E8      RET  PE         ADD  SP,dd
+ EA      JP   PE,nn      LD   (nn),A
+ EB      EX   DE,HL      -
+ EC      CALL PE,nn      -
+ ED      &lt;pref&gt;          -
+ F0      RET  P          LD   A,(FF00+n)
+ F2      JP   P,nn       LD   A,(FF00+C)
+ F4      CALL P,nn       -
+ F8      RET  M          LD   HL,SP+dd
+ FA      JP   M,nn       LD   A,(nn)
+ FC      CALL M,nn       -
+ FD      &lt;IY&gt;            -
+ CB3X    SLL  r/(HL)     SWAP r/(HL)
+</pre>
+<p><br>
+</p>
+<h2><span class="mw-headline" id="Note:">Note:</span></h2>
+<p>The unused (-) opcodes will lock-up the gameboy CPU when used.
+</p>
+<!-- 
+NewPP limit report
+CPU time usage: 0.026 seconds
+Real time usage: 0.029 seconds
+Preprocessor visited node count: 21/1000000
+Preprocessor generated node count: 46/1000000
+Post‐expand include size: 436/2097152 bytes
+Template argument size: 21/2097152 bytes
+Highest expansion depth: 2/40
+Expensive parser function count: 0/100
+-->
+
+<!-- 
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    5.573      1 - -total
+100.00%    5.573      1 - Template:Pandocs
+-->
+
+<!-- Saved in parser cache with key gbdevwiki-gbdevwiki_:pcache:idhash:54-0!*!0!!en!*!* and timestamp 20170508070539 and revision id 177
+ -->
+</div><div class="printfooter">
+Retrieved from "<a dir="ltr" href="http://gbdev.gg8.se/wiki/index.php?title=CPU_Comparision_with_Z80&amp;oldid=177">http://gbdev.gg8.se/wiki/index.php?title=CPU_Comparision_with_Z80&amp;oldid=177</a>"</div>
+					<div id="catlinks" class="catlinks"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="http://gbdev.gg8.se/wiki/articles/Special:Categories" title="Special:Categories">Category</a>: <ul><li><a href="http://gbdev.gg8.se/wiki/articles/Category:Pandocs_Article" title="Category:Pandocs Article">Pandocs Article</a></li></ul></div></div>					<!-- end content -->
+										<div class="visualClear"></div>
+				</div>
+			</div>
+		</div>
+		<div id="column-one">
+			<h2>Navigation menu</h2>
+					<div id="p-cactions" class="portlet" role="navigation">
+			<h3>Views</h3>
+
+			<div class="pBody">
+				<ul>
+				<li id="ca-nstab-main" class="selected"><a href="http://gbdev.gg8.se/wiki/articles/CPU_Comparision_with_Z80" title="View the content page [alt-shift-c]" accesskey="c">Page</a></li>
+				<li id="ca-talk" class="new"><a href="http://gbdev.gg8.se/wiki/index.php?title=Talk:CPU_Comparision_with_Z80&amp;action=edit&amp;redlink=1" title="Discussion about the content page [alt-shift-t]" accesskey="t">Discussion</a></li>
+				<li id="ca-viewsource"><a href="http://gbdev.gg8.se/wiki/index.php?title=CPU_Comparision_with_Z80&amp;action=edit" title="This page is protected.
+You can view its source [alt-shift-e]" accesskey="e">View source</a></li>
+				<li id="ca-history"><a href="http://gbdev.gg8.se/wiki/index.php?title=CPU_Comparision_with_Z80&amp;action=history" title="Past revisions of this page [alt-shift-h]" accesskey="h">History</a></li>
+				</ul>
+							</div>
+		</div>
+				<div class="portlet" id="p-personal" role="navigation">
+				<h3>Personal tools</h3>
+
+				<div class="pBody">
+					<ul>
+													<li id="pt-login"><a href="http://gbdev.gg8.se/wiki/index.php?title=Special:UserLogin&amp;returnto=CPU+Comparision+with+Z80" title="You are encouraged to log in; however, it is not mandatory [alt-shift-o]" accesskey="o">Log in</a></li>
+											</ul>
+				</div>
+			</div>
+			<div class="portlet" id="p-logo" role="banner">
+				<a href="http://gbdev.gg8.se/wiki/articles/Main_Page" class="mw-wiki-logo" title="Visit the main page"></a>
+			</div>
+				<div class="generated-sidebar portlet" id="p-site_navigation" role="navigation">
+		<h3>site navigation</h3>
+		<div class="pBody">
+							<ul>
+											<li id="n-GB-dev-forum"><a href="http://gbdev.gg8.se/forums/" rel="nofollow">GB dev forum</a></li>
+											<li id="n-GB-dev-file-hub"><a href="http://gbdev.gg8.se/files/" rel="nofollow">GB dev file hub</a></li>
+											<li id="n-Front-page"><a href="http://gbdev.gg8.se/" rel="nofollow">Front page</a></li>
+									</ul>
+					</div>
+		</div>
+		<div class="generated-sidebar portlet" id="p-wiki_navigation" role="navigation">
+		<h3>wiki navigation</h3>
+		<div class="pBody">
+							<ul>
+											<li id="n-mainpage-description"><a href="http://gbdev.gg8.se/wiki/articles/Main_Page" title="Visit the main page [alt-shift-z]" accesskey="z">Main page</a></li>
+											<li id="n-recentchanges"><a href="http://gbdev.gg8.se/wiki/articles/Special:RecentChanges" title="A list of recent changes in the wiki [alt-shift-r]" accesskey="r">Recent changes</a></li>
+											<li id="n-randompage"><a href="http://gbdev.gg8.se/wiki/articles/Special:Random" title="Load a random page [alt-shift-x]" accesskey="x">Random page</a></li>
+											<li id="n-help"><a href="https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Contents" title="The place to find out">Help</a></li>
+									</ul>
+					</div>
+		</div>
+			<div id="p-search" class="portlet" role="search">
+			<h3><label for="searchInput">Search</label></h3>
+
+			<div id="searchBody" class="pBody">
+				<form action="http://gbdev.gg8.se/wiki/index.php" id="searchform">
+					<input type="hidden" name="title" value="Special:Search">
+					<input type="search" name="search" placeholder="Search" title="Search GbdevWiki [alt-shift-f]" accesskey="f" id="searchInput" autocomplete="off">
+					<input type="submit" name="go" value="Go" title="Go to a page with this exact name if exists" id="searchGoButton" class="searchButton">&nbsp;
+						<input type="submit" name="fulltext" value="Search" title="Search the pages for this text" id="mw-searchButton" class="searchButton">
+				</form>
+
+							</div>
+		</div>
+			<div class="portlet" id="p-tb" role="navigation">
+			<h3>Tools</h3>
+
+			<div class="pBody">
+				<ul>
+											<li id="t-whatlinkshere"><a href="http://gbdev.gg8.se/wiki/articles/Special:WhatLinksHere/CPU_Comparision_with_Z80" title="A list of all wiki pages that link here [alt-shift-j]" accesskey="j">What links here</a></li>
+											<li id="t-recentchangeslinked"><a href="http://gbdev.gg8.se/wiki/articles/Special:RecentChangesLinked/CPU_Comparision_with_Z80" title="Recent changes in pages linked from this page [alt-shift-k]" accesskey="k">Related changes</a></li>
+											<li id="t-specialpages"><a href="http://gbdev.gg8.se/wiki/articles/Special:SpecialPages" title="A list of all special pages [alt-shift-q]" accesskey="q">Special pages</a></li>
+											<li id="t-print"><a href="http://gbdev.gg8.se/wiki/index.php?title=CPU_Comparision_with_Z80&amp;printable=yes" rel="alternate" title="Printable version of this page [alt-shift-p]" accesskey="p">Printable version</a></li>
+											<li id="t-permalink"><a href="http://gbdev.gg8.se/wiki/index.php?title=CPU_Comparision_with_Z80&amp;oldid=177" title="Permanent link to this revision of the page">Permanent link</a></li>
+											<li id="t-info"><a href="http://gbdev.gg8.se/wiki/index.php?title=CPU_Comparision_with_Z80&amp;action=info" title="More information about this page">Page information</a></li>
+									</ul>
+							</div>
+		</div>
+			</div><!-- end of the left (by default at least) column -->
+		<div class="visualClear"></div>
+					<div id="footer" role="contentinfo">
+						<div id="f-poweredbyico">
+									<a href="http://www.mediawiki.org/"><img src="./CPU Comparision with Z80 - GbdevWiki_files/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="/wiki/resources/assets/poweredby_mediawiki_132x47.png 1.5x, /wiki/resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31"></a>
+							</div>
+					<ul id="f-list">
+									<li id="lastmod"> This page was last modified on 28 June 2009, at 08:59.</li>
+									<li id="privacy"><a href="http://gbdev.gg8.se/wiki/articles/GbdevWiki:Privacy_policy" title="GbdevWiki:Privacy policy">Privacy policy</a></li>
+									<li id="about"><a href="http://gbdev.gg8.se/wiki/articles/GbdevWiki:About" title="GbdevWiki:About">About GbdevWiki</a></li>
+									<li id="disclaimer"><a href="http://gbdev.gg8.se/wiki/articles/GbdevWiki:General_disclaimer" title="GbdevWiki:General disclaimer">Disclaimers</a></li>
+							</ul>
+		</div>
+		</div>
+		<script>if(window.jQuery)jQuery.ready();</script><script>if(window.mw){
+mw.loader.state({"site":"loading","user":"ready","user.groups":"ready"});
+}</script>
+<script>if(window.mw){
+mw.loader.load(["mediawiki.toc","mediawiki.action.view.postEdit","mediawiki.user","mediawiki.hidpi","mediawiki.page.ready","mediawiki.searchSuggest"],null,true);
+}</script>
+<script>if(window.mw){
+document.write("\u003Cscript src=\"http://gbdev.gg8.se/wiki/load.php?debug=false\u0026amp;lang=en\u0026amp;modules=site\u0026amp;only=scripts\u0026amp;skin=monobook\u0026amp;*\"\u003E\u003C/script\u003E");
+}</script><script src="./CPU Comparision with Z80 - GbdevWiki_files/load(5).php"></script>
+<script>if(window.mw){
+mw.config.set({"wgBackendResponseTime":216});
+}</script>
+<div class="suggestions" style="display: none; font-size: 11.4617px;"><div class="suggestions-results"></div><div class="suggestions-special"></div></div></body></html>
