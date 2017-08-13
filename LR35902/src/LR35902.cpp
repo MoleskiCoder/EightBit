@@ -342,7 +342,7 @@ void EightBit::LR35902::ccf(uint8_t& a, uint8_t& f) {
 uint8_t EightBit::LR35902::swap(uint8_t& f, uint8_t operand) {
 	auto low = lowNibble(operand);
 	auto high = highNibble(operand);
-	operand = promoteNibble(low) | demoteNibble(high);
+	operand = promoteNibble(low) | high;
 	adjustZero<LR35902>(f, operand);
 	clearFlag(f, NF | HC | CF);
 	return operand;
