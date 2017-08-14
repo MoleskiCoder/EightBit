@@ -404,7 +404,7 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 		case 5:
 			operand = sra(f, operand);
 			break;
-		case 6:
+		case 6:	// GB: SWAP r
 			operand = swap(f, operand);
 			break;
 		case 7:
