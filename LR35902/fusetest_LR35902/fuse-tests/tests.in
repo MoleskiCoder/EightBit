@@ -3618,20 +3618,25 @@ f7
 6d33 f7 -1
 -1
 
-; (GB) LD HL,SP + dd
-f8_1
-0020 0000 0000 0000 43f7 0000 
+; (GB) LD HL,SP + dd (positive, no carry or half carry)
+f8
+00c0 0000 0000 1234 1000 0000 
 0 1
-0000 f8 -1
-43f7 e9 af -1
+0000 f8 01 -1
 -1
 
-; (GB) LD HL,SP + dd
-f8_2
-0020 0000 0000 0000 43f7 0000 
+; (GB) LD HL,SP + dd (positive, carry, no half carry)
+f8_1
+00c0 0000 0000 1234 fffe 0000 
 0 1
-0000 f8 -1
-43f7 e9 af -1
+0000 f8 02 -1
+-1
+
+; (GB) LD HL,SP + dd (negative, no carry or half carry)
+f8_2
+00c0 0000 0000 1234 1000 0000 
+0 1
+0000 f8 ff -1
 -1
 
 f9
