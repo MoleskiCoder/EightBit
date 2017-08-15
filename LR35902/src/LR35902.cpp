@@ -218,62 +218,55 @@ void EightBit::LR35902::compare(uint8_t& f, uint8_t check, uint8_t value) {
 #pragma region Shift and rotate
 
 uint8_t EightBit::LR35902::rlc(uint8_t& f, uint8_t operand) {
-	clearFlag(f, NF | HC);
+	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit7);
 	operand = _rotl8(operand, 1);
-	adjustZero<LR35902>(f, operand);
 	return operand;
 }
 
 uint8_t EightBit::LR35902::rrc(uint8_t& f, uint8_t operand) {
-	clearFlag(f, NF | HC);
+	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit0);
 	operand = _rotr8(operand, 1);
-	adjustZero<LR35902>(f, operand);
 	return operand;
 }
 
 uint8_t EightBit::LR35902::rl(uint8_t& f, uint8_t operand) {
-	clearFlag(f, NF | HC);
+	clearFlag(f, NF | HC | ZF);
 	const auto carry = (f & CF) >> 4;
 	setFlag(f, CF, operand & Bit7);
 	operand = (operand << 1) | carry;
-	adjustZero<LR35902>(f, operand);
 	return operand;
 }
 
 uint8_t EightBit::LR35902::rr(uint8_t& f, uint8_t operand) {
-	clearFlag(f, NF | HC);
+	clearFlag(f, NF | HC | ZF);
 	const auto carry = (f & CF) >> 4;
 	setFlag(f, CF, operand & Bit0);
 	operand = (operand >> 1) | (carry << 7);
-	adjustZero<LR35902>(f, operand);
 	return operand;
 }
 
 //
 
 uint8_t EightBit::LR35902::sla(uint8_t& f, uint8_t operand) {
-	clearFlag(f, NF | HC);
+	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit7);
 	operand <<= 1;
-	adjustZero<LR35902>(f, operand);
 	return operand;
 }
 
 uint8_t EightBit::LR35902::sra(uint8_t& f, uint8_t operand) {
-	clearFlag(f, NF | HC);
+	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit0);
 	operand = (operand >> 1) | operand & Bit7;
-	adjustZero<LR35902>(f, operand);
 	return operand;
 }
 
 uint8_t EightBit::LR35902::srl(uint8_t& f, uint8_t operand) {
-	clearFlag(f, NF | HC);
+	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit0);
 	operand = (operand >> 1) & ~Bit7;
-	adjustZero<LR35902>(f, operand);
 	return operand;
 }
 
@@ -415,6 +408,7 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 		}
 		cycles += 2;
 		R(z, a, operand);
+		adjustZero<LR35902>(f, operand);
 		if (z == 6)
 			cycles += 2;
 		break;
