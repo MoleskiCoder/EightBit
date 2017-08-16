@@ -220,54 +220,50 @@ void EightBit::LR35902::compare(uint8_t& f, uint8_t check, uint8_t value) {
 uint8_t EightBit::LR35902::rlc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit7);
-	operand = _rotl8(operand, 1);
-	return operand;
+	return _rotl8(operand, 1);
 }
 
 uint8_t EightBit::LR35902::rrc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit0);
-	operand = _rotr8(operand, 1);
-	return operand;
+	return _rotr8(operand, 1);
 }
 
 uint8_t EightBit::LR35902::rl(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
-	const auto carry = (f & CF) >> 4;
+	const auto carry = f & CF;
 	setFlag(f, CF, operand & Bit7);
-	operand = (operand << 1) | carry;
-	return operand;
+	return (operand << 1) | (carry >> 4);	// CF at Bit4
 }
 
 uint8_t EightBit::LR35902::rr(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
-	const auto carry = (f & CF) >> 4;
+	const auto carry = f & CF;
 	setFlag(f, CF, operand & Bit0);
-	operand = (operand >> 1) | (carry << 7);
-	return operand;
+	return (operand >> 1) | (carry << 3);	// CF at Bit4
 }
-
-//
 
 uint8_t EightBit::LR35902::sla(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit7);
-	operand <<= 1;
-	return operand;
+	return operand << 1;
 }
 
 uint8_t EightBit::LR35902::sra(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit0);
-	operand = (operand >> 1) | operand & Bit7;
-	return operand;
+	return (operand >> 1) | (operand & Bit7);
+}
+
+uint8_t EightBit::LR35902::swap(uint8_t& f, uint8_t operand) {
+	clearFlag(f, NF | HC | CF);
+	return promoteNibble(operand) | demoteNibble(operand);
 }
 
 uint8_t EightBit::LR35902::srl(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit0);
-	operand = (operand >> 1) & ~Bit7;
-	return operand;
+	return (operand >> 1) & ~Bit7;
 }
 
 #pragma endregion Shift and rotate
@@ -330,15 +326,6 @@ void EightBit::LR35902::scf(uint8_t& a, uint8_t& f) {
 void EightBit::LR35902::ccf(uint8_t& a, uint8_t& f) {
 	clearFlag(f, NF | HC);
 	clearFlag(f, CF, f & CF);
-}
-
-uint8_t EightBit::LR35902::swap(uint8_t& f, uint8_t operand) {
-	auto low = lowNibble(operand);
-	auto high = highNibble(operand);
-	operand = promoteNibble(low) | high;
-	adjustZero<LR35902>(f, operand);
-	clearFlag(f, NF | HC | CF);
-	return operand;
 }
 
 #pragma endregion Miscellaneous instructions
