@@ -330,6 +330,34 @@ void EightBit::LR35902::ccf(uint8_t& a, uint8_t& f) {
 
 #pragma endregion Miscellaneous instructions
 
+int EightBit::LR35902::run(int limit) {
+	int current = 0;
+	do {
+		auto interruptEnable = m_bus.readRegister(Bus::IE);
+		auto interruptFlags = m_bus.readRegister(Bus::IF);
+
+		auto masked = (IME() ? interruptEnable : 0) & interruptFlags;
+		if (masked)
+			m_bus.writeRegister(Bus::IF, 0);
+
+		if (masked & Bus::Interrupts::VerticalBlank) {
+			current += interrupt(0x40);
+		} else if (masked & Bus::Interrupts::DisplayControlStatus) {
+			current += interrupt(0x48);
+		} else if (masked & Bus::Interrupts::TimerOverflow) {
+			current += interrupt(0x50);
+		} else if (masked & Bus::Interrupts::SerialTransfer) {
+			current += interrupt(0x58);
+		} else if (masked & Bus::Interrupts::Keypad) {
+			current += interrupt(0x60);
+		} else {
+			current += step();
+		}
+
+	} while (current < limit);
+	return current;
+}
+
 int EightBit::LR35902::step() {
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;

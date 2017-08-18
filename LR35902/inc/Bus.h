@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Memory.h"
+#include "Processor.h"
 
 namespace EightBit {
 	class Bus : public Memory {
@@ -75,11 +76,24 @@ namespace EightBit {
 			BOOT_DISABLE = 0x50,
 		};
 
+		// IF and IE flags
+		enum Interrupts {
+			VerticalBlank = Processor::Bit0,			// VBLANK
+			DisplayControlStatus = Processor::Bit1,		// LCDC Status
+			TimerOverflow = Processor::Bit2,			// Timer Overflow
+			SerialTransfer = Processor::Bit3,			// Serial Transfer
+			Keypad = Processor::Bit3					// Hi-Lo of P10-P13
+		};
+
 		Bus();
 
 		void reset();
 
 		virtual void clear() override;
+
+		void triggerInterrupt(int cause) {
+			writeRegister(IF, readRegister(IF) | cause);
+		}
 
 		void writeRegister(int offset, uint8_t content) {
 			return Memory::write(BASE + offset, content);
