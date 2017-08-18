@@ -36,3 +36,11 @@ uint8_t EightBit::Bus::peek(uint16_t address) const {
 		return m_boot[effective];
 	return m_bus[effective];
 }
+
+void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
+	switch (e.getAddress()) {
+	case EightBit::Bus::BASE + TAC:
+		m_timerRate = timerClockTicks();
+		break;
+	}
+}

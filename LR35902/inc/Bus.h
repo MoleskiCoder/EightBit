@@ -103,6 +103,53 @@ namespace EightBit {
 			return Memory::read(BASE + offset);
 		}
 
+		void checkTimer(int cycles) {
+			if (timerEnabled()) {
+				m_timerCounter -= cycles;
+				if (m_timerCounter <= 0) {
+					m_timerCounter = m_timerRate;
+					incrementTIMA();
+				}
+			}
+		}
+
+		int timerClockTicks() {
+			switch (timerClock()) {
+			case 0b00:
+				return 1024;	// 4.096 Khz
+			case 0b01:
+				return 16;		// 262.144 Khz
+			case 0b10:
+				return 64;		// 65.536 Khz
+			case 0b11:
+				return 256;		// 16.384 Khz
+			default:
+				__assume(0);
+			}
+			throw std::domain_error("Invalid timer clock specification");
+		}
+
+		int timerClock() {
+			return readRegister(TAC) & Processor::Mask2;
+		}
+
+		bool timerEnabled() {
+			return !timerDisabled();
+		}
+
+		bool timerDisabled() {
+			return (readRegister(TAC) & Processor::Bit2) == 0;
+		}
+
+		void incrementTIMA() {
+			uint16_t updated = readRegister(TIMA) + 1;
+			if (updated & Processor::Bit8) {
+				triggerInterrupt(TimerOverflow);
+				updated = readRegister(TMA);
+			}
+			writeRegister(TIMA, updated & Processor::Mask8);
+		}
+
 		void incrementLY() {
 			writeRegister(LY, (readRegister(LY) + 1) % TotalLineCount);
 		}
@@ -127,5 +174,10 @@ namespace EightBit {
 	private:
 		std::array<uint8_t, 0x100> m_boot;
 		bool m_disableBootRom;
+
+		int m_timerCounter;
+		int m_timerRate;
+
+		void Bus_WrittenByte(const AddressEventArgs& e);
 	};
 }
