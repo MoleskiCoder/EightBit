@@ -158,13 +158,13 @@ namespace EightBit {
 			writeRegister(LY, 0);
 		}
 
-		void disableBootRom() { m_disableBootRom = true; }
-		void enableBootRom() { m_disableBootRom = false; }
+		bool bootRomDisabled() const { return m_disableBootRom; }
+		bool bootRomEnabled() const { return !bootRomDisabled(); }
 
 		void loadBootRom(const std::string& path);
 
 		bool isBootRom(uint16_t address) const {
-			return !m_disableBootRom && (address < m_boot.size()) && !peek(BASE + BOOT_DISABLE);
+			return (address < m_boot.size()) && bootRomEnabled();
 		}
 
 		virtual uint8_t peek(uint16_t address) const;

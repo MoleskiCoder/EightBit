@@ -2,8 +2,8 @@
 #include "Bus.h"
 
 EightBit::Bus::Bus()
-: Memory(0xffff),
-  m_disableBootRom(false) {
+: Memory(0xffff) {
+	WrittenByte.connect(std::bind(&Bus::Bus_WrittenByte, this, std::placeholders::_1));
 }
 
 void EightBit::Bus::reset() {
@@ -39,8 +39,11 @@ uint8_t EightBit::Bus::peek(uint16_t address) const {
 
 void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 	switch (e.getAddress()) {
-	case EightBit::Bus::BASE + TAC:
+	case BASE + TAC:
 		m_timerRate = timerClockTicks();
+		break;
+	case BASE + BOOT_DISABLE:
+		m_disableBootRom = e.getCell() != 0;
 		break;
 	}
 }
