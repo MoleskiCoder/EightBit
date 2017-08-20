@@ -8,7 +8,6 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expecte
   m_cpu(m_bus),
   m_failed(false),
   m_unimplemented(false) {
-	m_bus.disableBootRom();
 	m_bus.clear();
 	m_cpu.initialise();
 }
@@ -16,6 +15,7 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expecte
 //
 
 void Fuse::TestRunner::initialise() {
+	m_bus.writeRegister(EightBit::Bus::BOOT_DISABLE, 1);
 	initialiseRegisters();
 	initialiseMemory();
 }
