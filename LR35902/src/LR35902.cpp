@@ -354,7 +354,7 @@ int EightBit::LR35902::run(int limit) {
 			current += step();
 		}
 
-		m_bus.checkTimer(current);
+		m_bus.checkTimers(current);
 
 	} while (current < limit);
 	return current;

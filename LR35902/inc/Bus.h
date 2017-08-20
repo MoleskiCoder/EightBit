@@ -103,15 +103,7 @@ namespace EightBit {
 			return Memory::read(BASE + offset);
 		}
 
-		void checkTimer(int cycles) {
-			if (timerEnabled()) {
-				m_timerCounter -= cycles;
-				if (m_timerCounter <= 0) {
-					m_timerCounter = m_timerRate;
-					incrementTIMA();
-				}
-			}
-		}
+		void checkTimers(int cycles);
 
 		int timerClockTicks() {
 			switch (timerClock()) {
@@ -139,6 +131,11 @@ namespace EightBit {
 
 		bool timerDisabled() {
 			return (readRegister(TAC) & Processor::Bit2) == 0;
+		}
+
+		void incrementDIV() {
+			auto current = readRegister(DIV);
+			writeRegister(DIV, ++current);
 		}
 
 		void incrementTIMA() {
@@ -175,9 +172,13 @@ namespace EightBit {
 		std::array<uint8_t, 0x100> m_boot;
 		bool m_disableBootRom;
 
+		int m_divCounter;
 		int m_timerCounter;
 		int m_timerRate;
 
 		void Bus_WrittenByte(const AddressEventArgs& e);
+
+		void checkDiv(int cycles);
+		void checkTimer(int cycles);
 	};
 }

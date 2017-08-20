@@ -2,7 +2,11 @@
 #include "Bus.h"
 
 EightBit::Bus::Bus()
-: Memory(0xffff) {
+: Memory(0xffff),
+  m_disableBootRom(false),
+  m_divCounter(256),
+  m_timerCounter(0),
+  m_timerRate(0) {
 	WrittenByte.connect(std::bind(&Bus::Bus_WrittenByte, this, std::placeholders::_1));
 }
 
@@ -45,5 +49,32 @@ void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 	case BASE + BOOT_DISABLE:
 		m_disableBootRom = e.getCell() != 0;
 		break;
+	case BASE + DIV:
+		reference() = 0;
+		m_timerCounter = 0;
+		break;
+	}
+}
+
+void EightBit::Bus::checkTimers(int cycles) {
+	checkDiv(cycles);
+	checkTimer(cycles);
+}
+
+void EightBit::Bus::checkDiv(int cycles) {
+	m_divCounter -= cycles;
+	if (m_divCounter <= 0) {
+		m_divCounter = 256;
+		incrementDIV();
+	}
+}
+
+void EightBit::Bus::checkTimer(int cycles) {
+	if (timerEnabled()) {
+		m_timerCounter -= cycles;
+		if (m_timerCounter <= 0) {
+			m_timerCounter = m_timerRate;
+			incrementTIMA();
+		}
 	}
 }
