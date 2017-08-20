@@ -335,23 +335,24 @@ int EightBit::LR35902::run(int limit) {
 	do {
 		auto interruptEnable = m_bus.readRegister(Bus::IE);
 		auto interruptFlags = m_bus.readRegister(Bus::IF);
+		auto ime = IME();
 
-		auto masked = (IME() ? interruptEnable : 0) & interruptFlags;
-		if (masked)
+		auto masked = interruptEnable & interruptFlags;
+		if (ime && masked)
 			m_bus.writeRegister(Bus::IF, 0);
 
-		if (masked & Bus::Interrupts::VerticalBlank) {
+		if (ime && (masked & Bus::Interrupts::VerticalBlank)) {
 			current += interrupt(0x40);
-		} else if (masked & Bus::Interrupts::DisplayControlStatus) {
+		} else if (ime && (masked & Bus::Interrupts::DisplayControlStatus)) {
 			current += interrupt(0x48);
-		} else if (masked & Bus::Interrupts::TimerOverflow) {
+		} else if (ime && (masked & Bus::Interrupts::TimerOverflow)) {
 			current += interrupt(0x50);
-		} else if (masked & Bus::Interrupts::SerialTransfer) {
+		} else if (ime && (masked & Bus::Interrupts::SerialTransfer)) {
 			current += interrupt(0x58);
-		} else if (masked & Bus::Interrupts::Keypad) {
+		} else if (ime && (masked & Bus::Interrupts::Keypad)) {
 			current += interrupt(0x60);
 		} else {
-			current += step();
+			current += isHalted() ? 1 : step();
 		}
 
 		m_bus.checkTimers(current);
