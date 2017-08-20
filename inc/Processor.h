@@ -50,6 +50,7 @@ namespace EightBit {
 
 		bool isHalted() const { return m_halted; }
 		void halt() { --PC().word;  m_halted = true; }
+		void proceed() { ++PC().word; m_halted = false; }
 
 		virtual void initialise();
 

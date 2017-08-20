@@ -338,8 +338,14 @@ int EightBit::LR35902::run(int limit) {
 		auto ime = IME();
 
 		auto masked = interruptEnable & interruptFlags;
-		if (ime && masked)
-			m_bus.writeRegister(Bus::IF, 0);
+		if (masked) {
+			if (ime) {
+				m_bus.writeRegister(Bus::IF, 0);
+			} else {
+				if (isHalted())
+					proceed();
+			}
+		}
 
 		if (ime && (masked & Bus::Interrupts::VerticalBlank)) {
 			current += interrupt(0x40);
