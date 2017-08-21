@@ -41,7 +41,6 @@ void EightBit::LR35902::ei() {
 }
 
 int EightBit::LR35902::interrupt(uint8_t value) {
-	cycles = 0;
 	di();
 	restart(value);
 	return 4;
