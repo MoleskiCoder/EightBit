@@ -8,10 +8,12 @@
 
 EightBit::Memory::Memory(uint16_t addressMask)
 : m_addressMask(addressMask),
-  m_temporary(0) {
+  m_temporary(0),
+  m_data(nullptr) {
 	clear();
 	m_address.word = 0;
-	m_data = &(m_bus[m_address.word]);
+	m_bus.resize(0x10000);
+	m_locked.resize(0x10000);
 }
 
 EightBit::Memory::~Memory() {
@@ -19,6 +21,10 @@ EightBit::Memory::~Memory() {
 
 uint8_t EightBit::Memory::peek(uint16_t address) const {
 	return m_bus[address];
+}
+
+void EightBit::Memory::poke(uint16_t address, uint8_t value) {
+	m_bus[address] = value;
 }
 
 uint16_t EightBit::Memory::peekWord(uint16_t address) const {
@@ -29,8 +35,8 @@ uint16_t EightBit::Memory::peekWord(uint16_t address) const {
 }
 
 void EightBit::Memory::clear() {
-	m_bus.fill(0);
-	m_locked.fill(false);
+	std::fill(m_bus.begin(), m_bus.end(), 0);
+	std::fill(m_locked.begin(), m_locked.end(), false);
 }
 
 void EightBit::Memory::loadRom(const std::string& path, uint16_t offset) {
@@ -43,20 +49,25 @@ void EightBit::Memory::loadRam(const std::string& path, uint16_t offset) {
 }
 
 int EightBit::Memory::loadMemory(const std::string& path, uint16_t offset) {
+	return loadBinary(path, m_bus, offset, 0x10000 - offset);
+}
+
+int EightBit::Memory::loadBinary(const std::string& path, std::vector<uint8_t>& output, int offset, int maximumSize) {
 	std::ifstream file;
 	file.exceptions(std::ios::failbit | std::ios::badbit);
 
 	file.open(path, std::ios::binary | std::ios::ate);
 	auto size = (int)file.tellg();
+	if ((maximumSize > 0) && (size > maximumSize))
+		throw std::runtime_error("Binary cannot fit");
 
 	size_t extent = size + offset;
-
-	if (extent > m_bus.size())
-		throw std::runtime_error("ROM cannot fit");
+	if (output.size() < extent)
+		output.resize(extent);
 
 	file.seekg(0, std::ios::beg);
 
-	file.read((char*)&m_bus[offset], size);
+	file.read((char*)&output[offset], size);
 	file.close();
 
 	return size;

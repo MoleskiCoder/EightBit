@@ -15,7 +15,8 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expecte
 //
 
 void Fuse::TestRunner::initialise() {
-	m_bus.writeRegister(EightBit::Bus::BOOT_DISABLE, 1);
+	m_bus.disableBootRom();
+	m_bus.disableGameRom();
 	initialiseRegisters();
 	initialiseMemory();
 }
@@ -39,7 +40,7 @@ void Fuse::TestRunner::initialiseMemory() {
 		auto address = memoryDatum.address;
 		auto bytes = memoryDatum.bytes;
 		for (int i = 0; i < bytes.size(); ++i)
-			m_bus.write(address + i, bytes[i]);
+			m_bus.poke(address + i, bytes[i]);
 	}
 }
 

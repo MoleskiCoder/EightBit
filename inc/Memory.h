@@ -54,6 +54,8 @@ namespace EightBit {
 		}
 
 		virtual uint8_t peek(uint16_t address) const;
+		virtual void poke(uint16_t address, uint8_t value);
+
 		virtual uint16_t peekWord(uint16_t address) const;
 
 		virtual int effectiveAddress(int address) const {
@@ -100,13 +102,15 @@ namespace EightBit {
 		}
 
 	protected:
-		std::array<uint8_t, 0x10000> m_bus;
-		std::array<bool, 0x10000> m_locked;
+		std::vector<uint8_t> m_bus;
+		std::vector<bool> m_locked;
 
 		uint16_t m_addressMask;		// Mirror
 		uint8_t m_temporary;	// Used to simulate ROM
 		register16_t m_address;
 		uint8_t* m_data;
+
+		static int loadBinary(const std::string& path, std::vector<uint8_t>& output, int offset = 0, int maximumSize = -1);
 
 		void fireReadBusEvent() {
 			ReadByte.fire(AddressEventArgs(ADDRESS().word, DATA()));
