@@ -20,7 +20,7 @@ void Board::initialise() {
 	m_memory.loadRam(romDirectory + "/8080EX1.COM", 0x100);	// Cringle/Bartholomew
 	//m_memory.loadRam(romDirectory + "/CPUTEST.COM", 0x100);	// SuperSoft diagnostics
 
-	m_memory.write(5, 0xc9); // ret
+	m_memory.poke(5, 0xc9); // ret
 	m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Cpm, this, std::placeholders::_1));
 
 	if (m_configuration.isProfileMode()) {

@@ -56,7 +56,7 @@ void Fuse::TestRunner::initialiseMemory() {
 		auto address = memoryDatum.address;
 		auto bytes = memoryDatum.bytes;
 		for (int i = 0; i < bytes.size(); ++i)
-			m_memory.write(address + i, bytes[i]);
+			m_memory.poke(address + i, bytes[i]);
 	}
 }
 

@@ -7,6 +7,18 @@ namespace EightBit {
 	class Bus : public Memory {
 	public:
 
+		enum CartridgeType {
+			ROM = 0,
+			ROM_MBC1 = 1,
+			ROM_MBC1_RAM = 2,
+			ROM_MBC1_RAM_BATTERY = 3,
+		};
+
+		enum MbcOneMode {
+			SixteenEight,
+			FourThirtyTwo,
+		};
+
 		enum {
 			TotalLineCount = 154
 		};
@@ -155,22 +167,41 @@ namespace EightBit {
 			writeRegister(LY, 0);
 		}
 
+		void disableBootRom() { m_disableBootRom = true; }
+		void enableBootRom() { m_disableBootRom = false; }
+
+		void disableGameRom() { m_disableGameRom = true; }
+		void enableGameRom() { m_disableGameRom = false; }
+
 		bool bootRomDisabled() const { return m_disableBootRom; }
 		bool bootRomEnabled() const { return !bootRomDisabled(); }
 
-		void loadBootRom(const std::string& path);
+		bool gameRomDisabled() const { return m_disableGameRom; }
+		bool gameRomEnabled() const { return !gameRomDisabled(); }
 
-		bool isBootRom(uint16_t address) const {
-			return (address < m_boot.size()) && bootRomEnabled();
-		}
+		void loadBootRom(const std::string& path);
+		void loadGameRom(const std::string& path);
 
 		virtual uint8_t peek(uint16_t address) const;
+		virtual void poke(uint16_t address, uint8_t value);
 
 		virtual uint8_t& reference();
 
 	private:
-		std::array<uint8_t, 0x100> m_boot;
+		std::vector<uint8_t> m_bootRom;
+		std::vector<uint8_t> m_gameRom;
+
 		bool m_disableBootRom;
+		bool m_disableGameRom;
+
+		bool m_mbc1;
+		bool m_rom;
+		bool m_ram;
+		bool m_battery;
+
+		MbcOneMode m_mbc1Mode;
+		int m_romBank;
+		int m_ramBank;
 
 		int m_divCounter;
 		int m_timerCounter;
@@ -180,5 +211,7 @@ namespace EightBit {
 
 		void checkDiv(int cycles);
 		void checkTimer(int cycles);
+
+		void validateCartridgeType();
 	};
 }

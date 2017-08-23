@@ -133,5 +133,5 @@ void Board::Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu) {
 
 void Board::pollKeyboard() {
 	if (_kbhit())
-		m_memory.write(m_configuration.getInputAddress(), _getch());
+		m_memory.poke(m_configuration.getInputAddress(), _getch());
 }
