@@ -331,7 +331,7 @@ namespace EightBit {
 			}
 		}
 
-		uint8_t AM_01(int bbb, uint8_t value) {
+		void AM_01(int bbb, uint8_t value) {
 			switch (bbb) {
 			case 0b000:
 				AM_IndexedIndirectX(value);
