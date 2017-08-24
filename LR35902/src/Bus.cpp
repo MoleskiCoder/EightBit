@@ -5,12 +5,12 @@ EightBit::Bus::Bus()
 : Memory(0xffff),
   m_disableBootRom(false),
   m_disableGameRom(false),
-  m_mbc1(false),
   m_rom(false),
   m_ram(false),
   m_battery(false),
-  m_mbc1Mode(SixteenEight),
-  m_romBank(0),
+  m_higherRomBank(true),
+  m_ramBankSwitching(false),
+  m_romBank(1),
   m_ramBank(0),
   m_divCounter(256),
   m_timerCounter(0),
@@ -48,7 +48,7 @@ uint8_t& EightBit::Bus::reference(uint16_t address, bool& rom) {
 	if ((effective < 0x4000) && gameRomEnabled())
 		return m_gameRom[effective];
 	if ((effective < 0x8000) && gameRomEnabled())
-		return m_gameRom[effective + (m_romBank * 0x4000)];
+		return m_gameRom[(effective - RomPageSize) + (m_romBank * RomPageSize)];
 	rom = false;
 	return m_bus[effective];
 }
@@ -58,14 +58,50 @@ void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 	const auto address = e.getAddress();
 	const auto value = e.getCell();
 
+	auto handled = false;
+
 	switch (address & 0xe000) {
+	case 0x0000:
+		// Register 0: RAMCS gate data
+		if (m_ram) {
+			assert(false);
+		}
+		break;
 	case 0x2000:
-		m_romBank = value & Processor::Mask5;
+		// Register 1: ROM bank code
+		if (m_banked && m_higherRomBank) {
+			assert((address >= 0x2000) && (address < 0x4000));
+			assert((value > 0) && (value < 0x20));
+			m_romBank = value & Processor::Mask5;
+			handled = true;
+		}
 		break;
+	case 0x4000:
+		// Register 2: ROM bank selection
+		if (m_banked) {
+			assert(false);
+		}
 	case 0x6000:
-		m_mbc1Mode = value & Processor::Mask1 ? FourThirtyTwo : SixteenEight;
+		// Register 3: ROM/RAM change
+		if (m_banked) {
+			switch (value & Processor::Mask1) {
+			case 0:
+				m_higherRomBank = true;
+				m_ramBankSwitching = false;
+				break;
+			case 1:
+				m_higherRomBank = false;
+				m_ramBankSwitching = true;
+				break;
+			default:
+				__assume(0);
+			}
+			handled = true;
+		}
 		break;
-	default:
+	}
+
+	if (!handled) {
 		switch (address) {
 		case BASE + TAC:
 			m_timerRate = timerClockTicks();
@@ -106,20 +142,20 @@ void EightBit::Bus::checkTimer(int cycles) {
 
 void EightBit::Bus::validateCartridgeType() {
 
-	m_rom = m_mbc1 = m_ram = m_battery = false;
+	m_rom = m_banked = m_ram = m_battery = false;
 
 	switch (m_gameRom[0x147]) {
 	case ROM:
 		m_rom = true;
 		break;
 	case ROM_MBC1:
-		m_rom = m_mbc1 = true;
+		m_rom = m_banked = true;
 		break;
 	case ROM_MBC1_RAM:
-		m_rom = m_mbc1 = m_ram = true;
+		m_rom = m_banked = m_ram = true;
 		break;
 	case ROM_MBC1_RAM_BATTERY:
-		m_rom = m_mbc1 = m_ram = m_battery = true;
+		m_rom = m_banked = m_ram = m_battery = true;
 		break;
 	default:
 		throw std::domain_error("Unhandled cartridge ROM type");

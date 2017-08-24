@@ -14,17 +14,9 @@ namespace EightBit {
 			ROM_MBC1_RAM_BATTERY = 3,
 		};
 
-		enum MbcOneMode {
-			SixteenEight,
-			FourThirtyTwo,
-		};
-
 		enum {
-			TotalLineCount = 154
-		};
-
-		enum {
-			VideoRam = 0x8000
+			TotalLineCount = 154,
+			RomPageSize = 0x4000
 		};
 
 		enum {
@@ -189,12 +181,14 @@ namespace EightBit {
 		bool m_disableBootRom;
 		bool m_disableGameRom;
 
-		bool m_mbc1;
 		bool m_rom;
+		bool m_banked;
 		bool m_ram;
 		bool m_battery;
 
-		MbcOneMode m_mbc1Mode;
+		bool m_higherRomBank;
+		bool m_ramBankSwitching;
+
 		int m_romBank;
 		int m_ramBank;
 
