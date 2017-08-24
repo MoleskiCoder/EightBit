@@ -182,11 +182,6 @@ namespace EightBit {
 		void loadBootRom(const std::string& path);
 		void loadGameRom(const std::string& path);
 
-		virtual uint8_t peek(uint16_t address);
-		virtual void poke(uint16_t address, uint8_t value);
-
-		virtual uint8_t& reference();
-
 	private:
 		std::vector<uint8_t> m_bootRom;
 		std::vector<uint8_t> m_gameRom;
@@ -214,6 +209,6 @@ namespace EightBit {
 
 		void validateCartridgeType();
 
-		uint8_t& reference(uint16_t address, bool& rom);
+		virtual uint8_t& reference(uint16_t address, bool& rom);
 	};
 }

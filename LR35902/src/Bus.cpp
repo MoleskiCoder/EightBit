@@ -53,22 +53,6 @@ uint8_t& EightBit::Bus::reference(uint16_t address, bool& rom) {
 	return m_bus[effective];
 }
 
-uint8_t& EightBit::Bus::reference() {
-	bool rom;
-	auto& value = reference(ADDRESS().word, rom);
-	return rom ? placeDATA(value) : referenceDATA(value);
-}
-
-uint8_t EightBit::Bus::peek(uint16_t address) {
-	bool rom;
-	return reference(address, rom);
-}
-
-void EightBit::Bus::poke(uint16_t address, uint8_t value) {
-	bool rom;
-	reference(address, rom) = value;
-}
-
 void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 
 	const auto address = e.getAddress();
@@ -90,7 +74,7 @@ void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 			m_disableBootRom = value != 0;
 			break;
 		case BASE + DIV:
-			reference() = 0;
+			Memory::reference() = 0;
 			m_timerCounter = 0;
 			break;
 		}

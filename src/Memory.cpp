@@ -20,11 +20,13 @@ EightBit::Memory::~Memory() {
 }
 
 uint8_t EightBit::Memory::peek(uint16_t address) {
-	return m_bus[address];
+	bool rom;
+	return reference(address, rom);
 }
 
 void EightBit::Memory::poke(uint16_t address, uint8_t value) {
-	m_bus[address] = value;
+	bool rom;
+	reference(address, rom) = value;
 }
 
 uint16_t EightBit::Memory::peekWord(uint16_t address) {

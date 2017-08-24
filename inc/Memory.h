@@ -31,7 +31,6 @@ namespace EightBit {
 
 	class Memory {
 	public:
-
 		Memory(uint16_t addressMask);
 		virtual ~Memory();
 
@@ -53,10 +52,10 @@ namespace EightBit {
 			return DATA();
 		}
 
-		virtual uint8_t peek(uint16_t address);
-		virtual void poke(uint16_t address, uint8_t value);
+		uint8_t peek(uint16_t address);
+		void poke(uint16_t address, uint8_t value);
 
-		virtual uint16_t peekWord(uint16_t address);
+		uint16_t peekWord(uint16_t address);
 
 		virtual int effectiveAddress(int address) const {
 			return address & m_addressMask;
@@ -120,9 +119,15 @@ namespace EightBit {
 			WrittenByte.fire(AddressEventArgs(ADDRESS().word, DATA()));
 		}
 
-		virtual uint8_t& reference() {
-			auto effective = effectiveAddress(ADDRESS().word);
-			return m_locked[effective] ? placeDATA(m_bus[effective]) : referenceDATA(m_bus[effective]);
+		virtual uint8_t& reference(uint16_t address, bool& rom) {
+			rom = m_locked[address];
+			return m_bus[address];
+		}
+
+		uint8_t& reference() {
+			bool rom;
+			auto& value = reference(ADDRESS().word, rom);
+			return rom ? placeDATA(value) : referenceDATA(value);
 		}
 
 		int loadMemory(const std::string& path, uint16_t offset);
