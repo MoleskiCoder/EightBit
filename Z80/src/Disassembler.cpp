@@ -176,9 +176,9 @@ std::string EightBit::Disassembler::disassemble(Z80& cpu) {
 	return output.str();
 }
 
-void EightBit::Disassembler::disassemble(std::ostringstream& output, const Z80& cpu, uint16_t pc) {
+void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, uint16_t pc) {
 
-	const auto& memory = cpu.getMemory();
+	auto& memory = cpu.getMemory();
 	auto opcode = memory.peek(pc);
 
 	const auto& decoded = cpu.getDecodedOpcode(opcode);
@@ -237,7 +237,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, const Z80& 
 
 void EightBit::Disassembler::disassembleCB(
 	std::ostringstream& output,
-	const Z80& cpu,
+	Z80& cpu,
 	uint16_t pc,
 	std::string& specification,
 	int& dumpCount,
@@ -287,7 +287,7 @@ void EightBit::Disassembler::disassembleCB(
 
 void EightBit::Disassembler::disassembleED(
 		std::ostringstream& output,
-		const Z80& cpu,
+		Z80& cpu,
 		uint16_t pc,
 		std::string& specification,
 		int& dumpCount,
@@ -421,7 +421,7 @@ void EightBit::Disassembler::disassembleED(
 
 void EightBit::Disassembler::disassembleOther(
 	std::ostringstream& output,
-	const Z80& cpu,
+	Z80& cpu,
 	uint16_t pc,
 	std::string& specification,
 	int& dumpCount,

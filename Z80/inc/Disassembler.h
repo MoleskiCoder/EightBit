@@ -30,11 +30,11 @@ namespace EightBit {
 		bool m_prefixED;
 		bool m_prefixFD;
 
-		void disassemble(std::ostringstream& output, const Z80& cpu, uint16_t pc);
+		void disassemble(std::ostringstream& output, Z80& cpu, uint16_t pc);
 
 		void disassembleCB(
 			std::ostringstream& output,
-			const Z80& cpu,
+			Z80& cpu,
 			uint16_t pc,
 			std::string& specification,
 			int& dumpCount,
@@ -43,7 +43,7 @@ namespace EightBit {
 
 		void disassembleED(
 			std::ostringstream& output,
-			const Z80& cpu,
+			Z80& cpu,
 			uint16_t pc,
 			std::string& specification,
 			int& dumpCount,
@@ -52,7 +52,7 @@ namespace EightBit {
 
 		void disassembleOther(
 			std::ostringstream& output,
-			const Z80& cpu,
+			Z80& cpu,
 			uint16_t pc,
 			std::string& specification,
 			int& dumpCount,

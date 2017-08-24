@@ -25,7 +25,7 @@ namespace EightBit {
 	private:
 		mutable boost::format m_formatter;
 
-		void disassemble(std::ostringstream& output, const Intel8080& cpu, uint16_t pc);
+		void disassemble(std::ostringstream& output, Intel8080& cpu, uint16_t pc);
 
 		void disassemble(
 			std::ostringstream& output,

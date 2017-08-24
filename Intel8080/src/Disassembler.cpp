@@ -166,9 +166,9 @@ std::string EightBit::Disassembler::disassemble(Intel8080& cpu) {
 	return output.str();
 }
 
-void EightBit::Disassembler::disassemble(std::ostringstream& output, const Intel8080& cpu, uint16_t pc) {
+void EightBit::Disassembler::disassemble(std::ostringstream& output, Intel8080& cpu, uint16_t pc) {
 
-	const auto& memory = cpu.getMemory();
+	auto& memory = cpu.getMemory();
 	auto opcode = memory.peek(pc);
 
 	output << hex(opcode);
