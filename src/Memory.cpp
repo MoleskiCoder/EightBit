@@ -19,7 +19,7 @@ EightBit::Memory::Memory(uint16_t addressMask)
 EightBit::Memory::~Memory() {
 }
 
-uint8_t EightBit::Memory::peek(uint16_t address) const {
+uint8_t EightBit::Memory::peek(uint16_t address) {
 	return m_bus[address];
 }
 
@@ -27,7 +27,7 @@ void EightBit::Memory::poke(uint16_t address, uint8_t value) {
 	m_bus[address] = value;
 }
 
-uint16_t EightBit::Memory::peekWord(uint16_t address) const {
+uint16_t EightBit::Memory::peekWord(uint16_t address) {
 	register16_t returned;
 	returned.low = peek(address);
 	returned.high = peek(address + 1);

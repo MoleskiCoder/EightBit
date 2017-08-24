@@ -44,7 +44,7 @@ namespace EightBit {
 		static int promoteNibble(int value) { return value << 4; }
 		static int demoteNibble(int value) { return highNibble(value); }
 
-		const Memory& getMemory() const { return m_memory; }
+		Memory& getMemory() { return m_memory; }
 
 		register16_t& PC() { return pc; }
 

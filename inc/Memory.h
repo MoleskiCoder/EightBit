@@ -53,10 +53,10 @@ namespace EightBit {
 			return DATA();
 		}
 
-		virtual uint8_t peek(uint16_t address) const;
+		virtual uint8_t peek(uint16_t address);
 		virtual void poke(uint16_t address, uint8_t value);
 
-		virtual uint16_t peekWord(uint16_t address) const;
+		virtual uint16_t peekWord(uint16_t address);
 
 		virtual int effectiveAddress(int address) const {
 			return address & m_addressMask;

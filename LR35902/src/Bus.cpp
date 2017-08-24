@@ -40,18 +40,8 @@ void EightBit::Bus::loadGameRom(const std::string& path) {
 	validateCartridgeType();
 }
 
-uint8_t& EightBit::Bus::reference() {
-	auto effective = effectiveAddress(ADDRESS().word);
-	if ((effective < 0x100) && bootRomEnabled())
-		return placeDATA(m_bootRom[effective]);
-	if ((effective < 0x4000) && gameRomEnabled())
-		return placeDATA(m_gameRom[effective]);
-	if ((effective < 0x8000) && gameRomEnabled())
-		return placeDATA(m_gameRom[effective + (m_romBank * 0x4000)]);
-	return Memory::reference();
-}
-
-uint8_t EightBit::Bus::peek(uint16_t address) const {
+uint8_t& EightBit::Bus::reference(uint16_t address, bool& rom) {
+	rom = true;
 	auto effective = effectiveAddress(address);
 	if ((effective < 0x100) && bootRomEnabled())
 		return m_bootRom[effective];
@@ -59,18 +49,24 @@ uint8_t EightBit::Bus::peek(uint16_t address) const {
 		return m_gameRom[effective];
 	if ((effective < 0x8000) && gameRomEnabled())
 		return m_gameRom[effective + (m_romBank * 0x4000)];
+	rom = false;
 	return m_bus[effective];
 }
 
+uint8_t& EightBit::Bus::reference() {
+	bool rom;
+	auto& value = reference(ADDRESS().word, rom);
+	return rom ? placeDATA(value) : referenceDATA(value);
+}
+
+uint8_t EightBit::Bus::peek(uint16_t address) {
+	bool rom;
+	return reference(address, rom);
+}
+
 void EightBit::Bus::poke(uint16_t address, uint8_t value) {
-	auto effective = effectiveAddress(address);
-	if ((effective < 0x100) && bootRomEnabled())
-		m_bootRom[effective] = value;
-	if ((effective < 0x4000) && gameRomEnabled())
-		m_gameRom[effective] = value;
-	if ((effective < 0x8000) && gameRomEnabled())
-		m_gameRom[effective + (m_romBank * 0x4000)] = value;
-	m_bus[effective] = value;
+	bool rom;
+	reference(address, rom) = value;
 }
 
 void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {

@@ -182,7 +182,7 @@ namespace EightBit {
 		void loadBootRom(const std::string& path);
 		void loadGameRom(const std::string& path);
 
-		virtual uint8_t peek(uint16_t address) const;
+		virtual uint8_t peek(uint16_t address);
 		virtual void poke(uint16_t address, uint8_t value);
 
 		virtual uint8_t& reference();
@@ -213,5 +213,7 @@ namespace EightBit {
 		void checkTimer(int cycles);
 
 		void validateCartridgeType();
+
+		uint8_t& reference(uint16_t address, bool& rom);
 	};
 }
