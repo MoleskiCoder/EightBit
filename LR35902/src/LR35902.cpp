@@ -686,13 +686,14 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 3;
 				break;
 			case 5: { // GB: ADD SP,dd
-					auto before = SP();
+					auto before = SP().word;
 					auto value = fetchByte();
-					auto result = SP().word + (int8_t)value;
+					auto result = before + (int8_t)value;
 					SP().word = result;
+					auto carried = before ^ value ^ result;
 					clearFlag(f, ZF | NF);
-					setFlag(f, CF, result & Bit16);
-					adjustHalfCarryAdd(f, before.high, value, SP().high);
+					setFlag(f, CF, carried & 0x100);
+					setFlag(f, HC, carried & 0x10);
 				}
 				cycles += 4;
 				break;
@@ -701,13 +702,14 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 3;
 				break;
 			case 7: { // GB: LD HL,SP + dd
-					auto before = HL();
+					auto before = SP().word;
 					auto value = fetchByte();
-					auto result = SP().word + (int8_t)value;
+					auto result = before + (int8_t)value;
 					HL().word = result;
+					auto carried = before ^ value ^ result;
 					clearFlag(f, ZF | NF);
-					setFlag(f, CF, result & Bit16);
-					adjustHalfCarryAdd(f, before.high, value, HL().high);
+					setFlag(f, CF, carried & 0x100);
+					setFlag(f, HC, carried & 0x10);
 				}
 				cycles += 3;
 				break;
