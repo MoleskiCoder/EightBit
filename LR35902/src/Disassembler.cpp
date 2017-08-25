@@ -7,7 +7,6 @@
 
 #include "Memory.h"
 #include "LR35902.h"
-#include "StatusFlags.h"
 
 EightBit::Disassembler::Disassembler() {
 	// Disable exceptions where too many format arguments are available
