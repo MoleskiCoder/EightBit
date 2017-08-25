@@ -42,15 +42,14 @@ void EightBit::Bus::loadGameRom(const std::string& path) {
 
 uint8_t& EightBit::Bus::reference(uint16_t address, bool& rom) {
 	rom = true;
-	auto effective = effectiveAddress(address);
-	if ((effective < 0x100) && bootRomEnabled())
-		return m_bootRom[effective];
-	if ((effective < 0x4000) && gameRomEnabled())
-		return m_gameRom[effective];
-	if ((effective < 0x8000) && gameRomEnabled())
-		return m_gameRom[(effective - RomPageSize) + (m_romBank * RomPageSize)];
+	if ((address < 0x100) && bootRomEnabled())
+		return m_bootRom[address];
+	if ((address < 0x4000) && gameRomEnabled())
+		return m_gameRom[address];
+	if ((address < 0x8000) && gameRomEnabled())
+		return m_gameRom[(address - RomPageSize) + (m_romBank * RomPageSize)];
 	rom = false;
-	return m_bus[effective];
+	return m_bus[address];
 }
 
 void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
