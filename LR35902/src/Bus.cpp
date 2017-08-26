@@ -21,8 +21,8 @@ EightBit::Bus::Bus()
 }
 
 void EightBit::Bus::reset() {
-	writeRegister(NR52, 0xf1);
-	writeRegister(LCDC, 0x91);
+	pokeRegister(NR52, 0xf1);
+	pokeRegister(LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
 }
 
 void EightBit::Bus::clear() {
@@ -102,16 +102,63 @@ void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 
 	if (!handled) {
 		switch (address) {
-		case BASE + TAC:
-			m_timerRate = timerClockTicks();
+
+		case BASE + SB:		// R/W
+		case BASE + SC:		// R/W
 			break;
-		case BASE + BOOT_DISABLE:
-			m_disableBootRom = value != 0;
-			break;
-		case BASE + DIV:
+
+		case BASE + DIV:	// R/W
 			Memory::reference() = 0;
 			m_timerCounter = 0;
 			break;
+		case BASE + TIMA:	// R/W
+		case BASE + TMA:	// R/W
+			break;
+		case BASE + TAC:	// R/W
+			m_timerRate = timerClockTicks();
+			break;
+
+		case BASE + IF:		// R/W
+			break;
+
+		case BASE + NR10:
+		case BASE + NR11:
+		case BASE + NR12:
+		case BASE + NR13:
+		case BASE + NR14:
+		case BASE + NR22:
+		case BASE + NR24:
+		case BASE + NR30:
+		case BASE + NR42:
+		case BASE + NR44:
+		case BASE + NR50:
+		case BASE + NR51:
+		case BASE + NR52:
+			break;
+
+		case BASE + LCDC:
+		case BASE + STAT:
+		case BASE + SCY:
+		case BASE + SCX:
+		case BASE + DMA:
+			break;
+		case BASE + LY:		// R/O
+			Memory::reference() = 0;
+			break;
+		case BASE + BGP:
+		case BASE + OBP0:
+		case BASE + OBP1:
+		case BASE + WY:
+		case BASE + WX:
+			break;
+
+		case BASE + BOOT_DISABLE:
+			m_disableBootRom = value != 0;
+			break;
+
+		default:
+			if ((address > BASE) && (address < (BASE + 0x4c)))
+				assert(false);
 		}
 	}
 }

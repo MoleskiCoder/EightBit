@@ -89,6 +89,24 @@ namespace EightBit {
 			Keypad = Processor::Bit3					// Hi-Lo of P10-P13
 		};
 
+		enum LcdcControl {
+			DisplayBackground = Processor::Bit0,
+			ObjectEnable = Processor::Bit1,
+			ObjectBlockCompositionSelection = Processor::Bit2,
+			BackgroundCodeAreaSelection = Processor::Bit3,
+			BackgroundCharacterDataSelection = Processor::Bit4,
+			WindowEnable = Processor::Bit5,
+			WindowCodeAreaSelection = Processor::Bit6,
+			LcdEnable = Processor::Bit7
+		};
+
+		enum LcdStatusMode {
+			CpuAccessAllowed = 0b00,
+			VerticalBlankingPeriod = 0b01,
+			SearchingOamRam = 0b10,
+			TransferringDataToLcd = 0b11
+		};
+
 		Bus();
 
 		void reset();
@@ -96,15 +114,23 @@ namespace EightBit {
 		virtual void clear() override;
 
 		void triggerInterrupt(int cause) {
-			writeRegister(IF, readRegister(IF) | cause);
+			pokeRegister(IF, peekRegister(IF) | cause);
 		}
 
 		void writeRegister(int offset, uint8_t content) {
-			return Memory::write(BASE + offset, content);
+			Memory::write(BASE + offset, content);
+		}
+
+		void pokeRegister(int offset, uint8_t content) {
+			poke(BASE + offset, content);
 		}
 
 		uint8_t readRegister(int offset) {
 			return Memory::read(BASE + offset);
+		}
+
+		uint8_t peekRegister(int offset) {
+			return peek(BASE + offset);
 		}
 
 		void checkTimers(int cycles);
@@ -126,7 +152,7 @@ namespace EightBit {
 		}
 
 		int timerClock() {
-			return readRegister(TAC) & Processor::Mask2;
+			return peekRegister(TAC) & Processor::Mask2;
 		}
 
 		bool timerEnabled() {
@@ -134,29 +160,29 @@ namespace EightBit {
 		}
 
 		bool timerDisabled() {
-			return (readRegister(TAC) & Processor::Bit2) == 0;
+			return (peekRegister(TAC) & Processor::Bit2) == 0;
 		}
 
 		void incrementDIV() {
-			auto current = readRegister(DIV);
-			writeRegister(DIV, ++current);
+			auto current = peekRegister(DIV);
+			pokeRegister(DIV, ++current);
 		}
 
 		void incrementTIMA() {
-			uint16_t updated = readRegister(TIMA) + 1;
+			uint16_t updated = peekRegister(TIMA) + 1;
 			if (updated & Processor::Bit8) {
 				triggerInterrupt(TimerOverflow);
-				updated = readRegister(TMA);
+				updated = peekRegister(TMA);
 			}
-			writeRegister(TIMA, updated & Processor::Mask8);
+			pokeRegister(TIMA, updated & Processor::Mask8);
 		}
 
 		void incrementLY() {
-			writeRegister(LY, (readRegister(LY) + 1) % TotalLineCount);
+			pokeRegister(LY, (peekRegister(LY) + 1) % TotalLineCount);
 		}
 
 		void resetLY() {
-			writeRegister(LY, 0);
+			pokeRegister(LY, 0);
 		}
 
 		void disableBootRom() { m_disableBootRom = true; }

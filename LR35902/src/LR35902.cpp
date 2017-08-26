@@ -332,14 +332,14 @@ void EightBit::LR35902::ccf(uint8_t& a, uint8_t& f) {
 int EightBit::LR35902::run(int limit) {
 	int current = 0;
 	do {
-		auto interruptEnable = m_bus.readRegister(Bus::IE);
-		auto interruptFlags = m_bus.readRegister(Bus::IF);
+		auto interruptEnable = m_bus.peekRegister(Bus::IE);
+		auto interruptFlags = m_bus.peekRegister(Bus::IF);
 		auto ime = IME();
 
 		auto masked = interruptEnable & interruptFlags;
 		if (masked) {
 			if (ime) {
-				m_bus.writeRegister(Bus::IF, 0);
+				m_bus.pokeRegister(Bus::IF, 0);
 			} else {
 				if (isHalted())
 					proceed();
