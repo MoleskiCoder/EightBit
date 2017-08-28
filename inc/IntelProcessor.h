@@ -34,8 +34,6 @@ namespace EightBit {
 			return m_decodedOpcodes[i];
 		}
 
-		register16_t& MEMPTR() { return m_memptr; }
-
 		virtual void initialise();
 
 		register16_t& SP() { return sp; }
@@ -68,9 +66,7 @@ namespace EightBit {
 		}
 
 		template<class T> static void adjustParity(uint8_t& f, uint8_t value) {
-			static const int lookup[0x10] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
-			auto set = lookup[highNibble(value)] + lookup[lowNibble(value)];
-			clearFlag(f, T::PF, set % 2);
+			clearFlag(f, T::PF, __popcnt(value) % 2);
 		}
 
 		template<class T> static void adjustSZ(uint8_t& f, uint8_t value) {
@@ -127,10 +123,6 @@ namespace EightBit {
 			return getByte(SP().word++);
 		}
 
-		void fetchWord() {
-			Processor::fetchWord(MEMPTR());
-		}
-
 		//
 
 		void memptrReference() {
@@ -154,15 +146,6 @@ namespace EightBit {
 
 		//
 
-		void jump() {
-			PC() = MEMPTR();
-		}
-
-		void call() {
-			pushWord(PC());
-			jump();
-		}
-
 		void restart(uint8_t address) {
 			MEMPTR().low = address;
 			MEMPTR().high = 0;
@@ -181,11 +164,6 @@ namespace EightBit {
 			if (conditional)
 				jump();
 			return conditional != 0;
-		}
-
-		void ret() {
-			popWord(MEMPTR());
-			jump();
 		}
 
 		bool returnConditional(int condition) {
@@ -208,8 +186,6 @@ namespace EightBit {
 
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
-
-		register16_t m_memptr;
 		register16_t sp;
 	};
 }

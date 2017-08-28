@@ -515,28 +515,27 @@ void EightBit::MOS6502::PLP() {
 void EightBit::MOS6502::JSR_abs() {
 	Address_Absolute();
 	PC().word--;
-	pushWord(PC());
-	PC() = MEMPTR();
+	call();
 }
 
 void EightBit::MOS6502::RTI() {
 	PLP();
-	popWord(PC());
+	ret();
 }
 
 void EightBit::MOS6502::RTS() {
-	popWord(PC());
+	ret();
 	PC().word++;
 }
 
 void EightBit::MOS6502::JMP_abs() {
 	Address_Absolute();
-	PC() = MEMPTR();
+	jump();
 }
 
 void EightBit::MOS6502::JMP_ind() {
 	Address_Indirect();
-	PC() = MEMPTR();
+	jump();
 }
 
 void EightBit::MOS6502::BRK() {

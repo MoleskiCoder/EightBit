@@ -72,8 +72,6 @@ namespace EightBit {
 		virtual int execute(uint8_t opcode);
 
 	private:
-		register16_t& MEMPTR() { return m_memptr; }
-
 		void adjustZero(uint8_t datum) { clearFlag(P(), ZF, datum); }
 		void adjustNegative(uint8_t datum) { setFlag(P(), NF, datum & NF); }
 		
@@ -90,7 +88,7 @@ namespace EightBit {
 #pragma region Addresses
 
 		void Address_Absolute() {
-			fetchWord(MEMPTR());
+			fetchWord();
 		}
 
 		void Address_ZeroPage() {
@@ -529,8 +527,6 @@ namespace EightBit {
 		uint8_t a;		// accumulator
 		uint8_t s;		// stack pointer
 		uint8_t p;		// processor status
-
-		register16_t m_memptr;
 
 		std::array<int, 0x100> m_timings;
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;

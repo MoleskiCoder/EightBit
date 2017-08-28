@@ -7,35 +7,35 @@
 namespace EightBit {
 	class Processor {
 	public:
-		enum Masks {
-			Mask1 = 0x01,
-			Mask2 = 0x03,
-			Mask3 = 0x07,
-			Mask4 = 0x0f,
-			Mask5 = 0x1f,
-			Mask6 = 0x3f,
-			Mask7 = 0x7f,
-			Mask8 = 0xff,
+		enum Bits {
+			Bit0 = 1,
+			Bit1 = Bit0 << 1,
+			Bit2 = Bit1 << 1,
+			Bit3 = Bit2 << 1,
+			Bit4 = Bit3 << 1,
+			Bit5 = Bit4 << 1,
+			Bit6 = Bit5 << 1,
+			Bit7 = Bit6 << 1,
+			Bit8 = Bit7 << 1,
+			Bit9 = Bit8 << 1,
+			Bit10 = Bit9 << 1,
+			Bit11 = Bit10 << 1,
+			Bit12 = Bit11 << 1,
+			Bit13 = Bit12 << 1,
+			Bit14 = Bit13 << 1,
+			Bit15 = Bit14 << 1,
+			Bit16 = Bit15 << 1,
 		};
 
-		enum Bits {
-			Bit16 = 0x10000,
-			Bit15 = 0x8000,
-			Bit14 = 0x4000,
-			Bit13 = 0x2000,
-			Bit12 = 0x1000,
-			Bit11 = 0x800,
-			Bit10 = 0x400,
-			Bit9 = 0x200,
-			Bit8 = 0x100,
-			Bit7 = 0x80,
-			Bit6 = 0x40,
-			Bit5 = 0x20,
-			Bit4 = 0x10,
-			Bit3 = 0x8,
-			Bit2 = 0x4,
-			Bit1 = 0x2,
-			Bit0 = 0x1,
+		enum Masks {
+			Mask1 = Bit1 - 1,
+			Mask2 = Bit2 - 1,
+			Mask3 = Bit3 - 1,
+			Mask4 = Bit4 - 1,
+			Mask5 = Bit5 - 1,
+			Mask6 = Bit6 - 1,
+			Mask7 = Bit7 - 1,
+			Mask8 = Bit8 - 1,
 		};
 
 		static int highNibble(int value) { return value >> 4; }
@@ -47,6 +47,7 @@ namespace EightBit {
 		Memory& getMemory() { return m_memory; }
 
 		register16_t& PC() { return pc; }
+		register16_t& MEMPTR() { return m_memptr; }
 
 		bool isHalted() const { return m_halted; }
 		void halt() { --PC().word;  m_halted = true; }
@@ -84,6 +85,10 @@ namespace EightBit {
 			output.high = fetchByte();
 		}
 
+		void fetchWord() {
+			fetchWord(MEMPTR());
+		}
+
 		virtual int fetchExecute() {
 			return execute(fetchByte());
 		}
@@ -107,8 +112,23 @@ namespace EightBit {
 			output.high = pop();
 		}
 
+		void jump() {
+			PC() = MEMPTR();
+		}
+
+		void call() {
+			pushWord(PC());
+			jump();
+		}
+
+		void ret() {
+			popWord(MEMPTR());
+			jump();
+		}
+
 	private:
 		register16_t pc;
+		register16_t m_memptr;
 		bool m_halted;
 	};
 }
