@@ -88,6 +88,19 @@ namespace EightBit {
 			return execute(fetchByte());
 		}
 
+		virtual void push(uint8_t value) = 0;
+		virtual uint8_t pop() = 0;
+
+		void pushWord(const register16_t& value) {
+			push(value.high);
+			push(value.low);
+		}
+
+		void popWord(register16_t& output) {
+			output.low = pop();
+			output.high = pop();
+		}
+
 	private:
 		register16_t pc;
 		bool m_halted;

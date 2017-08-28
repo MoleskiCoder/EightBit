@@ -123,18 +123,8 @@ namespace EightBit {
 			m_memory.write(--SP().word, value);
 		}
 
-		void pushWord(const register16_t& value) {
-			push(value.high);
-			push(value.low);
-		}
-
 		virtual uint8_t pop() {
 			return m_memory.read(SP().word++);
-		}
-
-		void popWord(register16_t& output) {
-			output.low = pop();
-			output.high = pop();
 		}
 
 		void fetchWord() {

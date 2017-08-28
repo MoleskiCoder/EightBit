@@ -80,7 +80,7 @@ void EightBit::MOS6502::getWord(uint16_t offset, register16_t& output) {
 
 void EightBit::MOS6502::interrupt(uint16_t vector) {
 	pushWord(PC());
-	pushByte(P());
+	push(P());
 	setFlag(P(), IF);
 	getWord(vector, PC());
 }
@@ -144,7 +144,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				RTI();
 				break;
 			case 0b010:	// PHA
-				pushByte(A());
+				push(A());
 				break;
 			case 0b011:	// JMP
 				JMP_abs();
@@ -165,7 +165,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 				RTS();
 				break;
 			case 0b010:	// PLA
-				adjustNZ(A() = popByte());
+				adjustNZ(A() = pop());
 				break;
 			case 0b011:	// JMP (abs)
 				JMP_ind();
@@ -347,22 +347,12 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 
 ////
 
-void EightBit::MOS6502::pushByte(uint8_t value) {
+void EightBit::MOS6502::push(uint8_t value) {
 	setByte(PageOne + S()--, value);
 }
 
-uint8_t EightBit::MOS6502::popByte() {
+uint8_t EightBit::MOS6502::pop() {
 	return getByte(PageOne + ++S());
-}
-
-void EightBit::MOS6502::pushWord(register16_t value) {
-	pushByte(value.high);
-	pushByte(value.low);
-}
-
-void EightBit::MOS6502::popWord(register16_t& output) {
-	output.low = popByte();
-	output.high = popByte();
 }
 
 ////
@@ -508,12 +498,11 @@ void EightBit::MOS6502::Branch(bool flag) {
 
 void EightBit::MOS6502::PHP() {
 	setFlag(P(), BF);
-	pushByte(P());
+	push(P());
 }
 
 void EightBit::MOS6502::PLP() {
-	P() = popByte();
-	setFlag(P(), RF);
+	P() = pop() | RF;
 }
 
 //

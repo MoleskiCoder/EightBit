@@ -87,10 +87,8 @@ namespace EightBit {
 			adjustNegative(datum);
 		}
 
-		void pushByte(uint8_t value);
-		uint8_t popByte();
-		void pushWord(register16_t value);
-		void popWord(register16_t& output);
+		virtual void push(uint8_t value) override;
+		virtual uint8_t pop() override;
 
 #pragma region 6502 addressing modes
 
