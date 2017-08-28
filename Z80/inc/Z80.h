@@ -161,7 +161,7 @@ namespace EightBit {
 			case 5:
 				return HL2().low;
 			case 6:
-				return m_memory.read(m_displaced ? displacedAddress() : HL().word);
+				return getByte(m_displaced ? displacedAddress() : HL().word);
 			case 7:
 				return a;
 			default:
@@ -191,7 +191,7 @@ namespace EightBit {
 				HL2().low = value;
 				break;
 			case 6:
-				m_memory.write(m_displaced ? displacedAddress() : HL().word, value);
+				setByte(m_displaced ? displacedAddress() : HL().word, value);
 				break;
 			case 7:
 				a = value;
@@ -216,7 +216,7 @@ namespace EightBit {
 			case 5:
 				return L();
 			case 6:
-				return m_memory.read(HL());
+				return getByte(HL());
 			case 7:
 				return a;
 			default:
@@ -246,7 +246,7 @@ namespace EightBit {
 				L() = value;
 				break;
 			case 6:
-				m_memory.write(HL(), value);
+				setByte(HL(), value);
 				break;
 			case 7:
 				a = value;

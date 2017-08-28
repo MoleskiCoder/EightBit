@@ -78,6 +78,11 @@ void EightBit::MOS6502::getWord(uint16_t offset, register16_t& output) {
 	getWord(output);
 }
 
+void EightBit::MOS6502::getWord(const register16_t& offset, register16_t& output) {
+	m_memory.ADDRESS() = offset;
+	getWord(output);
+}
+
 void EightBit::MOS6502::interrupt(uint16_t vector) {
 	pushWord(PC());
 	push(P());

@@ -82,7 +82,7 @@ namespace EightBit {
 			case 5:
 				return L();
 			case 6:
-				return m_memory.read(HL());
+				return getByte(HL());
 			case 7:
 				return a;
 			}
@@ -110,7 +110,7 @@ namespace EightBit {
 				L() = value;
 				break;
 			case 6:
-				m_memory.write(HL(), value);
+				setByte(HL(), value);
 				break;
 			case 7:
 				a = value;

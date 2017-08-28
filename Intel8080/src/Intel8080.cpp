@@ -256,13 +256,12 @@ void EightBit::Intel8080::cmc(uint8_t& a, uint8_t& f) {
 }
 
 void EightBit::Intel8080::xhtl() {
-	m_memory.ADDRESS() = SP();
-	MEMPTR().low = m_memory.read(SP());
-	m_memory.write(L());
+	MEMPTR().low = getByte(SP());
+	setByte(L());
 	L() = MEMPTR().low;
 	m_memory.ADDRESS().word++;
-	MEMPTR().high = m_memory.read();
-	m_memory.write(H());
+	MEMPTR().high = getByte();
+	setByte(H());
 	H() = MEMPTR().high;
 }
 
@@ -337,13 +336,13 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				case 0:	// LD (BC),A
 					MEMPTR() = BC();
 					memptrReference();
-					m_memory.write(MEMPTR().high = a);
+					setByte(MEMPTR().high = a);
 					cycles += 7;
 					break;
 				case 1:	// LD (DE),A
 					MEMPTR() = DE();
 					memptrReference();
-					m_memory.write(MEMPTR().high = a);
+					setByte(MEMPTR().high = a);
 					cycles += 7;
 					break;
 				case 2:	// LD (nn),HL
@@ -354,7 +353,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				case 3: // LD (nn),A
 					fetchWord();
 					memptrReference();
-					m_memory.write(MEMPTR().high = a);
+					setByte(MEMPTR().high = a);
 					cycles += 13;
 					break;
 				default:
@@ -366,13 +365,13 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				case 0:	// LD A,(BC)
 					MEMPTR() = BC();
 					memptrReference();
-					a = m_memory.read();
+					a = getByte();
 					cycles += 7;
 					break;
 				case 1:	// LD A,(DE)
 					MEMPTR() = DE();
 					memptrReference();
-					a = m_memory.read();
+					a = getByte();
 					cycles += 7;
 					break;
 				case 2:	// LD HL,(nn)
@@ -383,7 +382,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				case 3:	// LD A,(nn)
 					fetchWord();
 					memptrReference();
-					a = m_memory.read();
+					a = getByte();
 					cycles += 13;
 					break;
 				default:

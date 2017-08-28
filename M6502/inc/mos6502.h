@@ -64,12 +64,7 @@ namespace EightBit {
 
 		void getWord(register16_t& output);
 		void getWord(uint16_t offset, register16_t& output);
-
-		uint8_t getByte() { return m_memory.read(); }
-		uint8_t getByte(uint16_t offset) { return m_memory.read(offset); }
-
-		void setByte(uint8_t value) { m_memory.write(value); }
-		void setByte(uint16_t offset, uint8_t value) { m_memory.write(offset, value); }
+		void getWord(const register16_t& offset, register16_t& output);
 
 	protected:
 		virtual void interrupt(uint16_t vector);
@@ -105,14 +100,12 @@ namespace EightBit {
 
 		void Address_ZeroPageIndirect() {
 			Address_ZeroPage();
-			m_memory.ADDRESS() = MEMPTR();
-			getWord(MEMPTR());
+			getWord(MEMPTR(), MEMPTR());
 		}
 
 		void Address_Indirect() {
 			Address_Absolute();
-			m_memory.ADDRESS() = MEMPTR();
-			getWord(MEMPTR());
+			getWord(MEMPTR(), MEMPTR());
 		}
 
 		void Address_ZeroPageX() {
@@ -137,8 +130,7 @@ namespace EightBit {
 
 		void Address_IndexedIndirectX() {
 			Address_ZeroPageX();
-			m_memory.ADDRESS() = MEMPTR();
-			getWord(MEMPTR());
+			getWord(MEMPTR(), MEMPTR());
 		}
 
 		void Address_IndirectIndexedY() {
@@ -160,12 +152,12 @@ namespace EightBit {
 
 		uint8_t AM_Absolute() {
 			Address_Absolute();
-			return m_memory.read(MEMPTR());
+			return getByte(MEMPTR());
 		}
 
 		uint8_t AM_ZeroPage() {
 			Address_ZeroPage();
-			return m_memory.read(MEMPTR());
+			return getByte(MEMPTR());
 		}
 
 		uint8_t AM_AbsoluteX() {
@@ -186,17 +178,17 @@ namespace EightBit {
 
 		uint8_t AM_ZeroPageX() {
 			Address_ZeroPageX();
-			return m_memory.read(MEMPTR());
+			return getByte(MEMPTR());
 		}
 
 		uint8_t AM_ZeroPageY() {
 			Address_ZeroPageY();
-			return m_memory.read(MEMPTR());
+			return getByte(MEMPTR());
 		}
 
 		uint8_t AM_IndexedIndirectX() {
 			Address_IndexedIndirectX();
-			return m_memory.read(MEMPTR());
+			return getByte(MEMPTR());
 		}
 
 		uint8_t AM_IndirectIndexedY() {
@@ -217,42 +209,42 @@ namespace EightBit {
 
 		void AM_Absolute(uint8_t value) {
 			Address_Absolute();
-			m_memory.write(MEMPTR(), value);
+			setByte(MEMPTR(), value);
 		}
 
 		void AM_ZeroPage(uint8_t value) {
 			Address_ZeroPage();
-			m_memory.write(MEMPTR(), value);
+			setByte(MEMPTR(), value);
 		}
 
 		void AM_AbsoluteX(uint8_t value) {
 			Address_AbsoluteX();
-			m_memory.write(MEMPTR(), value);
+			setByte(MEMPTR(), value);
 		}
 
 		void AM_AbsoluteY(uint8_t value) {
 			Address_AbsoluteY();
-			m_memory.write(MEMPTR(), value);
+			setByte(MEMPTR(), value);
 		}
 
 		void AM_ZeroPageX(uint8_t value) {
 			Address_ZeroPageX();
-			m_memory.write(MEMPTR(), value);
+			setByte(MEMPTR(), value);
 		}
 
 		void AM_ZeroPageY(uint8_t value) {
 			Address_ZeroPageY();
-			m_memory.write(MEMPTR(), value);
+			setByte(MEMPTR(), value);
 		}
 
 		void AM_IndexedIndirectX(uint8_t value) {
 			Address_IndexedIndirectX();
-			m_memory.write(MEMPTR(), value);
+			setByte(MEMPTR(), value);
 		}
 
 		void AM_IndirectIndexedY(uint8_t value) {
 			Address_IndirectIndexedY();
-			m_memory.write(MEMPTR(), value);
+			setByte(MEMPTR(), value);
 		}
 
 #pragma endregion Addressing modes, write
@@ -392,7 +384,7 @@ namespace EightBit {
 			case 0b011:
 			case 0b101:
 			case 0b111:
-				m_memory.write(MEMPTR(), value);
+				setByte(MEMPTR(), value);
 				break;
 			case 0b000:
 			case 0b100:

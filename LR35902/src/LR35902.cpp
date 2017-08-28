@@ -513,19 +513,19 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					m_memory.write(BC().word, a);
+					setByte(BC(), a);
 					cycles += 2;
 					break;
 				case 1:	// LD (DE),A
-					m_memory.write(DE().word, a);
+					setByte(DE(), a);
 					cycles += 2;
 					break;
 				case 2:	// GB: LDI (HL),A
-					m_memory.write(HL().word++, a);
+					setByte(HL().word++, a);
 					cycles += 2;
 					break;
 				case 3: // GB: LDD (HL),A
-					m_memory.write(HL().word--, a);
+					setByte(HL().word--, a);
 					cycles += 2;
 					break;
 				default:
@@ -535,19 +535,19 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					a = m_memory.read(BC().word);
+					a = getByte(BC());
 					cycles += 2;
 					break;
 				case 1:	// LD A,(DE)
-					a = m_memory.read(DE().word);
+					a = getByte(DE());
 					cycles += 2;
 					break;
 				case 2:	// GB: LDI A,(HL)
-					a = m_memory.read(HL().word++);
+					a = getByte(HL().word++);
 					cycles += 2;
 					break;
 				case 3:	// GB: LDD A,(HL)
-					a = m_memory.read(HL().word--);
+					a = getByte(HL().word--);
 					cycles += 2;
 					break;
 				default:
@@ -764,7 +764,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			case 5:	// GB: LD (nn),A
 				fetchWord();
-				m_bus.write(MEMPTR().word, a);
+				setByte(MEMPTR(), a);
 				cycles += 4;
 				break;
 			case 6:	// GB: LD A,(FF00 + C)
@@ -773,7 +773,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			case 7:	// GB: LD A,(nn)
 				fetchWord();
-				a = m_bus.read(MEMPTR().word);
+				a = getByte(MEMPTR().word);
 				cycles += 4;
 				break;
 			default:

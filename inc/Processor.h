@@ -76,7 +76,7 @@ namespace EightBit {
 		int cycles;
 
 		virtual uint8_t fetchByte() {
-			return m_memory.read(PC().word++);
+			return getByte(PC().word++);
 		}
 
 		virtual void fetchWord(register16_t& output) {
@@ -87,6 +87,12 @@ namespace EightBit {
 		virtual int fetchExecute() {
 			return execute(fetchByte());
 		}
+
+		uint8_t getByte() { return m_memory.read(); }
+		template<class T> uint8_t getByte(T offset) { return m_memory.read(offset); }
+
+		void setByte(uint8_t value) { m_memory.write(value); }
+		template<class T> void setByte(T offset, uint8_t value) { m_memory.write(offset, value); }
 
 		virtual void push(uint8_t value) = 0;
 		virtual uint8_t pop() = 0;

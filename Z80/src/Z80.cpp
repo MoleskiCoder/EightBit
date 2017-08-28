@@ -516,12 +516,12 @@ void EightBit::Z80::ccf(uint8_t a, uint8_t& f) {
 }
 
 void EightBit::Z80::xhtl(register16_t& operand) {
-	MEMPTR().low = m_memory.read(SP());
-	m_memory.write(operand.low);
+	MEMPTR().low = getByte(SP());
+	setByte(operand.low);
 	operand.low = MEMPTR().low;
 	m_memory.ADDRESS().word++;
-	MEMPTR().high = m_memory.read();
-	m_memory.write(operand.high);
+	MEMPTR().high = getByte();
+	setByte(operand.high);
 	operand.high = MEMPTR().high;
 }
 
@@ -533,7 +533,7 @@ void EightBit::Z80::xhtl(register16_t& operand) {
 
 void EightBit::Z80::blockCompare(uint8_t a, uint8_t& f) {
 
-	const auto value = m_memory.read(HL());
+	const auto value = getByte(HL());
 	uint8_t result = a - value;
 
 	setFlag(f, PF, --BC().word);
@@ -583,8 +583,8 @@ bool EightBit::Z80::cpdr(uint8_t a, uint8_t& f) {
 #pragma region Block load instructions
 
 void EightBit::Z80::blockLoad(uint8_t a, uint8_t& f, register16_t source, register16_t destination) {
-	const auto value = m_memory.read(source);
-	m_memory.write(destination, value);
+	const auto value = getByte(source);
+	setByte(destination, value);
 	const auto xy = a + value;
 	setFlag(f, XF, xy & 8);
 	setFlag(f, YF, xy & 2);
@@ -629,7 +629,7 @@ void EightBit::Z80::ini(uint8_t& f) {
 	MEMPTR().word++;
 	readPort();
 	auto value = m_memory.DATA();
-	m_memory.write(HL().word++, value);
+	setByte(HL().word++, value);
 	decrement(f, B());
 	setFlag(f, NF);
 }
@@ -639,7 +639,7 @@ void EightBit::Z80::ind(uint8_t& f) {
 	MEMPTR().word--;
 	readPort();
 	auto value = m_memory.DATA();
-	m_memory.write(HL().word--, value);
+	setByte(HL().word--, value);
 	decrement(f, B());
 	setFlag(f, NF);
 }
@@ -659,7 +659,7 @@ bool EightBit::Z80::indr(uint8_t& f) {
 #pragma region Block output instructions
 
 void EightBit::Z80::blockOut(uint8_t& f) {
-	auto value = m_memory.read();
+	auto value = getByte();
 	m_memory.ADDRESS() = BC();
 	writePort();
 	decrement(f, B());
@@ -699,8 +699,8 @@ bool EightBit::Z80::otdr(uint8_t& f) {
 void EightBit::Z80::rrd(uint8_t& a, uint8_t& f) {
 	MEMPTR() = HL();
 	memptrReference();
-	auto memory = m_memory.read();
-	m_memory.write(promoteNibble(a) | highNibble(memory));
+	auto memory = getByte();
+	setByte(promoteNibble(a) | highNibble(memory));
 	a = (a & 0xf0) | lowNibble(memory);
 	adjustSZPXY<Z80>(f, a);
 	clearFlag(f, NF | HC);
@@ -709,8 +709,8 @@ void EightBit::Z80::rrd(uint8_t& a, uint8_t& f) {
 void EightBit::Z80::rld(uint8_t& a, uint8_t& f) {
 	MEMPTR() = HL();
 	memptrReference();
-	auto memory = m_memory.read();
-	m_memory.write(promoteNibble(memory) | lowNibble(a));
+	auto memory = getByte();
+	setByte(promoteNibble(memory) | lowNibble(a));
 	a = (a & 0xf0) | highNibble(memory);
 	adjustSZPXY<Z80>(f, a);
 	clearFlag(f, NF | HC);
@@ -795,7 +795,7 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 	auto& f = F();
 	switch (x) {
 	case 0:	{ // rot[y] r[z]
-		auto operand = m_displaced ? m_memory.read(displacedAddress()) : R(z, a);
+		auto operand = m_displaced ? getByte(displacedAddress()) : R(z, a);
 		switch (y) {
 		case 0:
 			operand = rlc(f, operand);
@@ -828,7 +828,7 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 		if (m_displaced) {
 			if (z != 6)
 				R2(z, a, operand);
-			m_memory.write(operand);
+			setByte(operand);
 			cycles += 15;
 		} else {
 			R(z, a, operand);
@@ -848,7 +848,7 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 				adjustXY<Z80>(f, operand);
 			}
 		} else {
-			bit(f, y, m_memory.read(displacedAddress()));
+			bit(f, y, getByte(displacedAddress()));
 			adjustXY<Z80>(f, MEMPTR().high);
 			cycles += 12;
 		}
@@ -860,9 +860,9 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 			if (z == 6)
 				cycles += 7;
 		} else {
-			auto operand = m_memory.read(displacedAddress());
+			auto operand = getByte(displacedAddress());
 			operand = res(y, operand);
-			m_memory.write(operand);
+			setByte(operand);
 			R2(z, a, operand);
 			cycles += 15;
 		}
@@ -874,9 +874,9 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 			if (z == 6)
 				cycles += 7;
 		} else {
-			auto operand = m_memory.read(displacedAddress());
+			auto operand = getByte(displacedAddress());
 			operand = set(y, operand);
-			m_memory.write(operand);
+			setByte(operand);
 			R2(z, a, operand);
 			cycles += 15;
 		}
@@ -1179,13 +1179,13 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				case 0:	// LD (BC),A
 					MEMPTR() = BC();
 					memptrReference();
-					m_memory.write(MEMPTR().high = a);
+					setByte(MEMPTR().high = a);
 					cycles += 7;
 					break;
 				case 1:	// LD (DE),A
 					MEMPTR() = DE();
 					memptrReference();
-					m_memory.write(MEMPTR().high = a);
+					setByte(MEMPTR().high = a);
 					cycles += 7;
 					break;
 				case 2:	// LD (nn),HL
@@ -1196,7 +1196,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				case 3: // LD (nn),A
 					fetchWord();
 					memptrReference();
-					m_memory.write(MEMPTR().high = a);
+					setByte(MEMPTR().high = a);
 					cycles += 13;
 					break;
 				default:
@@ -1208,13 +1208,13 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				case 0:	// LD A,(BC)
 					MEMPTR() = BC();
 					memptrReference();
-					a = m_memory.read();
+					a = getByte();
 					cycles += 7;
 					break;
 				case 1:	// LD A,(DE)
 					MEMPTR() = DE();
 					memptrReference();
-					a = m_memory.read();
+					a = getByte();
 					cycles += 7;
 					break;
 				case 2:	// LD HL,(nn)
@@ -1225,7 +1225,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				case 3:	// LD A,(nn)
 					fetchWord();
 					memptrReference();
-					a = m_memory.read();
+					a = getByte();
 					cycles += 13;
 					break;
 				default:
