@@ -13,7 +13,7 @@ EightBit::LR35902::LR35902(Bus& memory)
 
 void EightBit::LR35902::reset() {
 	IntelProcessor::reset();
-	SP().word = 0xfffe;
+	SP().word = Mask16 - 1;
 	di();
 }
 
@@ -21,11 +21,10 @@ void EightBit::LR35902::initialise() {
 
 	IntelProcessor::initialise();
 
-	AF().word = 0xffff;
-
-	BC().word = 0xffff;
-	DE().word = 0xffff;
-	HL().word = 0xffff;
+	AF().word = Mask16;
+	BC().word = Mask16;
+	DE().word = Mask16;
+	HL().word = Mask16;
 
 	m_prefixCB = false;
 }
@@ -687,13 +686,13 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			case 5: { // GB: ADD SP,dd
 					auto before = SP().word;
-					auto value = fetchByte();
-					auto result = before + (int8_t)value;
+					int8_t value = fetchByte();
+					auto result = before + value;
 					SP().word = result;
-					auto carried = before ^ value ^ result;
+					auto carried = before ^ value ^ (result & Mask16);
 					clearFlag(f, ZF | NF);
-					setFlag(f, CF, carried & 0x100);
-					setFlag(f, HC, carried & 0x10);
+					setFlag(f, CF, carried & Bit8);
+					setFlag(f, HC, carried & Bit4);
 				}
 				cycles += 4;
 				break;
@@ -703,13 +702,13 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			case 7: { // GB: LD HL,SP + dd
 					auto before = SP().word;
-					auto value = fetchByte();
-					auto result = before + (int8_t)value;
+					int8_t value = fetchByte();
+					auto result = before + value;
 					HL().word = result;
-					auto carried = before ^ value ^ result;
+					auto carried = before ^ value ^ (result & Mask16);
 					clearFlag(f, ZF | NF);
-					setFlag(f, CF, carried & 0x100);
-					setFlag(f, HC, carried & 0x10);
+					setFlag(f, CF, carried & Bit8);
+					setFlag(f, HC, carried & Bit4);
 				}
 				cycles += 3;
 				break;
