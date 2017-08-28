@@ -139,15 +139,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\Disassembler.h" />
-    <ClInclude Include="..\inc\InputOutput.h" />
-    <ClInclude Include="..\inc\PortEventArgs.h" />
     <ClInclude Include="..\inc\Profiler.h" />
     <ClInclude Include="..\inc\Z80.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Disassembler.cpp" />
-    <ClCompile Include="InputOutput.cpp" />
     <ClCompile Include="Profiler.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

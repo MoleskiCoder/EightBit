@@ -140,8 +140,10 @@
   <ItemGroup>
     <ClInclude Include="..\inc\AddressEventArgs.h" />
     <ClInclude Include="..\inc\EventArgs.h" />
+    <ClInclude Include="..\inc\InputOutput.h" />
     <ClInclude Include="..\inc\IntelProcessor.h" />
     <ClInclude Include="..\inc\Memory.h" />
+    <ClInclude Include="..\inc\PortEventArgs.h" />
     <ClInclude Include="..\inc\Processor.h" />
     <ClInclude Include="..\inc\Signal.h" />
     <ClInclude Include="..\inc\TestHarness.h" />
@@ -149,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EventArgs.cpp" />
+    <ClCompile Include="InputOutput.cpp" />
     <ClCompile Include="IntelProcessor.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Processor.cpp" />
