@@ -5,6 +5,7 @@
 #include "IntelProcessor.h"
 #include "Bus.h"
 #include "Signal.h"
+#include "Display.h"
 
 namespace EightBit {
 	class LR35902 : public IntelProcessor {
@@ -29,10 +30,6 @@ namespace EightBit {
 		void di();
 		void ei();
 
-		int run(int limit);
-		virtual int execute(uint8_t opcode);
-		int step();
-
 		virtual register16_t& AF() override {
 			af.low &= 0xf0;
 			return af;
@@ -53,6 +50,30 @@ namespace EightBit {
 		virtual void reset();
 		virtual void initialise();
 
+		static int framesPerSecond() { return 60; }
+		static int cyclesPerFrame() { return cyclesPerSecond() / framesPerSecond(); }
+
+		int runRasterLines() {
+			m_bus.resetLY();
+			int cycles = 0;
+			for (int line = 0; line < Display::RasterHeight; ++line)
+				cycles += runRasterLine();
+			return cycles;
+		}
+
+		int runVerticalBlankLines() {
+			m_bus.triggerInterrupt(Bus::Interrupts::VerticalBlank);
+			int cycles = 0;
+			for (int line = 0; line < (Bus::TotalLineCount - Display::RasterHeight); ++line)
+				cycles += runRasterLine();
+			return cycles;
+		}
+
+	protected:
+		int run(int limit);
+		virtual int execute(uint8_t opcode);
+		int step();
+
 	private:
 		Bus& m_bus;
 
@@ -66,6 +87,17 @@ namespace EightBit {
 		bool m_prefixCB;
 
 		bool m_stopped;
+
+		static int cyclesPerSecond() { return 4 * 1024 * 1024; }
+		static int cyclesPerLine() { return cyclesPerFrame() / Bus::TotalLineCount; }
+
+		int runRasterLine() {
+			auto cycles = run(cyclesPerLine());
+			m_bus.incrementLY();
+			if ((m_bus.peekRegister(Bus::STAT) & Processor::Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
+				m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
+			return cycles;
+		}
 
 		uint8_t R(int r, uint8_t& a) {
 			switch (r) {
