@@ -773,7 +773,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			case 7:	// GB: LD A,(nn)
 				fetchWord();
-				a = getByte(MEMPTR().word);
+				a = getByte(MEMPTR());
 				cycles += 4;
 				break;
 			default:
