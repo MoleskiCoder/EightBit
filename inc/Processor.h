@@ -36,6 +36,14 @@ namespace EightBit {
 			Mask6 = Bit6 - 1,
 			Mask7 = Bit7 - 1,
 			Mask8 = Bit8 - 1,
+			Mask9 = Bit9 - 1,
+			Mask10 = Bit10 - 1,
+			Mask11 = Bit11 - 1,
+			Mask12 = Bit12 - 1,
+			Mask13 = Bit13 - 1,
+			Mask14 = Bit14 - 1,
+			Mask15 = Bit15 - 1,
+			Mask16 = Bit16 - 1,
 		};
 
 		static int highNibble(int value) { return value >> 4; }
