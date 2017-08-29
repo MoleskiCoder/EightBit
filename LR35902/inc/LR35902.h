@@ -69,8 +69,9 @@ namespace EightBit {
 			return cycles;
 		}
 
-	protected:
 		int run(int limit);
+
+	protected:
 		virtual int execute(uint8_t opcode);
 		int step();
 
