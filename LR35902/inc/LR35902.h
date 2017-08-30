@@ -21,31 +21,14 @@ namespace EightBit {
 
 		Signal<LR35902> ExecutingInstruction;
 
-		void stop() { m_stopped = true; }
-		void start() { m_stopped = false; }
-		bool stopped() const { return m_stopped; }
-
-		bool& IME() { return m_ime; }
-
-		void di();
-		void ei();
-
 		virtual register16_t& AF() override {
 			af.low &= 0xf0;
 			return af;
 		}
 
-		virtual register16_t& BC() override  {
-			return bc;
-		}
-
-		virtual register16_t& DE() override {
-			return de;
-		}
-
-		virtual register16_t& HL() override {
-			return hl;
-		}
+		virtual register16_t& BC() override { return bc; }
+		virtual register16_t& DE() override { return de; }
+		virtual register16_t& HL() override { return hl; }
 
 		virtual void reset();
 		virtual void initialise();
@@ -53,23 +36,11 @@ namespace EightBit {
 		static int framesPerSecond() { return 60; }
 		static int cyclesPerFrame() { return cyclesPerSecond() / framesPerSecond(); }
 
-		int runRasterLines() {
-			m_bus.resetLY();
-			int cycles = 0;
-			for (int line = 0; line < Display::RasterHeight; ++line)
-				cycles += runRasterLine();
-			return cycles;
-		}
+		int runRasterLines();
+		int runRasterLine();
+		int runVerticalBlankLines();
 
-		int runVerticalBlankLines() {
-			m_bus.triggerInterrupt(Bus::Interrupts::VerticalBlank);
-			int cycles = 0;
-			for (int line = 0; line < (Bus::TotalLineCount - Display::RasterHeight); ++line)
-				cycles += runRasterLine();
-			return cycles;
-		}
-
-		int run(int limit);
+		int singleStep();
 
 	protected:
 		virtual int execute(uint8_t opcode);
@@ -84,21 +55,14 @@ namespace EightBit {
 		register16_t hl;
 
 		bool m_ime;
+		bool m_stopped;
 
 		bool m_prefixCB;
-
-		bool m_stopped;
 
 		static int cyclesPerSecond() { return 4 * 1024 * 1024; }
 		static int cyclesPerLine() { return cyclesPerFrame() / Bus::TotalLineCount; }
 
-		int runRasterLine() {
-			auto cycles = run(cyclesPerLine());
-			m_bus.incrementLY();
-			if ((m_bus.peekRegister(Bus::STAT) & Processor::Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
-				m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
-			return cycles;
-		}
+		bool& IME() { return m_ime; }
 
 		uint8_t R(int r, uint8_t& a) {
 			switch (r) {
@@ -202,6 +166,13 @@ namespace EightBit {
 
 		static void increment(uint8_t& f, uint8_t& operand);
 		static void decrement(uint8_t& f, uint8_t& operand);
+
+		void stop() { m_stopped = true; }
+		void start() { m_stopped = false; }
+		bool stopped() const { return m_stopped; }
+
+		void di();
+		void ei();
 
 		void reti();
 

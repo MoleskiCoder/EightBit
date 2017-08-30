@@ -2,7 +2,8 @@
 #include "Z80.h"
 
 // based on http://www.z80.info/decoding.htm
-// Half carry flag help from https://github.com/oubiwann/z80
+
+#pragma region Reset and initialisation
 
 EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
 : IntelProcessor(memory),
@@ -62,6 +63,8 @@ void EightBit::Z80::initialise() {
 	m_prefixED = false;
 	m_prefixFD = false;
 }
+
+#pragma endregion Reset and initialisation
 
 #pragma region Interrupt routines
 
@@ -748,12 +751,18 @@ void EightBit::Z80::readPort() {
 
 #pragma endregion I/O instructions
 
+#pragma region Controlled instruction execution
+
 int EightBit::Z80::step() {
 	ExecutingInstruction.fire(*this);
 	m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	cycles = 0;
 	return fetchExecute();
 }
+
+#pragma endregion Controlled instruction execution
+
+#pragma region Instruction decode and execution
 
 int EightBit::Z80::execute(uint8_t opcode) {
 
@@ -1548,3 +1557,5 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		break;
 	}
 }
+
+#pragma endregion Instruction decode and execution

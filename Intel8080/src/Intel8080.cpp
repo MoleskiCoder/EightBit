@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "Intel8080.h"
 
-#include "Memory.h"
-#include "Disassembler.h"
+#pragma region Reset and initialisation
 
 EightBit::Intel8080::Intel8080(Memory& memory, InputOutput& ports)
 : IntelProcessor(memory),
@@ -15,6 +14,8 @@ void EightBit::Intel8080::initialise() {
 	IntelProcessor::initialise();
 	AF().word = BC().word = DE().word = HL().word = 0;
 }
+
+#pragma endregion Reset and initialisation
 
 #pragma region Interrupt routines
 
@@ -279,11 +280,17 @@ void EightBit::Intel8080::in() {
 
 #pragma endregion I/O instructions
 
+#pragma region Controlled instruction execution
+
 int EightBit::Intel8080::step() {
 	ExecutingInstruction.fire(*this);
 	cycles = 0;
 	return fetchExecute();
 }
+
+#pragma endregion Controlled instruction execution
+
+#pragma region Instruction decode and execution
 
 int EightBit::Intel8080::execute(uint8_t opcode) {
 
@@ -639,3 +646,5 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 		break;
 	}
 }
+
+#pragma endregion Instruction decode and execution

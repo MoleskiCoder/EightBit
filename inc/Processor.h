@@ -65,6 +65,10 @@ namespace EightBit {
 
 		void reset();
 
+		virtual int run(int limit);
+		virtual int singleStep();
+		virtual int step() = 0;
+
 		virtual int execute(uint8_t opcode) = 0;
 
 	protected:

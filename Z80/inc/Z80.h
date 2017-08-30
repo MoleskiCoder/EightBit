@@ -46,9 +46,6 @@ namespace EightBit {
 
 		Signal<Z80> ExecutingInstruction;
 
-		void di();
-		void ei();
-
 		int interruptMaskable(uint8_t value) { return interrupt(true, value); }
 		int interruptMaskable() { return interruptMaskable(0); }
 		int interruptNonMaskable() { return interrupt(false, 0); }
@@ -102,6 +99,12 @@ namespace EightBit {
 		virtual void initialise();
 
 	protected:
+		virtual int fetchExecute() override {
+			M1() = true;
+			return IntelProcessor::fetchExecute();
+		}
+
+	private:
 		InputOutput& m_ports;
 
 		enum { BC_IDX, DE_IDX, HL_IDX };
@@ -131,11 +134,6 @@ namespace EightBit {
 
 		int8_t m_displacement;
 		bool m_displaced;
-
-		virtual int fetchExecute() override{
-			M1() = true;
-			return IntelProcessor::fetchExecute();
-		}
 
 		uint16_t displacedAddress() {
 			assert(m_displaced);
@@ -325,6 +323,9 @@ namespace EightBit {
 
 		static void increment(uint8_t& f, uint8_t& operand);
 		static void decrement(uint8_t& f, uint8_t& operand);
+
+		void di();
+		void ei();
 
 		void retn();
 		void reti();

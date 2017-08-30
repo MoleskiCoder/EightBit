@@ -2,13 +2,14 @@
 #include "LR35902.h"
 
 // based on http://www.z80.info/decoding.htm
-// Half carry flag help from https://github.com/oubiwann/z80
+
+#pragma region Reset and initialisation
 
 EightBit::LR35902::LR35902(Bus& memory)
-: IntelProcessor(memory),
-  m_bus(memory),
-  m_ime(false),
-  m_prefixCB(false) {
+	: IntelProcessor(memory),
+	m_bus(memory),
+	m_ime(false),
+	m_prefixCB(false) {
 }
 
 void EightBit::LR35902::reset() {
@@ -28,6 +29,8 @@ void EightBit::LR35902::initialise() {
 
 	m_prefixCB = false;
 }
+
+#pragma endregion Reset and initialisation
 
 #pragma region Interrupt routines
 
@@ -328,40 +331,66 @@ void EightBit::LR35902::ccf(uint8_t& a, uint8_t& f) {
 
 #pragma endregion Miscellaneous instructions
 
-int EightBit::LR35902::run(int limit) {
+#pragma region Controlled instruction execution
+
+int EightBit::LR35902::runRasterLines() {
+	m_bus.resetLY();
+	int cycles = 0;
+	for (int line = 0; line < Display::RasterHeight; ++line)
+		cycles += runRasterLine();
+	return cycles;
+}
+
+int EightBit::LR35902::runRasterLine() {
+	auto cycles = run(cyclesPerLine());
+	m_bus.incrementLY();
+	if ((m_bus.peekRegister(Bus::STAT) & Processor::Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
+		m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
+	return cycles;
+}
+
+int EightBit::LR35902::runVerticalBlankLines() {
+	m_bus.triggerInterrupt(Bus::Interrupts::VerticalBlank);
+	int cycles = 0;
+	for (int line = 0; line < (Bus::TotalLineCount - Display::RasterHeight); ++line)
+		cycles += runRasterLine();
+	return cycles;
+}
+
+int EightBit::LR35902::singleStep() {
+
 	int current = 0;
-	do {
-		auto interruptEnable = m_bus.peekRegister(Bus::IE);
-		auto interruptFlags = m_bus.peekRegister(Bus::IF);
-		auto ime = IME();
 
-		auto masked = interruptEnable & interruptFlags;
-		if (masked) {
-			if (ime) {
-				m_bus.pokeRegister(Bus::IF, 0);
-			} else {
-				if (isHalted())
-					proceed();
-			}
-		}
+	auto interruptEnable = m_bus.peekRegister(Bus::IE);
+	auto interruptFlags = m_bus.peekRegister(Bus::IF);
+	auto ime = IME();
 
-		if (ime && (masked & Bus::Interrupts::VerticalBlank)) {
-			current += interrupt(0x40);
-		} else if (ime && (masked & Bus::Interrupts::DisplayControlStatus)) {
-			current += interrupt(0x48);
-		} else if (ime && (masked & Bus::Interrupts::TimerOverflow)) {
-			current += interrupt(0x50);
-		} else if (ime && (masked & Bus::Interrupts::SerialTransfer)) {
-			current += interrupt(0x58);
-		} else if (ime && (masked & Bus::Interrupts::Keypad)) {
-			current += interrupt(0x60);
+	auto masked = interruptEnable & interruptFlags;
+	if (masked) {
+		if (ime) {
+			m_bus.pokeRegister(Bus::IF, 0);
 		} else {
-			current += isHalted() ? 1 : step();
+			if (isHalted())
+				proceed();
 		}
+	}
 
-		m_bus.checkTimers(current);
+	if (ime && (masked & Bus::Interrupts::VerticalBlank)) {
+		current += interrupt(0x40);
+	} else if (ime && (masked & Bus::Interrupts::DisplayControlStatus)) {
+		current += interrupt(0x48);
+	} else if (ime && (masked & Bus::Interrupts::TimerOverflow)) {
+		current += interrupt(0x50);
+	} else if (ime && (masked & Bus::Interrupts::SerialTransfer)) {
+		current += interrupt(0x58);
+	} else if (ime && (masked & Bus::Interrupts::Keypad)) {
+		current += interrupt(0x60);
+	} else {
+		current += isHalted() ? 1 : step();
+	}
 
-	} while (current < limit);
+	m_bus.checkTimers(current);
+
 	return current;
 }
 
@@ -371,6 +400,10 @@ int EightBit::LR35902::step() {
 	cycles = 0;
 	return fetchExecute();
 }
+
+#pragma endregion Controlled instruction execution
+
+#pragma region Instruction decode and execution
 
 int EightBit::LR35902::execute(uint8_t opcode) {
 
@@ -865,3 +898,5 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		break;
 	}
 }
+
+#pragma endregion Instruction decode and execution

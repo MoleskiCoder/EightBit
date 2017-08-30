@@ -42,10 +42,15 @@ namespace EightBit {
 		};
 
 		MOS6502(Memory& memory);
-		virtual ~MOS6502();
 
 		Signal<MOS6502> ExecutingInstruction;
 		Signal<MOS6502> ExecutedInstruction;
+
+		virtual void triggerIRQ();
+		virtual void triggerNMI();
+
+		virtual int execute(uint8_t opcode);
+		int step();
 
 		uint8_t& X() { return x; }
 		uint8_t& Y() { return y; }
@@ -54,22 +59,7 @@ namespace EightBit {
 		uint8_t& P() { return p; }
 
 		virtual void initialise();
-
-		virtual int step();
-
 		virtual void reset();
-
-		virtual void triggerIRQ();
-		virtual void triggerNMI();
-
-		void getWord(register16_t& output);
-		void getWord(uint16_t offset, register16_t& output);
-		void getWord(const register16_t& offset, register16_t& output);
-
-	protected:
-		virtual void interrupt(uint16_t vector);
-
-		virtual int execute(uint8_t opcode);
 
 	private:
 		void adjustZero(uint8_t datum) { clearFlag(P(), ZF, datum); }
@@ -80,8 +70,14 @@ namespace EightBit {
 			adjustNegative(datum);
 		}
 
+		void getWord(register16_t& output);
+		void getWord(uint16_t offset, register16_t& output);
+		void getWord(const register16_t& offset, register16_t& output);
+
 		virtual void push(uint8_t value) override;
 		virtual uint8_t pop() override;
+
+		void interrupt(uint16_t vector);
 
 #pragma region 6502 addressing modes
 

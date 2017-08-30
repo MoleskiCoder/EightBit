@@ -15,3 +15,15 @@ void EightBit::Processor::reset() {
 void EightBit::Processor::initialise() {
 	reset();
 }
+
+int EightBit::Processor::run(int limit) {
+	int current = 0;
+	do {
+		current += singleStep();
+	} while (current < limit);
+	return current;
+}
+
+int EightBit::Processor::singleStep() {
+	return step();
+}

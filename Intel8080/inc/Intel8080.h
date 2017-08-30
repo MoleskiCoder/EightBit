@@ -21,9 +21,9 @@ namespace EightBit {
 		Signal<Intel8080> ExecutingInstruction;
 
 		bool isInterruptable() const;
-
 		int interrupt(uint8_t value);
 
+		virtual int execute(uint8_t opcode);
 		int step();
 
 		virtual register16_t& AF() override {
@@ -32,17 +32,9 @@ namespace EightBit {
 			return af;
 		}
 
-		virtual register16_t& BC() override {
-			return bc;
-		}
-
-		virtual register16_t& DE() override {
-			return de;
-		}
-
-		virtual register16_t& HL() override {
-			return hl;
-		}
+		virtual register16_t& BC() override { return bc; }
+		virtual register16_t& DE() override { return de; }
+		virtual register16_t& HL() override { return hl; }
 
 		virtual void initialise();
 
@@ -159,11 +151,9 @@ namespace EightBit {
 
 		static void subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
 
-		virtual int execute(uint8_t opcode);
 		void execute(int x, int y, int z, int p, int q);
 
 		static void increment(uint8_t& f, uint8_t& operand);
-
 		static void decrement(uint8_t& f, uint8_t& operand);
 
 		bool returnConditionalFlag(uint8_t& f, int flag);

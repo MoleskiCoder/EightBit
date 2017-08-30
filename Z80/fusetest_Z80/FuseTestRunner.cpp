@@ -326,10 +326,7 @@ void Fuse::TestRunner::run() {
 	initialise();
 	auto allowedCycles = m_test.registerState.tstates;
 	try {
-		auto cycles = 0;
-		do {
-			cycles += m_cpu.step();
-		} while (allowedCycles > cycles);
+		m_cpu.run(allowedCycles);
 		check();
 	}	catch (std::logic_error& error) {
 		m_unimplemented = true;

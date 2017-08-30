@@ -24,9 +24,6 @@ EightBit::MOS6502::MOS6502(Memory& memory)
 	};
 }
 
-EightBit::MOS6502::~MOS6502() {
-}
-
 void EightBit::MOS6502::initialise() {
 
 	Processor::initialise();
