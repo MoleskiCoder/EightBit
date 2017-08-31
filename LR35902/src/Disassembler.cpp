@@ -167,6 +167,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, LR35902& cp
 	auto indexedImmediate = memory.peek(pc + 1);
 
 	auto dumpCount = 0;
+	auto ioRegister = IoRegister::Unused;
 
 	std::string specification = "";
 
@@ -178,7 +179,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, LR35902& cp
 	else
 		disassembleOther(
 			output, cpu, pc,
-			specification, dumpCount,
+			specification, dumpCount, ioRegister,
 			x, y, z, p, q);
 
 	for (int i = 0; i < dumpCount; ++i)
@@ -187,6 +188,22 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, LR35902& cp
 	output << '\t';
 	m_formatter.parse(specification);
 	output << m_formatter % (int)immediate % (int)absolute % relative % (int)displacement % indexedImmediate;
+
+	switch (ioRegister) {
+	case Abbreviated:
+		output << "; register " << io(immediate);
+		break;
+	case Absolute:
+		output << "; register (Absolute)";
+		break;
+	case Register:
+		output << "; register C:" << io(cpu.C());
+		break;
+	case Unused:
+		break;
+	default:
+		__assume(0);
+	}
 }
 
 void EightBit::Disassembler::disassembleCB(
@@ -245,6 +262,7 @@ void EightBit::Disassembler::disassembleOther(
 	uint16_t pc,
 	std::string& specification,
 	int& dumpCount,
+	IoRegister& ioRegister,
 	int x, int y, int z,
 	int p, int q) {
 
@@ -392,6 +410,7 @@ void EightBit::Disassembler::disassembleOther(
 				break;
 			case 4:
 				specification = "LD (FF00H+%1$02XH),A";
+				ioRegister = IoRegister::Abbreviated;
 				dumpCount++;
 				break;
 			case 5:
@@ -400,6 +419,7 @@ void EightBit::Disassembler::disassembleOther(
 				break;
 			case 6:
 				specification = "LD A,(FF00H+%1$02XH)";
+				ioRegister = IoRegister::Abbreviated;
 				dumpCount++;
 				break;
 			case 7:
@@ -441,6 +461,7 @@ void EightBit::Disassembler::disassembleOther(
 				break;
 			case 4:
 				specification = "LD (FF00H+C),A";
+				ioRegister = IoRegister::Register;
 				break;
 			case 5:
 				specification = "LD (%2$04XH),A";
@@ -448,6 +469,7 @@ void EightBit::Disassembler::disassembleOther(
 				break;
 			case 6:
 				specification = "LD A,(FF00H+C)";
+				ioRegister = IoRegister::Register;
 				break;
 			case 7:
 				specification = "LD A,(%2$04XH)";
@@ -551,4 +573,113 @@ std::string EightBit::Disassembler::invalid(uint8_t value) {
 	std::ostringstream output;
 	output << "Invalid instruction: " << hex(value) << "(" << binary(value) << ")";
 	return output.str();
+}
+
+std::string EightBit::Disassembler::io(uint8_t value) {
+	switch (value) {
+
+	// Port/Mode Registers
+	case Bus::P1:
+		return "P1";
+	case Bus::SB:
+		return "SB";
+	case Bus::SC:
+		return "SC";
+	case Bus::DIV:
+		return "DIV";
+	case Bus::TIMA:
+		return "TIMA";
+	case Bus::TMA:
+		return "TMA";
+	case Bus::TAC:
+		return "TAC";
+
+	// Interrupt Flags
+	case Bus::IF:
+		return "IF";
+	case Bus::IE:
+		return "IE";
+
+	// LCD Display Registers
+	case Bus::LCDC:
+		return "LCDC";
+	case Bus::STAT:
+		return "STAT";
+	case Bus::SCY:
+		return "SCY";
+	case Bus::SCX:
+		return "SCX";
+	case Bus::LY:
+		return "LY";
+	case Bus::LYC:
+		return "LYC";
+	case Bus::DMA:
+		return "DMA";
+	case Bus::BGP:
+		return "BGP";
+	case Bus::OBP0:
+		return "OBP0";
+	case Bus::OBP1:
+		return "OBP1";
+	case Bus::WY:
+		return "WY";
+	case Bus::WX:
+		return "WX";
+
+	// Sound Registers
+	case Bus::NR10:
+		return "NR10";
+	case Bus::NR11:
+		return "NR11";
+	case Bus::NR12:
+		return "NR12";
+	case Bus::NR13:
+		return "NR13";
+	case Bus::NR14:
+		return "NR14";
+	case Bus::NR21:
+		return "NR21";
+	case Bus::NR22:
+		return "NR22";
+	case Bus::NR23:
+		return "NR23";
+	case Bus::NR24:
+		return "NR24";
+	case Bus::NR30:
+		return "NR30";
+	case Bus::NR31:
+		return "NR31";
+	case Bus::NR32:
+		return "NR32";
+	case Bus::NR33:
+		return "NR33";
+	case Bus::NR34:
+		return "NR34";
+	case Bus::NR41:
+		return "NR41";
+	case Bus::NR42:
+		return "NR42";
+	case Bus::NR43:
+		return "NR43";
+	case Bus::NR44:
+		return "NR44";
+	case Bus::NR50:
+		return "NR50";
+	case Bus::NR51:
+		return "NR51";
+	case Bus::NR52:
+		return "NR52";
+
+	case Bus::WPRAM_START:
+		return "WPRAM_START";
+	case Bus::WPRAM_END:
+		return "WPRAM_END";
+
+	// Boot rom control
+	case Bus::BOOT_DISABLE:
+		return "BOOT_DISABLE";
+
+	default:
+		return hex(value);
+	}
 }

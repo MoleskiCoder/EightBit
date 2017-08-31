@@ -20,10 +20,18 @@ namespace EightBit {
 		static std::string hex(uint16_t value);
 		static std::string binary(uint8_t value);
 		static std::string decimal(uint8_t value);
+		static std::string io(uint8_t value);
 
 		static std::string invalid(uint8_t value);
 
 	private:
+		enum IoRegister {
+			Abbreviated,	// FF00 + dd
+			Absolute,		// FFdd
+			Register,		// C
+			Unused,			// Unused!
+		};
+
 		mutable boost::format m_formatter;
 		bool m_prefixCB;
 
@@ -44,6 +52,7 @@ namespace EightBit {
 			uint16_t pc,
 			std::string& specification,
 			int& dumpCount,
+			IoRegister& ioRegister,
 			int x, int y, int z,
 			int p, int q);
 
