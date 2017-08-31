@@ -33,13 +33,11 @@ void EightBit::MOS6502::initialise() {
 	}
 
 	PC().word = 0;
+
 	X() = Bit7;
 	Y() = 0;
 	A() = 0;
-
-	P() = 0;
-	setFlag(P(), RF);
-
+	P() = RF;
 	S() = Mask8;
 
 	MEMPTR().word = 0;
@@ -47,7 +45,8 @@ void EightBit::MOS6502::initialise() {
 
 int EightBit::MOS6502::step() {
 	ExecutingInstruction.fire(*this);
-	auto returned = execute(fetchByte());
+	cycles = 0;
+	auto returned = fetchExecute();
 	ExecutedInstruction.fire(*this);
 	return returned;
 }
@@ -344,6 +343,9 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 		__assume(0);
 	}
 
+	if (cycles == 0)
+		throw std::logic_error("Unhandled opcode");
+
 	return cycles;
 }
 
@@ -483,7 +485,7 @@ void EightBit::MOS6502::ADC_d(uint8_t data) {
 ////
 
 void EightBit::MOS6502::Branch(int8_t displacement) {
-	auto page = PC().high;
+	const auto page = PC().high;
 	PC().word += displacement;
 	if (PC().high != page)
 		cycles++;
@@ -491,7 +493,7 @@ void EightBit::MOS6502::Branch(int8_t displacement) {
 }
 
 void EightBit::MOS6502::Branch(bool flag) {
-	int8_t displacement = AM_Immediate();
+	const int8_t displacement = AM_Immediate();
 	if (flag)
 		Branch(displacement);
 }

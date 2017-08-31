@@ -335,10 +335,10 @@ void EightBit::LR35902::ccf(uint8_t& a, uint8_t& f) {
 
 int EightBit::LR35902::runRasterLines() {
 	m_bus.resetLY();
-	int cycles = 0;
+	int count = 0;
 	for (int line = 0; line < Display::RasterHeight; ++line)
-		cycles += runRasterLine();
-	return cycles;
+		count += runRasterLine();
+	return count;
 }
 
 int EightBit::LR35902::runRasterLine() {
@@ -351,10 +351,10 @@ int EightBit::LR35902::runRasterLine() {
 
 int EightBit::LR35902::runVerticalBlankLines() {
 	m_bus.triggerInterrupt(Bus::Interrupts::VerticalBlank);
-	int cycles = 0;
+	int count = 0;
 	for (int line = 0; line < (Bus::TotalLineCount - Display::RasterHeight); ++line)
-		cycles += runRasterLine();
-	return cycles;
+		count += runRasterLine();
+	return count;
 }
 
 int EightBit::LR35902::singleStep() {
