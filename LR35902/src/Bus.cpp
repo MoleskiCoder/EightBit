@@ -180,7 +180,7 @@ void EightBit::Bus::checkTimer(int cycles) {
 	if (timerEnabled()) {
 		m_timerCounter -= cycles;
 		if (m_timerCounter <= 0) {
-			m_timerCounter = m_timerRate;
+			m_timerCounter += m_timerRate;
 			incrementTIMA();
 		}
 	}
