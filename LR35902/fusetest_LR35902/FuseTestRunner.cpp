@@ -19,6 +19,7 @@ void Fuse::TestRunner::initialise() {
 	m_bus.disableGameRom();
 	initialiseRegisters();
 	initialiseMemory();
+	m_cpu.powerOn();
 }
 
 void Fuse::TestRunner::initialiseRegisters() {

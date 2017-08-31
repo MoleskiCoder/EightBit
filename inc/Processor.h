@@ -61,6 +61,10 @@ namespace EightBit {
 		void halt() { --PC().word;  m_halted = true; }
 		void proceed() { ++PC().word; m_halted = false; }
 
+		bool powered() const { return m_power; }
+		void powerOn() { m_power = true; }
+		void powerOff() { m_power = false; }
+
 		virtual void initialise();
 
 		void reset();
@@ -102,6 +106,8 @@ namespace EightBit {
 		}
 
 		virtual int fetchExecute() {
+			if (!powered())
+				return 0;
 			return execute(fetchByte());
 		}
 
@@ -142,5 +148,6 @@ namespace EightBit {
 		register16_t pc;
 		register16_t m_memptr;
 		bool m_halted;
+		bool m_power;
 	};
 }

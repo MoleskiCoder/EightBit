@@ -4,7 +4,8 @@
 EightBit::Processor::Processor(Memory& memory)
 : m_memory(memory),
   cycles(0),
-  m_halted(false) {
+  m_halted(false),
+  m_power(false) {
 	PC().word = 0;
 }
 

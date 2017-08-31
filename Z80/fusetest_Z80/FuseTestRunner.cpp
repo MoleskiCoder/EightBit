@@ -18,6 +18,7 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expecte
 void Fuse::TestRunner::initialise() {
 	initialiseRegisters();
 	initialiseMemory();
+	m_cpu.powerOn();
 }
 
 void Fuse::TestRunner::initialiseRegisters() {
