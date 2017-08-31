@@ -19,9 +19,9 @@ void EightBit::Processor::initialise() {
 
 int EightBit::Processor::run(int limit) {
 	int current = 0;
-	do {
+	while (powered() && current < limit) {
 		current += singleStep();
-	} while (current < limit);
+	}
 	return current;
 }
 
