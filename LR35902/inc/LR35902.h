@@ -2,9 +2,10 @@
 
 #include <cstdint>
 
-#include "IntelProcessor.h"
+#include <IntelProcessor.h>
+#include <Signal.h>
+
 #include "Bus.h"
-#include "Signal.h"
 #include "Display.h"
 
 namespace EightBit {

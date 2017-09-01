@@ -7,7 +7,5 @@ namespace EightBit {
 
 	public:
 		static EventArgs& empty() { return m_empty; }
-
-		EventArgs() {}
 	};
 }

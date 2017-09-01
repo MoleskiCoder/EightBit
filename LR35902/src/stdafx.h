@@ -8,7 +8,6 @@
 #include <vector>
 #include <array>
 #include <map>
-
 #include <bitset>
 #include <string>
 
@@ -20,3 +19,8 @@
 #include <iomanip>
 
 #include <boost/format.hpp>
+
+#include <Memory.h>
+#include <Processor.h>
+#include <IntelProcessor.h>
+#include <Signal.h>

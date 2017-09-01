@@ -16,9 +16,6 @@ EightBit::Memory::Memory(uint16_t addressMask)
 	m_locked.resize(0x10000);
 }
 
-EightBit::Memory::~Memory() {
-}
-
 uint8_t EightBit::Memory::peek(uint16_t address) {
 	bool rom;
 	return reference(address, rom);

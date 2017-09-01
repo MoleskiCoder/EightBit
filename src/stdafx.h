@@ -7,6 +7,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <chrono>
+#include <intrin.h>
+#include <algorithm>
 
 #include <string>
 #include <array>

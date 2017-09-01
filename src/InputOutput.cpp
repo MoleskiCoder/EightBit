@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "InputOutput.h"
 
-EightBit::InputOutput::InputOutput() {
-}
-
 uint8_t EightBit::InputOutput::readInputPort(uint8_t port) {
 	OnReadingPort(port);
 	auto value = input[port];

@@ -32,7 +32,6 @@ namespace EightBit {
 	class Memory {
 	public:
 		Memory(uint16_t addressMask);
-		virtual ~Memory();
 
 		// Only fired with read/write methods
 		Signal<AddressEventArgs> WrittenByte;

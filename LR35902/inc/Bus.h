@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Memory.h"
-#include "Processor.h"
+#include <Memory.h>
+#include <Processor.h>
 
 namespace EightBit {
 	class Bus : public Memory {
