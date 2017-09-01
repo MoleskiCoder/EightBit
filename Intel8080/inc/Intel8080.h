@@ -36,8 +36,6 @@ namespace EightBit {
 		virtual register16_t& DE() override { return de; }
 		virtual register16_t& HL() override { return hl; }
 
-		virtual void initialise();
-
 	private:
 		InputOutput& m_ports;
 

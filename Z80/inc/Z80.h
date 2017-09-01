@@ -95,8 +95,7 @@ namespace EightBit {
 			m_accumulatorFlagsSet = !m_accumulatorFlagsSet;
 		}
 
-		virtual void reset();
-		virtual void initialise();
+		virtual void reset() override;
 
 	protected:
 		virtual int fetchExecute() override {

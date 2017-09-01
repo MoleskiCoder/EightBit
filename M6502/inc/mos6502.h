@@ -58,8 +58,8 @@ namespace EightBit {
 		uint8_t& S() { return s; }
 		uint8_t& P() { return p; }
 
-		virtual void initialise();
-		virtual void reset();
+		virtual void initialise() override;
+		virtual void reset() override;
 
 	private:
 		void adjustZero(uint8_t datum) { clearFlag(P(), ZF, datum); }

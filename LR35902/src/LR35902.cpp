@@ -9,24 +9,14 @@ EightBit::LR35902::LR35902(Bus& memory)
 	: IntelProcessor(memory),
 	m_bus(memory),
 	m_ime(false),
+	m_stopped(false),
 	m_prefixCB(false) {
 }
 
 void EightBit::LR35902::reset() {
 	IntelProcessor::reset();
-	SP().word = Mask16 - 1;
 	di();
-}
-
-void EightBit::LR35902::initialise() {
-
-	IntelProcessor::initialise();
-
-	AF().word = Mask16;
-	BC().word = Mask16;
-	DE().word = Mask16;
-	HL().word = Mask16;
-
+	SP().word = Mask16 - 1;
 	m_prefixCB = false;
 }
 

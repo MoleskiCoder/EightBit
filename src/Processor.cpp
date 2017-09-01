@@ -6,11 +6,11 @@ EightBit::Processor::Processor(Memory& memory)
   cycles(0),
   m_halted(false),
   m_power(false) {
-	PC().word = 0;
+	PC().word = MEMPTR().word = 0;
 }
 
 void EightBit::Processor::reset() {
-	PC().word = 0;
+	PC().word = MEMPTR().word = 0;
 }
 
 void EightBit::Processor::initialise() {

@@ -30,8 +30,7 @@ namespace EightBit {
 		virtual register16_t& DE() override { return de; }
 		virtual register16_t& HL() override { return hl; }
 
-		virtual void reset();
-		virtual void initialise();
+		virtual void reset() override;
 
 		static int framesPerSecond() { return 60; }
 		static int cyclesPerFrame() { return cyclesPerSecond() / framesPerSecond(); }

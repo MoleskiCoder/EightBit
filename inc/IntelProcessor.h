@@ -34,7 +34,8 @@ namespace EightBit {
 			return m_decodedOpcodes[i];
 		}
 
-		virtual void initialise();
+		virtual void initialise() override;
+		virtual void reset() override;
 
 		register16_t& SP() { return sp; }
 

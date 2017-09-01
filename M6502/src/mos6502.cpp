@@ -28,19 +28,14 @@ void EightBit::MOS6502::initialise() {
 
 	Processor::initialise();
 
-	for (int i = 0; i < 0x100; ++i) {
+	for (int i = 0; i < 0x100; ++i)
 		m_decodedOpcodes[i] = i;
-	}
-
-	PC().word = 0;
 
 	X() = Bit7;
 	Y() = 0;
 	A() = 0;
 	P() = RF;
 	S() = Mask8;
-
-	MEMPTR().word = 0;
 }
 
 int EightBit::MOS6502::step() {

@@ -27,21 +27,14 @@ EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
 }
 
 void EightBit::Z80::reset() {
+
 	IntelProcessor::reset();
+
 	di();
-}
-
-void EightBit::Z80::initialise() {
-
-	IntelProcessor::initialise();
-
 	IM() = 0;
 
-	AF().word = 0xffff;
-
-	BC().word = 0xffff;
-	DE().word = 0xffff;
-	HL().word = 0xffff;
+	REFRESH() = 0;
+	IV() = 0xff;
 
 	exxAF();
 	exx();
@@ -55,13 +48,7 @@ void EightBit::Z80::initialise() {
 	IX().word = 0xffff;
 	IY().word = 0xffff;
 
-	REFRESH() = 0x7f;
-	IV() = 0xff;
-
-	m_prefixCB = false;
-	m_prefixDD = false;
-	m_prefixED = false;
-	m_prefixFD = false;
+	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 }
 
 #pragma endregion Reset and initialisation

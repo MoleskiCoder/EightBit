@@ -66,8 +66,7 @@ namespace EightBit {
 		void powerOff() { m_power = false; }
 
 		virtual void initialise();
-
-		void reset();
+		virtual void reset();
 
 		virtual int run(int limit);
 		virtual int singleStep();

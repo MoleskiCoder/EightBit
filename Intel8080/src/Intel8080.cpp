@@ -7,12 +7,7 @@ EightBit::Intel8080::Intel8080(Memory& memory, InputOutput& ports)
 : IntelProcessor(memory),
   m_interrupt(false),
   m_ports(ports) {
-	bc.word = de.word = hl.word = 0;
-}
-
-void EightBit::Intel8080::initialise() {
-	IntelProcessor::initialise();
-	AF().word = BC().word = DE().word = HL().word = 0;
+	bc.word = de.word = hl.word = Mask16;
 }
 
 #pragma endregion Reset and initialisation
