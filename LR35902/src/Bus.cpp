@@ -12,17 +12,19 @@ EightBit::Bus::Bus()
   m_ramBankSwitching(false),
   m_romBank(1),
   m_ramBank(0),
-  m_divCounter(256),
   m_timerCounter(0),
   m_timerRate(0) {
 	m_bootRom.resize(0x100);
 	m_gameRom.resize(0x10000);
 	WrittenByte.connect(std::bind(&Bus::Bus_WrittenByte, this, std::placeholders::_1));
+	m_divCounter.word = 0xabcc;
 }
 
 void EightBit::Bus::reset() {
 	pokeRegister(NR52, 0xf1);
 	pokeRegister(LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
+	m_divCounter.word = 0xabcc;
+	m_timerCounter = 0;
 }
 
 void EightBit::Bus::clear() {
@@ -109,7 +111,7 @@ void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 
 		case BASE + DIV:	// R/W
 			Memory::reference() = 0;
-			m_timerCounter = 0;
+			m_timerCounter = m_divCounter.word = 0;
 			break;
 		case BASE + TIMA:	// R/W
 		case BASE + TMA:	// R/W
@@ -164,16 +166,8 @@ void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 }
 
 void EightBit::Bus::checkTimers(int cycles) {
-	checkDiv(cycles);
+	incrementDIV(cycles);
 	checkTimer(cycles);
-}
-
-void EightBit::Bus::checkDiv(int cycles) {
-	m_divCounter -= cycles;
-	if (m_divCounter <= 0) {
-		m_divCounter = 256;
-		incrementDIV();
-	}
 }
 
 void EightBit::Bus::checkTimer(int cycles) {

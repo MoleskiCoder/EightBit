@@ -163,9 +163,9 @@ namespace EightBit {
 			return (peekRegister(TAC) & Processor::Bit2) == 0;
 		}
 
-		void incrementDIV() {
-			auto current = peekRegister(DIV);
-			pokeRegister(DIV, ++current);
+		void incrementDIV(int cycles) {
+			m_divCounter.word += cycles;
+			pokeRegister(DIV, m_divCounter.high);
 		}
 
 		void incrementTIMA() {
@@ -218,13 +218,12 @@ namespace EightBit {
 		int m_romBank;
 		int m_ramBank;
 
-		int m_divCounter;
+		register16_t m_divCounter;
 		int m_timerCounter;
 		int m_timerRate;
 
 		void Bus_WrittenByte(const AddressEventArgs& e);
 
-		void checkDiv(int cycles);
 		void checkTimer(int cycles);
 
 		void validateCartridgeType();
