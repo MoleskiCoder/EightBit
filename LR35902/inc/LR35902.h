@@ -43,6 +43,7 @@ namespace EightBit {
 		int singleStep();
 
 	protected:
+		int runRasterLines(int limit);
 		virtual int execute(uint8_t opcode);
 		int step();
 

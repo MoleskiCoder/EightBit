@@ -335,26 +335,27 @@ void EightBit::LR35902::ccf(uint8_t& a, uint8_t& f) {
 
 int EightBit::LR35902::runRasterLines() {
 	m_bus.resetLY();
+	return runRasterLines(Display::RasterHeight);
+}
+
+int EightBit::LR35902::runRasterLines(int limit) {
 	int count = 0;
-	for (int line = 0; line < Display::RasterHeight; ++line)
+	for (int line = 0; line < limit; ++line)
 		count += runRasterLine();
 	return count;
 }
 
 int EightBit::LR35902::runRasterLine() {
-	auto cycles = run(cyclesPerLine());
+	const auto count = run(cyclesPerLine());
 	m_bus.incrementLY();
-	if ((m_bus.peekRegister(Bus::STAT) & Processor::Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
+	if ((m_bus.peekRegister(Bus::STAT) & Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
 		m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
-	return cycles;
+	return count;
 }
 
 int EightBit::LR35902::runVerticalBlankLines() {
 	m_bus.triggerInterrupt(Bus::Interrupts::VerticalBlank);
-	int count = 0;
-	for (int line = 0; line < (Bus::TotalLineCount - Display::RasterHeight); ++line)
-		count += runRasterLine();
-	return count;
+	return runRasterLines(Bus::TotalLineCount - Display::RasterHeight);
 }
 
 int EightBit::LR35902::singleStep() {
@@ -529,7 +530,7 @@ void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0: // LD rp,nn
-				Processor::fetchWord(RP(p));
+				fetchWord(RP(p));
 				cycles += 3;
 				break;
 			case 1:	// ADD HL,rp
