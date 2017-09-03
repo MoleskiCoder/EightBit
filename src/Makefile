@@ -1,3 +1,5 @@
+LIB = libeightbit.a
+
 CXXFLAGS = -Wall -std=c++11 -pipe -I ../inc
 
 CXXFILES = EventArgs.cpp InputOutput.cpp IntelProcessor.cpp Memory.cpp Processor.cpp

@@ -1,8 +1,8 @@
-LIB = libEightBit.a
+LIB = libintel8080.a
 
-CXXFLAGS = -Wall -std=c++11 -pipe -I ../inc
+CXXFLAGS = -Wall -std=c++11 -pipe -I ../inc -I ../../inc
 
-CXXFILES = EventArgs.cpp InputOutput.cpp IntelProcessor.cpp Memory.cpp Processor.cpp
+CXXFILES = Disassembler.cpp Intel8080.cpp Profiler.cpp
 
 CXXOBJECTS = $(CXXFILES:.cpp=.o)
 
