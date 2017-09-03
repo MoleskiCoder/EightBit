@@ -1,8 +1,14 @@
 #pragma once
 
+#include <cstdint>
 #include <chrono>
-#include <intrin.h>
 #include <iostream>
+
+#ifdef __GNUG__
+#include <x86intrin.h>
+#else
+#include <intrin.h>
+#endif
 
 namespace EightBit {
 	template<class ConfigurationT, class BoardT> class TestHarness {
@@ -76,14 +82,14 @@ namespace EightBit {
 		long long m_instructions;
 		std::chrono::steady_clock::time_point m_startTime;
 		std::chrono::steady_clock::time_point m_finishTime;
-		unsigned __int64 m_startHostCycles;
-		unsigned __int64 m_finishHostCycles;
+		uint64_t m_startHostCycles;
+		uint64_t m_finishHostCycles;
 
 		static std::chrono::steady_clock::time_point now() {
 			return std::chrono::steady_clock::now();
 		}
 
-		static unsigned __int64 currentHostCycles() {
+		static uint64_t currentHostCycles() {
 			return __rdtsc();
 		}
 	};

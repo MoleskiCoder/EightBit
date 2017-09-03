@@ -4,6 +4,11 @@
 
 #include "Memory.h"
 
+#ifdef __GNUG__
+#	define __assume(cond) do { if (!(cond)) __builtin_unreachable(); } while (0)
+#	define __popcnt __builtin_popcount
+#endif
+
 namespace EightBit {
 	class Processor {
 	public:

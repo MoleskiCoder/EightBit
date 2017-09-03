@@ -1,18 +1,12 @@
 #include "stdafx.h"
 #include "Intel8080.h"
 
-#pragma region Reset and initialisation
-
 EightBit::Intel8080::Intel8080(Memory& memory, InputOutput& ports)
 : IntelProcessor(memory),
   m_interrupt(false),
   m_ports(ports) {
 	bc.word = de.word = hl.word = Mask16;
 }
-
-#pragma endregion Reset and initialisation
-
-#pragma region Interrupt routines
 
 void EightBit::Intel8080::di() {
 	m_interrupt = false;
@@ -34,10 +28,6 @@ bool EightBit::Intel8080::isInterruptable() const {
 	return m_interrupt;
 }
 
-#pragma endregion Interrupt routines
-
-#pragma region Flag manipulation helpers
-
 void EightBit::Intel8080::increment(uint8_t& f, uint8_t& operand) {
 	adjustSZP<Intel8080>(f, ++operand);
 	clearFlag(f, AC, lowNibble(operand));
@@ -47,10 +37,6 @@ void EightBit::Intel8080::decrement(uint8_t& f, uint8_t& operand) {
 	adjustSZP<Intel8080>(f, --operand);
 	setFlag(f, AC, lowNibble(operand) != Mask4);
 }
-
-#pragma endregion Flag manipulation helpers
-
-#pragma region PC manipulation: call/ret/jp/jr
 
 bool EightBit::Intel8080::jumpConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
@@ -124,19 +110,11 @@ bool EightBit::Intel8080::callConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled CALL conditional");
 }
 
-#pragma endregion PC manipulation: call/ret/jp/jr
-
-#pragma region 16-bit arithmetic
-
 void EightBit::Intel8080::add(uint8_t& f, register16_t& operand, register16_t value) {
 	const auto result = operand.word + value.word;
 	setFlag(f, CF, result & Bit16);
 	operand.word = result;
 }
-
-#pragma endregion 16-bit arithmetic
-
-#pragma region ALU
 
 void EightBit::Intel8080::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
 
@@ -192,10 +170,6 @@ void EightBit::Intel8080::compare(uint8_t& f, uint8_t check, uint8_t value) {
 	subtract(f, check, value);
 }
 
-#pragma endregion ALU
-
-#pragma region Shift and rotate
-
 void EightBit::Intel8080::rlc(uint8_t& f, uint8_t& operand) {
 	auto carry = operand & Bit7;
 	operand = (operand << 1) | (carry >> 7);
@@ -219,10 +193,6 @@ void EightBit::Intel8080::rr(uint8_t& f, uint8_t& operand) {
 	setFlag(f, CF, operand & Bit0);
 	operand = (operand >> 1) | (carry << 7);
 }
-
-#pragma endregion Shift and rotate
-
-#pragma region Miscellaneous instructions
 
 void EightBit::Intel8080::daa(uint8_t& a, uint8_t& f) {
 	const auto& before = a;
@@ -261,10 +231,6 @@ void EightBit::Intel8080::xhtl() {
 	H() = MEMPTR().high;
 }
 
-#pragma endregion Miscellaneous instructions
-
-#pragma region I/O instructions
-
 void EightBit::Intel8080::out() {
 	m_ports.write(fetchByte(), A());
 }
@@ -273,19 +239,11 @@ void EightBit::Intel8080::in() {
 	A() = m_ports.read(fetchByte());
 }
 
-#pragma endregion I/O instructions
-
-#pragma region Controlled instruction execution
-
 int EightBit::Intel8080::step() {
 	ExecutingInstruction.fire(*this);
 	cycles = 0;
 	return fetchExecute();
 }
-
-#pragma endregion Controlled instruction execution
-
-#pragma region Instruction decode and execution
 
 int EightBit::Intel8080::execute(uint8_t opcode) {
 
@@ -641,5 +599,3 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 		break;
 	}
 }
-
-#pragma endregion Instruction decode and execution

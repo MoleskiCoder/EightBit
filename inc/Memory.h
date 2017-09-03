@@ -7,10 +7,19 @@
 #include "Signal.h"
 #include "AddressEventArgs.h"
 
-#if defined(_M_X64) || defined(_M_IX86 )
-#	define HOST_LITTLE_ENDIAN
+#ifdef __BYTE_ORDER__
+#	if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#		define HOST_LITTLE_ENDIAN
+#	endif
+#	if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#		define HOST_BIG_ENDIAN
+#	endif
 #else
-#	define HOST_BIG_ENDIAN
+#	if defined(_M_X64) || defined(_M_IX86)
+#		define HOST_LITTLE_ENDIAN
+#	else
+#		define HOST_BIG_ENDIAN
+#	endif
 #endif
 
 namespace EightBit {

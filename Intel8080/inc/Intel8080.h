@@ -37,14 +37,13 @@ namespace EightBit {
 		virtual register16_t& HL() override { return hl; }
 
 	private:
+		bool m_interrupt;
 		InputOutput& m_ports;
 
 		register16_t af;
 		register16_t bc;
 		register16_t de;
 		register16_t hl;
-
-		bool m_interrupt;
 
 		uint8_t R(int r) {
 			__assume(r < 8);
