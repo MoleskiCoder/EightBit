@@ -4,10 +4,10 @@
 #include <chrono>
 #include <iostream>
 
-#ifdef __GNUG__
-#include <x86intrin.h>
-#else
+#ifdef _MSC_VER
 #include <intrin.h>
+#else
+#include <x86intrin.h>
 #endif
 
 namespace EightBit {

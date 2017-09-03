@@ -4,9 +4,13 @@
 
 #include "Memory.h"
 
+#ifdef _MSC_VER
+#	define UNREACHABLE __assume(0)
+#endif
+
 #ifdef __GNUG__
-#	define __assume(cond) do { if (!(cond)) __builtin_unreachable(); } while (0)
 #	define __popcnt __builtin_popcount
+#	define UNREACHABLE __builtin_unreachable();
 #endif
 
 namespace EightBit {

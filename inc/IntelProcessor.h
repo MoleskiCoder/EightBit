@@ -98,19 +98,16 @@ namespace EightBit {
 		//
 
 		static int buildHalfCarryIndex(uint8_t before, uint8_t value, int calculation) {
-			__assume(calculation < 0x1ffff);
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
 		static bool calculateHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
-			__assume(calculation < 0x1ffff);
 			static std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 			auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableAdd[index & Mask3];
 		}
 
 		static bool calculateHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
-			__assume(calculation < 0x1ffff);
 			std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 			auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableSub[index & Mask3];

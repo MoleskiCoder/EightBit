@@ -46,8 +46,6 @@ namespace EightBit {
 		register16_t hl;
 
 		uint8_t R(int r) {
-			__assume(r < 8);
-			__assume(r >= 0);
 			switch (r) {
 			case 0b000:
 				return B();
@@ -66,14 +64,12 @@ namespace EightBit {
 			case 0b111:
 				return A();
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			throw std::logic_error("Unhandled registry mechanism");
 		}
 
 		void R(int r, uint8_t value) {
-			__assume(r < 8);
-			__assume(r >= 0);
 			switch (r) {
 			case 0b000:
 				B() = value;
@@ -100,13 +96,11 @@ namespace EightBit {
 				A() = value;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
 		register16_t& RP(int rp) {
-			__assume(rp < 4);
-			__assume(rp >= 0);
 			switch (rp) {
 			case 0b00:
 				return BC();
@@ -117,13 +111,11 @@ namespace EightBit {
 			case 0b11:
 				return SP();
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
 		register16_t& RP2(int rp) {
-			__assume(rp < 4);
-			__assume(rp >= 0);
 			switch (rp) {
 			case 0b00:
 				return BC();
@@ -134,7 +126,7 @@ namespace EightBit {
 			case 0b11:
 				return AF();
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 

@@ -57,7 +57,7 @@ bool EightBit::Intel8080::jumpConditionalFlag(uint8_t& f, int flag) {
 	case 7:	// M
 		return jumpConditional(f & SF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled JP conditional");
 }
@@ -81,7 +81,7 @@ bool EightBit::Intel8080::returnConditionalFlag(uint8_t& f, int flag) {
 	case 7:	// M
 		return returnConditional(f & SF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled RET conditional");
 }
@@ -105,7 +105,7 @@ bool EightBit::Intel8080::callConditionalFlag(uint8_t& f, int flag) {
 	case 7:	// M
 		return callConditional(f & SF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled CALL conditional");
 }
@@ -317,7 +317,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 					cycles += 13;
 					break;
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 				break;
 			case 1:
@@ -346,11 +346,11 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 					cycles += 13;
 					break;
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 3:	// 16-bit INC/DEC
@@ -362,7 +362,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				--RP(p).word;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 6;
 			break;
@@ -413,12 +413,12 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				cmc(a, f);
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 4;
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	case 1:	// 8-bit loading
@@ -458,7 +458,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 			compare(f, a, R(z));
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		cycles += 4;
 		if (z == 6)
@@ -494,7 +494,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				}
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 2:	// Conditional jump
@@ -555,7 +555,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				}
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
@@ -585,7 +585,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				compare(f, a, fetchByte());
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 7;
 			break;
@@ -594,7 +594,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 			cycles += 11;
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	}

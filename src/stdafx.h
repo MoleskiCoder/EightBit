@@ -1,6 +1,4 @@
-#ifdef _MSC_VER
 #pragma once
-#endif
 
 #include <cstdint>
 #include <functional>
@@ -14,8 +12,8 @@
 #include <array>
 #include <vector>
 
-#ifdef __GNUG__
-#include <x86intrin.h>
-#else
+#ifdef _MSC_VER
 #include <intrin.h>
+#else
+#include <x86intrin.h>
 #endif
