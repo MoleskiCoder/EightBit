@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "Disassembler.h"
+#include "Intel8080.h"
+
+#include <Memory.h>
 
 #include <sstream>
 #include <iomanip>
 #include <bitset>
-
-#include "Memory.h"
-#include "Intel8080.h"
 
 EightBit::Disassembler::Disassembler() {
 	// Disable exceptions where too many format arguments are available

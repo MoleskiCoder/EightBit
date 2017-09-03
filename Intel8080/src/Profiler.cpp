@@ -2,6 +2,8 @@
 #include "Profiler.h"
 #include "Disassembler.h"
 
+#include <iostream>
+
 EightBit::Profiler::Profiler() {
 	m_instructions.fill(0);
 	m_addresses.fill(0);

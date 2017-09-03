@@ -2,8 +2,8 @@
 
 // Auxiliary carry logic from https://github.com/begoon/i8080-core
 
-#include "IntelProcessor.h"
-#include "InputOutput.h"
+#include <IntelProcessor.h>
+#include <InputOutput.h>
 
 namespace EightBit {
 	class Intel8080 : public IntelProcessor {

@@ -3,14 +3,17 @@
 #endif
 
 #include <cstdint>
-#include <functional>
-
-#include <iostream>
-#include <fstream>
 
 #include <string>
 #include <array>
-#include <vector>
 #include <bitset>
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+
 #include <boost/format.hpp>
+
+#include <Memory.h>
+#include <IntelProcessor.h>
+#include <InputOutput.h>
