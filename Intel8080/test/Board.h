@@ -1,26 +1,32 @@
 #pragma once
 
-#include "Memory.h"
-#include "InputOutput.h"
-#include "Intel8080.h"
-#include "Profiler.h"
-#include "EventArgs.h"
-#include "Disassembler.h"
+#include <Bus.h>
+#include <Ram.h>
+#include <InputOutput.h>
+#include <Intel8080.h>
+#include <Profiler.h>
+#include <EventArgs.h>
+#include <Disassembler.h>
 
 class Configuration;
 
-class Board {
+class Board : public EightBit::Bus {
 public:
 	Board(const Configuration& configuration);
 
-	EightBit::Memory& Memory() { return m_memory; }
 	EightBit::Intel8080& CPU() { return m_cpu; }
 
 	void initialise();
 
+protected:
+	virtual uint8_t& reference(uint16_t address, bool& rom) {
+		rom = false;
+		return m_ram.reference(address);
+	}
+
 private:
 	const Configuration& m_configuration;
-	EightBit::Memory m_memory;
+	EightBit::Ram m_ram;
 	EightBit::InputOutput m_ports;
 	EightBit::Intel8080 m_cpu;
 	EightBit::Disassembler m_disassembler;
