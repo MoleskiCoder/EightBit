@@ -6,12 +6,13 @@
 namespace EightBit {
 	class Memory {
 	public:
-		Memory(size_t size)
+		Memory(size_t size = 0)
 		: m_bytes(size) {
 		}
 
-		void load(const std::string& path, uint16_t offset = 0) {
-			loadBinary(path, m_bytes, offset, m_bytes.size() - offset);
+		int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) {
+			const auto maximumSize = (int)m_bytes.size() - writeOffset;
+			return loadBinary(path, m_bytes, writeOffset, readOffset, limit, maximumSize);
 		}
 
 	protected:
@@ -26,6 +27,12 @@ namespace EightBit {
 		}
 
 	private:
-		static int loadBinary(const std::string& path, std::vector<uint8_t>& output, int offset = 0, int maximumSize = -1);
+		static int loadBinary(
+			const std::string& path,
+			std::vector<uint8_t>& output,
+			int writeOffset,
+			int readOffset,
+			int limit,
+			int maximumSize);
 	};
 }

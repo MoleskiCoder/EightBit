@@ -6,7 +6,7 @@
 namespace EightBit {
 	class Ram : public Memory {
 	public:
-		Ram(size_t size)
+		Ram(size_t size = 0)
 		: Memory(size) {
 		}
 

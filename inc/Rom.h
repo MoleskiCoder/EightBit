@@ -6,7 +6,7 @@
 namespace EightBit {
 	class Rom : public Memory {
 	public:
-		Rom(size_t size)
+		Rom(size_t size = 0)
 		: Memory(size) {
 		}
 
