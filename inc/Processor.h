@@ -2,7 +2,8 @@
 
 #include <cstdint>
 
-#include "Memory.h"
+#include "Bus.h"
+#include "Register.h"
 
 #ifdef _MSC_VER
 #	define UNREACHABLE __assume(0)
@@ -61,7 +62,7 @@ namespace EightBit {
 		static int promoteNibble(int value) { return value << 4; }
 		static int demoteNibble(int value) { return highNibble(value); }
 
-		Memory& getMemory() { return m_memory; }
+		Bus& BUS() { return m_bus; }
 
 		register16_t& PC() { return pc; }
 		register16_t& MEMPTR() { return m_memptr; }
@@ -95,9 +96,9 @@ namespace EightBit {
 		static void clearFlag(uint8_t& f, int flag, uint32_t condition) { clearFlag(f, flag, condition != 0); }
 		static void clearFlag(uint8_t& f, int flag, bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
 
-		Processor(Memory& memory);
+		Processor(Bus& memory);
 
-		Memory& m_memory;
+		Bus& m_bus;
 		int cycles;
 
 		virtual uint8_t fetchByte() {
@@ -119,11 +120,11 @@ namespace EightBit {
 			return execute(fetchByte());
 		}
 
-		uint8_t getByte() { return m_memory.read(); }
-		template<class T> uint8_t getByte(T offset) { return m_memory.read(offset); }
+		uint8_t getByte() { return BUS().read(); }
+		template<class T> uint8_t getByte(T offset) { return BUS().read(offset); }
 
-		void setByte(uint8_t value) { m_memory.write(value); }
-		template<class T> void setByte(T offset, uint8_t value) { m_memory.write(offset, value); }
+		void setByte(uint8_t value) { BUS().write(value); }
+		template<class T> void setByte(T offset, uint8_t value) { BUS().write(offset, value); }
 
 		virtual void push(uint8_t value) = 0;
 		virtual uint8_t pop() = 0;

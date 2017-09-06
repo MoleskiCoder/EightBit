@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Processor.h"
 
-EightBit::Processor::Processor(Memory& memory)
-: m_memory(memory),
+EightBit::Processor::Processor(Bus& bus)
+: m_bus(bus),
   cycles(0),
   m_halted(false),
   m_power(false) {

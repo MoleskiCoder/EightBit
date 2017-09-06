@@ -168,8 +168,8 @@ std::string EightBit::Disassembler::disassemble(Intel8080& cpu) {
 
 void EightBit::Disassembler::disassemble(std::ostringstream& output, Intel8080& cpu, uint16_t pc) {
 
-	auto& memory = cpu.getMemory();
-	auto opcode = memory.peek(pc);
+	auto& bus = cpu.BUS();
+	auto opcode = bus.peek(pc);
 
 	output << hex(opcode);
 
@@ -180,11 +180,11 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Intel8080& 
 	auto p = (y & 0b110) >> 1;
 	auto q = (y & 1);
 
-	auto immediate = memory.peek(pc + 1);
-	auto absolute = memory.peekWord(pc + 1);
+	auto immediate = bus.peek(pc + 1);
+	auto absolute = bus.peekWord(pc + 1);
 	auto displacement = (int8_t)immediate;
 	auto relative = pc + displacement + 2;
-	auto indexedImmediate = memory.peek(pc + 1);
+	auto indexedImmediate = bus.peek(pc + 1);
 
 	auto dumpCount = 0;
 
@@ -196,7 +196,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Intel8080& 
 		x, y, z, p, q);
 
 	for (int i = 0; i < dumpCount; ++i)
-		output << hex(memory.peek(pc + i + 1));
+		output << hex(bus.peek(pc + i + 1));
 
 	output << '\t';
 	m_formatter.parse(specification);

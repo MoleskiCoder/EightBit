@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Intel8080.h"
 
-EightBit::Intel8080::Intel8080(Memory& memory, InputOutput& ports)
-: IntelProcessor(memory),
+EightBit::Intel8080::Intel8080(Bus& bus, InputOutput& ports)
+: IntelProcessor(bus),
   m_interrupt(false),
   m_ports(ports) {
 	bc.word = de.word = hl.word = Mask16;
@@ -225,7 +225,7 @@ void EightBit::Intel8080::xhtl() {
 	MEMPTR().low = getByte(SP());
 	setByte(L());
 	L() = MEMPTR().low;
-	m_memory.ADDRESS().word++;
+	BUS().ADDRESS().word++;
 	MEMPTR().high = getByte();
 	setByte(H());
 	H() = MEMPTR().high;

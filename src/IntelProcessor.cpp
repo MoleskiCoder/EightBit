@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "IntelProcessor.h"
 
-EightBit::IntelProcessor::IntelProcessor(Memory& memory)
-: Processor(memory) {
+EightBit::IntelProcessor::IntelProcessor(Bus& bus)
+: Processor(bus) {
 	SP().word = Mask16;
 }
 

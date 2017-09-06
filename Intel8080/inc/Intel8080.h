@@ -16,7 +16,7 @@ namespace EightBit {
 			CF = Bit0,
 		};
 
-		Intel8080(Memory& memory, InputOutput& ports);
+		Intel8080(Bus& bus, InputOutput& ports);
 
 		Signal<Intel8080> ExecutingInstruction;
 

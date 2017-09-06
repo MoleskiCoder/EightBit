@@ -56,7 +56,7 @@ namespace EightBit {
 		uint8_t& L() { return HL().low; }
 
 	protected:
-		IntelProcessor(Memory& memory);
+		IntelProcessor(Bus& bus);
 
 		template<class T> static void adjustSign(uint8_t& f, uint8_t value) {
 			setFlag(f, T::SF, value & T::SF);
@@ -124,21 +124,21 @@ namespace EightBit {
 		//
 
 		void memptrReference() {
-			m_memory.ADDRESS() = MEMPTR();
+			BUS().ADDRESS() = MEMPTR();
 			MEMPTR().word++;
 		}
 
 		virtual void getWordViaMemptr(register16_t& value) {
 			memptrReference();
 			value.low = getByte();
-			m_memory.ADDRESS().word++;
+			BUS().ADDRESS().word++;
 			value.high = getByte();
 		}
 
 		virtual void setWordViaMemptr(register16_t value) {
 			memptrReference();
 			setByte(value.low);
-			m_memory.ADDRESS().word++;
+			BUS().ADDRESS().word++;
 			setByte(value.high);
 		}
 

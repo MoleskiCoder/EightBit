@@ -139,12 +139,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\AddressEventArgs.h" />
+    <ClInclude Include="..\inc\Bus.h" />
     <ClInclude Include="..\inc\EventArgs.h" />
     <ClInclude Include="..\inc\InputOutput.h" />
     <ClInclude Include="..\inc\IntelProcessor.h" />
     <ClInclude Include="..\inc\Memory.h" />
     <ClInclude Include="..\inc\PortEventArgs.h" />
     <ClInclude Include="..\inc\Processor.h" />
+    <ClInclude Include="..\inc\Ram.h" />
+    <ClInclude Include="..\inc\Register.h" />
+    <ClInclude Include="..\inc\Rom.h" />
     <ClInclude Include="..\inc\Signal.h" />
     <ClInclude Include="..\inc\TestHarness.h" />
     <ClInclude Include="stdafx.h" />
