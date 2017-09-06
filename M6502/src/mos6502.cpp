@@ -1,8 +1,8 @@
 ﻿#include "stdafx.h"
 #include "mos6502.h"
 
-EightBit::MOS6502::MOS6502(Memory& memory)
-: Processor(memory) {
+EightBit::MOS6502::MOS6502(Bus& bus)
+: Processor(bus) {
 	m_timings = {
 		////	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
 		/* 0 */	7, 6, 0, 0, 0, 4, 5, 0, 3, 2, 2, 0, 0, 4, 6, 0,
@@ -60,17 +60,17 @@ void EightBit::MOS6502::triggerNMI() {
 
 void EightBit::MOS6502::getWord(register16_t& output) {
 	output.low = getByte();
-	m_memory.ADDRESS().word++;
+	BUS().ADDRESS().word++;
 	output.high = getByte();
 }
 
 void EightBit::MOS6502::getWord(uint16_t offset, register16_t& output) {
-	m_memory.ADDRESS().word = offset;
+	BUS().ADDRESS().word = offset;
 	getWord(output);
 }
 
 void EightBit::MOS6502::getWord(const register16_t& offset, register16_t& output) {
-	m_memory.ADDRESS() = offset;
+	BUS().ADDRESS() = offset;
 	getWord(output);
 }
 

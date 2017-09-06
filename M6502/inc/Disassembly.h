@@ -72,7 +72,7 @@ namespace EightBit {
 		}
 
 		std::string AM_Absolute() const {
-			return "$" + dump_WordValue(processor.getMemory().peekWord(m_address + 1));
+			return "$" + dump_WordValue(processor.BUS().peekWord(m_address + 1));
 		}
 
 		std::string AM_ZeroPage_dump() const {

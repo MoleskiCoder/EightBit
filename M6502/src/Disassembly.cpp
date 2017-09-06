@@ -43,13 +43,13 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 
 	std::ostringstream output;
 
-	auto memory = processor.getMemory();
+	auto& bus = processor.BUS();
 
-	auto cell = memory.peek(current);
+	auto cell = bus.peek(current);
 
 	output << dump_ByteValue(cell);
 
-	auto byte = memory.peek(current + 1);
+	auto byte = bus.peek(current + 1);
 	uint16_t relative = processor.PC().word + 2 + (int8_t)byte;
 
 	auto aaa = (cell & 0b11100000) >> 5;
@@ -322,7 +322,7 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 ////
 
 uint8_t EightBit::Disassembly::getByte(uint16_t address) const {
-	return processor.getMemory().peek(address);
+	return processor.BUS().peek(address);
 }
 
 ////

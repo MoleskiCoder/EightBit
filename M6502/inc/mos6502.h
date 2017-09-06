@@ -6,9 +6,9 @@
 #include <functional>
 #include <cassert>
 
-#include "Memory.h"
-#include "Processor.h"
-#include "Signal.h"
+#include <Bus.h>
+#include <Processor.h>
+#include <Signal.h>
 
 namespace EightBit {
 	class MOS6502 : public Processor {
@@ -41,7 +41,7 @@ namespace EightBit {
 			CF = Bit0,	// Carry
 		};
 
-		MOS6502(Memory& memory);
+		MOS6502(Bus& bus);
 
 		Signal<MOS6502> ExecutingInstruction;
 		Signal<MOS6502> ExecutedInstruction;
@@ -156,16 +156,16 @@ namespace EightBit {
 
 		uint8_t AM_AbsoluteX() {
 			Address_AbsoluteX();
-			m_memory.ADDRESS() = MEMPTR();
-			if (m_memory.ADDRESS().low == Mask8)
+			BUS().ADDRESS() = MEMPTR();
+			if (BUS().ADDRESS().low == Mask8)
 				++cycles;
 			return getByte();
 		}
 
 		uint8_t AM_AbsoluteY() {
 			Address_AbsoluteY();
-			m_memory.ADDRESS() = MEMPTR();
-			if (m_memory.ADDRESS().low == Mask8)
+			BUS().ADDRESS() = MEMPTR();
+			if (BUS().ADDRESS().low == Mask8)
 				++cycles;
 			return getByte();
 		}
@@ -187,8 +187,8 @@ namespace EightBit {
 
 		uint8_t AM_IndirectIndexedY() {
 			Address_IndirectIndexedY();
-			m_memory.ADDRESS() = MEMPTR();
-			if (m_memory.ADDRESS().low == Mask8)
+			BUS().ADDRESS() = MEMPTR();
+			if (BUS().ADDRESS().low == Mask8)
 				++cycles;
 			return getByte();
 		}
