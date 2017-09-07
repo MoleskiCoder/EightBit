@@ -5,7 +5,7 @@
 
 #pragma region Reset and initialisation
 
-EightBit::LR35902::LR35902(Bus& memory)
+EightBit::GameBoy::LR35902::LR35902(Bus& memory)
 	: IntelProcessor(memory),
 	m_bus(memory),
 	m_ime(false),
@@ -13,7 +13,7 @@ EightBit::LR35902::LR35902(Bus& memory)
 	m_prefixCB(false) {
 }
 
-void EightBit::LR35902::reset() {
+void EightBit::GameBoy::LR35902::reset() {
 	IntelProcessor::reset();
 	di();
 	SP().word = Mask16 - 1;
@@ -24,15 +24,15 @@ void EightBit::LR35902::reset() {
 
 #pragma region Interrupt routines
 
-void EightBit::LR35902::di() {
+void EightBit::GameBoy::LR35902::di() {
 	IME() = false;
 }
 
-void EightBit::LR35902::ei() {
+void EightBit::GameBoy::LR35902::ei() {
 	IME() = true;
 }
 
-int EightBit::LR35902::interrupt(uint8_t value) {
+int EightBit::GameBoy::LR35902::interrupt(uint8_t value) {
 	di();
 	restart(value);
 	return 4;
@@ -42,13 +42,13 @@ int EightBit::LR35902::interrupt(uint8_t value) {
 
 #pragma region Flag manipulation helpers
 
-void EightBit::LR35902::increment(uint8_t& f, uint8_t& operand) {
+void EightBit::GameBoy::LR35902::increment(uint8_t& f, uint8_t& operand) {
 	clearFlag(f, NF);
 	adjustZero<LR35902>(f, ++operand);
 	clearFlag(f, HC, lowNibble(operand));
 }
 
-void EightBit::LR35902::decrement(uint8_t& f, uint8_t& operand) {
+void EightBit::GameBoy::LR35902::decrement(uint8_t& f, uint8_t& operand) {
 	setFlag(f, NF);
 	clearFlag(f, HC, lowNibble(operand));
 	adjustZero<LR35902>(f, --operand);
@@ -58,7 +58,7 @@ void EightBit::LR35902::decrement(uint8_t& f, uint8_t& operand) {
 
 #pragma region PC manipulation: call/ret/jp/jr
 
-bool EightBit::LR35902::jrConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::GameBoy::LR35902::jrConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jrConditional(!(f & ZF));
@@ -74,7 +74,7 @@ bool EightBit::LR35902::jrConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled JR conditional");
 }
 
-bool EightBit::LR35902::jumpConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::GameBoy::LR35902::jumpConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jumpConditional(!(f & ZF));
@@ -90,12 +90,12 @@ bool EightBit::LR35902::jumpConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled JP conditional");
 }
 
-void EightBit::LR35902::reti() {
+void EightBit::GameBoy::LR35902::reti() {
 	ret();
 	ei();
 }
 
-bool EightBit::LR35902::returnConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::GameBoy::LR35902::returnConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return returnConditional(!(f & ZF));
@@ -111,7 +111,7 @@ bool EightBit::LR35902::returnConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled RET conditional");
 }
 
-bool EightBit::LR35902::callConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::GameBoy::LR35902::callConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return callConditional(!(f & ZF));
@@ -131,7 +131,7 @@ bool EightBit::LR35902::callConditionalFlag(uint8_t& f, int flag) {
 
 #pragma region 16-bit arithmetic
 
-void EightBit::LR35902::add(uint8_t& f, register16_t& operand, register16_t value) {
+void EightBit::GameBoy::LR35902::add(uint8_t& f, register16_t& operand, register16_t value) {
 
 	MEMPTR() = operand;
 
@@ -148,7 +148,7 @@ void EightBit::LR35902::add(uint8_t& f, register16_t& operand, register16_t valu
 
 #pragma region ALU
 
-void EightBit::LR35902::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
+void EightBit::GameBoy::LR35902::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
 
 	register16_t result;
 	result.word = operand + value + carry;
@@ -162,11 +162,11 @@ void EightBit::LR35902::add(uint8_t& f, uint8_t& operand, uint8_t value, int car
 	adjustZero<LR35902>(f, operand);
 }
 
-void EightBit::LR35902::adc(uint8_t& f, uint8_t& operand, uint8_t value) {
+void EightBit::GameBoy::LR35902::adc(uint8_t& f, uint8_t& operand, uint8_t value) {
 	add(f, operand, value, (f & CF) >> 4);
 }
 
-void EightBit::LR35902::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
+void EightBit::GameBoy::LR35902::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
 
 	register16_t result;
 	result.word = operand - value - carry;
@@ -180,27 +180,27 @@ void EightBit::LR35902::subtract(uint8_t& f, uint8_t& operand, uint8_t value, in
 	adjustZero<LR35902>(f, operand);
 }
 
-void EightBit::LR35902::sbc(uint8_t& f, uint8_t& operand, uint8_t value) {
+void EightBit::GameBoy::LR35902::sbc(uint8_t& f, uint8_t& operand, uint8_t value) {
 	subtract(f, operand, value, (f & CF) >> 4);
 }
 
-void EightBit::LR35902::andr(uint8_t& f, uint8_t& operand, uint8_t value) {
+void EightBit::GameBoy::LR35902::andr(uint8_t& f, uint8_t& operand, uint8_t value) {
 	setFlag(f, HC);
 	clearFlag(f, CF | NF);
 	adjustZero<LR35902>(f, operand &= value);
 }
 
-void EightBit::LR35902::xorr(uint8_t& f, uint8_t& operand, uint8_t value) {
+void EightBit::GameBoy::LR35902::xorr(uint8_t& f, uint8_t& operand, uint8_t value) {
 	clearFlag(f, HC | CF | NF);
 	adjustZero<LR35902>(f, operand ^= value);
 }
 
-void EightBit::LR35902::orr(uint8_t& f, uint8_t& operand, uint8_t value) {
+void EightBit::GameBoy::LR35902::orr(uint8_t& f, uint8_t& operand, uint8_t value) {
 	clearFlag(f, HC | CF | NF);
 	adjustZero<LR35902>(f, operand |= value);
 }
 
-void EightBit::LR35902::compare(uint8_t& f, uint8_t check, uint8_t value) {
+void EightBit::GameBoy::LR35902::compare(uint8_t& f, uint8_t check, uint8_t value) {
 	subtract(f, check, value);
 }
 
@@ -208,50 +208,50 @@ void EightBit::LR35902::compare(uint8_t& f, uint8_t check, uint8_t value) {
 
 #pragma region Shift and rotate
 
-uint8_t EightBit::LR35902::rlc(uint8_t& f, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::rlc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit7);
 	return _rotl8(operand, 1);
 }
 
-uint8_t EightBit::LR35902::rrc(uint8_t& f, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::rrc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit0);
 	return _rotr8(operand, 1);
 }
 
-uint8_t EightBit::LR35902::rl(uint8_t& f, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::rl(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	const auto carry = f & CF;
 	setFlag(f, CF, operand & Bit7);
 	return (operand << 1) | (carry >> 4);	// CF at Bit4
 }
 
-uint8_t EightBit::LR35902::rr(uint8_t& f, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::rr(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	const auto carry = f & CF;
 	setFlag(f, CF, operand & Bit0);
 	return (operand >> 1) | (carry << 3);	// CF at Bit4
 }
 
-uint8_t EightBit::LR35902::sla(uint8_t& f, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::sla(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit7);
 	return operand << 1;
 }
 
-uint8_t EightBit::LR35902::sra(uint8_t& f, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::sra(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit0);
 	return (operand >> 1) | (operand & Bit7);
 }
 
-uint8_t EightBit::LR35902::swap(uint8_t& f, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::swap(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | CF);
 	return promoteNibble(operand) | demoteNibble(operand);
 }
 
-uint8_t EightBit::LR35902::srl(uint8_t& f, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::srl(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit0);
 	return (operand >> 1) & ~Bit7;
@@ -261,7 +261,7 @@ uint8_t EightBit::LR35902::srl(uint8_t& f, uint8_t operand) {
 
 #pragma region BIT/SET/RES
 
-uint8_t EightBit::LR35902::bit(uint8_t& f, int n, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::bit(uint8_t& f, int n, uint8_t operand) {
 	auto carry = f & CF;
 	uint8_t discarded = operand;
 	andr(f, discarded, 1 << n);
@@ -269,11 +269,11 @@ uint8_t EightBit::LR35902::bit(uint8_t& f, int n, uint8_t operand) {
 	return operand;
 }
 
-uint8_t EightBit::LR35902::res(int n, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::res(int n, uint8_t operand) {
 	return operand & ~(1 << n);
 }
 
-uint8_t EightBit::LR35902::set(int n, uint8_t operand) {
+uint8_t EightBit::GameBoy::LR35902::set(int n, uint8_t operand) {
 	return operand | (1 << n);
 }
 
@@ -281,7 +281,7 @@ uint8_t EightBit::LR35902::set(int n, uint8_t operand) {
 
 #pragma region Miscellaneous instructions
 
-void EightBit::LR35902::daa(uint8_t& a, uint8_t& f) {
+void EightBit::GameBoy::LR35902::daa(uint8_t& a, uint8_t& f) {
 
 	int updated = a;
 
@@ -304,17 +304,17 @@ void EightBit::LR35902::daa(uint8_t& a, uint8_t& f) {
 	adjustZero<LR35902>(f, a);
 }
 
-void EightBit::LR35902::cpl(uint8_t& a, uint8_t& f) {
+void EightBit::GameBoy::LR35902::cpl(uint8_t& a, uint8_t& f) {
 	setFlag(f, HC | NF);
 	a = ~a;
 }
 
-void EightBit::LR35902::scf(uint8_t& a, uint8_t& f) {
+void EightBit::GameBoy::LR35902::scf(uint8_t& a, uint8_t& f) {
 	setFlag(f, CF);
 	clearFlag(f, HC | NF);
 }
 
-void EightBit::LR35902::ccf(uint8_t& a, uint8_t& f) {
+void EightBit::GameBoy::LR35902::ccf(uint8_t& a, uint8_t& f) {
 	clearFlag(f, NF | HC);
 	clearFlag(f, CF, f & CF);
 }
@@ -323,19 +323,19 @@ void EightBit::LR35902::ccf(uint8_t& a, uint8_t& f) {
 
 #pragma region Controlled instruction execution
 
-int EightBit::LR35902::runRasterLines() {
+int EightBit::GameBoy::LR35902::runRasterLines() {
 	m_bus.resetLY();
 	return runRasterLines(Display::RasterHeight);
 }
 
-int EightBit::LR35902::runRasterLines(int limit) {
+int EightBit::GameBoy::LR35902::runRasterLines(int limit) {
 	int count = 0;
 	for (int line = 0; line < limit; ++line)
 		count += runRasterLine();
 	return count;
 }
 
-int EightBit::LR35902::runRasterLine() {
+int EightBit::GameBoy::LR35902::runRasterLine() {
 	const auto count = run(cyclesPerLine());
 	m_bus.incrementLY();
 	if ((m_bus.peekRegister(Bus::STAT) & Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
@@ -343,12 +343,12 @@ int EightBit::LR35902::runRasterLine() {
 	return count;
 }
 
-int EightBit::LR35902::runVerticalBlankLines() {
+int EightBit::GameBoy::LR35902::runVerticalBlankLines() {
 	m_bus.triggerInterrupt(Bus::Interrupts::VerticalBlank);
 	return runRasterLines(Bus::TotalLineCount - Display::RasterHeight);
 }
 
-int EightBit::LR35902::singleStep() {
+int EightBit::GameBoy::LR35902::singleStep() {
 
 	int current = 0;
 
@@ -385,7 +385,7 @@ int EightBit::LR35902::singleStep() {
 	return current;
 }
 
-int EightBit::LR35902::step() {
+int EightBit::GameBoy::LR35902::step() {
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;
 	cycles = 0;
@@ -396,7 +396,7 @@ int EightBit::LR35902::step() {
 
 #pragma region Instruction decode and execution
 
-int EightBit::LR35902::execute(uint8_t opcode) {
+int EightBit::GameBoy::LR35902::execute(uint8_t opcode) {
 
 	const auto& decoded = getDecodedOpcode(opcode);
 
@@ -418,7 +418,7 @@ int EightBit::LR35902::execute(uint8_t opcode) {
 	return cycles * 4;
 }
 
-void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
+void EightBit::GameBoy::LR35902::executeCB(int x, int y, int z, int p, int q) {
 	auto& a = A();
 	auto& f = F();
 	switch (x) {
@@ -481,7 +481,7 @@ void EightBit::LR35902::executeCB(int x, int y, int z, int p, int q) {
 	}
 }
 
-void EightBit::LR35902::executeOther(int x, int y, int z, int p, int q) {
+void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q) {
 	auto& a = A();
 	auto& f = F();
 	switch (x) {

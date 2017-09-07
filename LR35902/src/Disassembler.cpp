@@ -8,12 +8,12 @@
 #include "Memory.h"
 #include "LR35902.h"
 
-EightBit::Disassembler::Disassembler() {
+EightBit::GameBoy::Disassembler::Disassembler() {
 	// Disable exceptions where too many format arguments are available
 	m_formatter.exceptions(boost::io::all_error_bits ^ boost::io::too_many_args_bit);
 }
 
-std::string EightBit::Disassembler::state(EightBit::LR35902& cpu) {
+std::string EightBit::GameBoy::Disassembler::state(LR35902& cpu) {
 
 	auto pc = cpu.PC();
 	auto sp = cpu.SP();
@@ -44,7 +44,7 @@ std::string EightBit::Disassembler::state(EightBit::LR35902& cpu) {
 	return output.str();
 }
 
-std::string EightBit::Disassembler::RP(int rp) const {
+std::string EightBit::GameBoy::Disassembler::RP(int rp) const {
 	switch (rp) {
 	case 0:
 		return "BC";
@@ -58,7 +58,7 @@ std::string EightBit::Disassembler::RP(int rp) const {
 	throw std::logic_error("Unhandled register pair");
 }
 
-std::string EightBit::Disassembler::RP2(int rp) const {
+std::string EightBit::GameBoy::Disassembler::RP2(int rp) const {
 	switch (rp) {
 	case 0:
 		return "BC";
@@ -72,7 +72,7 @@ std::string EightBit::Disassembler::RP2(int rp) const {
 	throw std::logic_error("Unhandled register pair");
 }
 
-std::string EightBit::Disassembler::R(int r) const {
+std::string EightBit::GameBoy::Disassembler::R(int r) const {
 	switch (r) {
 	case 0:
 		return "B";
@@ -94,7 +94,7 @@ std::string EightBit::Disassembler::R(int r) const {
 	throw std::logic_error("Unhandled register");
 }
 
-std::string EightBit::Disassembler::cc(int flag) {
+std::string EightBit::GameBoy::Disassembler::cc(int flag) {
 	switch (flag) {
 	case 0:
 		return "NZ";
@@ -116,7 +116,7 @@ std::string EightBit::Disassembler::cc(int flag) {
 	throw std::logic_error("Unhandled condition");
 }
 
-std::string EightBit::Disassembler::alu(int which) {
+std::string EightBit::GameBoy::Disassembler::alu(int which) {
 	switch (which) {
 	case 0:	// ADD A,n
 		return "ADD";
@@ -138,17 +138,17 @@ std::string EightBit::Disassembler::alu(int which) {
 	throw std::logic_error("Unhandled alu operation");
 }
 
-std::string EightBit::Disassembler::disassemble(LR35902& cpu) {
+std::string EightBit::GameBoy::Disassembler::disassemble(LR35902& cpu) {
 	m_prefixCB = false;
 	std::ostringstream output;
 	disassemble(output, cpu, cpu.PC().word);
 	return output.str();
 }
 
-void EightBit::Disassembler::disassemble(std::ostringstream& output, LR35902& cpu, uint16_t pc) {
+void EightBit::GameBoy::Disassembler::disassemble(std::ostringstream& output, LR35902& cpu, uint16_t pc) {
 
-	auto& memory = cpu.getMemory();
-	auto opcode = memory.peek(pc);
+	auto& bus = cpu.BUS();
+	auto opcode = bus.peek(pc);
 
 	// hex opcode
 	output << hex(opcode);
@@ -160,11 +160,11 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, LR35902& cp
 	auto p = (y & 0b110) >> 1;
 	auto q = (y & 1);
 
-	auto immediate = memory.peek(pc + 1);
-	auto absolute = memory.peekWord(pc + 1);
+	auto immediate = bus.peek(pc + 1);
+	auto absolute = bus.peekWord(pc + 1);
 	auto displacement = (int8_t)immediate;
 	auto relative = pc + displacement + 2;
-	auto indexedImmediate = memory.peek(pc + 1);
+	auto indexedImmediate = bus.peek(pc + 1);
 
 	auto dumpCount = 0;
 	auto ioRegister = IoRegister::Unused;
@@ -183,7 +183,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, LR35902& cp
 			x, y, z, p, q);
 
 	for (int i = 0; i < dumpCount; ++i)
-		output << hex(memory.peek(pc + i + 1));
+		output << hex(bus.peek(pc + i + 1));
 
 	output << '\t';
 	m_formatter.parse(specification);
@@ -206,7 +206,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, LR35902& cp
 	}
 }
 
-void EightBit::Disassembler::disassembleCB(
+void EightBit::GameBoy::Disassembler::disassembleCB(
 	std::ostringstream& output,
 	LR35902& cpu,
 	uint16_t pc,
@@ -256,7 +256,7 @@ void EightBit::Disassembler::disassembleCB(
 	}
 }
 
-void EightBit::Disassembler::disassembleOther(
+void EightBit::GameBoy::Disassembler::disassembleOther(
 	std::ostringstream& output,
 	LR35902& cpu,
 	uint16_t pc,
@@ -525,13 +525,13 @@ void EightBit::Disassembler::disassembleOther(
 	}
 }
 
-std::string EightBit::Disassembler::flag(uint8_t value, int flag, const std::string& represents) {
+std::string EightBit::GameBoy::Disassembler::flag(uint8_t value, int flag, const std::string& represents) {
 	std::ostringstream output;
 	output << (value & flag ? represents : "-");
 	return output.str();
 }
 
-std::string EightBit::Disassembler::flags(uint8_t value) {
+std::string EightBit::GameBoy::Disassembler::flags(uint8_t value) {
 	std::ostringstream output;
 	output
 		<< flag(value, LR35902::ZF, "Z")
@@ -545,37 +545,37 @@ std::string EightBit::Disassembler::flags(uint8_t value) {
 		return output.str();
 }
 
-std::string EightBit::Disassembler::hex(uint8_t value) {
+std::string EightBit::GameBoy::Disassembler::hex(uint8_t value) {
 	std::ostringstream output;
 	output << std::hex << std::setw(2) << std::setfill('0') << (int)value;
 	return output.str();
 }
 
-std::string EightBit::Disassembler::hex(uint16_t value) {
+std::string EightBit::GameBoy::Disassembler::hex(uint16_t value) {
 	std::ostringstream output;
 	output << std::hex << std::setw(4) << std::setfill('0') << (int)value;
 	return output.str();
 }
 
-std::string EightBit::Disassembler::binary(uint8_t value) {
+std::string EightBit::GameBoy::Disassembler::binary(uint8_t value) {
 	std::ostringstream output;
 	output << std::bitset<8>(value);
 	return output.str();
 }
 
-std::string EightBit::Disassembler::decimal(uint8_t value) {
+std::string EightBit::GameBoy::Disassembler::decimal(uint8_t value) {
 	std::ostringstream output;
 	output << (int)value;
 	return output.str();
 }
 
-std::string EightBit::Disassembler::invalid(uint8_t value) {
+std::string EightBit::GameBoy::Disassembler::invalid(uint8_t value) {
 	std::ostringstream output;
 	output << "Invalid instruction: " << hex(value) << "(" << binary(value) << ")";
 	return output.str();
 }
 
-std::string EightBit::Disassembler::io(uint8_t value) {
+std::string EightBit::GameBoy::Disassembler::io(uint8_t value) {
 	switch (value) {
 
 	// Port/Mode Registers

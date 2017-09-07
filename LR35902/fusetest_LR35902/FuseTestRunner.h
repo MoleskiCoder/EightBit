@@ -1,13 +1,17 @@
 #pragma once
 
+#include <Bus.h>
+#include <LR35902.h>
+
 #include "FuseTest.h"
 #include "FuseExpectedTestResult.h"
 
-#include "Bus.h"
-#include "LR35902.h"
+#include <LR35902.h>
+#include <GameBoyBus.h>
+#include <Ram.h>
 
 namespace Fuse {
-	class TestRunner {
+	class TestRunner : public EightBit::GameBoy::Bus {
 	private:
 		const Test& m_test;
 		const ExpectedTestResult& m_expected;
@@ -15,8 +19,8 @@ namespace Fuse {
 		bool m_failed;
 		bool m_unimplemented;
 
-		EightBit::Bus m_bus;
-		EightBit::LR35902 m_cpu;
+		EightBit::Ram m_ram;
+		EightBit::GameBoy::LR35902 m_cpu;
 
 		void initialise();
 		void initialiseRegisters();
@@ -31,6 +35,12 @@ namespace Fuse {
 			const std::string& highDescription,
 			const std::string& lowDescription,
 			EightBit::register16_t actual, EightBit::register16_t expected) const;
+
+	protected:
+		virtual uint8_t& reference(uint16_t address, bool& rom) {
+			rom = false;
+			return m_ram.reference(address);
+		}
 
 	public:
 		TestRunner(const Test& test, const ExpectedTestResult& expected);

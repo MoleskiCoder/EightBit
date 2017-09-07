@@ -3,20 +3,20 @@
 #include "Processor.h"
 #include "CharacterDefinition.h"
 
-EightBit::Display::Display(const AbstractColourPalette* colours, Bus& bus)
+EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& bus)
 : m_bus(bus),
   m_colours(colours) {
 }
 
-const std::vector<uint32_t>& EightBit::Display::pixels() const {
+const std::vector<uint32_t>& EightBit::GameBoy::Display::pixels() const {
 	return m_pixels;
 }
 
-void EightBit::Display::initialise() {
+void EightBit::GameBoy::Display::initialise() {
 	m_pixels.resize(RasterWidth * RasterHeight);
 }
 
-void EightBit::Display::render() {
+void EightBit::GameBoy::Display::render() {
 
 	auto control = m_bus.peekRegister(Bus::LCDC);
 	auto on = control & Bus::LcdEnable;

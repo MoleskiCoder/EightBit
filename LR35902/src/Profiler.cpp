@@ -2,13 +2,13 @@
 #include "Profiler.h"
 #include "LR35902.h"
 
-EightBit::Profiler::Profiler(LR35902& cpu)
+EightBit::GameBoy::Profiler::Profiler(LR35902& cpu)
 : m_cpu(cpu) {
 	std::fill(m_instructions.begin(), m_instructions.end(), 0);
 	std::fill(m_addresses.begin(), m_addresses.end(), 0);
 }
 
-void EightBit::Profiler::add(uint16_t address, uint8_t instruction) {
+void EightBit::GameBoy::Profiler::add(uint16_t address, uint8_t instruction) {
 
 	m_instructions[instruction]++;
 
@@ -19,12 +19,12 @@ void EightBit::Profiler::add(uint16_t address, uint8_t instruction) {
 	m_addresses[address]++;
 }
 
-void EightBit::Profiler::dump() const {
+void EightBit::GameBoy::Profiler::dump() const {
 	dumpInstructionProfiles();
 	dumpAddressProfiles();
 }
 
-void EightBit::Profiler::dumpInstructionProfiles() const {
+void EightBit::GameBoy::Profiler::dumpInstructionProfiles() const {
 	std::cout << "** instructions" << std::endl;
 	for (int i = 0; i < 0x100; ++i) {
 		auto count = m_instructions[i];
@@ -33,7 +33,7 @@ void EightBit::Profiler::dumpInstructionProfiles() const {
 	}
 }
 
-void EightBit::Profiler::dumpAddressProfiles() const {
+void EightBit::GameBoy::Profiler::dumpAddressProfiles() const {
 	std::cout << "** addresses" << std::endl;
 	for (int i = 0; i < 0x10000; ++i) {
 		auto count = m_addresses[i];

@@ -1,11 +1,11 @@
 #include "stdafx.h"
-#include "Bus.h"
+#include "GameBoyBus.h"
 
-EightBit::Bus::Bus()
-: Memory(0xffff),
-  m_disableBootRom(false),
+EightBit::GameBoy::Bus::Bus()
+: m_disableBootRom(false),
   m_disableGameRom(false),
   m_rom(false),
+  m_banked(false),
   m_ram(false),
   m_battery(false),
   m_higherRomBank(true),
@@ -14,47 +14,35 @@ EightBit::Bus::Bus()
   m_ramBank(0),
   m_timerCounter(0),
   m_timerRate(0) {
-	m_bootRom.resize(0x100);
-	m_gameRom.resize(0x10000);
-	WrittenByte.connect(std::bind(&Bus::Bus_WrittenByte, this, std::placeholders::_1));
+	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
 	m_divCounter.word = 0xabcc;
 }
 
-void EightBit::Bus::reset() {
+void EightBit::GameBoy::Bus::reset() {
 	pokeRegister(NR52, 0xf1);
 	pokeRegister(LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
 	m_divCounter.word = 0xabcc;
 	m_timerCounter = 0;
 }
 
-void EightBit::Bus::clear() {
-	Memory::clear();
-	std::fill(m_bootRom.begin(), m_bootRom.end(), 0);
-	std::fill(m_gameRom.begin(), m_gameRom.end(), 0);
+void EightBit::GameBoy::Bus::loadBootRom(const std::string& path) {
+	m_bootRom.load(path);
 }
 
-void EightBit::Bus::loadBootRom(const std::string& path) {
-	loadBinary(path, m_bootRom, 0, 0x100);
-}
-
-void EightBit::Bus::loadGameRom(const std::string& path) {
-	loadBinary(path, m_gameRom);
+void EightBit::GameBoy::Bus::loadGameRom(const std::string& path) {
+	const auto bankSize = 0x4000;
+	m_gameRomBanks.resize(1);
+	const auto size = m_gameRomBanks[0].load(path, bankSize);
+	auto banks = size / bankSize;
+	if (banks > 1) {
+		m_gameRomBanks.resize(banks);
+		for (int bank = 1; bank < banks; ++banks)
+			m_gameRomBanks[bank].load(path, bankSize, bankSize * bank);
+	}
 	validateCartridgeType();
 }
 
-uint8_t& EightBit::Bus::reference(uint16_t address, bool& rom) {
-	rom = true;
-	if ((address < 0x100) && bootRomEnabled())
-		return m_bootRom[address];
-	if ((address < 0x4000) && gameRomEnabled())
-		return m_gameRom[address];
-	if ((address < 0x8000) && gameRomEnabled())
-		return m_gameRom[(address - RomPageSize) + (m_romBank * RomPageSize)];
-	rom = false;
-	return m_bus[address];
-}
-
-void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
+void EightBit::GameBoy::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 
 	const auto address = e.getAddress();
 	const auto value = e.getCell();
@@ -110,7 +98,7 @@ void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 			break;
 
 		case BASE + DIV:	// R/W
-			Memory::reference() = 0;
+			EightBit::Bus::reference() = 0;
 			m_timerCounter = m_divCounter.word = 0;
 			break;
 		case BASE + TIMA:	// R/W
@@ -145,7 +133,7 @@ void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 		case BASE + DMA:
 			break;
 		case BASE + LY:		// R/O
-			Memory::reference() = 0;
+			EightBit::Bus::reference() = 0;
 			break;
 		case BASE + BGP:
 		case BASE + OBP0:
@@ -165,12 +153,12 @@ void EightBit::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
 	}
 }
 
-void EightBit::Bus::checkTimers(int cycles) {
+void EightBit::GameBoy::Bus::checkTimers(int cycles) {
 	incrementDIV(cycles);
 	checkTimer(cycles);
 }
 
-void EightBit::Bus::checkTimer(int cycles) {
+void EightBit::GameBoy::Bus::checkTimer(int cycles) {
 	if (timerEnabled()) {
 		m_timerCounter -= cycles;
 		if (m_timerCounter <= 0) {
@@ -180,11 +168,11 @@ void EightBit::Bus::checkTimer(int cycles) {
 	}
 }
 
-void EightBit::Bus::validateCartridgeType() {
+void EightBit::GameBoy::Bus::validateCartridgeType() {
 
 	m_rom = m_banked = m_ram = m_battery = false;
 
-	switch (m_gameRom[0x147]) {
+	switch (m_gameRomBanks[0].peek(0x147)) {
 	case ROM:
 		m_rom = true;
 		break;

@@ -5,18 +5,18 @@
 Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expected)
 : m_test(test),
   m_expected(expected),
-  m_cpu(m_bus),
+  m_ram(0x10000),
+  m_cpu(*this),
   m_failed(false),
   m_unimplemented(false) {
-	m_bus.clear();
 	m_cpu.initialise();
 }
 
 //
 
 void Fuse::TestRunner::initialise() {
-	m_bus.disableBootRom();
-	m_bus.disableGameRom();
+	disableBootRom();
+	disableGameRom();
 	initialiseRegisters();
 	initialiseMemory();
 	m_cpu.powerOn();
@@ -41,7 +41,7 @@ void Fuse::TestRunner::initialiseMemory() {
 		auto address = memoryDatum.address;
 		auto bytes = memoryDatum.bytes;
 		for (int i = 0; i < bytes.size(); ++i)
-			m_bus.poke(address + i, bytes[i]);
+			poke(address + i, bytes[i]);
 	}
 }
 
@@ -55,9 +55,9 @@ void Fuse::TestRunner::check() {
 void Fuse::TestRunner::dumpDifference(const std::string& description, uint8_t actual, uint8_t expected) const {
 	std::cerr
 		<< "**** " << description << ", Expected: "
-		<< EightBit::Disassembler::hex(expected)
+		<< EightBit::GameBoy::Disassembler::hex(expected)
 		<< ", Got: "
-		<< EightBit::Disassembler::hex(actual)
+		<< EightBit::GameBoy::Disassembler::hex(actual)
 		<< std::endl;
 }
 
@@ -111,9 +111,9 @@ void Fuse::TestRunner::checkregisters() {
 			if (expectedF != gotF) {
 				std::cerr
 					<< "**** F, Expected: "
-					<< EightBit::Disassembler::flags(expectedF)
+					<< EightBit::GameBoy::Disassembler::flags(expectedF)
 					<< ", Got: "
-					<< EightBit::Disassembler::flags(gotF)
+					<< EightBit::GameBoy::Disassembler::flags(gotF)
 					<< std::endl;
 			}
 		}
@@ -159,7 +159,7 @@ void Fuse::TestRunner::checkMemory() {
 		for (int i = 0; i < bytes.size(); ++i) {
 			auto expected = bytes[i];
 			uint16_t address = memoryDatum.address + i;
-			auto actual = m_cpu.getMemory().peek(address);
+			auto actual = m_cpu.BUS().peek(address);
 			if (expected != actual) {
 				m_failed = true;
 				if (first) {
@@ -168,9 +168,9 @@ void Fuse::TestRunner::checkMemory() {
 				}
 				std::cerr
 					<< "**** Difference: "
-					<< "Address: " << EightBit::Disassembler::hex(address)
-					<< " Expected: " << EightBit::Disassembler::hex(expected)
-					<< " Actual: " << EightBit::Disassembler::hex(actual)
+					<< "Address: " << EightBit::GameBoy::Disassembler::hex(address)
+					<< " Expected: " << EightBit::GameBoy::Disassembler::hex(expected)
+					<< " Actual: " << EightBit::GameBoy::Disassembler::hex(actual)
 					<< std::endl;
 			}
 		}

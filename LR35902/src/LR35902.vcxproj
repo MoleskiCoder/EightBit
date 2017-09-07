@@ -140,7 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\AbstractColourPalette.h" />
-    <ClInclude Include="..\inc\Bus.h" />
+    <ClInclude Include="..\inc\GameBoyBus.h" />
     <ClInclude Include="..\inc\CharacterDefinition.h" />
     <ClInclude Include="..\inc\Disassembler.h" />
     <ClInclude Include="..\inc\Display.h" />
@@ -149,7 +149,7 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Bus.cpp" />
+    <ClCompile Include="GameBoyBus.cpp" />
     <ClCompile Include="Disassembler.cpp" />
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="LR35902.cpp" />

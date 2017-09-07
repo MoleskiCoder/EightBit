@@ -4,7 +4,7 @@
 #include <string>
 #include <fstream>
 
-#include "Memory.h"
+#include <Register.h>
 
 namespace Fuse {
 	class RegisterState {
