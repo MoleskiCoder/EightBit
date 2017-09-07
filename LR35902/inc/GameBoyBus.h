@@ -221,8 +221,10 @@ namespace EightBit {
 					return m_lowInternalRam.reference(address - 0xc000);
 				if (address < 0xfe00)
 					return m_lowInternalRam.reference(address - 0xe000);	// Low internal RAM mirror
-				if (address < 0xff00)
+				if (address < 0xfea0)
 					return m_oamRam.reference(address - 0xfe00);
+				if (address < 0xff00)
+					return placeDATA(0);
 				if (address < 0xff80)
 					return m_ioPorts.reference(address - 0xff00);
 				return m_highInternalRam.reference(address - 0xff80);
