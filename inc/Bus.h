@@ -9,7 +9,10 @@
 namespace EightBit {
 	class Bus {
 	public:
-		Bus() {}
+		Bus()
+		: m_temporary(0xff), m_data(nullptr) {
+			m_address.word = 0xffff;
+		}
 
 		Signal<AddressEventArgs> WrittenByte;
 		Signal<AddressEventArgs> ReadByte;
