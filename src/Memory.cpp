@@ -20,14 +20,14 @@ int EightBit::Memory::loadBinary(
 	if ((maximumSize > 0) && ((size - readOffset) > maximumSize))
 		throw std::runtime_error("Binary cannot fit");
 
-	size_t extent = size + writeOffset;
-	if (output.size() < extent)
-		output.resize(extent);
-
 	file.seekg(readOffset, std::ios::beg);
 
 	if ((limit < 0) || (limit > size))
 		limit = size;
+
+	const size_t extent = limit + writeOffset;
+	if (output.size() < extent)
+		output.resize(extent);
 
 	file.read((char*)&output[writeOffset], limit);
 	file.close();

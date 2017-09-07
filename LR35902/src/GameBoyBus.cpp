@@ -2,7 +2,15 @@
 #include "GameBoyBus.h"
 
 EightBit::GameBoy::Bus::Bus()
-: m_disableBootRom(false),
+: m_bootRom(0x100),
+  m_gameRomBanks(1),
+  m_videoRam(0x2000),
+  m_ramBanks(0),
+  m_lowInternalRam(0x2000),
+  m_oamRam(0xa0),
+  m_ioPorts(0x80),
+  m_highInternalRam(0x80),
+  m_disableBootRom(false),
   m_disableGameRom(false),
   m_rom(false),
   m_banked(false),
@@ -32,13 +40,11 @@ void EightBit::GameBoy::Bus::loadBootRom(const std::string& path) {
 void EightBit::GameBoy::Bus::loadGameRom(const std::string& path) {
 	const auto bankSize = 0x4000;
 	m_gameRomBanks.resize(1);
-	const auto size = m_gameRomBanks[0].load(path, bankSize);
-	auto banks = size / bankSize;
-	if (banks > 1) {
-		m_gameRomBanks.resize(banks);
-		for (int bank = 1; bank < banks; ++banks)
-			m_gameRomBanks[bank].load(path, bankSize, bankSize * bank);
-	}
+	const auto size = m_gameRomBanks[0].load(path, 0, 0, bankSize);
+	const auto banks = size / bankSize;
+	m_gameRomBanks.resize(banks);
+	for (int bank = 1; bank < banks; ++bank)
+		m_gameRomBanks[bank].load(path, 0, bankSize * bank, bankSize);
 	validateCartridgeType();
 }
 
