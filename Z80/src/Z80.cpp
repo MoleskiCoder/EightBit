@@ -5,8 +5,8 @@
 
 #pragma region Reset and initialisation
 
-EightBit::Z80::Z80(Memory& memory, InputOutput& ports)
-: IntelProcessor(memory),
+EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
+: IntelProcessor(bus),
   m_ports(ports),
   m_registerSet(0),
   m_accumulatorFlagsSet(0),
@@ -509,7 +509,7 @@ void EightBit::Z80::xhtl(register16_t& operand) {
 	MEMPTR().low = getByte(SP());
 	setByte(operand.low);
 	operand.low = MEMPTR().low;
-	m_memory.ADDRESS().word++;
+	BUS().ADDRESS().word++;
 	MEMPTR().high = getByte();
 	setByte(operand.high);
 	operand.high = MEMPTR().high;
@@ -615,20 +615,20 @@ bool EightBit::Z80::lddr(uint8_t a, uint8_t& f) {
 #pragma region Block input instructions
 
 void EightBit::Z80::ini(uint8_t& f) {
-	MEMPTR() = m_memory.ADDRESS() = BC();
+	MEMPTR() = BUS().ADDRESS() = BC();
 	MEMPTR().word++;
 	readPort();
-	auto value = m_memory.DATA();
+	auto value = BUS().DATA();
 	setByte(HL().word++, value);
 	decrement(f, B());
 	setFlag(f, NF);
 }
 
 void EightBit::Z80::ind(uint8_t& f) {
-	MEMPTR() = m_memory.ADDRESS() = BC();
+	MEMPTR() = BUS().ADDRESS() = BC();
 	MEMPTR().word--;
 	readPort();
-	auto value = m_memory.DATA();
+	auto value = BUS().DATA();
 	setByte(HL().word--, value);
 	decrement(f, B());
 	setFlag(f, NF);
@@ -650,7 +650,7 @@ bool EightBit::Z80::indr(uint8_t& f) {
 
 void EightBit::Z80::blockOut(uint8_t& f) {
 	auto value = getByte();
-	m_memory.ADDRESS() = BC();
+	BUS().ADDRESS() = BC();
 	writePort();
 	decrement(f, B());
 	setFlag(f, NF, value & Bit7);
@@ -659,13 +659,13 @@ void EightBit::Z80::blockOut(uint8_t& f) {
 }
 
 void EightBit::Z80::outi(uint8_t& f) {
-	m_memory.ADDRESS().word = HL().word++;
+	BUS().ADDRESS().word = HL().word++;
 	blockOut(f);
 	MEMPTR().word = BC().word + 1;
 }
 
 void EightBit::Z80::outd(uint8_t& f) {
-	m_memory.ADDRESS().word = HL().word--;
+	BUS().ADDRESS().word = HL().word--;
 	blockOut(f);
 	MEMPTR().word = BC().word - 1;
 }
@@ -711,29 +711,29 @@ void EightBit::Z80::rld(uint8_t& a, uint8_t& f) {
 #pragma region I/O instructions
 
 void EightBit::Z80::writePort(uint8_t port, uint8_t data) {
-	m_memory.ADDRESS().low = port;
-	m_memory.ADDRESS().high = data;
-	MEMPTR() = m_memory.ADDRESS();
-	m_memory.placeDATA(data);
+	BUS().ADDRESS().low = port;
+	BUS().ADDRESS().high = data;
+	MEMPTR() = BUS().ADDRESS();
+	BUS().placeDATA(data);
 	writePort();
 	MEMPTR().low++;
 }
 
 void EightBit::Z80::writePort() {
-	m_ports.write(m_memory.ADDRESS().low, m_memory.DATA());
+	m_ports.write(BUS().ADDRESS().low, BUS().DATA());
 }
 
 void EightBit::Z80::readPort(uint8_t port, uint8_t& a) {
-	m_memory.ADDRESS().low = port;
-	m_memory.ADDRESS().high = a;
-	MEMPTR() = m_memory.ADDRESS();
+	BUS().ADDRESS().low = port;
+	BUS().ADDRESS().high = a;
+	MEMPTR() = BUS().ADDRESS();
 	readPort();
-	a = m_memory.DATA();
+	a = BUS().DATA();
 	MEMPTR().low++;
 }
 
 void EightBit::Z80::readPort() {
-	m_memory.placeDATA(m_ports.read(m_memory.ADDRESS().low));
+	BUS().placeDATA(m_ports.read(BUS().ADDRESS().low));
 }
 
 #pragma endregion I/O instructions
@@ -893,22 +893,22 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 	case 1:
 		switch (z) {
 		case 0: // Input from port with 16-bit address
-			MEMPTR() = m_memory.ADDRESS() = BC();
+			MEMPTR() = BUS().ADDRESS() = BC();
 			MEMPTR().word++;
 			readPort();
 			if (y != 6)	// IN r[y],(C)
-				R(y, a, m_memory.DATA());
-			adjustSZPXY<Z80>(f, m_memory.DATA());
+				R(y, a, BUS().DATA());
+			adjustSZPXY<Z80>(f, BUS().DATA());
 			clearFlag(f, NF | HC);
 			cycles += 12;
 			break;
 		case 1:	// Output to port with 16-bit address
-			MEMPTR() = m_memory.ADDRESS() = BC();
+			MEMPTR() = BUS().ADDRESS() = BC();
 			MEMPTR().word++;
 			if (y == 6)	// OUT (C),0
-				m_memory.placeDATA(0);
+				BUS().placeDATA(0);
 			else		// OUT (C),r[y]
-				m_memory.placeDATA(R(y, a));
+				BUS().placeDATA(R(y, a));
 			writePort();
 			cycles += 12;
 			break;

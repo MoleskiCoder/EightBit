@@ -4,23 +4,22 @@
 
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration),
-  m_memory(0x3fff),
-  m_cpu(EightBit::Z80(m_memory, m_ports)),
+  m_ram(0x10000),
+  m_cpu(EightBit::Z80(*this, m_ports)),
   m_profiler(m_cpu, m_disassembler) {
 }
 
 void Board::initialise() {
 
-	m_memory.clear();
 	auto romDirectory = m_configuration.getRomDirectory();
 
-	//m_memory.loadRam(romDirectory + "/prelim.com", 0x100);	// Bartholomew preliminary
-	//m_memory.loadRam(romDirectory + "/zexdoc.com", 0x100);	// Cringle/Bartholomew
-	m_memory.loadRam(romDirectory + "/zexall.com", 0x100);	// Cringle/Bartholomew
-	//m_memory.loadRam(romDirectory + "/CPUTEST.COM", 0x100);	// SuperSoft diagnostics
-	//m_memory.loadRam(romDirectory + "/TEST.COM", 0x100);		// Microcosm
+	//m_ram.load(romDirectory + "/prelim.com", 0x100);	// Bartholomew preliminary
+	//m_ram.load(romDirectory + "/zexdoc.com", 0x100);	// Cringle/Bartholomew
+	m_ram.load(romDirectory + "/zexall.com", 0x100);	// Cringle/Bartholomew
+	//m_ram.load(romDirectory + "/CPUTEST.COM", 0x100);	// SuperSoft diagnostics
+	//m_ram.load(romDirectory + "/TEST.COM", 0x100);		// Microcosm
 
-	m_memory.poke(5, 0xc9);	// ret
+	poke(5, 0xc9);	// ret
 	m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Cpm, this, std::placeholders::_1));
 
 	if (m_configuration.isProfileMode()) {
@@ -61,8 +60,8 @@ void Board::bdos() {
 		break;
 	}
 	case 0x9:
-		for (uint16_t i = m_cpu.DE().word; m_memory.peek(i) != '$'; ++i) {
-			std::cout << m_memory.peek(i);
+		for (uint16_t i = m_cpu.DE().word; peek(i) != '$'; ++i) {
+			std::cout << peek(i);
 		}
 		break;
 	}
@@ -73,7 +72,7 @@ void Board::Cpu_ExecutingInstruction_Profile(const EightBit::Z80& cpu) {
 	const auto pc = m_cpu.PC();
 
 	m_profiler.addAddress(pc.word);
-	m_profiler.addInstruction(m_memory.peek(pc.word));
+	m_profiler.addInstruction(peek(pc.word));
 }
 
 void Board::Cpu_ExecutingInstruction_Debug(const EightBit::Z80& cpu) {

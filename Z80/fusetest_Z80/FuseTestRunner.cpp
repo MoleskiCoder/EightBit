@@ -5,11 +5,10 @@
 Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expected)
 : m_test(test),
   m_expected(expected),
-  m_memory(0xffff),
-  m_cpu(m_memory, m_ports),
+  m_ram(0x10000),
+  m_cpu(*this, m_ports),
   m_failed(false),
   m_unimplemented(false) {
-	m_memory.clear();
 	m_cpu.initialise();
 }
 
@@ -57,7 +56,7 @@ void Fuse::TestRunner::initialiseMemory() {
 		auto address = memoryDatum.address;
 		auto bytes = memoryDatum.bytes;
 		for (int i = 0; i < bytes.size(); ++i)
-			m_memory.poke(address + i, bytes[i]);
+			poke(address + i, bytes[i]);
 	}
 }
 
@@ -304,7 +303,7 @@ void Fuse::TestRunner::checkMemory() {
 		for (int i = 0; i < bytes.size(); ++i) {
 			auto expected = bytes[i];
 			uint16_t address = memoryDatum.address + i;
-			auto actual = m_cpu.getMemory().peek(address);
+			auto actual = peek(address);
 			if (expected != actual) {
 				m_failed = true;
 				if (first) {

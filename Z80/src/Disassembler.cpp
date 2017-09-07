@@ -178,8 +178,8 @@ std::string EightBit::Disassembler::disassemble(Z80& cpu) {
 
 void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, uint16_t pc) {
 
-	auto& memory = cpu.getMemory();
-	auto opcode = memory.peek(pc);
+	auto& bus = cpu.BUS();
+	auto opcode = bus.peek(pc);
 
 	const auto& decoded = cpu.getDecodedOpcode(opcode);
 
@@ -190,11 +190,11 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 	auto p = decoded.p;
 	auto q = decoded.q;
 
-	auto immediate = memory.peek(pc + 1);
-	auto absolute = memory.peekWord(pc + 1);
+	auto immediate = bus.peek(pc + 1);
+	auto absolute = bus.peekWord(pc + 1);
 	auto displacement = (int8_t)immediate;
 	auto relative = pc + displacement + 2;
-	auto indexedImmediate = memory.peek(pc + 1);
+	auto indexedImmediate = bus.peek(pc + 1);
 
 	auto dumpCount = 0;
 
@@ -219,7 +219,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 			x, y, z, p, q);
 
 	for (int i = 0; i < dumpCount; ++i)
-		output << hex(memory.peek(pc + i + 1));
+		output << hex(bus.peek(pc + i + 1));
 
 	auto outputFormatSpecification = !m_prefixDD;
 	if (m_prefixDD) {

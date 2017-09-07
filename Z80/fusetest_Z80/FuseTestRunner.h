@@ -3,12 +3,13 @@
 #include "FuseTest.h"
 #include "FuseExpectedTestResult.h"
 
-#include "Memory.h"
-#include "InputOutput.h"
-#include "Z80.h"
+#include <Ram.h>
+#include <Bus.h>
+#include <InputOutput.h>
+#include <Z80.h>
 
 namespace Fuse {
-	class TestRunner {
+	class TestRunner : public EightBit::Bus {
 	private:
 		const Test& m_test;
 		const ExpectedTestResult& m_expected;
@@ -16,7 +17,7 @@ namespace Fuse {
 		bool m_failed;
 		bool m_unimplemented;
 
-		EightBit::Memory m_memory;
+		EightBit::Ram m_ram;
 		EightBit::InputOutput m_ports;
 		EightBit::Z80 m_cpu;
 
@@ -33,6 +34,12 @@ namespace Fuse {
 			const std::string& highDescription,
 			const std::string& lowDescription,
 			EightBit::register16_t actual, EightBit::register16_t expected) const;
+
+	protected:
+		virtual uint8_t& reference(uint16_t address, bool& rom) {
+			rom = false;
+			return m_ram.reference(address);
+		}
 
 	public:
 		TestRunner(const Test& test, const ExpectedTestResult& expected);

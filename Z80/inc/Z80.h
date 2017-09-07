@@ -42,7 +42,7 @@ namespace EightBit {
 			CF = Bit0,
 		};
 
-		Z80(Memory& memory, InputOutput& ports);
+		Z80(Bus& bus, InputOutput& ports);
 
 		Signal<Z80> ExecutingInstruction;
 
