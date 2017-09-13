@@ -3,7 +3,6 @@
 #include <cstdint>
 
 #include "Signal.h"
-#include "AddressEventArgs.h"
 #include "Register.h"
 
 namespace EightBit {
@@ -14,8 +13,11 @@ namespace EightBit {
 			m_address.word = 0xffff;
 		}
 
-		Signal<AddressEventArgs> WrittenByte;
-		Signal<AddressEventArgs> ReadByte;
+		Signal<uint16_t> WritingByte;
+		Signal<uint16_t> WrittenByte;
+
+		Signal<uint16_t> ReadingByte;
+		Signal<uint16_t> ReadByte;
 
 		register16_t& ADDRESS() { return m_address; }
 		uint8_t& DATA() { return *m_data; }
@@ -49,6 +51,7 @@ namespace EightBit {
 		}
 
 		uint8_t read() {
+			fireReadingBusEvent();
 			auto content = reference();
 			fireReadBusEvent();
 			return content;
@@ -65,8 +68,9 @@ namespace EightBit {
 		}
 
 		void write(uint8_t value) {
+			fireWritingBusEvent();
 			reference() = value;
-			fireWriteBusEvent();
+			fireWrittenBusEvent();
 		}
 
 		void write(uint16_t offset, uint8_t value) {
@@ -80,12 +84,20 @@ namespace EightBit {
 		}
 
 	protected:
-		void fireReadBusEvent() {
-			ReadByte.fire(AddressEventArgs(ADDRESS().word, DATA()));
+		void fireReadingBusEvent() {
+			ReadingByte.fire(ADDRESS().word);
 		}
 
-		void fireWriteBusEvent() {
-			WrittenByte.fire(AddressEventArgs(ADDRESS().word, DATA()));
+		void fireReadBusEvent() {
+			ReadByte.fire(ADDRESS().word);
+		}
+
+		void fireWritingBusEvent() {
+			WritingByte.fire(ADDRESS().word);
+		}
+
+		void fireWrittenBusEvent() {
+			WrittenByte.fire(ADDRESS().word);
 		}
 
 		virtual uint8_t& reference(uint16_t address, bool& rom) = 0;

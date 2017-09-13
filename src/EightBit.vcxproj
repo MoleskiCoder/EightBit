@@ -138,7 +138,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\inc\AddressEventArgs.h" />
     <ClInclude Include="..\inc\Bus.h" />
     <ClInclude Include="..\inc\EventArgs.h" />
     <ClInclude Include="..\inc\InputOutput.h" />

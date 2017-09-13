@@ -105,20 +105,18 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 	std::cout << "\n";
 }
 
-void Board::Memory_ReadByte_Input(const EightBit::AddressEventArgs& e) {
-	auto address = e.getAddress();
+void Board::Memory_ReadByte_Input(const uint16_t address) {
 	if (address == m_configuration.getInputAddress()) {
-		auto cell = e.getCell();
-		if (cell != 0) {
+		if (DATA() != 0) {
 			assert(address == ADDRESS().word);
 			write(0);
 		}
 	}
 }
 
-void Board::Memory_WrittenByte_Output(const EightBit::AddressEventArgs& e) {
-	if (e.getAddress() == m_configuration.getOutputAddress()) {
-		_putch(e.getCell());
+void Board::Memory_WrittenByte_Output(const uint16_t address) {
+	if (address == m_configuration.getOutputAddress()) {
+		_putch(DATA());
 	}
 }
 

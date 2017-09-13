@@ -7,7 +7,6 @@
 #include <Ram.h>
 #include <Bus.h>
 #include <Profiler.h>
-#include <EventArgs.h>
 #include <Disassembly.h>
 #include <mos6502.h>
 #include <Symbols.h>
@@ -46,8 +45,8 @@ private:
 
 	void Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu);
 
-	void Memory_ReadByte_Input(const EightBit::AddressEventArgs& e);
-	void Memory_WrittenByte_Output(const EightBit::AddressEventArgs& e);
+	void Memory_ReadByte_Input(uint16_t address);
+	void Memory_WrittenByte_Output(uint16_t address);
 
 	void Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu);
 };

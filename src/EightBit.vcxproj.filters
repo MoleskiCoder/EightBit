@@ -32,9 +32,6 @@
     <ClInclude Include="..\inc\TestHarness.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\inc\AddressEventArgs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\inc\InputOutput.h">
       <Filter>Header Files</Filter>
     </ClInclude>

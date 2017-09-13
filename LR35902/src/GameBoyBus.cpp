@@ -48,10 +48,9 @@ void EightBit::GameBoy::Bus::loadGameRom(const std::string& path) {
 	validateCartridgeType();
 }
 
-void EightBit::GameBoy::Bus::Bus_WrittenByte(const AddressEventArgs& e) {
+void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 
-	const auto address = e.getAddress();
-	const auto value = e.getCell();
+	const auto value = DATA();
 
 	auto handled = false;
 

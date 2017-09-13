@@ -258,7 +258,7 @@ namespace EightBit {
 			int m_timerCounter;
 			int m_timerRate;
 
-			void Bus_WrittenByte(const AddressEventArgs& e);
+			void Bus_WrittenByte(uint16_t address);
 
 			void checkTimer(int cycles);
 
