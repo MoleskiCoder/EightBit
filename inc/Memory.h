@@ -10,6 +10,8 @@ namespace EightBit {
 		: m_bytes(size) {
 		}
 
+		size_t size() const { return m_bytes.size();  }
+
 		int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) {
 			const auto maximumSize = (int)m_bytes.size() - writeOffset;
 			return loadBinary(path, m_bytes, writeOffset, readOffset, limit, maximumSize);

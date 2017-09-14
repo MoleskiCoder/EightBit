@@ -51,9 +51,9 @@ namespace EightBit {
 		}
 
 		uint8_t read() {
-			fireReadingBusEvent();
+			ReadingByte.fire(ADDRESS().word);
 			auto content = reference();
-			fireReadBusEvent();
+			ReadByte.fire(ADDRESS().word);
 			return content;
 		}
 
@@ -68,9 +68,9 @@ namespace EightBit {
 		}
 
 		void write(uint8_t value) {
-			fireWritingBusEvent();
+			WritingByte.fire(ADDRESS().word);
 			reference() = value;
-			fireWrittenBusEvent();
+			WrittenByte.fire(ADDRESS().word);
 		}
 
 		void write(uint16_t offset, uint8_t value) {
@@ -84,22 +84,6 @@ namespace EightBit {
 		}
 
 	protected:
-		void fireReadingBusEvent() {
-			ReadingByte.fire(ADDRESS().word);
-		}
-
-		void fireReadBusEvent() {
-			ReadByte.fire(ADDRESS().word);
-		}
-
-		void fireWritingBusEvent() {
-			WritingByte.fire(ADDRESS().word);
-		}
-
-		void fireWrittenBusEvent() {
-			WrittenByte.fire(ADDRESS().word);
-		}
-
 		virtual uint8_t& reference(uint16_t address, bool& rom) = 0;
 
 		uint8_t& reference() {
