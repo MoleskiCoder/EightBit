@@ -217,6 +217,30 @@ namespace EightBit {
 			void loadBootRom(const std::string& path);
 			void loadGameRom(const std::string& path);
 
+			void pressUp() { m_upPressed = true; }
+			void releaseUp() { m_upPressed = false; }
+
+			void pressDown() { m_downPressed = true; }
+			void releaseDown() { m_downPressed = false; }
+
+			void pressLeft() { m_leftPressed = true; }
+			void releaseLeft() { m_leftPressed = false; }
+
+			void pressRight() { m_rightPressed = true; }
+			void releaseRight() { m_rightPressed = false; }
+
+			void pressA() { m_aPressed = true; }
+			void releaseA() { m_aPressed = false; }
+
+			void pressB() { m_bPressed = true; }
+			void releaseB() { m_bPressed = false; }
+
+			void pressSelect() { m_selectPressed = true; }
+			void releaseSelect() { m_selectPressed = false; }
+
+			void pressStart() { m_startPressed = true; }
+			void releaseStart() { m_startPressed = false; }
+
 		protected:
 			virtual uint8_t& reference(uint16_t address, bool& rom) {
 
@@ -279,6 +303,15 @@ namespace EightBit {
 
 			std::array<bool, 4> m_soundChannelEnabled;
 			bool m_soundEnabled;
+
+			bool m_upPressed;
+			bool m_downPressed;
+			bool m_leftPressed;
+			bool m_rightPressed;
+			bool m_aPressed;
+			bool m_bPressed;
+			bool m_selectPressed;
+			bool m_startPressed;
 
 			void checkTimer(int cycles);
 

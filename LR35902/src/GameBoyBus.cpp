@@ -22,7 +22,16 @@ EightBit::GameBoy::Bus::Bus()
   m_ramBank(0),
   m_timerCounter(0),
   m_timerRate(0),
-  m_dmaTransferActive(false) {
+  m_dmaTransferActive(false),
+  m_upPressed(false),
+  m_downPressed(false),
+  m_leftPressed(false),
+  m_rightPressed(false),
+  m_aPressed(false),
+  m_bPressed(false),
+  m_selectPressed(false),
+  m_startPressed(false)
+{
 	ReadingByte.connect(std::bind(&GameBoy::Bus::Bus_ReadingByte, this, std::placeholders::_1));
 	ReadByte.connect(std::bind(&GameBoy::Bus::Bus_ReadByte, this, std::placeholders::_1));
 	WritingByte.connect(std::bind(&GameBoy::Bus::Bus_WritingByte, this, std::placeholders::_1));
@@ -67,8 +76,18 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 		switch (ioRegister) {
 
 		// Port/Mode Registers
-		case P1:
-			mask(Processor::Mask5);
+		case P1: {
+				auto direction = m_rightPressed || m_leftPressed || m_upPressed || m_downPressed;
+				auto button = m_aPressed || m_bPressed || m_selectPressed || m_startPressed;
+				pokeRegister(P1,
+					  (int)!(m_rightPressed || m_aPressed)
+					| ((int)!(m_leftPressed || m_bPressed) << 1)
+					| ((int)!(m_upPressed || m_selectPressed) << 2)
+					| ((int)!(m_downPressed || m_startPressed) << 3)
+					| (direction << 4)
+					| (button << 5)
+					| Processor::Bit6 | Processor::Bit7);
+			}
 			break;
 		case SB:
 			break;
