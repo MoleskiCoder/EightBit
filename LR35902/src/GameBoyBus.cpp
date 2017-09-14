@@ -21,13 +21,25 @@ EightBit::GameBoy::Bus::Bus()
   m_romBank(1),
   m_ramBank(0),
   m_timerCounter(0),
-  m_timerRate(0) {
+  m_timerRate(0),
+  m_dmaTransferActive(false) {
+	ReadingByte.connect(std::bind(&GameBoy::Bus::Bus_ReadingByte, this, std::placeholders::_1));
+	ReadByte.connect(std::bind(&GameBoy::Bus::Bus_ReadByte, this, std::placeholders::_1));
+	WritingByte.connect(std::bind(&GameBoy::Bus::Bus_WritingByte, this, std::placeholders::_1));
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
 	m_divCounter.word = 0xabcc;
+	m_dmaAddress.word = 0;
 }
 
 void EightBit::GameBoy::Bus::reset() {
+
 	pokeRegister(NR52, 0xf1);
+	m_soundChannelEnabled[0] = true;
+	m_soundChannelEnabled[1] = false;
+	m_soundChannelEnabled[2] = false;
+	m_soundChannelEnabled[3] = false;
+	m_soundEnabled = true;
+
 	pokeRegister(LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
 	m_divCounter.word = 0xabcc;
 	m_timerCounter = 0;
@@ -46,6 +58,118 @@ void EightBit::GameBoy::Bus::loadGameRom(const std::string& path) {
 	for (int bank = 1; bank < banks; ++bank)
 		m_gameRomBanks[bank].load(path, 0, bankSize * bank, bankSize);
 	validateCartridgeType();
+}
+
+void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
+	auto io = ((address >= BASE) && (address < 0xff80)) || (address == 0xffff);
+	if (io) {
+		auto ioRegister = address - BASE;
+		switch (ioRegister) {
+
+		// Port/Mode Registers
+		case P1:
+			mask(Processor::Mask5);
+			break;
+		case SB:
+			break;
+		case SC:
+			mask(Processor::Bit7 | Processor::Bit0);
+			break;
+
+		// Timer control
+		case DIV:
+		case TIMA:
+		case TMA:
+			break;
+		case TAC:
+			mask(Processor::Mask3);
+			break;
+
+		// Interrupt Flags
+		case IF:
+			mask(Processor::Mask5);
+			break;
+		case IE:
+			// Only the  bottom 5 bits are used,
+			// but all are available for use.
+			break;
+
+		// Sound Registers
+		case NR10:
+			mask(Processor::Mask7);
+			break;
+		case NR11:
+		case NR12:
+		case NR13:
+		case NR14:
+		case NR21:
+		case NR22:
+		case NR23:
+		case NR24:
+			break;
+		case NR30:
+			mask(Processor::Bit7);
+			break;
+		case NR31:
+			break;
+		case NR32:
+			mask(Processor::Bit6 | Processor::Bit5);
+			break;
+		case NR33:
+		case NR34:
+			break;
+		case NR41:
+			mask(Processor::Mask6);
+			break;
+		case NR42:
+		case NR43:
+			break;
+		case NR44:
+			mask(Processor::Bit6 | Processor::Bit7);
+			break;
+		case NR50:
+		case NR51:
+			break;
+		case NR52:
+			pokeRegister(NR52,
+				  m_soundChannelEnabled[0]
+				| (m_soundChannelEnabled[1] << 1)
+				| (m_soundChannelEnabled[2] << 2)
+				| (m_soundChannelEnabled[3] << 3)
+				| Processor::Bit4 | Processor::Bit5 | Processor::Bit6
+				| (m_soundEnabled << 7)
+			);
+			break;
+
+		// LCD Display Registers
+		case LCDC:
+			break;
+		case STAT:
+			mask(Processor::Mask7);
+			break;
+		case SCY:
+		case SCX:
+		case LY:
+		case LYC:
+		case DMA:
+		case BGP:
+		case OBP0:
+		case OBP1:
+		case WY:
+		case WX:
+			break;
+
+		default:
+			mask(0);
+			break;
+		}
+	}
+}
+
+void EightBit::GameBoy::Bus::Bus_ReadByte(const uint16_t address) {
+}
+
+void EightBit::GameBoy::Bus::Bus_WritingByte(const uint16_t address) {
 }
 
 void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
@@ -121,21 +245,37 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 		case BASE + NR12:
 		case BASE + NR13:
 		case BASE + NR14:
+		case BASE + NR21:
 		case BASE + NR22:
+		case BASE + NR23:
 		case BASE + NR24:
+			break;
 		case BASE + NR30:
+			break;
+		case BASE + NR31:
+		case BASE + NR32:
+		case BASE + NR33:
+		case BASE + NR34:
+		case BASE + NR41:
 		case BASE + NR42:
+		case BASE + NR43:
 		case BASE + NR44:
 		case BASE + NR50:
 		case BASE + NR51:
+			break;
 		case BASE + NR52:
+			m_soundEnabled = value & Processor::Bit7;
 			break;
 
 		case BASE + LCDC:
 		case BASE + STAT:
 		case BASE + SCY:
 		case BASE + SCX:
+			break;
 		case BASE + DMA:
+			m_dmaAddress.high = value;
+			m_dmaAddress.low = 0;
+			m_dmaTransferActive = true;
 			break;
 		case BASE + LY:		// R/O
 			EightBit::Bus::reference() = 0;
@@ -152,7 +292,9 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			break;
 
 		default:
-			if ((address > BASE) && (address < (BASE + 0x4c)))
+			if ((address >= (BASE + WPRAM_START)) && (address <= (BASE + WPRAM_END)))
+				;	// Wave form data
+			else if ((address > BASE) && (address < (BASE + 0x4c)))
 				assert(false);
 		}
 	}
@@ -177,6 +319,7 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 
 	m_rom = m_banked = m_ram = m_battery = false;
 
+	// ROM type
 	switch (m_gameRomBanks[0].peek(0x147)) {
 	case ROM:
 		m_rom = true;
@@ -192,5 +335,57 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 		break;
 	default:
 		throw std::domain_error("Unhandled cartridge ROM type");
+	}
+
+	// ROM size
+	{
+		int gameRomBanks = -1;
+		int romSizeSpecification = m_gameRomBanks[0].peek(0x148);
+		switch (romSizeSpecification) {
+		case 0x52:
+			gameRomBanks = 72;
+			break;
+		case 0x53:
+			gameRomBanks = 80;
+			break;
+		case 0x54:
+			gameRomBanks = 96;
+			break;
+		default:
+			if (romSizeSpecification > 6)
+				throw std::domain_error("Invalid ROM size specification");
+			gameRomBanks = 1 << (romSizeSpecification + 1);
+			if (gameRomBanks != m_gameRomBanks.size())
+				throw std::domain_error("ROM size specification mismatch");
+		}
+
+		// RAM size
+		{
+			auto ramSizeSpecification = m_gameRomBanks[0].peek(0x149);
+			switch (ramSizeSpecification) {
+			case 0:
+				break;
+			case 1:
+				m_ramBanks.resize(1);
+				m_ramBanks[0] = Ram(2 * 1024);
+				break;
+			case 2:
+				m_ramBanks.resize(1);
+				m_ramBanks[0] = Ram(8 * 1024);
+				break;
+			case 3:
+				m_ramBanks.resize(4);
+				for (int i = 0; i < 4; ++i)
+					m_ramBanks[i] = Ram(8 * 1024);
+				break;
+			case 4:
+				m_ramBanks.resize(16);
+				for (int i = 0; i < 16; ++i)
+					m_ramBanks[i] = Ram(8 * 1024);
+				break;
+			default:
+				throw std::domain_error("Invalid RAM size specification");
+			}
+		}
 	}
 }

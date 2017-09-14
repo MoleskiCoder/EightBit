@@ -337,6 +337,7 @@ int EightBit::GameBoy::LR35902::runRasterLines(int limit) {
 
 int EightBit::GameBoy::LR35902::runRasterLine() {
 	const auto count = run(cyclesPerLine());
+	m_bus.updateLcdStatusMode(Bus::LcdStatusMode::HBlank);
 	m_bus.incrementLY();
 	if ((m_bus.peekRegister(Bus::STAT) & Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
 		m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
@@ -344,6 +345,7 @@ int EightBit::GameBoy::LR35902::runRasterLine() {
 }
 
 int EightBit::GameBoy::LR35902::runVerticalBlankLines() {
+	m_bus.updateLcdStatusMode(Bus::LcdStatusMode::VBlank);
 	m_bus.triggerInterrupt(Bus::Interrupts::VerticalBlank);
 	return runRasterLines(Bus::TotalLineCount - Display::RasterHeight);
 }
@@ -381,6 +383,7 @@ int EightBit::GameBoy::LR35902::singleStep() {
 	}
 
 	m_bus.checkTimers(current);
+	m_bus.transferDma();
 
 	return current;
 }

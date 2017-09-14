@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include <Rom.h>
 #include <Ram.h>
 #include <Bus.h>
@@ -27,54 +29,56 @@ namespace EightBit {
 				BASE = 0xFF00,
 
 				// Port/Mode Registers
-				P1 = 0x0,
-				SB = 0x1,
-				SC = 0x2,
-				DIV = 0x4,
-				TIMA = 0x5,
-				TMA = 0x6,
-				TAC = 0x7,
+				P1 = 0x0,		// R/W	Mask5
+				SB = 0x1,		// R/W	Mask8
+				SC = 0x2,		// R/W	Bit7 | Bit0
+
+				// Timer control
+				DIV = 0x4,		// R/W	Mask8
+				TIMA = 0x5,		// R/W	Mask8
+				TMA = 0x6,		// R/W	Mask8
+				TAC = 0x7,		// R/W	Mask3
 
 				// Interrupt Flags
-				IF = 0xF,
-				IE = 0xFF,
-
-				// LCD Display Registers
-				LCDC = 0x40,
-				STAT = 0x41,
-				SCY = 0x42,
-				SCX = 0x43,
-				LY = 0x44,
-				LYC = 0x45,
-				DMA = 0x46,
-				BGP = 0x47,
-				OBP0 = 0x48,
-				OBP1 = 0x49,
-				WY = 0x4A,
-				WX = 0x4B,
+				IF = 0xF,		// R/W	Mask5
+				IE = 0xFF,		// R/W	Mask5
 
 				// Sound Registers
-				NR10 = 0x10,
-				NR11 = 0x11,
-				NR12 = 0x12,
-				NR13 = 0x13,
-				NR14 = 0x14,
-				NR21 = 0x16,
-				NR22 = 0x17,
-				NR23 = 0x18,
-				NR24 = 0x19,
-				NR30 = 0x1A,
-				NR31 = 0x1B,
-				NR32 = 0x1C,
-				NR33 = 0x1D,
-				NR34 = 0x1E,
-				NR41 = 0x20,
-				NR42 = 0x21,
-				NR43 = 0x22,
-				NR44 = 0x23,
-				NR50 = 0x24,
-				NR51 = 0x25,
-				NR52 = 0x26,
+				NR10 = 0x10,	// R/W	Mask7
+				NR11 = 0x11,	// R/W	Bit7 | Bit6
+				NR12 = 0x12,	// R/W	Mask8
+				NR13 = 0x13,	// W	0
+				NR14 = 0x14,	// R/W	Bit6
+				NR21 = 0x16,	// R/W	Bit7 | Bit6
+				NR22 = 0x17,	// R/W	Mask8
+				NR23 = 0x18,	// W	0
+				NR24 = 0x19,	// R/W	Bit6
+				NR30 = 0x1A,	// R/W	Bit7
+				NR31 = 0x1B,	// R/W	Mask8
+				NR32 = 0x1C,	// R/W	Bit6 | Bit5
+				NR33 = 0x1D,	// W	0
+				NR34 = 0x1E,	// R/W	Bit6
+				NR41 = 0x20,	// R/W	Mask6
+				NR42 = 0x21,	// R/W	Mask8
+				NR43 = 0x22,	// R/W	Mask8
+				NR44 = 0x23,	// R/W	Bit6
+				NR50 = 0x24,	// R/W	Mask8
+				NR51 = 0x25,	// R/W	Mask8
+				NR52 = 0x26,	// R/W	Mask8	Mask8
+
+				// LCD Display Registers
+				LCDC = 0x40,	// R/W	Mask8
+				STAT = 0x41,	// R/W	Mask7
+				SCY = 0x42,		// R/W	Mask8
+				SCX = 0x43,		// R/W	Mask8
+				LY = 0x44,		// R	Mask8	zeroed
+				LYC = 0x45,		// R/W	Mask8
+				DMA = 0x46,		// W	0
+				BGP = 0x47,		// R/W	Mask8
+				OBP0 = 0x48,	// R/W	Mask8
+				OBP1 = 0x49,	// R/W	Mask8
+				WY = 0x4A,		// R/W	Mask8
+				WX = 0x4B,		// R/W	Mask8
 
 				WPRAM_START = 0x30,
 				WPRAM_END = 0x3F,
@@ -104,8 +108,8 @@ namespace EightBit {
 			};
 
 			enum LcdStatusMode {
-				CpuAccessAllowed = 0b00,
-				VerticalBlankingPeriod = 0b01,
+				HBlank = 0b00,
+				VBlank = 0b01,
 				SearchingOamRam = 0b10,
 				TransferringDataToLcd = 0b11
 			};
@@ -186,6 +190,18 @@ namespace EightBit {
 				pokeRegister(LY, 0);
 			}
 
+			void transferDma() {
+				if (m_dmaTransferActive) {
+					m_oamRam.poke(m_dmaAddress.low, peek(m_dmaAddress.word));
+					m_dmaTransferActive = ++m_dmaAddress.low < 0xa0;
+				}
+			}
+
+			void updateLcdStatusMode(int mode) {
+				const auto current = m_ioPorts.peek(STAT) & ~Processor::Mask2;
+				m_ioPorts.poke(STAT, current | mode);
+			}
+
 			void disableBootRom() { m_disableBootRom = true; }
 			void enableBootRom() { m_disableBootRom = false; }
 
@@ -216,7 +232,7 @@ namespace EightBit {
 				if (address < 0xa000)
 					return m_videoRam.reference(address - 0x8000);
 				if (address < 0xc000)
-					return m_ramBanks[m_ramBank].reference(address - 0xa000);
+					return m_ramBanks.size() == 0 ? rom = true, placeDATA(0xff) : m_ramBanks[m_ramBank].reference(address - 0xa000);
 				if (address < 0xe000)
 					return m_lowInternalRam.reference(address - 0xc000);
 				if (address < 0xfe00)
@@ -224,7 +240,7 @@ namespace EightBit {
 				if (address < 0xfea0)
 					return m_oamRam.reference(address - 0xfe00);
 				if (address < 0xff00)
-					return placeDATA(0);
+					return rom = true, placeDATA(0xff);
 				if (address < 0xff80)
 					return m_ioPorts.reference(address - 0xff00);
 				return m_highInternalRam.reference(address - 0xff80);
@@ -258,11 +274,28 @@ namespace EightBit {
 			int m_timerCounter;
 			int m_timerRate;
 
-			void Bus_WrittenByte(uint16_t address);
+			register16_t m_dmaAddress;
+			bool m_dmaTransferActive;
+
+			std::array<bool, 4> m_soundChannelEnabled;
+			bool m_soundEnabled;
 
 			void checkTimer(int cycles);
 
 			void validateCartridgeType();
+
+			void mask(uint16_t address, uint8_t masking) {
+				poke(address, peek(address) | ~masking);
+			}
+
+			void mask(uint8_t masking) {
+				mask(ADDRESS().word, masking);
+			}
+
+			void Bus_WritingByte(uint16_t address);
+			void Bus_WrittenByte(uint16_t address);
+			void Bus_ReadingByte(uint16_t address);
+			void Bus_ReadByte(uint16_t address);
 		};
 	}
 }
