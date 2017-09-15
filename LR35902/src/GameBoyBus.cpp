@@ -33,8 +33,6 @@ EightBit::GameBoy::Bus::Bus()
   m_startPressed(false)
 {
 	ReadingByte.connect(std::bind(&GameBoy::Bus::Bus_ReadingByte, this, std::placeholders::_1));
-	ReadByte.connect(std::bind(&GameBoy::Bus::Bus_ReadByte, this, std::placeholders::_1));
-	WritingByte.connect(std::bind(&GameBoy::Bus::Bus_WritingByte, this, std::placeholders::_1));
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
 	m_divCounter.word = 0xabcc;
 	m_dmaAddress.word = 0;
@@ -182,12 +180,6 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 			break;
 		}
 	}
-}
-
-void EightBit::GameBoy::Bus::Bus_ReadByte(const uint16_t address) {
-}
-
-void EightBit::GameBoy::Bus::Bus_WritingByte(const uint16_t address) {
 }
 
 void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
