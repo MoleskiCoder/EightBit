@@ -151,13 +151,12 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 			break;
 		case NR52:
 			pokeRegister(NR52,
-				  m_soundChannelEnabled[0]
+				  (int)m_soundChannelEnabled[0]
 				| (m_soundChannelEnabled[1] << 1)
 				| (m_soundChannelEnabled[2] << 2)
 				| (m_soundChannelEnabled[3] << 3)
 				| Processor::Bit4 | Processor::Bit5 | Processor::Bit6
-				| (m_soundEnabled << 7)
-			);
+				| (m_soundEnabled << 7));
 			break;
 
 		// LCD Display Registers
@@ -283,7 +282,7 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 		case BASE + NR51:
 			break;
 		case BASE + NR52:
-			m_soundEnabled = value & Processor::Bit7;
+			m_soundEnabled = (value & Processor::Bit7) != 0;
 			break;
 
 		case BASE + LCDC:

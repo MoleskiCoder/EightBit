@@ -376,7 +376,7 @@ int EightBit::GameBoy::LR35902::singleStep() {
 		current += interrupt(0x50);
 	} else if (ime && (masked & Bus::Interrupts::SerialTransfer)) {
 		current += interrupt(0x58);
-	} else if (ime && (masked & Bus::Interrupts::Keypad)) {
+	} else if (ime && (masked & Bus::Interrupts::KeypadPressed)) {
 		current += interrupt(0x60);
 	} else {
 		current += isHalted() ? 1 : step();

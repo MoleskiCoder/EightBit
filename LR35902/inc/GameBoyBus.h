@@ -93,7 +93,7 @@ namespace EightBit {
 				DisplayControlStatus = Processor::Bit1,		// LCDC Status
 				TimerOverflow = Processor::Bit2,			// Timer Overflow
 				SerialTransfer = Processor::Bit3,			// Serial Transfer
-				Keypad = Processor::Bit3					// Hi-Lo of P10-P13
+				KeypadPressed = Processor::Bit3				// Hi-Lo transition of P10-P13
 			};
 
 			enum LcdcControl {
@@ -217,29 +217,29 @@ namespace EightBit {
 			void loadBootRom(const std::string& path);
 			void loadGameRom(const std::string& path);
 
-			void pressUp() { m_upPressed = true; }
-			void releaseUp() { m_upPressed = false; }
+			void pressUp(bool pressed = true) { triggerKeypadInterrupt(m_upPressed = pressed); }
+			void releaseUp() { pressUp(false); }
 
-			void pressDown() { m_downPressed = true; }
-			void releaseDown() { m_downPressed = false; }
+			void pressDown(bool pressed = true) { triggerKeypadInterrupt(m_downPressed = pressed); }
+			void releaseDown() { pressDown(false); }
 
-			void pressLeft() { m_leftPressed = true; }
-			void releaseLeft() { m_leftPressed = false; }
+			void pressLeft(bool pressed = true) { triggerKeypadInterrupt(m_leftPressed = pressed); }
+			void releaseLeft() { pressLeft(false); }
 
-			void pressRight() { m_rightPressed = true; }
-			void releaseRight() { m_rightPressed = false; }
+			void pressRight(bool pressed = true) { triggerKeypadInterrupt(m_rightPressed = pressed); }
+			void releaseRight() { pressRight(false); }
 
-			void pressA() { m_aPressed = true; }
-			void releaseA() { m_aPressed = false; }
+			void pressA(bool pressed = true) { triggerKeypadInterrupt(m_aPressed = pressed); }
+			void releaseA() { pressA(false); }
 
-			void pressB() { m_bPressed = true; }
-			void releaseB() { m_bPressed = false; }
+			void pressB(bool pressed = true) { triggerKeypadInterrupt(m_bPressed = pressed); }
+			void releaseB() { pressB(false); }
 
-			void pressSelect() { m_selectPressed = true; }
-			void releaseSelect() { m_selectPressed = false; }
+			void pressSelect(bool pressed = true) { triggerKeypadInterrupt(m_selectPressed = pressed); }
+			void releaseSelect() { pressSelect(false); }
 
-			void pressStart() { m_startPressed = true; }
-			void releaseStart() { m_startPressed = false; }
+			void pressStart(bool pressed = true) { triggerKeypadInterrupt(m_startPressed = pressed); }
+			void releaseStart() { pressStart(false); }
 
 		protected:
 			virtual uint8_t& reference(uint16_t address, bool& rom) {
@@ -323,6 +323,11 @@ namespace EightBit {
 
 			void mask(uint8_t masking) {
 				mask(ADDRESS().word, masking);
+			}
+
+			void triggerKeypadInterrupt(bool pressed) {
+				if (pressed)
+					triggerInterrupt(Interrupts::KeypadPressed);
 			}
 
 			void Bus_WritingByte(uint16_t address);
