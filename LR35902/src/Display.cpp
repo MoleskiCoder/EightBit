@@ -68,6 +68,7 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 		const auto spriteY = current.positionY();
 		const auto& palette = palettes[current.palette()];
 
+		// TODO: x/y flip
 		for (int cy = 0; cy < 8; ++cy) {
 			for (int cx = 0; cx < 8; ++cx) {
 
@@ -81,8 +82,9 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 
 				auto outputPixel = y * RasterWidth + x;
 
-				auto colour = palette[definition.get()[cy * 8 + cx]];
-				m_pixels[outputPixel] = m_colours->getColour(colour);
+				auto colour = definition.get()[cy * 8 + cx];
+				if (colour > 0)	// transparency
+					m_pixels[outputPixel] = m_colours->getColour(palette[colour]);
 			}
 		}
 	}
