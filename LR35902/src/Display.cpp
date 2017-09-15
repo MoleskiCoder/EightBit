@@ -67,17 +67,19 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 		const auto spriteX = current.positionX();
 		const auto spriteY = current.positionY();
 		const auto& palette = palettes[current.palette()];
+		const auto flipX = current.flipX();
+		const auto flipY = current.flipY();
 
-		// TODO: x/y flip
 		for (int cy = 0; cy < 8; ++cy) {
+
+			uint8_t y = spriteY + (flipY ? 7 - cy : cy);
+			if (y >= RasterHeight)
+				break;
+
 			for (int cx = 0; cx < 8; ++cx) {
 
-				uint8_t x = spriteX + cx;
+				uint8_t x = spriteX + (flipX ? 7 - cx : cx);
 				if (x >= RasterWidth)
-					break;
-
-				uint8_t y = spriteX + cy;
-				if (y >= RasterHeight)
 					break;
 
 				auto outputPixel = y * RasterWidth + x;
