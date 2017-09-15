@@ -61,6 +61,7 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 	auto oamAddress = 0xfe00;
 
 	for (int i = 0; i < 40; ++i) {
+
 		const auto current = ObjectAttribute(m_bus, oamAddress + 4 * i, objBlockHeight);
 		const auto sprite = current.pattern();
 		const auto definition = CharacterDefinition(m_bus, objDefinitionAddress + 16 * sprite);
@@ -70,25 +71,11 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 		const auto flipX = current.flipX();
 		const auto flipY = current.flipY();
 
-		for (int cy = 0; cy < 8; ++cy) {
-
-			uint8_t y = spriteY + (flipY ? 7 - cy : cy);
-			if (y >= RasterHeight)
-				break;
-
-			for (int cx = 0; cx < 8; ++cx) {
-
-				uint8_t x = spriteX + (flipX ? 7 - cx : cx);
-				if (x >= RasterWidth)
-					break;
-
-				auto outputPixel = y * RasterWidth + x;
-
-				auto colour = definition.get()[cy * 8 + cx];
-				if (colour > 0)	// transparency
-					m_pixels[outputPixel] = m_colours->getColour(palette[colour]);
-			}
-		}
+		renderTile(
+			spriteX, spriteY, -8, -16,
+			flipX, flipY, true,
+			palette,
+			definition);
 	}
 }
 
@@ -137,23 +124,37 @@ void EightBit::GameBoy::Display::renderBackground(
 
 			auto definition = definitionPair->second;
 
-			for (int cy = 0; cy < 8; ++cy) {
-				for (int cx = 0; cx < 8; ++cx) {
+			renderTile(
+				column * 8, row * 8, offsetX - scrollX, offsetY - scrollY,
+				false, false, false,
+				palette,
+				definition);
+		}
+	}
+}
 
-					uint8_t x = column * 8 + cx + offsetX - scrollX;
-					if (x >= RasterWidth)
-						break;
+void EightBit::GameBoy::Display::renderTile(
+		int drawX, int drawY, int offsetX, int offsetY,
+		bool flipX, bool flipY, bool allowTransparencies,
+		const std::array<int, 4>& palette,
+		const CharacterDefinition& definition) {
 
-					uint8_t y = row * 8 + cy + offsetY - scrollY;
-					if (y >= RasterHeight)
-						break;
+	for (int cy = 0; cy < 8; ++cy) {
 
-					auto outputPixel = y * RasterWidth + x;
+		for (int cx = 0; cx < 8; ++cx) {
 
-					auto colour = palette[definition.get()[cy * 8 + cx]];
-					m_pixels[outputPixel] = m_colours->getColour(colour);
-				}
-			}
+			uint8_t y = drawY + cy + offsetY;
+			if (y >= RasterHeight)
+				break;
+
+			uint8_t x = drawX + cx + offsetX;
+			if (x >= RasterWidth)
+				break;
+
+			auto outputPixel = y * RasterWidth + x;
+
+			auto colour = palette[definition.get()[cy * 8 + cx]];
+			m_pixels[outputPixel] = m_colours->getColour(colour);
 		}
 	}
 }

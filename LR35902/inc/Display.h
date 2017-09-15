@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <array>
 #include <cstdint>
 
 #include "GameBoyBus.h"
@@ -8,6 +9,9 @@
 
 namespace EightBit {
 	namespace GameBoy {
+
+		class CharacterDefinition;
+
 		class Display {
 		public:
 			enum {
@@ -42,6 +46,12 @@ namespace EightBit {
 
 			void renderObjects();
 			void renderObjects(int objBlockHeight);
+
+			void renderTile(
+				int drawX, int drawY, int offsetX, int offsetY,
+				bool flipX, bool flipY, bool allowTransparencies,
+				const std::array<int, 4>& palette,
+				const CharacterDefinition& definition);
 		};
 	}
 }
