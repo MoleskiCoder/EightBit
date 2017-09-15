@@ -23,15 +23,14 @@ EightBit::GameBoy::Bus::Bus()
   m_timerCounter(0),
   m_timerRate(0),
   m_dmaTransferActive(false),
-  m_upPressed(false),
-  m_downPressed(false),
-  m_leftPressed(false),
-  m_rightPressed(false),
-  m_aPressed(false),
-  m_bPressed(false),
-  m_selectPressed(false),
-  m_startPressed(false)
-{
+  m_scanP15(false),
+  m_scanP14(false),
+  m_p15(true),
+  m_p14(true),
+  m_p13(true),
+  m_p12(true),
+  m_p11(true),
+  m_p10(true) {
 	ReadingByte.connect(std::bind(&GameBoy::Bus::Bus_ReadingByte, this, std::placeholders::_1));
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
 	m_divCounter.word = 0xabcc;
@@ -75,15 +74,19 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 
 		// Port/Mode Registers
 		case P1: {
-				auto direction = m_rightPressed || m_leftPressed || m_upPressed || m_downPressed;
-				auto button = m_aPressed || m_bPressed || m_selectPressed || m_startPressed;
+				auto p14 = m_scanP14 && !m_p14;
+				auto p15 = m_scanP15 && !m_p15;
+				auto live = p14 || p15;
+				auto p10 = live && !m_p10;
+				auto p11 = live && !m_p11;
+				auto p12 = live && !m_p12;
+				auto p13 = live && !m_p13;
 				pokeRegister(P1,
-					  (int)!(m_rightPressed || m_aPressed)
-					| ((int)!(m_leftPressed || m_bPressed) << 1)
-					| ((int)!(m_upPressed || m_selectPressed) << 2)
-					| ((int)!(m_downPressed || m_startPressed) << 3)
-					| (direction << 4)
-					| (button << 5)
+					   (int)!p10
+					| ((int)!p11 << 1)
+					| ((int)!p12 << 2)
+					| ((int)!p13 << 3)
+					| Processor::Bit4 | Processor::Bit5
 					| Processor::Bit6 | Processor::Bit7);
 			}
 			break;
@@ -231,6 +234,11 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 
 	if (!handled) {
 		switch (address) {
+
+		case BASE + P1:
+			m_scanP14 = (value & Processor::Bit4) == 0;
+			m_scanP15 = (value & Processor::Bit5) == 0;
+			break;
 
 		case BASE + SB:		// R/W
 		case BASE + SC:		// R/W

@@ -217,29 +217,29 @@ namespace EightBit {
 			void loadBootRom(const std::string& path);
 			void loadGameRom(const std::string& path);
 
-			void pressUp(bool pressed = true) { triggerKeypadInterrupt(m_upPressed = pressed); }
-			void releaseUp() { pressUp(false); }
+			void pressRight() { m_p14 = m_p10 = false; triggerKeypadInterrupt(); }
+			void releaseRight() { m_p14 = m_p10 = true; }
 
-			void pressDown(bool pressed = true) { triggerKeypadInterrupt(m_downPressed = pressed); }
-			void releaseDown() { pressDown(false); }
+			void pressLeft() { m_p14 = m_p11 = false, triggerKeypadInterrupt(); }
+			void releaseLeft() { m_p14 = m_p11 = true; }
 
-			void pressLeft(bool pressed = true) { triggerKeypadInterrupt(m_leftPressed = pressed); }
-			void releaseLeft() { pressLeft(false); }
+			void pressUp() { m_p14 = m_p12 = false, triggerKeypadInterrupt(); }
+			void releaseUp() { m_p14 = m_p12 = true; }
 
-			void pressRight(bool pressed = true) { triggerKeypadInterrupt(m_rightPressed = pressed); }
-			void releaseRight() { pressRight(false); }
+			void pressDown() { m_p14 = m_p13 = false, triggerKeypadInterrupt(); }
+			void releaseDown() { m_p14 = m_p13 = true; }
 
-			void pressA(bool pressed = true) { triggerKeypadInterrupt(m_aPressed = pressed); }
-			void releaseA() { pressA(false); }
+			void pressA() { m_p15 = m_p10 = false, triggerKeypadInterrupt(); }
+			void releaseA() { m_p15 = m_p10 = true; }
 
-			void pressB(bool pressed = true) { triggerKeypadInterrupt(m_bPressed = pressed); }
-			void releaseB() { pressB(false); }
+			void pressB() { m_p15 = m_p11 = false, triggerKeypadInterrupt(); }
+			void releaseB() { m_p15 = m_p11 = true; }
 
-			void pressSelect(bool pressed = true) { triggerKeypadInterrupt(m_selectPressed = pressed); }
-			void releaseSelect() { pressSelect(false); }
+			void pressSelect() { m_p15 = m_p12 = false, triggerKeypadInterrupt(); }
+			void releaseSelect() { m_p15 = m_p12 = true; }
 
-			void pressStart(bool pressed = true) { triggerKeypadInterrupt(m_startPressed = pressed); }
-			void releaseStart() { pressStart(false); }
+			void pressStart() { m_p15 = m_p13 = false, triggerKeypadInterrupt(); }
+			void releaseStart() { m_p15 = m_p13 = true; }
 
 		protected:
 			virtual uint8_t& reference(uint16_t address, bool& rom) {
@@ -304,14 +304,15 @@ namespace EightBit {
 			std::array<bool, 4> m_soundChannelEnabled;
 			bool m_soundEnabled;
 
-			bool m_upPressed;
-			bool m_downPressed;
-			bool m_leftPressed;
-			bool m_rightPressed;
-			bool m_aPressed;
-			bool m_bPressed;
-			bool m_selectPressed;
-			bool m_startPressed;
+			bool m_scanP15;
+			bool m_scanP14;
+
+			bool m_p15;	// misc keys
+			bool m_p14;	// direction keys
+			bool m_p13;	// down/start
+			bool m_p12;	// up/select
+			bool m_p11;	// left/b
+			bool m_p10;	// right/a
 
 			void checkTimer(int cycles);
 
@@ -325,9 +326,8 @@ namespace EightBit {
 				mask(ADDRESS().word, masking);
 			}
 
-			void triggerKeypadInterrupt(bool pressed) {
-				if (pressed)
-					triggerInterrupt(Interrupts::KeypadPressed);
+			void triggerKeypadInterrupt() {
+				triggerInterrupt(Interrupts::KeypadPressed);
 			}
 
 			void Bus_WrittenByte(uint16_t address);
