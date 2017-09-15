@@ -143,18 +143,19 @@ void EightBit::GameBoy::Display::renderTile(
 
 		for (int cx = 0; cx < 8; ++cx) {
 
-			uint8_t y = drawY + cy + offsetY;
+			uint8_t y = drawY + (flipY ? 7 - cy : cy) + offsetY;
 			if (y >= RasterHeight)
 				break;
 
-			uint8_t x = drawX + cx + offsetX;
+			uint8_t x = drawX + (flipX ? 7 - cx : cx) + offsetX;
 			if (x >= RasterWidth)
 				break;
 
 			auto outputPixel = y * RasterWidth + x;
 
-			auto colour = palette[definition.get()[cy * 8 + cx]];
-			m_pixels[outputPixel] = m_colours->getColour(colour);
+			auto colour = definition.get()[cy * 8 + cx];
+			if (!allowTransparencies || (allowTransparencies && (colour > 0)))
+				m_pixels[outputPixel] = m_colours->getColour(palette[colour]);
 		}
 	}
 }
