@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <array>
 
-#include "Bus.h"
+#include <Bus.h>
 
 namespace EightBit {
 	namespace GameBoy {

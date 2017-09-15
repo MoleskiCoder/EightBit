@@ -30,6 +30,18 @@ namespace EightBit {
 			std::vector<uint32_t> m_pixels;
 			Bus& m_bus;
 			const AbstractColourPalette* m_colours;
+
+			std::array<int, 4> createPalette(int address);
+
+			void renderBackground();
+			void renderBackground(
+				int bgArea, int bgCharacters,
+				int offsetX, int offsetY,
+				int scrollX, int scrollY,
+				const std::array<int, 4>& palette);
+
+			void renderObjects();
+			void renderObjects(int objBlockHeight);
 		};
 	}
 }

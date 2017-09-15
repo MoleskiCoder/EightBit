@@ -145,6 +145,7 @@
     <ClInclude Include="..\inc\Disassembler.h" />
     <ClInclude Include="..\inc\Display.h" />
     <ClInclude Include="..\inc\LR35902.h" />
+    <ClInclude Include="..\inc\ObjectAttribute.h" />
     <ClInclude Include="..\inc\Profiler.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
