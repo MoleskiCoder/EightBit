@@ -10,8 +10,11 @@
 #include <map>
 #include <bitset>
 #include <string>
+#include <tuple>
+#include <cassert>
 
 #include <algorithm>
+#include <memory>
 
 #include <iostream>
 #include <fstream>

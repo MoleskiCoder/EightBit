@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\AbstractColourPalette.h" />
+    <ClInclude Include="..\inc\Audio.h" />
     <ClInclude Include="..\inc\GameBoyBus.h" />
     <ClInclude Include="..\inc\CharacterDefinition.h" />
     <ClInclude Include="..\inc\Disassembler.h" />
