@@ -39,14 +39,8 @@ EightBit::GameBoy::Bus::Bus()
 
 void EightBit::GameBoy::Bus::reset() {
 
-	pokeRegister(NR52, 0xf1);
-	m_soundChannelEnabled[0] = true;
-	m_soundChannelEnabled[1] = false;
-	m_soundChannelEnabled[2] = false;
-	m_soundChannelEnabled[3] = false;
-	m_soundEnabled = true;
-
-	pokeRegister(LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
+	poke(BASE + NR52, 0xf1);
+	poke(BASE + LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
 	m_divCounter.word = 0xabcc;
 	m_timerCounter = 0;
 }
@@ -151,13 +145,6 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 		case NR51:
 			break;
 		case NR52:
-			pokeRegister(NR52,
-				  (int)m_soundChannelEnabled[0]
-				| (m_soundChannelEnabled[1] << 1)
-				| (m_soundChannelEnabled[2] << 2)
-				| (m_soundChannelEnabled[3] << 3)
-				| Processor::Bit4 | Processor::Bit5 | Processor::Bit6
-				| (m_soundEnabled << 7));
 			break;
 
 		// LCD Display Registers
@@ -258,31 +245,121 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 		case BASE + IF:		// R/W
 			break;
 
-		case BASE + NR10:
-		case BASE + NR11:
-		case BASE + NR12:
-		case BASE + NR13:
-		case BASE + NR14:
-		case BASE + NR21:
-		case BASE + NR22:
-		case BASE + NR23:
-		case BASE + NR24:
+		case BASE + NR10:	// Sound mode 1 register: Sweep
+			Audio_SweepTimeModified.fire(std::make_tuple(1, (value >> 4) & Processor::Mask3));		// Bits 4-6
+			Audio_SweepDirectionModified.fire(std::make_tuple(1, (value >> 3) & Processor::Mask1));	// Bits 3
+			Audio_SweepShiftModified.fire(std::make_tuple(1, value & Processor::Mask3));			// Bits 0-2
 			break;
-		case BASE + NR30:
+
+		case BASE + NR11:	// Sound mode 1 register: Sound length / Wave pattern duty
+			Audio_WavePatternDutyModified.fire(std::make_tuple(1, (value >> 6) & Processor::Mask2));// Bits 6-7
+			Audio_SoundLengthModified.fire(std::make_tuple(1, value & Processor::Mask6));		// Bits 0-5
 			break;
-		case BASE + NR31:
-		case BASE + NR32:
-		case BASE + NR33:
-		case BASE + NR34:
-		case BASE + NR41:
-		case BASE + NR42:
-		case BASE + NR43:
-		case BASE + NR44:
-		case BASE + NR50:
+
+		case BASE + NR12:	// Sound mode 1 register: Envelope
+			Audio_DefaultEnvelopeVolumeModified.fire(std::make_tuple(1, (value >> 4) & Processor::Mask4));	// Bits 4-7
+			Audio_EnvelopeDirectionModified.fire(std::make_tuple(1, (value >> 3) & Processor::Mask1));		// Bits 3
+			Audio_EnvelopeStepLengthModified.fire(std::make_tuple(1, value & Processor::Mask3));					// Bits 0-2
+			break;
+
+		case BASE + NR13:	// Sound mode 1 register: Frequency lo
+			Audio_FrequencyLoModified.fire(std::make_tuple(1, value));
+			break;
+
+		case BASE + NR14:	// Sound mode 1 register: Frequency hi
+			Audio_InitialiseModified.fire(std::make_tuple(1, (value >> 7) & Processor::Mask1));					// Bits 7
+			Audio_CounterContinuousSelectionModified.fire(std::make_tuple(1, (value >> 6) & Processor::Mask1));// Bits 6
+			Audio_FrequencyHiModified.fire(std::make_tuple(1, value & Processor::Mask3));						// Bits 0-2
+			break;
+
+		case BASE + NR21:	// Sound mode 2 register: Sound length / Wave pattern duty
+			Audio_WavePatternDutyModified.fire(std::make_tuple(2, (value >> 6) & Processor::Mask2));// Bits 6-7
+			Audio_SoundLengthModified.fire(std::make_tuple(2, Processor::Mask6));				// Bits 0-5
+			break;
+
+		case BASE + NR22:	// Sound mode 2 register: Envelope
+			Audio_DefaultEnvelopeVolumeModified.fire(std::make_tuple(2, (value >> 4) & Processor::Mask4));	// Bits 4-7
+			Audio_EnvelopeDirectionModified.fire(std::make_tuple(2, (value >> 3) & Processor::Mask1));		// Bits 3
+			Audio_EnvelopeStepLengthModified.fire(std::make_tuple(2, value & Processor::Mask3));					// Bits 0-2
+			break;
+
+		case BASE + NR23:	// Sound mode 2 register: Frequency lo
+			Audio_FrequencyLoModified.fire(std::make_tuple(2, value));
+			break;
+
+		case BASE + NR24:	// Sound mode 2 register: Frequency hi
+			Audio_InitialiseModified.fire(std::make_tuple(2, (value >> 7) & Processor::Mask1));					// Bits 7
+			Audio_CounterContinuousSelectionModified.fire(std::make_tuple(2, (value >> 6) & Processor::Mask1));// Bits 6
+			Audio_FrequencyHiModified.fire(std::make_tuple(2, value & Processor::Mask3));						// Bits 0-2
+			break;
+
+		case BASE + NR30:	// Sound mode 3 register: Sound on/off
+			Audio_SoundOnOffModified.fire(std::make_tuple(3, (value >> 7) & Processor::Mask1));					// Bits 0-2
+			break;
+
+		case BASE + NR31:	// Sound mode 3 register: Sound length
+			Audio_SoundLengthModified.fire(std::make_tuple(3, value));
+			break;
+
+		case BASE + NR32:	// Sound mode 3 register: Select output level
+			Audio_OutputLevelModified.fire(std::make_tuple(3, value));
+			break;
+
+		case BASE + NR33:	// Sound mode 3 register: Frequency lo
+			Audio_FrequencyLoModified.fire(std::make_tuple(3, value));
+			break;
+
+		case BASE + NR34:	// Sound mode 3 register: Frequency hi
+			Audio_InitialiseModified.fire(std::make_tuple(3, (value >> 7) & Processor::Mask1));					// Bits 7
+			Audio_CounterContinuousSelectionModified.fire(std::make_tuple(3, (value >> 6) & Processor::Mask1));// Bits 6
+			Audio_FrequencyHiModified.fire(std::make_tuple(3, value & Processor::Mask3));						// Bits 0-2
+			break;
+
+		case BASE + NR41:	// Sound mode 4 register: Sound length
+			Audio_SoundLengthModified.fire(std::make_tuple(4, value & Processor::Mask6));	// Bits 0-5
+			break;
+
+		case BASE + NR42:	// Sound mode 4 register: Envelope
+			Audio_DefaultEnvelopeVolumeModified.fire(std::make_tuple(4, (value >> 4) & Processor::Mask4));	// Bits 4-7
+			Audio_EnvelopeDirectionModified.fire(std::make_tuple(4, (value >> 3) & Processor::Mask1));		// Bits 3
+			Audio_EnvelopeStepLengthModified.fire(std::make_tuple(4, value & Processor::Mask3));					// Bits 0-2
+			break;
+
+		case BASE + NR43:	// Sound mode 4 register: Polynomial counter
+			Audio_PolynomialShiftClockFrequencyModified.fire(std::make_tuple(4, (value >> 4) & Processor::Mask4));	// Bits 4-7
+			Audio_PolynomialCounterStepModified.fire(std::make_tuple(4, (value >> 3) & Processor::Mask1));			// Bit 3
+			Audio_FrequencyDivisionRatioModified.fire(std::make_tuple(4, value & Processor::Mask3));				// Bits 0-2
+			break;
+
+		case BASE + NR44:	// Sound mode 4 register: counter/consecutive; inital
+			Audio_InitialiseModified.fire(std::make_tuple(4, (value >> 7) & Processor::Mask1));						// Bit 7
+			Audio_CounterContinuousSelectionModified.fire(std::make_tuple(4, (value >> 6) & Processor::Mask1));	// Bits 6
+			break;
+
+		case BASE + NR50:	// Channel control/on-off/volume
+			Audio_SO_VinOnOffModified.fire(std::make_tuple(2, (value >> 7) & Processor::Mask1));					// Bit 7
+			Audio_SO_OutputLevelModified.fire(std::make_tuple(2, (value >> 4) & Processor::Mask3));					// Bits 4-6
+			Audio_SO_VinOnOffModified.fire(std::make_tuple(1, (value >> 3) & Processor::Mask1));					// Bit 3
+			Audio_SO_OutputLevelModified.fire(std::make_tuple(1, value & Processor::Mask3));						// Bits 0-2
+			break;
+
 		case BASE + NR51:
+			Audio_SO_SoundOutputModified.fire(std::make_tuple(2, 4, (value >> 7) & Processor::Mask1));				// Bit 7
+			Audio_SO_SoundOutputModified.fire(std::make_tuple(2, 3, (value >> 6) & Processor::Mask1));				// Bit 6
+			Audio_SO_SoundOutputModified.fire(std::make_tuple(2, 2, (value >> 5) & Processor::Mask1));				// Bit 5
+			Audio_SO_SoundOutputModified.fire(std::make_tuple(2, 1, (value >> 4) & Processor::Mask1));				// Bit 4
+			Audio_SO_SoundOutputModified.fire(std::make_tuple(1, 4, (value >> 3) & Processor::Mask1));				// Bit 3
+			Audio_SO_SoundOutputModified.fire(std::make_tuple(1, 3, (value >> 2) & Processor::Mask1));				// Bit 2
+			Audio_SO_SoundOutputModified.fire(std::make_tuple(1, 2, (value >> 1) & Processor::Mask1));				// Bit 1
+			Audio_SO_SoundOutputModified.fire(std::make_tuple(1, 1, value & Processor::Mask1));						// Bit 0
 			break;
-		case BASE + NR52:
-			m_soundEnabled = (value & Processor::Bit7) != 0;
+
+		case BASE + NR52:	// Sound on/off
+			Audio_AllSoundOnOffModified.fire((value >> 7) & Processor::Mask1);						// Bit 7
+			Audio_ChannelOnOffModified.fire(std::make_tuple(4, (value >> 3) & Processor::Mask1));	// Bit 3
+			Audio_ChannelOnOffModified.fire(std::make_tuple(3, (value >> 2) & Processor::Mask1));	// Bit 2
+			Audio_ChannelOnOffModified.fire(std::make_tuple(2, (value >> 1) & Processor::Mask1));	// Bit 1
+			Audio_ChannelOnOffModified.fire(std::make_tuple(1, value & Processor::Mask1));			// Bit 0
 			break;
 
 		case BASE + LCDC:

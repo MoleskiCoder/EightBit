@@ -1,11 +1,13 @@
 #pragma once
 
 #include <array>
+#include <tuple>
 
 #include <Rom.h>
 #include <Ram.h>
 #include <Bus.h>
 #include <Processor.h>
+#include <Signal.h>
 
 namespace EightBit {
 	namespace GameBoy {
@@ -115,6 +117,30 @@ namespace EightBit {
 			};
 
 			Bus();
+
+			Signal<std::tuple<int, int>> Audio_SweepTimeModified;
+			Signal<std::tuple<int, int>> Audio_SweepDirectionModified;
+			Signal<std::tuple<int, int>> Audio_SweepShiftModified;
+			Signal<std::tuple<int, int>> Audio_WavePatternDutyModified;
+			Signal<std::tuple<int, int>> Audio_SoundLengthModified;
+			Signal<std::tuple<int, int>> Audio_DefaultEnvelopeVolumeModified;
+			Signal<std::tuple<int, int>> Audio_EnvelopeDirectionModified;
+			Signal<std::tuple<int, int>> Audio_EnvelopeStepLengthModified;
+			Signal<std::tuple<int, int>> Audio_FrequencyLoModified;
+			Signal<std::tuple<int, int>> Audio_InitialiseModified;
+			Signal<std::tuple<int, int>> Audio_CounterContinuousSelectionModified;
+			Signal<std::tuple<int, int>> Audio_FrequencyHiModified;
+			Signal<std::tuple<int, int>> Audio_SoundOnOffModified;
+			Signal<std::tuple<int, int>> Audio_OutputLevelModified;
+			Signal<std::tuple<int, int>> Audio_PolynomialShiftClockFrequencyModified;
+			Signal<std::tuple<int, int>> Audio_PolynomialCounterStepModified;
+			Signal<std::tuple<int, int>> Audio_FrequencyDivisionRatioModified;
+			Signal<std::tuple<int, int>> Audio_SO_VinOnOffModified;
+			Signal<std::tuple<int, int>> Audio_SO_OutputLevelModified;
+			Signal<std::tuple<int, int, int>> Audio_SO_SoundOutputModified;
+			Signal<int> Audio_AllSoundOnOffModified;
+			Signal<std::tuple<int, int>> Audio_ChannelOnOffModified;
+
 
 			void reset();
 
@@ -301,9 +327,6 @@ namespace EightBit {
 			register16_t m_dmaAddress;
 			bool m_dmaTransferActive;
 
-			std::array<bool, 4> m_soundChannelEnabled;
-			bool m_soundEnabled;
-
 			bool m_scanP15;
 			bool m_scanP14;
 
@@ -327,7 +350,7 @@ namespace EightBit {
 			}
 
 			void triggerKeypadInterrupt() {
-				triggerInterrupt(Interrupts::KeypadPressed);
+				//triggerInterrupt(Interrupts::KeypadPressed);
 			}
 
 			void Bus_WrittenByte(uint16_t address);
