@@ -48,6 +48,7 @@ namespace EightBit {
 			void renderObjects(int objBlockHeight);
 
 			void renderTile(
+				int height,
 				int drawX, int drawY, int offsetX, int offsetY,
 				bool flipX, bool flipY, bool allowTransparencies,
 				const std::array<int, 4>& palette,
