@@ -254,6 +254,15 @@ namespace EightBit {
 			bool& outputVoice3() { return m_outputVoice[2]; }
 			bool& outputVoice4() { return m_outputVoice[3]; }
 
+			void dump() const {
+				std::cout
+					<< "Output channel: "
+					<< "Vin:" << vin()
+					<< ",Output level=" << outputLevel()
+					<< ",Voices:" << (int)m_outputVoice[0] << (int)m_outputVoice[1] << (int)m_outputVoice[2] << (int)m_outputVoice[3]
+					<< std::endl;
+			}
+
 		private:
 			bool m_vin;
 			int m_outputLevel;
@@ -298,6 +307,10 @@ namespace EightBit {
 				for (int i = 0; i < 4; ++i) {
 					std::cout << "** Voice " << i + 1 << std::endl;
 					m_voices[i]->dump();
+				}
+				for (int i = 0; i < 2; ++i) {
+					std::cout << "** Channel " << i + 1 << std::endl;
+					m_channels[i].dump();
 				}
 			}
 
