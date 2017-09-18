@@ -12,7 +12,8 @@ namespace EightBit {
 
 		class Envelope {
 		public:
-			Envelope() {}
+			Envelope()
+			: m_defaultValue(0), m_direction(0), m_stepLength(0) {}
 
 			enum Direction { Attenuate, Amplify };
 
@@ -38,7 +39,8 @@ namespace EightBit {
 
 		class Sweep {
 		public:
-			Sweep() {}
+			Sweep()
+			: m_time(0), m_direction(0), m_shift(0) {}
 
 			enum Direction { Addition, Subtraction };
 
@@ -64,7 +66,8 @@ namespace EightBit {
 
 		class AudioVoice {
 		public:
-			AudioVoice() {}
+			AudioVoice()
+			: m_counterContinuous(0), m_initialise(0) {}
 
 			enum Type { Continuous, Counter };
 
@@ -86,7 +89,8 @@ namespace EightBit {
 
 		class WaveVoice : public AudioVoice {
 		public:
-			WaveVoice() {}
+			WaveVoice()
+			: m_frequencyLowOrder(0), m_frequencyHighOrder(0) {}
 
 			int frequencyLowOrder() const { return m_frequencyLowOrder; }
 
@@ -103,7 +107,14 @@ namespace EightBit {
 			}
 
 			int frequency() const {
-				return (m_frequencyHighOrder >> 8) | m_frequencyLowOrder;
+				return (m_frequencyHighOrder << 8) | m_frequencyLowOrder;
+			}
+
+			int hertz() const {
+				// f = 4194304 / (4 x 8 x (2048 - X)) Hz
+				auto clock = 4 * 1024 * 1024;
+				auto division = 4 * 8 * (2048 - frequency());
+				return clock / division;
 			}
 
 			void setFrequency(int value) {
@@ -114,7 +125,7 @@ namespace EightBit {
 
 			virtual void dump() const override {
 				AudioVoice::dump();
-				std::cout << "Wave Voice: frequency=" << frequency() << std::endl;
+				std::cout << "Wave Voice: frequency=" << frequency() << " (" << hertz() << ")" << std::endl;
 			}
 
 		private:
@@ -124,7 +135,8 @@ namespace EightBit {
 
 		class RectangularVoice : public WaveVoice {
 		public:
-			RectangularVoice() {}
+			RectangularVoice()
+			: m_waveFormDutyCycle(0), m_soundLength(0) {}
 
 			int waveFormDutyCycle() const { return m_waveFormDutyCycle; }
 			void setWaveFormDutyCycle(int value) { m_waveFormDutyCycle = value; }
@@ -177,7 +189,12 @@ namespace EightBit {
 		// NR3X
 		class UserDefinedWaveVoice : public WaveVoice {
 		public:
-			UserDefinedWaveVoice() {}
+			UserDefinedWaveVoice()
+			: m_enabled(0), m_soundLength(0), m_outputLevel(0) {
+				for (auto& datum : m_waveData)
+					datum = 0;
+			}
+
 
 			bool enabled() const { return !!m_enabled; }
 			void setEnabled(bool value) { m_enabled = value; }
@@ -214,7 +231,12 @@ namespace EightBit {
 		// NR4X
 		class WhiteNoiseWaveVoice : public AudioVoice {
 		public:
-			WhiteNoiseWaveVoice() {}
+			WhiteNoiseWaveVoice()
+			: m_soundLength(0),
+			  m_polynomialShiftClockFrequency(0),
+			  m_polynomialCounterSteps(0),
+			  m_frequencyDivisionRatio(0)
+			{}
 
 			Envelope& envelope() { return m_envelope;  }
 
@@ -240,7 +262,11 @@ namespace EightBit {
 
 		class OutputChannel {
 		public:
-			OutputChannel() {}
+			OutputChannel()
+			: m_vin(false), m_outputLevel(0) {
+				for (auto& outputVoice : m_outputVoices)
+					outputVoice = false;
+			}
 
 			bool vin() const { return m_vin; }
 			void setVin(bool value) { m_vin = value; }
@@ -248,30 +274,31 @@ namespace EightBit {
 			int outputLevel() const { return m_outputLevel; }
 			void setOutputLevel(int value) { m_outputLevel = value; }
 
-			bool& outputVoice(int voice) { return m_outputVoice[voice]; }
-			bool& outputVoice1() { return m_outputVoice[0]; }
-			bool& outputVoice2() { return m_outputVoice[1]; }
-			bool& outputVoice3() { return m_outputVoice[2]; }
-			bool& outputVoice4() { return m_outputVoice[3]; }
+			bool& outputVoice(int voice) { return m_outputVoices[voice]; }
+			bool& outputVoice1() { return m_outputVoices[0]; }
+			bool& outputVoice2() { return m_outputVoices[1]; }
+			bool& outputVoice3() { return m_outputVoices[2]; }
+			bool& outputVoice4() { return m_outputVoices[3]; }
 
 			void dump() const {
 				std::cout
 					<< "Output channel: "
 					<< "Vin:" << vin()
 					<< ",Output level=" << outputLevel()
-					<< ",Voices:" << (int)m_outputVoice[0] << (int)m_outputVoice[1] << (int)m_outputVoice[2] << (int)m_outputVoice[3]
+					<< ",Voices:" << (int)m_outputVoices[0] << (int)m_outputVoices[1] << (int)m_outputVoices[2] << (int)m_outputVoices[3]
 					<< std::endl;
 			}
 
 		private:
 			bool m_vin;
 			int m_outputLevel;
-			std::array<bool, 4> m_outputVoice;
+			std::array<bool, 4> m_outputVoices;
 		};
 
 		class Audio {
 		public:
-			Audio() {
+			Audio()
+			: m_enabled(false) {
 				m_voices[0] = std::make_shared<SweptEnvelopedRectangularVoice>();
 				m_voices[1] = std::make_shared<EnvelopedRectangularVoice>();
 				m_voices[2] = std::make_shared<UserDefinedWaveVoice>();
@@ -303,15 +330,29 @@ namespace EightBit {
 			bool enabled() const { return m_enabled; }
 			void setEnabled(bool value) { m_enabled = value; }
 
+			void dumpVoice(int i) const {
+				std::cout << "** Voice " << i + 1 << std::endl;
+				m_voices[i]->dump();
+			}
+
+			void dumpVoices() const {
+				for (int i = 0; i < 4; ++i)
+					dumpVoice(i);
+			}
+
+			void dumpChannel(int i) const {
+				std::cout << "** Channel " << i + 1 << std::endl;
+				m_channels[i].dump();
+			}
+
+			void dumpChannels() const {
+				for (int i = 0; i < 2; ++i)
+					dumpChannel(i);
+			}
+
 			void dump() const {
-				for (int i = 0; i < 4; ++i) {
-					std::cout << "** Voice " << i + 1 << std::endl;
-					m_voices[i]->dump();
-				}
-				for (int i = 0; i < 2; ++i) {
-					std::cout << "** Channel " << i + 1 << std::endl;
-					m_channels[i].dump();
-				}
+				dumpVoices();
+				dumpChannels();
 			}
 
 		private:

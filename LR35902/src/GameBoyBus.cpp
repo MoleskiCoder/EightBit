@@ -145,6 +145,7 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 		case NR51:
 			break;
 		case NR52:
+			mask(Processor::Bit7 | Processor::Mask4);
 			break;
 
 		// LCD Display Registers
@@ -249,91 +250,109 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			audio().voice1()->sweep().setTime((value >> 4) & Processor::Mask3);			// Bits 4-6
 			audio().voice1()->sweep().setDirection((value >> 3) & Processor::Mask1);	// Bit 3
 			audio().voice1()->sweep().setShift(value & Processor::Mask3);				// Bits 0-2
+			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR11:	// Sound mode 1 register: Sound length / Wave pattern duty
 			audio().voice1()->setWaveFormDutyCycle((value >> 6) & Processor::Mask2);	// Bits 6-7
 			audio().voice1()->setLength(value & Processor::Mask6);						// Bits 0-5
+			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR12:	// Sound mode 1 register: Envelope
 			audio().voice1()->envelope().setDefault((value >> 4) & Processor::Mask4);	// Bits 4-7
 			audio().voice1()->envelope().setDirection((value >> 3) & Processor::Mask1);		// Bit 3
 			audio().voice1()->envelope().setStepLength(value & Processor::Mask3); 			// Bits 0-2
+			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR13:	// Sound mode 1 register: Frequency lo
 			audio().voice1()->setFrequencyLowOrder(value);
+			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR14:	// Sound mode 1 register: Frequency hi
 			audio().voice1()->setInitialise((value >> 7) & Processor::Mask1);	// Bits 7
 			audio().voice1()->setType((value >> 6) & Processor::Mask1);			// Bits 6
 			audio().voice1()->setFrequencyHighOrder(value & Processor::Mask3);	// Bits 0-2
+			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR21:	// Sound mode 2 register: Sound length / Wave pattern duty
 			audio().voice2()->setWaveFormDutyCycle((value >> 6) & Processor::Mask2);	// Bits 6-7
 			audio().voice2()->setLength(value & Processor::Mask6);						// Bits 0-5
+			audio().dumpVoice(1);
 			break;
 
 		case BASE + NR22:	// Sound mode 2 register: Envelope
 			audio().voice2()->envelope().setDefault((value >> 4) & Processor::Mask4);	// Bits 4-7
 			audio().voice2()->envelope().setDirection((value >> 3) & Processor::Mask1);		// Bit 3
 			audio().voice2()->envelope().setStepLength(value & Processor::Mask3); 			// Bits 0-2
+			audio().dumpVoice(1);
 			break;
 
 		case BASE + NR23:	// Sound mode 2 register: Frequency lo
 			audio().voice2()->setFrequencyLowOrder(value);
+			audio().dumpVoice(1);
 			break;
 
 		case BASE + NR24:	// Sound mode 2 register: Frequency hi
 			audio().voice2()->setInitialise((value >> 7) & Processor::Mask1);	// Bit 7
 			audio().voice2()->setType((value >> 6) & Processor::Mask1);			// Bit 6
 			audio().voice2()->setFrequencyHighOrder(value & Processor::Mask3);	// Bits 0-2
+			audio().dumpVoice(1);
 			break;
 
 		case BASE + NR30:	// Sound mode 3 register: Sound on/off
 			audio().voice3()->setEnabled((value >> 7) & Processor::Mask1);		// Bit 7
+			audio().dumpVoice(2);
 			break;
 
 		case BASE + NR31:	// Sound mode 3 register: Sound length
 			audio().voice3()->setLength(value);
+			audio().dumpVoice(2);
 			break;
 
 		case BASE + NR32:	// Sound mode 3 register: Select output level
 			audio().voice3()->setLevel(value);
+			audio().dumpVoice(2);
 			break;
 
 		case BASE + NR33:	// Sound mode 3 register: Frequency lo
 			audio().voice3()->setFrequencyLowOrder(value);
+			audio().dumpVoice(2);
 			break;
 
 		case BASE + NR34:	// Sound mode 3 register: Frequency hi
 			audio().voice3()->setInitialise((value >> 7) & Processor::Mask1);	// Bits 7
 			audio().voice3()->setType((value >> 6) & Processor::Mask1);			// Bits 6
 			audio().voice3()->setFrequencyHighOrder(value & Processor::Mask3);	// Bits 0-2
+			audio().dumpVoice(2);
 			break;
 
 		case BASE + NR41:	// Sound mode 4 register: Sound length
 			audio().voice4()->setLength(value & Processor::Mask6);					// Bits 0-5
+			audio().dumpVoice(3);
 			break;
 
 		case BASE + NR42:	// Sound mode 4 register: Envelope
 			audio().voice4()->envelope().setDefault((value >> 4) & Processor::Mask4);	// Bits 4-7
 			audio().voice4()->envelope().setDirection((value >> 3) & Processor::Mask1);		// Bit 3
 			audio().voice4()->envelope().setStepLength(value & Processor::Mask3); 			// Bits 0-2
+			audio().dumpVoice(3);
 			break;
 
 		case BASE + NR43:	// Sound mode 4 register: Polynomial counter
 			audio().voice4()->setPolynomialShiftClockFrequency((value >> 4) & Processor::Mask4);	// Bits 4-7
 			audio().voice4()->setPolynomialCounterSteps((value >> 3) & Processor::Mask1);			// Bit 3
 			audio().voice4()->setFrequencyDivisionRatio(value & Processor::Mask3);					// Bits 0-2
+			audio().dumpVoice(3);
 			break;
 
 		case BASE + NR44:	// Sound mode 4 register: counter/consecutive; inital
 			audio().voice4()->setInitialise((value >> 7) & Processor::Mask1);	// Bit 7
 			audio().voice4()->setType((value >> 6) & Processor::Mask1);			// Bit 6
+			audio().dumpVoice(3);
 			break;
 
 		case BASE + NR50:	// Channel control: on-off/volume
@@ -341,6 +360,7 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			audio().channel2().setOutputLevel((value >> 4) & Processor::Mask3);	// Bits 4-6
 			audio().channel1().setVin((value >> 3) & Processor::Mask1);			// Bit 3
 			audio().channel1().setOutputLevel(value & Processor::Mask3);		// Bits 0-2
+			audio().dumpChannels();
 			break;
 
 		case BASE + NR51:
@@ -352,6 +372,7 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			audio().channel1().outputVoice3() = (value >> 2) & Processor::Mask1;	// Bit 2
 			audio().channel1().outputVoice2() = (value >> 1) & Processor::Mask1;	// Bit 1
 			audio().channel1().outputVoice1() = value & Processor::Mask1;			// Bit 0
+			audio().dumpChannels();
 			break;
 
 		case BASE + NR52:	// Sound on/off
