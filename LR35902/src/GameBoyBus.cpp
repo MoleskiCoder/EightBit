@@ -113,14 +113,21 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 
 		// Sound Registers
 		case NR10:
-			mask(Processor::Mask7);
+			poke(address, audio().voice1()->sweep().toNR());
 			break;
 		case NR11:
+			poke(address, audio().voice1()->toNR());
+			break;
 		case NR12:
+			poke(address, audio().voice1()->envelope().toNR());
+			break;
 		case NR13:
 		case NR14:
 		case NR21:
+			break;
 		case NR22:
+			poke(address, audio().voice2()->envelope().toNR());
+			break;
 		case NR23:
 		case NR24:
 			break;
@@ -139,6 +146,8 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 			mask(Processor::Mask6);
 			break;
 		case NR42:
+			poke(address, audio().voice4()->envelope().toNR());
+			break;
 		case NR43:
 			break;
 		case NR44:
@@ -250,22 +259,17 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			break;
 
 		case BASE + NR10:	// Sound mode 1 register: Sweep
-			audio().voice1()->sweep().setTime((value >> 4) & Processor::Mask3);			// Bits 4-6
-			audio().voice1()->sweep().setDirection((value >> 3) & Processor::Mask1);	// Bit 3
-			audio().voice1()->sweep().setShift(value & Processor::Mask3);				// Bits 0-2
+			audio().voice1()->sweep().fromNR(value);
 			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR11:	// Sound mode 1 register: Sound length / Wave pattern duty
-			audio().voice1()->setWaveFormDutyCycle((value >> 6) & Processor::Mask2);	// Bits 6-7
-			audio().voice1()->setLength(value & Processor::Mask6);						// Bits 0-5
+			audio().voice1()->fromNR(value);
 			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR12:	// Sound mode 1 register: Envelope
-			audio().voice1()->envelope().setDefault((value >> 4) & Processor::Mask4);	// Bits 4-7
-			audio().voice1()->envelope().setDirection((value >> 3) & Processor::Mask1);		// Bit 3
-			audio().voice1()->envelope().setStepLength(value & Processor::Mask3); 			// Bits 0-2
+			audio().voice1()->envelope().fromNR(value);
 			audio().dumpVoice(0);
 			break;
 
@@ -282,15 +286,12 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			break;
 
 		case BASE + NR21:	// Sound mode 2 register: Sound length / Wave pattern duty
-			audio().voice2()->setWaveFormDutyCycle((value >> 6) & Processor::Mask2);	// Bits 6-7
-			audio().voice2()->setLength(value & Processor::Mask6);						// Bits 0-5
+			audio().voice2()->fromNR(value);
 			audio().dumpVoice(1);
 			break;
 
 		case BASE + NR22:	// Sound mode 2 register: Envelope
-			audio().voice2()->envelope().setDefault((value >> 4) & Processor::Mask4);	// Bits 4-7
-			audio().voice2()->envelope().setDirection((value >> 3) & Processor::Mask1);		// Bit 3
-			audio().voice2()->envelope().setStepLength(value & Processor::Mask3); 			// Bits 0-2
+			audio().voice2()->envelope().fromNR(value);
 			audio().dumpVoice(1);
 			break;
 
@@ -339,9 +340,7 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			break;
 
 		case BASE + NR42:	// Sound mode 4 register: Envelope
-			audio().voice4()->envelope().setDefault((value >> 4) & Processor::Mask4);	// Bits 4-7
-			audio().voice4()->envelope().setDirection((value >> 3) & Processor::Mask1);		// Bit 3
-			audio().voice4()->envelope().setStepLength(value & Processor::Mask3); 			// Bits 0-2
+			audio().voice4()->envelope().fromNR(value);
 			audio().dumpVoice(3);
 			break;
 

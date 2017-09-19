@@ -24,6 +24,17 @@ namespace EightBit {
 				return (default() == 0) && (stepLength() == 0) && (direction() == Attenuate);
 			}
 
+			uint8_t toNR() const {
+				return (default() << 4) | (direction() << 3) | stepLength();
+			}
+
+			void fromNR(uint8_t value) {
+				setDefault((value >> 4) & Processor::Mask4);	// Bits 4-7
+				setDirection((value >> 3) & Processor::Mask1);	// Bit 3
+				setStepLength(value & Processor::Mask3); 		// Bits 0-2
+			}
+
+
 			int default() const { return m_defaultValue; }
 			void setDefault(int value) { m_defaultValue = value; }
 
@@ -52,6 +63,16 @@ namespace EightBit {
 
 			void reset() {
 				m_time = m_direction = m_shift = 0;
+			}
+
+			uint8_t toNR() const {
+				return Processor::Bit7 | (time() << 4) | (direction() << 3) | shift();
+			}
+
+			void fromNR(uint8_t value) {
+				setTime((value >> 4) & Processor::Mask3);		// Bits 4-6
+				setDirection((value >> 3) & Processor::Mask1);	// Bit 3
+				setShift(value & Processor::Mask3);				// Bits 0-2
 			}
 
 			bool zeroed() const {
@@ -173,6 +194,15 @@ namespace EightBit {
 
 			virtual bool zeroed() const override {
 				return WaveVoice::zeroed() && (waveFormDutyCycle() == 0) && (length() == 0);
+			}
+
+			uint8_t toNR() const {
+				return Processor::Bit7 | (waveFormDutyCycle() << 6) | length();
+			}
+
+			void fromNR(uint8_t value) {
+				setWaveFormDutyCycle((value >> 6) & Processor::Mask2);	// Bits 6-7
+				setLength(value & Processor::Mask6);					// Bits 0-5
 			}
 
 			int waveFormDutyCycle() const { return m_waveFormDutyCycle; }
