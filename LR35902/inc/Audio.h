@@ -10,12 +10,19 @@
 namespace EightBit {
 	namespace GameBoy {
 
-		class Envelope {
+		class Envelope final {
 		public:
-			Envelope()
-			: m_defaultValue(0), m_direction(0), m_stepLength(0) {}
+			Envelope() {}
 
 			enum Direction { Attenuate, Amplify };
+
+			void reset() {
+				m_defaultValue = m_direction = m_stepLength = 0;
+			}
+
+			bool zeroed() const {
+				return (default() == 0) && (stepLength() == 0) && (direction() == Attenuate);
+			}
 
 			int default() const { return m_defaultValue; }
 			void setDefault(int value) { m_defaultValue = value; }
@@ -37,12 +44,19 @@ namespace EightBit {
 			int m_stepLength;
 		};
 
-		class Sweep {
+		class Sweep final {
 		public:
-			Sweep()
-			: m_time(0), m_direction(0), m_shift(0) {}
+			Sweep() {}
 
 			enum Direction { Addition, Subtraction };
+
+			void reset() {
+				m_time = m_direction = m_shift = 0;
+			}
+
+			bool zeroed() const {
+				return (time() == 0) && (shift() == 0) && (direction() == Addition);
+			}
 
 			int time() const { return m_time; }
 			void setTime(int value) { m_time = value; }
@@ -66,8 +80,15 @@ namespace EightBit {
 
 		class AudioVoice {
 		public:
-			AudioVoice()
-			: m_counterContinuous(0), m_initialise(0) {}
+			AudioVoice() {}
+
+			virtual void reset() {
+				m_counterContinuous = m_initialise = 0;
+			}
+
+			virtual bool zeroed() const {
+				return !initialise() && (type() == Continuous);
+			}
 
 			enum Type { Continuous, Counter };
 
@@ -89,8 +110,16 @@ namespace EightBit {
 
 		class WaveVoice : public AudioVoice {
 		public:
-			WaveVoice()
-			: m_frequencyLowOrder(0), m_frequencyHighOrder(0) {}
+			WaveVoice() {}
+
+			virtual void reset() override {
+				AudioVoice::reset();
+				m_frequencyLowOrder = m_frequencyHighOrder = 0;
+			}
+
+			virtual bool zeroed() const override {
+				return AudioVoice::zeroed() && (frequency() == 0);
+			}
 
 			int frequencyLowOrder() const { return m_frequencyLowOrder; }
 
@@ -135,8 +164,16 @@ namespace EightBit {
 
 		class RectangularVoice : public WaveVoice {
 		public:
-			RectangularVoice()
-			: m_waveFormDutyCycle(0), m_soundLength(0) {}
+			RectangularVoice() {}
+
+			virtual void reset() override {
+				WaveVoice::reset();
+				m_waveFormDutyCycle = m_soundLength = 0;
+			}
+
+			virtual bool zeroed() const override {
+				return WaveVoice::zeroed() && (waveFormDutyCycle() == 0) && (length() == 0);
+			}
 
 			int waveFormDutyCycle() const { return m_waveFormDutyCycle; }
 			void setWaveFormDutyCycle(int value) { m_waveFormDutyCycle = value; }
@@ -159,6 +196,15 @@ namespace EightBit {
 		public:
 			EnvelopedRectangularVoice() {}
 
+			virtual void reset() override {
+				RectangularVoice::reset();
+				m_envelope.reset();
+			}
+
+			virtual bool zeroed() const override {
+				return RectangularVoice::zeroed() && m_envelope.zeroed();
+			}
+
 			Envelope& envelope() { return m_envelope; }
 
 			virtual void dump() const override {
@@ -175,6 +221,15 @@ namespace EightBit {
 		public:
 			SweptEnvelopedRectangularVoice() {}
 
+			virtual void reset() override {
+				EnvelopedRectangularVoice::reset();
+				m_sweep.reset();
+			}
+
+			virtual bool zeroed() const override {
+				return EnvelopedRectangularVoice::zeroed() && m_sweep.zeroed();
+			}
+
 			Sweep& sweep() { return m_sweep; }
 
 			virtual void dump() const override {
@@ -189,12 +244,30 @@ namespace EightBit {
 		// NR3X
 		class UserDefinedWaveVoice : public WaveVoice {
 		public:
-			UserDefinedWaveVoice()
-			: m_enabled(0), m_soundLength(0), m_outputLevel(0) {
+			UserDefinedWaveVoice() {}
+
+			virtual void reset() override {
+				WaveVoice::reset();
+				m_enabled = m_soundLength = m_outputLevel = 0;
 				for (auto& datum : m_waveData)
 					datum = 0;
 			}
 
+			virtual bool zeroed() const override {
+				bool dataZeroed = true;
+				for (const auto& datum : m_waveData) {
+					if (datum != 0) {
+						dataZeroed = false;
+						break;
+					}
+				}
+				return
+					WaveVoice::zeroed()
+					&& dataZeroed
+					&& !enabled()
+					&& (length() == 0)
+					&& (level() == 0);
+			}
 
 			bool enabled() const { return !!m_enabled; }
 			void setEnabled(bool value) { m_enabled = value; }
@@ -231,12 +304,23 @@ namespace EightBit {
 		// NR4X
 		class WhiteNoiseWaveVoice : public AudioVoice {
 		public:
-			WhiteNoiseWaveVoice()
-			: m_soundLength(0),
-			  m_polynomialShiftClockFrequency(0),
-			  m_polynomialCounterSteps(0),
-			  m_frequencyDivisionRatio(0)
-			{}
+			WhiteNoiseWaveVoice() {}
+
+			virtual void reset() override {
+				AudioVoice::reset();
+				m_envelope.reset();
+				m_soundLength = m_polynomialShiftClockFrequency = m_polynomialCounterSteps = m_frequencyDivisionRatio = 0;
+			}
+
+			virtual bool zeroed() const override {
+				return
+					AudioVoice::zeroed()
+					&& m_envelope.zeroed()
+					&& (length() == 0)
+					&& (polynomialShiftClockFrequency() == 0)
+					&& (polynomialCounterSteps() == 0)
+					&& (frequencyDivisionRatio() == 0);
+			}
 
 			Envelope& envelope() { return m_envelope;  }
 
@@ -260,12 +344,22 @@ namespace EightBit {
 			int m_frequencyDivisionRatio;
 		};
 
-		class OutputChannel {
+		class OutputChannel final {
 		public:
-			OutputChannel()
-			: m_vin(false), m_outputLevel(0) {
+			OutputChannel() {}
+
+			void reset() {
+				m_vin = false;
+				m_outputLevel = 0;
 				for (auto& outputVoice : m_outputVoices)
 					outputVoice = false;
+			}
+
+			bool zeroed() const {
+				return
+					!vin()
+					&& outputLevel() == 0
+					&& !m_outputVoices[0] && !m_outputVoices[1] && !m_outputVoices[2] && !m_outputVoices[3];
 			}
 
 			bool vin() const { return m_vin; }
@@ -295,7 +389,7 @@ namespace EightBit {
 			std::array<bool, 4> m_outputVoices;
 		};
 
-		class Audio {
+		class Audio final {
 		public:
 			Audio()
 			: m_enabled(false) {
@@ -328,7 +422,30 @@ namespace EightBit {
 			OutputChannel& channel2() { return channel(1); }
 
 			bool enabled() const { return m_enabled; }
-			void setEnabled(bool value) { m_enabled = value; }
+
+			void setEnabled(bool value) {
+				m_enabled = value;
+				if (!enabled())
+					reset();
+			}
+
+			void reset() {
+				m_enabled = false;
+				for (auto voice : m_voices)
+					voice->reset();
+				for (auto& channel : m_channels)
+					channel.reset();
+			}
+
+			bool zeroed() const {
+				auto channelsZeroed = m_channels[0].zeroed() && m_channels[1].zeroed();
+				auto voice1Zero = m_voices[0]->zeroed();
+				auto voice2Zero = m_voices[1]->zeroed();
+				auto voice3Zero = m_voices[2]->zeroed();
+				auto voice4Zero = m_voices[3]->zeroed();
+				auto voicesZeroed = voice1Zero && voice2Zero && voice3Zero && voice4Zero;
+				return !enabled() && channelsZeroed && voicesZeroed;
+			}
 
 			void dumpVoice(int i) const {
 				std::cout << "** Voice " << i + 1 << std::endl;
