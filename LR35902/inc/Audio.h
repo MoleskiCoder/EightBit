@@ -24,17 +24,6 @@ namespace EightBit {
 				return (default() == 0) && (stepLength() == 0) && (direction() == Attenuate);
 			}
 
-			uint8_t toNR() const {
-				return (default() << 4) | (direction() << 3) | stepLength();
-			}
-
-			void fromNR(uint8_t value) {
-				setDefault((value >> 4) & Processor::Mask4);	// Bits 4-7
-				setDirection((value >> 3) & Processor::Mask1);	// Bit 3
-				setStepLength(value & Processor::Mask3); 		// Bits 0-2
-			}
-
-
 			int default() const { return m_defaultValue; }
 			void setDefault(int value) { m_defaultValue = value; }
 
@@ -63,16 +52,6 @@ namespace EightBit {
 
 			void reset() {
 				m_time = m_direction = m_shift = 0;
-			}
-
-			uint8_t toNR() const {
-				return Processor::Bit7 | (time() << 4) | (direction() << 3) | shift();
-			}
-
-			void fromNR(uint8_t value) {
-				setTime((value >> 4) & Processor::Mask3);		// Bits 4-6
-				setDirection((value >> 3) & Processor::Mask1);	// Bit 3
-				setShift(value & Processor::Mask3);				// Bits 0-2
 			}
 
 			bool zeroed() const {
@@ -194,15 +173,6 @@ namespace EightBit {
 
 			virtual bool zeroed() const override {
 				return WaveVoice::zeroed() && (waveFormDutyCycle() == 0) && (length() == 0);
-			}
-
-			uint8_t toNR() const {
-				return Processor::Bit7 | (waveFormDutyCycle() << 6) | length();
-			}
-
-			void fromNR(uint8_t value) {
-				setWaveFormDutyCycle((value >> 6) & Processor::Mask2);	// Bits 6-7
-				setLength(value & Processor::Mask6);					// Bits 0-5
 			}
 
 			int waveFormDutyCycle() const { return m_waveFormDutyCycle; }
@@ -501,6 +471,286 @@ namespace EightBit {
 				dumpVoices();
 				dumpChannels();
 			}
+
+			//
+
+			bool voice1On() const { return true; }
+			bool voice2On() const { return true; }
+			bool voice3On() const { return true; }
+			bool voice4On() const { return true; }
+
+			//
+
+			uint8_t toNRx1(int i) {
+				auto voice = (RectangularVoice*)m_voices[i].get();
+				return
+					(voice->waveFormDutyCycle() << 6)
+					| Processor::Mask6;
+			}
+
+			void fromNRx1(int i, uint8_t value) {
+				auto voice = (RectangularVoice*)m_voices[i].get();
+				voice->setWaveFormDutyCycle((value >> 6) & Processor::Mask2);	// Bits 6-7
+				voice->setLength(value & Processor::Mask6);						// Bits 0-5
+			}
+
+			uint8_t toNRx2(int i) {
+				auto voice = (EnvelopedRectangularVoice*)m_voices[i].get();
+				auto& envelope = voice->envelope();
+				return
+					(envelope.default() << 4)
+					| (envelope.direction() << 3)
+					| envelope.stepLength();
+			}
+
+			void fromNRx2(int i, uint8_t value) {
+				auto voice = (EnvelopedRectangularVoice*)m_voices[i].get();
+				auto& envelope = voice->envelope();
+				envelope.setDefault((value >> 4) & Processor::Mask4);	// Bits 4-7
+				envelope.setDirection((value >> 3) & Processor::Mask1);	// Bit 3
+				envelope.setStepLength(value & Processor::Mask3); 		// Bits 0-2
+			}
+
+			uint8_t toNRx3(int i) {
+				return Processor::Mask8;
+			}
+
+			void fromNRx3(int i, uint8_t value) {
+				auto voice = (WaveVoice*)m_voices[i].get();
+				voice->setFrequencyLowOrder(value);
+			}
+
+			// Sound mode 1 register: Sweep
+
+			uint8_t toNR10() {
+				auto& sweep = voice1()->sweep();
+				return
+					Processor::Bit7
+					| (sweep.time() << 4)
+					| (sweep.direction() << 3)
+					| sweep.shift();
+			}
+
+			void fromNR10(uint8_t value) {
+				auto& sweep = voice1()->sweep();
+				sweep.setTime((value >> 4) & Processor::Mask3);			// Bits 4-6
+				sweep.setDirection((value >> 3) & Processor::Mask1);	// Bit 3
+				sweep.setShift(value & Processor::Mask3);				// Bits 0-2
+			}
+
+			// Sound mode 1 register: Sound length / Wave pattern duty
+			uint8_t toNR11() { return toNRx1(0); }
+			void fromNR11(uint8_t value) { fromNRx1(0, value); }
+
+			// Sound mode 1 register: Envelope
+			uint8_t toNR12() { return toNRx2(0); }
+			void fromNR12(uint8_t value) { fromNRx2(0, value); }
+
+			// Sound mode 1 register: Frequency lo
+			uint8_t toNR13() { return toNRx3(0); }
+			void fromNR13(uint8_t value) { fromNRx3(0, value); }
+
+			// Sound mode 1 register: Frequency hi
+
+			uint8_t toNR14() {
+				return
+					Processor::Bit7
+					| (voice1()->type() << 6)
+					| Processor::Mask6;
+			}
+
+			void fromNR14(uint8_t value) {
+				voice1()->setInitialise((value >> 7) & Processor::Mask1);	// Bits 7
+				voice1()->setType((value >> 6) & Processor::Mask1);			// Bits 6
+				voice1()->setFrequencyHighOrder(value & Processor::Mask3);	// Bits 0-2
+			}
+
+			// Sound mode 2 register: Sound length / Wave pattern duty
+			uint8_t toNR21() { return toNRx1(1); }
+			void fromNR21(uint8_t value) { fromNRx1(1, value); }
+
+			// Sound mode 2 register: Envelope
+			uint8_t toNR22() { return toNRx2(1); }
+			void fromNR22(uint8_t value) { fromNRx2(1, value); }
+
+			// Sound mode 2 register: Frequency lo
+			uint8_t toNR23() { return toNRx3(1); }
+			void fromNR23(uint8_t value) { fromNRx3(1, value); }
+
+			// Sound mode 2 register: Frequency hi
+
+			uint8_t toNR24() {
+				return
+					Processor::Bit7
+					| (voice2()->type() << 6)
+					| Processor::Mask6;
+			}
+
+			void fromNR24(uint8_t value) {
+				voice2()->setInitialise((value >> 7) & Processor::Mask1);	// Bits 7
+				voice2()->setType((value >> 6) & Processor::Mask1);			// Bits 6
+				voice2()->setFrequencyHighOrder(value & Processor::Mask3);	// Bits 0-2
+			}
+
+			// Sound mode 3 register: Sound on/off
+
+			uint8_t toNR30() {
+				return
+					(voice3()->enabled() << 7)
+					| Processor::Mask7;
+			}
+
+			void fromNR30(uint8_t value) {
+				voice3()->setEnabled((value >> 7) & Processor::Mask1);		// Bit 7
+			}
+
+			// Sound mode 3 register: Sound length
+
+			uint8_t toNR31() {
+				return voice3()->length();
+			}
+
+			void fromNR31(uint8_t value) {
+				voice3()->setLength(value);
+			}
+
+			// Sound mode 3 register: Select output level
+
+			uint8_t toNR32() {
+				return
+					Processor::Bit7
+					| Processor::Bit6
+					| voice3()->level() << 5
+					| Processor::Mask5;
+			}
+
+			void fromNR32(uint8_t value) {
+				voice3()->setLevel((value >> 5) & Processor::Mask2);	// Bits 6-5
+			}
+
+			// Sound mode 3 register: Frequency lo
+			uint8_t toNR33() { return toNRx3(2); }
+			void fromNR33(uint8_t value) { fromNRx3(2, value); }
+
+			// Sound mode 3 register: Frequency hi
+
+			uint8_t toNR34() {
+				return
+					Processor::Bit7
+					| (voice3()->type() << 6)
+					| Processor::Mask6;
+			}
+
+			void fromNR34(uint8_t value) {
+				voice3()->setInitialise((value >> 7) & Processor::Mask1);	// Bits 7
+				voice3()->setType((value >> 6) & Processor::Mask1);			// Bits 6
+				voice3()->setFrequencyHighOrder(value & Processor::Mask3);	// Bits 0-2
+			}
+
+			// Sound mode 4 register: Sound length
+
+			uint8_t toNR41() {
+				return
+					Processor::Bit7
+					| Processor::Bit6
+					| voice4()->length();
+			}
+
+			void fromNR41(uint8_t value) {
+				voice4()->setLength(value);
+			}
+
+			// Sound mode 4 register: Envelope
+			uint8_t toNR42() { return toNRx2(3); }
+			void fromNR42(uint8_t value) { fromNRx2(3, value); }
+
+			// Sound mode 4 register: Polynomial counter
+
+			uint8_t toNR43() {
+				return
+					(voice4()->polynomialShiftClockFrequency() << 4)
+					| voice4()->polynomialCounterSteps() << 3
+					| voice4()->frequencyDivisionRatio();
+			}
+
+			void fromNR43(uint8_t value) {
+				voice4()->setPolynomialShiftClockFrequency((value >> 4) & Processor::Mask4);	// Bits 4-7
+				voice4()->setPolynomialCounterSteps((value >> 3) & Processor::Mask1);			// Bit 3
+				voice4()->setFrequencyDivisionRatio(value & Processor::Mask3);					// Bits 0-2
+			}
+
+			// Sound mode 4 register: counter/consecutive; inital
+
+			uint8_t toNR44() {
+				return
+					Processor::Bit7
+					| (voice4()->type() << 6)
+					| Processor::Mask6;
+			}
+
+			void fromNR44(uint8_t value) {
+				voice4()->setInitialise((value >> 7) & Processor::Mask1);	// Bit 7
+				voice4()->setType((value >> 6) & Processor::Mask1);			// Bit 6
+			}
+
+			// Channel control: on-off/volume
+
+			uint8_t toNR50() {
+				return
+					(channel2().vin() << 7)
+					| (channel2().outputLevel() << 4)
+					| (channel2().vin() << 3)
+					| channel2().outputLevel();
+			}
+
+			void fromNR50(uint8_t value) {
+				channel2().setVin((value >> 7) & Processor::Mask1);			// Bit 7
+				channel2().setOutputLevel((value >> 4) & Processor::Mask3);	// Bits 4-6
+				channel1().setVin((value >> 3) & Processor::Mask1);			// Bit 3
+				channel1().setOutputLevel(value & Processor::Mask3);		// Bits 0-2
+			}
+
+			// Selection of Sound output terminal
+
+			uint8_t toNR51() {
+				return
+					(channel2().outputVoice4() << 7)
+					| (channel2().outputVoice3() << 6)
+					| (channel2().outputVoice2() << 5)
+					| (channel2().outputVoice1() << 4)
+					| (channel1().outputVoice4() << 3)
+					| (channel1().outputVoice3() << 2)
+					| (channel1().outputVoice2() << 1)
+					| (int)channel1().outputVoice1();
+			}
+
+			void fromNR51(uint8_t value) {
+				channel2().outputVoice4() = (value >> 7) & Processor::Mask1;	// Bit 7
+				channel2().outputVoice3() = (value >> 6) & Processor::Mask1;	// Bit 6
+				channel2().outputVoice2() = (value >> 5) & Processor::Mask1;	// Bit 5
+				channel2().outputVoice1() = (value >> 4) & Processor::Mask1;	// Bit 4
+				channel1().outputVoice4() = (value >> 3) & Processor::Mask1;	// Bit 3
+				channel1().outputVoice3() = (value >> 2) & Processor::Mask1;	// Bit 2
+				channel1().outputVoice2() = (value >> 1) & Processor::Mask1;	// Bit 1
+				channel1().outputVoice1() = value & Processor::Mask1;			// Bit 0
+			}
+
+			// Sound on/off
+
+			uint8_t toNR52() {
+				return
+					(enabled() << 7)
+					| Processor::Bit6 | Processor::Bit5 | Processor::Bit4
+					| (voice4On() << 3)
+					| (voice3On() << 2)
+					| (voice2On() << 1)
+					| voice1On();
+			}
+
+			void fromNR52(uint8_t value) {
+				setEnabled((value >> 7) & Processor::Mask1);	// Bit 7
+			}
+
 
 		private:
 			std::array<std::shared_ptr<AudioVoice>, 4> m_voices;
