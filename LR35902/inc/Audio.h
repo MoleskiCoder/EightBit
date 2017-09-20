@@ -744,7 +744,7 @@ namespace EightBit {
 					| (voice4On() << 3)
 					| (voice3On() << 2)
 					| (voice2On() << 1)
-					| voice1On();
+					| (int)voice1On();
 			}
 
 			void fromNR52(uint8_t value) {
