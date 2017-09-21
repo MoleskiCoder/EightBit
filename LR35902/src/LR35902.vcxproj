@@ -152,6 +152,7 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Audio.cpp" />
     <ClCompile Include="GameBoyBus.cpp" />
     <ClCompile Include="Disassembler.cpp" />
     <ClCompile Include="Display.cpp" />
