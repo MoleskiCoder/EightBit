@@ -34,9 +34,6 @@ namespace EightBit {
 
 			virtual void reset() override;
 
-			static int framesPerSecond() { return 60; }
-			static int cyclesPerFrame() { return cyclesPerSecond() / framesPerSecond(); }
-
 			int runRasterLines();
 			int runRasterLine();
 			int runVerticalBlankLines();
@@ -60,9 +57,6 @@ namespace EightBit {
 			bool m_stopped;
 
 			bool m_prefixCB;
-
-			static int cyclesPerSecond() { return 4 * 1024 * 1024; }
-			static int cyclesPerLine() { return cyclesPerFrame() / Bus::TotalLineCount; }
 
 			bool& IME() { return m_ime; }
 

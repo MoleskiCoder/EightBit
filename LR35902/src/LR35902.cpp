@@ -336,7 +336,7 @@ int EightBit::GameBoy::LR35902::runRasterLines(int limit) {
 }
 
 int EightBit::GameBoy::LR35902::runRasterLine() {
-	const auto count = run(cyclesPerLine());
+	const auto count = run(Bus::CyclesPerLine);
 	if (m_bus.peekRegister(Bus::LCDC) & Bus::LcdEnable) {
 		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::HBlank);
 		m_bus.incrementLY();

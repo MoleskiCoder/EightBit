@@ -24,7 +24,11 @@ namespace EightBit {
 			};
 
 			enum {
+				CyclesPerSecond = 4 * 1024 * 1024,
+				FramesPerSecond = 60,
+				CyclesPerFrame = CyclesPerSecond / FramesPerSecond,
 				TotalLineCount = 154,
+				CyclesPerLine = CyclesPerFrame / TotalLineCount,
 				RomPageSize = 0x4000
 			};
 
