@@ -30,7 +30,8 @@ EightBit::GameBoy::Bus::Bus()
   m_p13(true),
   m_p12(true),
   m_p11(true),
-  m_p10(true) {
+  m_p10(true),
+  m_audio(CyclesPerSecond) {
 	ReadingByte.connect(std::bind(&GameBoy::Bus::Bus_ReadingByte, this, std::placeholders::_1));
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
 	m_divCounter.word = 0xabcc;

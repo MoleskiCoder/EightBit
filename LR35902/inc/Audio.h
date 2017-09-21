@@ -7,6 +7,8 @@
 
 #include <Processor.h>
 
+#include "AudioFrame.h"
+
 namespace EightBit {
 	namespace GameBoy {
 
@@ -110,7 +112,8 @@ namespace EightBit {
 
 		class WaveVoice : public AudioVoice {
 		public:
-			WaveVoice() {}
+			WaveVoice(int cyclesPerSecond)
+			: m_cyclesPerSecond(cyclesPerSecond) {}
 
 			virtual void reset() override {
 				AudioVoice::reset();
@@ -141,9 +144,8 @@ namespace EightBit {
 
 			int hertz() const {
 				// f = 4194304 / (4 x 8 x (2048 - X)) Hz
-				auto clock = 4 * 1024 * 1024;
 				auto division = 4 * 8 * (2048 - frequency());
-				return clock / division;
+				return m_cyclesPerSecond / division;
 			}
 
 			void setFrequency(int value) {
@@ -158,13 +160,15 @@ namespace EightBit {
 			}
 
 		private:
+			const int m_cyclesPerSecond;
 			int m_frequencyLowOrder;	// 8 bits
 			int m_frequencyHighOrder;	// 3 bits
 		};
 
 		class RectangularVoice : public WaveVoice {
 		public:
-			RectangularVoice() {}
+			RectangularVoice(int cyclesPerSecond)
+			: WaveVoice(cyclesPerSecond) {}
 
 			virtual void reset() override {
 				WaveVoice::reset();
@@ -194,7 +198,8 @@ namespace EightBit {
 		// NR2X
 		class EnvelopedRectangularVoice : public RectangularVoice {
 		public:
-			EnvelopedRectangularVoice() {}
+			EnvelopedRectangularVoice(int cyclesPerSecond)
+			: RectangularVoice(cyclesPerSecond) {}
 
 			virtual void reset() override {
 				RectangularVoice::reset();
@@ -219,7 +224,8 @@ namespace EightBit {
 		// NR1X
 		class SweptEnvelopedRectangularVoice : public EnvelopedRectangularVoice {
 		public:
-			SweptEnvelopedRectangularVoice() {}
+			SweptEnvelopedRectangularVoice(int cyclesPerSecond)
+			: EnvelopedRectangularVoice(cyclesPerSecond) {}
 
 			virtual void reset() override {
 				EnvelopedRectangularVoice::reset();
@@ -244,7 +250,8 @@ namespace EightBit {
 		// NR3X
 		class UserDefinedWaveVoice : public WaveVoice {
 		public:
-			UserDefinedWaveVoice() {}
+			UserDefinedWaveVoice(int cyclesPerSecond)
+			: WaveVoice(cyclesPerSecond) {}
 
 			virtual void reset() override {
 				WaveVoice::reset();
@@ -391,12 +398,19 @@ namespace EightBit {
 
 		class Audio final {
 		public:
-			Audio()
-			: m_enabled(false) {
-				m_voices[0] = std::make_shared<SweptEnvelopedRectangularVoice>();
-				m_voices[1] = std::make_shared<EnvelopedRectangularVoice>();
-				m_voices[2] = std::make_shared<UserDefinedWaveVoice>();
+			Audio(int cyclesPerSecond)
+			: m_frameSequencer(cyclesPerSecond),
+			  m_enabled(false) {
+
+				m_voices[0] = std::make_shared<SweptEnvelopedRectangularVoice>(cyclesPerSecond);
+				m_voices[1] = std::make_shared<EnvelopedRectangularVoice>(cyclesPerSecond);
+				m_voices[2] = std::make_shared<UserDefinedWaveVoice>(cyclesPerSecond);
 				m_voices[3] = std::make_shared<WhiteNoiseWaveVoice>();
+
+				m_frameSequencer.FrameStep.connect(std::bind(&Audio::Sequencer_FrameStep, this, std::placeholders::_1));
+				m_frameSequencer.LengthStep.connect(std::bind(&Audio::Sequencer_LengthStep, this, std::placeholders::_1));
+				m_frameSequencer.VolumeStep.connect(std::bind(&Audio::Sequencer_VolumeStep, this, std::placeholders::_1));
+				m_frameSequencer.SweepStep.connect(std::bind(&Audio::Sequencer_SweepStep, this, std::placeholders::_1));
 			}
 
 			std::shared_ptr<AudioVoice> voice(int i) { return m_voices[i]; }
@@ -759,7 +773,25 @@ namespace EightBit {
 				return voice3()->packedWaveDatum(i);
 			}
 
+			void stepFrame(int cycles) {
+				m_frameSequencer.step(cycles);
+			}
+
+			void Sequencer_FrameStep(const int step) {
+			}
+
+			void Sequencer_LengthStep(const int step) {
+			}
+
+			void Sequencer_VolumeStep(const int step) {
+			}
+
+			void Sequencer_SweepStep(const int step) {
+			}
+
 		private:
+			AudioFrame m_frameSequencer;
+
 			std::array<std::shared_ptr<AudioVoice>, 4> m_voices;
 			std::array<OutputChannel, 2> m_channels;
 			bool m_enabled;
