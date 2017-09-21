@@ -70,6 +70,9 @@ namespace EightBit {
 				NR51 = 0x25,	// R/W	Mask8
 				NR52 = 0x26,	// R/W	Mask8	Mask8
 
+				WAVE_PATTERN_RAM_START = 0x30,
+				WAVE_PATTERN_RAM_END = 0x3F,
+
 				// LCD Display Registers
 				LCDC = 0x40,	// R/W	Mask8
 				STAT = 0x41,	// R/W	Mask7
@@ -83,9 +86,6 @@ namespace EightBit {
 				OBP1 = 0x49,	// R/W	Mask8
 				WY = 0x4A,		// R/W	Mask8
 				WX = 0x4B,		// R/W	Mask8
-
-				WPRAM_START = 0x30,
-				WPRAM_END = 0x3F,
 
 				// Boot rom control
 				BOOT_DISABLE = 0x50,

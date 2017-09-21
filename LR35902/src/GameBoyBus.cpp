@@ -195,7 +195,10 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 			break;
 
 		default:
-			mask(0);
+			if ((address >= (BASE + WAVE_PATTERN_RAM_START)) && (address <= (BASE + WAVE_PATTERN_RAM_END)))
+				poke(address, audio().packedWaveDatum(address - WAVE_PATTERN_RAM_START));
+			else
+				mask(0);
 			break;
 		}
 	}
@@ -403,8 +406,8 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			break;
 
 		default:
-			if ((address >= (BASE + WPRAM_START)) && (address <= (BASE + WPRAM_END)))
-				;	// Wave form data
+			if ((address >= (BASE + WAVE_PATTERN_RAM_START)) && (address <= (BASE + WAVE_PATTERN_RAM_END)))
+				audio().setPackedWaveDatum(address - WAVE_PATTERN_RAM_START, value);
 			else if ((address > BASE) && (address < (BASE + 0x4c)))
 				assert(false);
 		}

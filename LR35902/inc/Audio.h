@@ -751,6 +751,13 @@ namespace EightBit {
 				setEnabled((value >> 7) & Processor::Mask1);	// Bit 7
 			}
 
+			void setPackedWaveDatum(int i, uint8_t value) {
+				voice3()->setPackedWaveDatum(i, value);
+			}
+
+			uint8_t packedWaveDatum(int i) {
+				return voice3()->packedWaveDatum(i);
+			}
 
 		private:
 			std::array<std::shared_ptr<AudioVoice>, 4> m_voices;

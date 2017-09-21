@@ -670,10 +670,10 @@ std::string EightBit::GameBoy::Disassembler::io(uint8_t value) {
 	case Bus::NR52:
 		return "NR52";
 
-	case Bus::WPRAM_START:
-		return "WPRAM_START";
-	case Bus::WPRAM_END:
-		return "WPRAM_END";
+	case Bus::WAVE_PATTERN_RAM_START:
+		return "WAVE_PATTERN_RAM_START";
+	case Bus::WAVE_PATTERN_RAM_END:
+		return "WAVE_PATTERN_RAM_END";
 
 	// Boot rom control
 	case Bus::BOOT_DISABLE:
