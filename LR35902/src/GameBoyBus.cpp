@@ -80,7 +80,7 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 				auto p12 = live && !m_p12;
 				auto p13 = live && !m_p13;
 				pokeRegister(P1,
-					   (int)!p10
+					   ((int)!p10)
 					| ((int)!p11 << 1)
 					| ((int)!p12 << 2)
 					| ((int)!p13 << 3)
