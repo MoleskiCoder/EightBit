@@ -47,7 +47,7 @@ void EightBit::GameBoy::Envelope::step() {
 			auto volume = m_volume + (m_direction == Amplify ? +1 : -1);
 			if (volume >= 0 || volume <= 15)
 				m_volume = volume;
-			m_position == m_period;
+			m_position = m_period;
 		}
 	}
 }
@@ -784,6 +784,10 @@ void EightBit::GameBoy::Audio::Sequencer_FrameStep(const int step) {
 }
 
 void EightBit::GameBoy::Audio::Sequencer_LengthStep(const int step) {
+	stepLength(voice1());
+	stepLength(voice2());
+	stepLength(voice3());
+	stepLength(voice4());
 }
 
 void EightBit::GameBoy::Audio::Sequencer_VolumeStep(const int step) {

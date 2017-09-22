@@ -375,6 +375,14 @@ namespace EightBit {
 			std::array<std::shared_ptr<AudioVoice>, 4> m_voices;
 			std::array<OutputChannel, 2> m_channels;
 			bool m_enabled;
+
+			template<class T>
+			static void stepLength(T* voice) {
+				if (voice->length() > 0) {
+					auto current = voice->length();
+					voice->setLength(--current);
+				}
+			}
 		};
 	}
 }
