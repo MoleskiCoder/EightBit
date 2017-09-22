@@ -29,8 +29,6 @@ namespace EightBit {
 			int stepLength() const;
 			void setStepLength(int value);
 
-			void dump() const;
-
 		private:
 			int m_defaultValue;
 			int m_direction;
@@ -56,8 +54,6 @@ namespace EightBit {
 			int shift() const;
 			void setShift(int value);
 
-			void dump() const;
-
 		private:
 			int m_time;
 			int m_direction;
@@ -79,8 +75,6 @@ namespace EightBit {
 
 			bool initialise() const;
 			void setInitialise(bool value);
-
-			virtual void dump() const;
 
 		private:
 			int m_counterContinuous;
@@ -104,8 +98,6 @@ namespace EightBit {
 
 			int hertz() const;
 
-			virtual void dump() const override;
-
 		private:
 			const int m_cyclesPerSecond;
 			int m_frequencyLowOrder;	// 8 bits
@@ -125,8 +117,6 @@ namespace EightBit {
 			int length() const;
 			void setLength(int value);
 
-			virtual void dump() const override;
-
 		private:
 			int m_waveFormDutyCycle;
 			int m_soundLength;
@@ -142,8 +132,6 @@ namespace EightBit {
 
 			Envelope& envelope();
 
-			virtual void dump() const override;
-
 		private:
 			Envelope m_envelope;
 		};
@@ -157,8 +145,6 @@ namespace EightBit {
 			virtual bool zeroed() const override;
 
 			Sweep& sweep();
-
-			virtual void dump() const override;
 
 		private:
 			Sweep m_sweep;
@@ -241,8 +227,6 @@ namespace EightBit {
 			bool& outputVoice3();
 			bool& outputVoice4();
 
-			void dump() const;
-
 		private:
 			bool m_vin;
 			int m_outputLevel;
@@ -268,12 +252,6 @@ namespace EightBit {
 
 			void reset();
 			bool zeroed() const;
-
-			void dumpVoice(int i) const;
-			void dumpVoices() const;
-			void dumpChannel(int i) const;
-			void dumpChannels() const;
-			void dump() const;
 
 			//
 

@@ -41,10 +41,6 @@ void EightBit::GameBoy::Envelope::setStepLength(int value) {
 	m_stepLength = value;
 }
 
-void EightBit::GameBoy::Envelope::dump() const {
-	std::cout << "Envelope: default=" << default() << ",direction=" << direction() << ",step length=" << stepLength() << std::endl;
-}
-
 //
 
 EightBit::GameBoy::Sweep::Sweep() {}
@@ -85,10 +81,6 @@ void EightBit::GameBoy::Sweep::setShift(int value) {
 	m_shift = value;
 }
 
-void EightBit::GameBoy::Sweep::dump() const {
-	std::cout << "Sweep: time=" << time() << ",direction=" << direction() << ",shift=" << shift() << std::endl;
-}
-
 //
 
 EightBit::GameBoy::AudioVoice::AudioVoice() {}
@@ -116,10 +108,6 @@ bool EightBit::GameBoy::AudioVoice::initialise() const {
 }
 void EightBit::GameBoy::AudioVoice::setInitialise(bool value) {
 	m_initialise = value;
-}
-
-void EightBit::GameBoy::AudioVoice::dump() const {
-	std::cout << "Audio Voice: type=" << type() << ",initialise=" << initialise() << std::endl;
 }
 
 //
@@ -170,11 +158,6 @@ void EightBit::GameBoy::WaveVoice::setFrequency(int value) {
 	m_frequencyLowOrder = value & Processor::Mask8;
 }
 
-void EightBit::GameBoy::WaveVoice::dump() const {
-	AudioVoice::dump();
-	std::cout << "Wave Voice: frequency=" << frequency() << " (" << hertz() << ")" << std::endl;
-}
-
 //
 
 EightBit::GameBoy::RectangularVoice::RectangularVoice(int cyclesPerSecond)
@@ -205,11 +188,6 @@ void EightBit::GameBoy::RectangularVoice::setLength(int value) {
 	m_soundLength = value;
 }
 
-void EightBit::GameBoy::RectangularVoice::dump() const {
-	WaveVoice::dump();
-	std::cout << "Rectangular Voice: wave form duty=" << waveFormDutyCycle() << ",length=" << length() << std::endl;
-}
-
 //
 
 EightBit::GameBoy::EnvelopedRectangularVoice::EnvelopedRectangularVoice(int cyclesPerSecond)
@@ -228,11 +206,6 @@ EightBit::GameBoy::Envelope& EightBit::GameBoy::EnvelopedRectangularVoice::envel
 	return m_envelope;
 }
 
-void EightBit::GameBoy::EnvelopedRectangularVoice::dump() const {
-	RectangularVoice::dump();
-	m_envelope.dump();
-}
-
 //
 
 EightBit::GameBoy::SweptEnvelopedRectangularVoice::SweptEnvelopedRectangularVoice(int cyclesPerSecond)
@@ -249,11 +222,6 @@ bool EightBit::GameBoy::SweptEnvelopedRectangularVoice::zeroed() const {
 
 EightBit::GameBoy::Sweep& EightBit::GameBoy::SweptEnvelopedRectangularVoice::sweep() {
 	return m_sweep;
-}
-
-void EightBit::GameBoy::SweptEnvelopedRectangularVoice::dump() const {
-	EnvelopedRectangularVoice::dump();
-	m_sweep.dump();
 }
 
 //
@@ -423,16 +391,6 @@ bool& EightBit::GameBoy::OutputChannel::outputVoice4() {
 	return m_outputVoices[3];
 }
 
-void EightBit::GameBoy::OutputChannel::dump() const {
-	std::cout
-		<< "Output channel: "
-		<< "Vin:" << vin()
-		<< ",Output level=" << outputLevel()
-		<< ",Voices:" << (int)m_outputVoices[0] << (int)m_outputVoices[1] << (int)m_outputVoices[2] << (int)m_outputVoices[3]
-		<< std::endl;
-}
-
-
 EightBit::GameBoy::Audio::Audio(int cyclesPerSecond)
 : m_frameSequencer(cyclesPerSecond),
   m_enabled(false) {
@@ -504,31 +462,6 @@ bool EightBit::GameBoy::Audio::zeroed() const {
 	auto voice4Zero = m_voices[3]->zeroed();
 	auto voicesZeroed = voice1Zero && voice2Zero && voice3Zero && voice4Zero;
 	return !enabled() && channelsZeroed && voicesZeroed;
-}
-
-void EightBit::GameBoy::Audio::dumpVoice(int i) const {
-	std::cout << "** Voice " << i + 1 << std::endl;
-	m_voices[i]->dump();
-}
-
-void EightBit::GameBoy::Audio::dumpVoices() const {
-	for (int i = 0; i < 4; ++i)
-		dumpVoice(i);
-}
-
-void EightBit::GameBoy::Audio::dumpChannel(int i) const {
-	std::cout << "** Channel " << i + 1 << std::endl;
-	m_channels[i].dump();
-}
-
-void EightBit::GameBoy::Audio::dumpChannels() const {
-	for (int i = 0; i < 2; ++i)
-		dumpChannel(i);
-}
-
-void EightBit::GameBoy::Audio::dump() const {
-	dumpVoices();
-	dumpChannels();
 }
 
 //

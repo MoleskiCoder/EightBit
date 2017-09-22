@@ -280,102 +280,82 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 
 		case BASE + NR10:	// Sound mode 1 register: Sweep
 			audio().fromNR10(value);
-			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR11:	// Sound mode 1 register: Sound length / Wave pattern duty
 			audio().fromNR11(value);
-			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR12:	// Sound mode 1 register: Envelope
 			audio().fromNR12(value);
-			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR13:	// Sound mode 1 register: Frequency lo
 			audio().fromNR13(value);
-			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR14:	// Sound mode 1 register: Frequency hi
 			audio().fromNR14(value);
-			audio().dumpVoice(0);
 			break;
 
 		case BASE + NR21:	// Sound mode 2 register: Sound length / Wave pattern duty
 			audio().fromNR21(value);
-			audio().dumpVoice(1);
 			break;
 
 		case BASE + NR22:	// Sound mode 2 register: Envelope
 			audio().fromNR22(value);
-			audio().dumpVoice(1);
 			break;
 
 		case BASE + NR23:	// Sound mode 2 register: Frequency lo
 			audio().fromNR23(value);
-			audio().dumpVoice(1);
 			break;
 
 		case BASE + NR24:	// Sound mode 2 register: Frequency hi
 			audio().fromNR24(value);
-			audio().dumpVoice(1);
 			break;
 
 		case BASE + NR30:	// Sound mode 3 register: Sound on/off
 			audio().fromNR30(value);
-			audio().dumpVoice(2);
 			break;
 
 		case BASE + NR31:	// Sound mode 3 register: Sound length
 			audio().fromNR31(value);
-			audio().dumpVoice(2);
 			break;
 
 		case BASE + NR32:	// Sound mode 3 register: Select output level
 			audio().fromNR32(value);
-			audio().dumpVoice(2);
 			break;
 
 		case BASE + NR33:	// Sound mode 3 register: Frequency lo
 			audio().fromNR33(value);
-			audio().dumpVoice(2);
 			break;
 
 		case BASE + NR34:	// Sound mode 3 register: Frequency hi
 			audio().fromNR34(value);
-			audio().dumpVoice(2);
 			break;
 
 		case BASE + NR41:	// Sound mode 4 register: Sound length
 			audio().fromNR41(value);
-			audio().dumpVoice(3);
 			break;
 
 		case BASE + NR42:	// Sound mode 4 register: Envelope
 			audio().fromNR42(value);
-			audio().dumpVoice(3);
 			break;
 
 		case BASE + NR43:	// Sound mode 4 register: Polynomial counter
 			audio().fromNR43(value);
-			audio().dumpVoice(3);
 			break;
 
 		case BASE + NR44:	// Sound mode 4 register: counter/consecutive; inital
 			audio().fromNR44(value);
-			audio().dumpVoice(3);
 			break;
 
 		case BASE + NR50:	// Channel control: on-off/volume
 			audio().fromNR50(value);
-			audio().dumpChannels();
 			break;
 
 		case BASE + NR51:
 			audio().fromNR51(value);
-			audio().dumpChannels();
 			break;
 
 		case BASE + NR52:	// Sound on/off
