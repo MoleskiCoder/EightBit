@@ -296,6 +296,7 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 
 		case BASE + NR14:	// Sound mode 1 register: Frequency hi
 			audio().fromNR14(value);
+			std::cout << "Voice one frequency: " << audio().voice1()->hertz() << std::endl;
 			break;
 
 		case BASE + NR21:	// Sound mode 2 register: Sound length / Wave pattern duty
@@ -354,7 +355,7 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			audio().fromNR50(value);
 			break;
 
-		case BASE + NR51:
+		case BASE + NR51:	// Selection of Sound output terminal
 			audio().fromNR51(value);
 			break;
 
@@ -389,8 +390,6 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 		default:
 			if ((address >= (BASE + WAVE_PATTERN_RAM_START)) && (address <= (BASE + WAVE_PATTERN_RAM_END)))
 				audio().setPackedWaveDatum(address - WAVE_PATTERN_RAM_START, value);
-			else if ((address > BASE) && (address < (BASE + 0x4c)))
-				assert(false);
 		}
 	}
 }
