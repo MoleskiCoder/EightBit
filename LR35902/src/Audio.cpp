@@ -6,19 +6,19 @@
 EightBit::GameBoy::Envelope::Envelope() {}
 
 void EightBit::GameBoy::Envelope::reset() {
-	m_defaultValue = m_direction = m_stepLength = 0;
+	m_position = m_volume = m_direction = m_period = 0;
 }
 
 bool EightBit::GameBoy::Envelope::zeroed() const {
-	return (default() == 0) && (stepLength() == 0) && (direction() == Attenuate);
+	return (volume() == 0) && (period() == 0) && (direction() == Attenuate);
 }
 
-int EightBit::GameBoy::Envelope::default() const {
-	return m_defaultValue;
+int EightBit::GameBoy::Envelope::volume() const {
+	return m_volume;
 }
 
-void EightBit::GameBoy::Envelope::setDefault(int value) {
-	m_defaultValue = value;
+void EightBit::GameBoy::Envelope::setVolume(int value) {
+	m_volume = value;
 }
 
 EightBit::GameBoy::Envelope::Direction EightBit::GameBoy::Envelope::direction() const {
@@ -33,12 +33,23 @@ void EightBit::GameBoy::Envelope::setDirection(Direction value) {
 	setDirection((int)value);
 }
 
-int EightBit::GameBoy::Envelope::stepLength() const {
-	return m_stepLength;
+int EightBit::GameBoy::Envelope::period() const {
+	return m_period;
 }
 
-void EightBit::GameBoy::Envelope::setStepLength(int value) {
-	m_stepLength = value;
+void EightBit::GameBoy::Envelope::setPeriod(int value) {
+	m_position = m_period = value;
+}
+
+void EightBit::GameBoy::Envelope::step() {
+	if (m_period != 0) {
+		if (--m_position == 0) {
+			auto volume = m_volume + (m_direction == Amplify ? +1 : -1);
+			if (volume >= 0 || volume <= 15)
+				m_volume = volume;
+			m_position == m_period;
+		}
+	}
 }
 
 //
@@ -495,15 +506,15 @@ void EightBit::GameBoy::Audio::fromNRx1(int i, uint8_t value) {
 uint8_t EightBit::GameBoy::Audio::toNRx2(int i) {
 	auto voice = (EnvelopedRectangularVoice*)m_voices[i].get();
 	auto& envelope = voice->envelope();
-	return (envelope.default() << 4) | (envelope.direction() << 3) | envelope.stepLength();
+	return (envelope.volume() << 4) | (envelope.direction() << 3) | envelope.period();
 }
 
 void EightBit::GameBoy::Audio::fromNRx2(int i, uint8_t value) {
 	auto voice = (EnvelopedRectangularVoice*)m_voices[i].get();
 	auto& envelope = voice->envelope();
-	envelope.setDefault((value >> 4) & Processor::Mask4);	// Bits 4-7
+	envelope.setVolume((value >> 4) & Processor::Mask4);	// Bits 4-7
 	envelope.setDirection((value >> 3) & Processor::Mask1);	// Bit 3
-	envelope.setStepLength(value & Processor::Mask3); 		// Bits 0-2
+	envelope.setPeriod(value & Processor::Mask3); 			// Bits 0-2
 }
 
 uint8_t EightBit::GameBoy::Audio::toNRx3(int i) {
@@ -776,6 +787,9 @@ void EightBit::GameBoy::Audio::Sequencer_LengthStep(const int step) {
 }
 
 void EightBit::GameBoy::Audio::Sequencer_VolumeStep(const int step) {
+	voice1()->envelope().step();
+	voice2()->envelope().step();
+	voice4()->envelope().step();
 }
 
 void EightBit::GameBoy::Audio::Sequencer_SweepStep(const int step) {

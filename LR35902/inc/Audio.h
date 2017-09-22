@@ -19,20 +19,24 @@ namespace EightBit {
 			void reset();
 			bool zeroed() const;
 
-			int default() const;
-			void setDefault(int value);
+			int volume() const;
+			void setVolume(int value);
 
 			Direction direction() const;
 			void setDirection(int value);
 			void setDirection(Direction value);
 
-			int stepLength() const;
-			void setStepLength(int value);
+			int period() const;
+			void setPeriod(int value);
+
+			void step();
 
 		private:
-			int m_defaultValue;
+			int m_volume;
 			int m_direction;
-			int m_stepLength;
+			int m_period;
+
+			int m_position;
 		};
 
 		class Sweep final {
