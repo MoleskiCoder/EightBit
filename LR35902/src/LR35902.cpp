@@ -343,6 +343,7 @@ int EightBit::GameBoy::LR35902::runRasterLine() {
 		if ((m_bus.peekRegister(Bus::STAT) & Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
 			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
 	}
+	m_bus.audio().stepFrame(count);
 	return count;
 }
 
