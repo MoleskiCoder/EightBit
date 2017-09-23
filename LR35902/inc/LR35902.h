@@ -22,6 +22,11 @@ namespace EightBit {
 			LR35902(Bus& memory);
 
 			Signal<LR35902> ExecutingInstruction;
+			Signal<LR35902> ExecutedInstruction;
+
+			int clockCycles() const {
+				return cycles * 4;
+			}
 
 			virtual register16_t& AF() override {
 				af.low &= 0xf0;

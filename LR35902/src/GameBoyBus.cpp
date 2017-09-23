@@ -30,8 +30,7 @@ EightBit::GameBoy::Bus::Bus()
   m_p13(true),
   m_p12(true),
   m_p11(true),
-  m_p10(true),
-  m_audio(CyclesPerSecond) {
+  m_p10(true) {
 	ReadingByte.connect(std::bind(&GameBoy::Bus::Bus_ReadingByte, this, std::placeholders::_1));
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
 	m_divCounter.word = 0xabcc;
@@ -40,7 +39,6 @@ EightBit::GameBoy::Bus::Bus()
 
 void EightBit::GameBoy::Bus::reset() {
 
-	audio().reset();
 	assert(audio().zeroed());
 
 	poke(BASE + NR52, 0xf1);
@@ -112,71 +110,6 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 			// but all are available for use.
 			break;
 
-		// Sound Registers
-		case NR10:
-			poke(address, audio().toNR10());
-			break;
-		case NR11:
-			poke(address, audio().toNR11());
-			break;
-		case NR12:
-			poke(address, audio().toNR12());
-			break;
-		case NR13:
-			poke(address, audio().toNR13());
-			break;
-		case NR14:
-			poke(address, audio().toNR14());
-			break;
-		case NR21:
-			poke(address, audio().toNR21());
-			break;
-		case NR22:
-			poke(address, audio().toNR22());
-			break;
-		case NR23:
-			poke(address, audio().toNR23());
-			break;
-		case NR24:
-			poke(address, audio().toNR24());
-			break;
-		case NR30:
-			poke(address, audio().toNR30());
-			break;
-		case NR31:
-			poke(address, audio().toNR31());
-			break;
-		case NR32:
-			poke(address, audio().toNR32());
-			break;
-		case NR33:
-			poke(address, audio().toNR33());
-			break;
-		case NR34:
-			poke(address, audio().toNR34());
-			break;
-		case NR41:
-			poke(address, audio().toNR41());
-			break;
-		case NR42:
-			poke(address, audio().toNR42());
-			break;
-		case NR43:
-			poke(address, audio().toNR43());
-			break;
-		case NR44:
-			poke(address, audio().toNR44());
-			break;
-		case NR50:
-			poke(address, audio().toNR50());
-			break;
-		case NR51:
-			poke(address, audio().toNR51());
-			break;
-		case NR52:
-			poke(address, audio().toNR52());
-			break;
-
 		// LCD Display Registers
 		case LCDC:
 			break;
@@ -196,10 +129,7 @@ void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
 			break;
 
 		default:
-			if ((address >= (BASE + WAVE_PATTERN_RAM_START)) && (address <= (BASE + WAVE_PATTERN_RAM_END)))
-				poke(address, audio().packedWaveDatum(address - WAVE_PATTERN_RAM_START));
-			else
-				mask(0);
+			mask(0);
 			break;
 		}
 	}
@@ -278,91 +208,6 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 		case BASE + IF:		// R/W
 			break;
 
-		case BASE + NR10:	// Sound mode 1 register: Sweep
-			audio().fromNR10(value);
-			break;
-
-		case BASE + NR11:	// Sound mode 1 register: Sound length / Wave pattern duty
-			audio().fromNR11(value);
-			break;
-
-		case BASE + NR12:	// Sound mode 1 register: Envelope
-			audio().fromNR12(value);
-			break;
-
-		case BASE + NR13:	// Sound mode 1 register: Frequency lo
-			audio().fromNR13(value);
-			break;
-
-		case BASE + NR14:	// Sound mode 1 register: Frequency hi
-			audio().fromNR14(value);
-			std::cout << "Voice one frequency: " << audio().voice1()->hertz() << std::endl;
-			break;
-
-		case BASE + NR21:	// Sound mode 2 register: Sound length / Wave pattern duty
-			audio().fromNR21(value);
-			break;
-
-		case BASE + NR22:	// Sound mode 2 register: Envelope
-			audio().fromNR22(value);
-			break;
-
-		case BASE + NR23:	// Sound mode 2 register: Frequency lo
-			audio().fromNR23(value);
-			break;
-
-		case BASE + NR24:	// Sound mode 2 register: Frequency hi
-			audio().fromNR24(value);
-			break;
-
-		case BASE + NR30:	// Sound mode 3 register: Sound on/off
-			audio().fromNR30(value);
-			break;
-
-		case BASE + NR31:	// Sound mode 3 register: Sound length
-			audio().fromNR31(value);
-			break;
-
-		case BASE + NR32:	// Sound mode 3 register: Select output level
-			audio().fromNR32(value);
-			break;
-
-		case BASE + NR33:	// Sound mode 3 register: Frequency lo
-			audio().fromNR33(value);
-			break;
-
-		case BASE + NR34:	// Sound mode 3 register: Frequency hi
-			audio().fromNR34(value);
-			break;
-
-		case BASE + NR41:	// Sound mode 4 register: Sound length
-			audio().fromNR41(value);
-			break;
-
-		case BASE + NR42:	// Sound mode 4 register: Envelope
-			audio().fromNR42(value);
-			break;
-
-		case BASE + NR43:	// Sound mode 4 register: Polynomial counter
-			audio().fromNR43(value);
-			break;
-
-		case BASE + NR44:	// Sound mode 4 register: counter/consecutive; inital
-			audio().fromNR44(value);
-			break;
-
-		case BASE + NR50:	// Channel control: on-off/volume
-			audio().fromNR50(value);
-			break;
-
-		case BASE + NR51:	// Selection of Sound output terminal
-			audio().fromNR51(value);
-			break;
-
-		case BASE + NR52:	// Sound on/off
-			audio().fromNR52(value);
-			break;
-
 		case BASE + LCDC:
 		case BASE + STAT:
 		case BASE + SCY:
@@ -386,10 +231,6 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 		case BASE + BOOT_DISABLE:
 			m_disableBootRom = value != 0;
 			break;
-
-		default:
-			if ((address >= (BASE + WAVE_PATTERN_RAM_START)) && (address <= (BASE + WAVE_PATTERN_RAM_END)))
-				audio().setPackedWaveDatum(address - WAVE_PATTERN_RAM_START, value);
 		}
 	}
 }

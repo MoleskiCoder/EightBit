@@ -140,8 +140,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\AbstractColourPalette.h" />
-    <ClInclude Include="..\inc\Audio.h" />
-    <ClInclude Include="..\inc\AudioFrame.h" />
     <ClInclude Include="..\inc\GameBoyBus.h" />
     <ClInclude Include="..\inc\CharacterDefinition.h" />
     <ClInclude Include="..\inc\Disassembler.h" />
@@ -152,7 +150,6 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Audio.cpp" />
     <ClCompile Include="GameBoyBus.cpp" />
     <ClCompile Include="Disassembler.cpp" />
     <ClCompile Include="Display.cpp" />

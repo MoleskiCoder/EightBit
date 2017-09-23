@@ -343,7 +343,6 @@ int EightBit::GameBoy::LR35902::runRasterLine() {
 		if ((m_bus.peekRegister(Bus::STAT) & Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
 			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
 	}
-	m_bus.audio().stepFrame(count);
 	return count;
 }
 
@@ -397,7 +396,9 @@ int EightBit::GameBoy::LR35902::step() {
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;
 	cycles = 0;
-	return fetchExecute();
+	auto ran = fetchExecute();
+	ExecutedInstruction.fire(*this);
+	return ran;
 }
 
 #pragma endregion Controlled instruction execution
@@ -423,7 +424,7 @@ int EightBit::GameBoy::LR35902::execute(uint8_t opcode) {
 	if (cycles == 0)
 		throw std::logic_error("Unhandled opcode");
 
-	return cycles * 4;
+	return clockCycles();
 }
 
 void EightBit::GameBoy::LR35902::executeCB(int x, int y, int z, int p, int q) {

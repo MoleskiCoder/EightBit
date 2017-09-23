@@ -9,8 +9,6 @@
 #include <Processor.h>
 #include <Signal.h>
 
-#include "Audio.h"
-
 namespace EightBit {
 	namespace GameBoy {
 		class Bus : public EightBit::Bus {
@@ -123,8 +121,6 @@ namespace EightBit {
 			};
 
 			Bus();
-
-			Audio& audio() { return m_audio; }
 
 			void reset();
 
@@ -320,8 +316,6 @@ namespace EightBit {
 			bool m_p12;	// up/select
 			bool m_p11;	// left/b
 			bool m_p10;	// right/a
-
-			Audio m_audio;
 
 			void checkTimer(int cycles);
 
