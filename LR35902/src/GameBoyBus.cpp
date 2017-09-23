@@ -39,8 +39,6 @@ EightBit::GameBoy::Bus::Bus()
 
 void EightBit::GameBoy::Bus::reset() {
 
-	assert(audio().zeroed());
-
 	poke(BASE + NR52, 0xf1);
 	poke(BASE + LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
 	m_divCounter.word = 0xabcc;
