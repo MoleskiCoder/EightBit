@@ -45,7 +45,7 @@ void EightBit::GameBoy::Envelope::step() {
 	if (m_period != 0) {
 		if (--m_position == 0) {
 			auto volume = m_volume + (m_direction == Amplify ? +1 : -1);
-			if (volume >= 0 || volume <= 15)
+			if (volume >= 0 && volume <= 15)
 				m_volume = volume;
 			m_position = m_period;
 		}
