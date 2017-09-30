@@ -99,7 +99,7 @@ namespace EightBit {
 				DisplayControlStatus = Processor::Bit1,		// LCDC Status
 				TimerOverflow = Processor::Bit2,			// Timer Overflow
 				SerialTransfer = Processor::Bit3,			// Serial Transfer
-				KeypadPressed = Processor::Bit3				// Hi-Lo transition of P10-P13
+				KeypadPressed = Processor::Bit4				// Hi-Lo transition of P10-P13
 			};
 
 			enum LcdcControl {
@@ -330,7 +330,7 @@ namespace EightBit {
 			}
 
 			void triggerKeypadInterrupt() {
-				//triggerInterrupt(Interrupts::KeypadPressed);
+				triggerInterrupt(Interrupts::KeypadPressed);
 			}
 
 			void Bus_WrittenByte(uint16_t address);
