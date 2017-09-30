@@ -54,6 +54,7 @@ namespace EightBit {
 
 		private:
 			Bus& m_bus;
+			bool m_enabledLCD;
 
 			register16_t af;
 			register16_t bc;

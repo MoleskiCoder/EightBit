@@ -8,6 +8,7 @@
 EightBit::GameBoy::LR35902::LR35902(Bus& memory)
 	: IntelProcessor(memory),
 	m_bus(memory),
+	m_enabledLCD(false),
 	m_ime(false),
 	m_stopped(false),
 	m_prefixCB(false) {
@@ -324,6 +325,7 @@ void EightBit::GameBoy::LR35902::ccf(uint8_t& a, uint8_t& f) {
 #pragma region Controlled instruction execution
 
 int EightBit::GameBoy::LR35902::runRasterLines() {
+	m_enabledLCD = !!(m_bus.peekRegister(Bus::LCDC) & Bus::LcdEnable);
 	m_bus.resetLY();
 	return runRasterLines(Display::RasterHeight * Bus::CyclesPerLine, Display::RasterHeight);
 }
@@ -341,13 +343,57 @@ int EightBit::GameBoy::LR35902::runRasterLines(int limit, int lines) {
 }
 
 int EightBit::GameBoy::LR35902::runRasterLine(int limit) {
-	const auto count = run(limit);
-	if (m_bus.peekRegister(Bus::LCDC) & Bus::LcdEnable) {
-		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::HBlank);
-		m_bus.incrementLY();
+
+	/*
+	A scanline normally takes 456 clocks (912 clocks in double speed
+	mode) to complete. A scanline starts in mode 2, then goes to
+	mode 3 and, when the LCD controller has finished drawing the
+	line (the timings depend on lots of things) it goes to mode 0.
+	During lines 144-153 the LCD controller is in mode 1.
+	Line 153 takes only a few clocks to complete (the exact
+	timings are below). The rest of the clocks of line 153 are
+	spent in line 0 in mode 1! 
+
+	During mode 0 and mode 1 the CPU can access both VRAM and OAM.
+	During mode 2 the CPU can only access VRAM, not OAM.
+	During mode 3 OAM and VRAM can't be accessed.
+	In GBC mode the CPU can't access Palette RAM(FF69h and FF6Bh)
+	during mode 3.
+	A scanline normally takes 456 clocks(912 clocks in double speed mode) to complete.
+	A scanline starts in mode 2, then goes to mode 3 and , when the LCD controller has
+	finished drawing the line(the timings depend on lots of things) it goes to mode 0.
+	During lines 144 - 153 the LCD controller is in mode 1.
+	Line 153 takes only a few clocks to complete(the exact timings are below).
+	The rest of the clocks of line 153 are spent in line 0 in mode 1!
+	*/
+
+	int count = Bus::CyclesPerLine;
+	if (m_enabledLCD) {
+
 		if ((m_bus.peekRegister(Bus::STAT) & Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
 			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
+
+		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::SearchingOamRam);
+		if (m_bus.peekRegister(Bus::STAT) & Bit5)
+			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
+		count -= run(80);	// ~19us
+
+		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::TransferringDataToLcd);
+		count -= run(170);	// ~41us
+
+		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::HBlank);
+		if (m_bus.peekRegister(Bus::STAT) & Bit3)
+			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
+		count -= run(203);	// ~48.6us
+
+		m_bus.incrementLY();
+
+	} else {
+		count += run(Bus::CyclesPerLine);
 	}
+
+	assert(count == Bus::CyclesPerLine);
+
 	return count;
 }
 
@@ -357,8 +403,28 @@ int EightBit::GameBoy::LR35902::runVerticalBlankLines() {
 }
 
 int EightBit::GameBoy::LR35902::runVerticalBlankLines(int limit, int lines) {
-	if (m_bus.peekRegister(Bus::LCDC) & Bus::LcdEnable) {
+
+	/*
+	Vertical Blank interrupt is triggered when the LCD
+	controller enters the VBL screen mode (mode 1, LY=144).
+	This happens once per frame, so this interrupt is
+	triggered 59.7 times per second. During this period the
+	VRAM and OAM can be accessed freely, so it's the best
+	time to update graphics (for example, use the OAM DMA to
+	update sprites for next frame, or update tiles to make
+	animations).
+	This period lasts 4560 clocks in normal speed mode and
+	9120 clocks in double speed mode. That's exactly the
+	time needed to draw 10 scanlines.
+	The VBL interrupt isn't triggered when the LCD is
+	powered off or on, even when it was on VBL mode.
+	It's only triggered when the VBL period starts. 
+	*/
+
+	if (m_enabledLCD) {
 		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::VBlank);
+		if (m_bus.peekRegister(Bus::STAT) & Bit4)
+			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
 		m_bus.triggerInterrupt(Bus::Interrupts::VerticalBlank);
 	}
 	return runRasterLines(limit, lines);
