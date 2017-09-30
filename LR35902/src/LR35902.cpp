@@ -367,7 +367,7 @@ int EightBit::GameBoy::LR35902::runRasterLine(int limit) {
 	The rest of the clocks of line 153 are spent in line 0 in mode 1!
 	*/
 
-	int count = Bus::CyclesPerLine;
+	int count = 0;
 	if (m_enabledLCD) {
 
 		if ((m_bus.peekRegister(Bus::STAT) & Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
@@ -376,15 +376,15 @@ int EightBit::GameBoy::LR35902::runRasterLine(int limit) {
 		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::SearchingOamRam);
 		if (m_bus.peekRegister(Bus::STAT) & Bit5)
 			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
-		count -= run(80);	// ~19us
+		count += run(80);	// ~19us
 
 		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::TransferringDataToLcd);
-		count -= run(170);	// ~41us
+		count += run(170);	// ~41us
 
 		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::HBlank);
 		if (m_bus.peekRegister(Bus::STAT) & Bit3)
 			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
-		count -= run(203);	// ~48.6us
+		count += run(203);	// ~48.6us
 
 		m_bus.incrementLY();
 
@@ -392,7 +392,9 @@ int EightBit::GameBoy::LR35902::runRasterLine(int limit) {
 		count += run(Bus::CyclesPerLine);
 	}
 
-	assert(count == Bus::CyclesPerLine);
+	assert(count > 0);
+	assert(count >= Bus::CyclesPerLine);
+	assert((count - Bus::CyclesPerLine) - 16);
 
 	return count;
 }
