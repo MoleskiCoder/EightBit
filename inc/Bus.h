@@ -13,11 +13,8 @@ namespace EightBit {
 			m_address.word = 0xffff;
 		}
 
-		Signal<uint16_t> WritingByte;
 		Signal<uint16_t> WrittenByte;
-
 		Signal<uint16_t> ReadingByte;
-		Signal<uint16_t> ReadByte;
 
 		register16_t& ADDRESS() { return m_address; }
 		uint8_t& DATA() { return *m_data; }
@@ -53,7 +50,6 @@ namespace EightBit {
 		uint8_t read() {
 			ReadingByte.fire(ADDRESS().word);
 			auto content = reference();
-			ReadByte.fire(ADDRESS().word);
 			return content;
 		}
 
@@ -68,7 +64,6 @@ namespace EightBit {
 		}
 
 		void write(uint8_t value) {
-			WritingByte.fire(ADDRESS().word);
 			reference() = value;
 			WrittenByte.fire(ADDRESS().word);
 		}

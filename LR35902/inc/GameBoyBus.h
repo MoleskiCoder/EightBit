@@ -122,14 +122,12 @@ namespace EightBit {
 
 			Bus();
 
-			Signal<int> InterruptGenerated;
 			Signal<int> DisplayStatusModeUpdated;
 
 			void reset();
 
 			void triggerInterrupt(int cause) {
 				pokeRegister(IF, peekRegister(IF) | cause);
-				InterruptGenerated.fire(cause);
 			}
 
 			void writeRegister(int offset, uint8_t content) {
