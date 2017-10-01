@@ -6,6 +6,7 @@
 
 #include "GameBoyBus.h"
 #include "AbstractColourPalette.h"
+#include "ObjectAttribute.h"
 
 namespace EightBit {
 	namespace GameBoy {
@@ -29,11 +30,13 @@ namespace EightBit {
 
 			void initialise();
 			void render();
+			void loadObjectAttributes();
 
 		private:
 			std::vector<uint32_t> m_pixels;
 			Bus& m_bus;
 			const AbstractColourPalette* m_colours;
+			std::array<ObjectAttribute, 40> m_objectAttributes;
 
 			std::array<int, 4> createPalette(int address);
 

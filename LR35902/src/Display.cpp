@@ -48,6 +48,18 @@ void EightBit::GameBoy::Display::renderObjects() {
 	renderObjects(objBlockHeight);
 }
 
+void EightBit::GameBoy::Display::loadObjectAttributes() {
+
+	auto oamAddress = 0xfe00;
+
+	const auto control = m_bus.peekRegister(Bus::LCDC);
+	const auto objBlockHeight = (control & Bus::ObjectBlockCompositionSelection) ? 16 : 8;
+
+	for (int i = 0; i < 40; ++i) {
+		m_objectAttributes[i] = ObjectAttribute(m_bus, oamAddress + 4 * i, objBlockHeight);
+	}
+}
+
 void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 	
 	std::vector<std::array<int, 4>> palettes(2);
@@ -59,21 +71,28 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 
 	for (int i = 0; i < 40; ++i) {
 
-		const auto current = ObjectAttribute(m_bus, oamAddress + 4 * i, objBlockHeight);
+		const auto& current = m_objectAttributes[i];
+
 		const auto sprite = current.pattern();
-		const auto definition = CharacterDefinition(m_bus, objDefinitionAddress + 16 * sprite, objBlockHeight);
 		const auto spriteX = current.positionX();
 		const auto spriteY = current.positionY();
-		const auto& palette = palettes[current.palette()];
-		const auto flipX = current.flipX();
-		const auto flipY = current.flipY();
 
-		renderTile(
-			objBlockHeight,
-			spriteX, spriteY, -8, -16,
-			flipX, flipY, true,
-			palette,
-			definition);
+		const auto hidden = (spriteX == 0) && (spriteY == 0);
+
+		if (!hidden) {
+
+			const auto definition = CharacterDefinition(m_bus, objDefinitionAddress + 16 * sprite, objBlockHeight);
+			const auto& palette = palettes[current.palette()];
+			const auto flipX = current.flipX();
+			const auto flipY = current.flipY();
+
+			renderTile(
+				objBlockHeight,
+				spriteX, spriteY, -8, -16,
+				flipX, flipY, true,
+				palette,
+				definition);
+		}
 	}
 }
 

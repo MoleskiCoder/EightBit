@@ -123,6 +123,7 @@ namespace EightBit {
 			Bus();
 
 			Signal<int> InterruptGenerated;
+			Signal<int> DisplayStatusModeUpdated;
 
 			void reset();
 
@@ -209,6 +210,7 @@ namespace EightBit {
 			void updateLcdStatusMode(int mode) {
 				const auto current = m_ioPorts.peek(STAT) & ~Processor::Mask2;
 				m_ioPorts.poke(STAT, current | mode);
+				DisplayStatusModeUpdated.fire(mode);
 			}
 
 			void disableBootRom() { m_disableBootRom = true; }
