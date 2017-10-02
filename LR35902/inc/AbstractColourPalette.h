@@ -14,8 +14,8 @@ namespace EightBit {
 				Dark
 			};
 
-			AbstractColourPalette::AbstractColourPalette()
-				: m_colours(4) {
+			AbstractColourPalette()
+			: m_colours(4) {
 			}
 
 			uint32_t getColour(size_t index) const {

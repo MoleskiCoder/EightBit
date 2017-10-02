@@ -3,15 +3,13 @@
 
 // based on http://www.z80.info/decoding.htm
 
-#pragma region Reset and initialisation
-
 EightBit::GameBoy::LR35902::LR35902(Bus& memory)
-	: IntelProcessor(memory),
-	m_bus(memory),
-	m_enabledLCD(false),
-	m_ime(false),
-	m_stopped(false),
-	m_prefixCB(false) {
+: IntelProcessor(memory),
+  m_bus(memory),
+  m_enabledLCD(false),
+  m_ime(false),
+  m_stopped(false),
+  m_prefixCB(false) {
 }
 
 void EightBit::GameBoy::LR35902::reset() {
@@ -20,10 +18,6 @@ void EightBit::GameBoy::LR35902::reset() {
 	SP().word = Mask16 - 1;
 	m_prefixCB = false;
 }
-
-#pragma endregion Reset and initialisation
-
-#pragma region Interrupt routines
 
 void EightBit::GameBoy::LR35902::di() {
 	IME() = false;
@@ -39,10 +33,6 @@ int EightBit::GameBoy::LR35902::interrupt(uint8_t value) {
 	return 4;
 }
 
-#pragma endregion Interrupt routines
-
-#pragma region Flag manipulation helpers
-
 void EightBit::GameBoy::LR35902::increment(uint8_t& f, uint8_t& operand) {
 	clearFlag(f, NF);
 	adjustZero<LR35902>(f, ++operand);
@@ -54,10 +44,6 @@ void EightBit::GameBoy::LR35902::decrement(uint8_t& f, uint8_t& operand) {
 	clearFlag(f, HC, lowNibble(operand));
 	adjustZero<LR35902>(f, --operand);
 }
-
-#pragma endregion Flag manipulation helpers
-
-#pragma region PC manipulation: call/ret/jp/jr
 
 bool EightBit::GameBoy::LR35902::jrConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
@@ -128,10 +114,6 @@ bool EightBit::GameBoy::LR35902::callConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled CALL conditional");
 }
 
-#pragma endregion PC manipulation: call/ret/jp/jr
-
-#pragma region 16-bit arithmetic
-
 void EightBit::GameBoy::LR35902::add(uint8_t& f, register16_t& operand, register16_t value) {
 
 	MEMPTR() = operand;
@@ -144,10 +126,6 @@ void EightBit::GameBoy::LR35902::add(uint8_t& f, register16_t& operand, register
 	setFlag(f, CF, result & Bit16);
 	adjustHalfCarryAdd(f, MEMPTR().high, value.high, operand.high);
 }
-
-#pragma endregion 16-bit arithmetic
-
-#pragma region ALU
 
 void EightBit::GameBoy::LR35902::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
 
@@ -205,10 +183,6 @@ void EightBit::GameBoy::LR35902::compare(uint8_t& f, uint8_t check, uint8_t valu
 	subtract(f, check, value);
 }
 
-#pragma endregion ALU
-
-#pragma region Shift and rotate
-
 uint8_t EightBit::GameBoy::LR35902::rlc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
 	setFlag(f, CF, operand & Bit7);
@@ -258,10 +232,6 @@ uint8_t EightBit::GameBoy::LR35902::srl(uint8_t& f, uint8_t operand) {
 	return (operand >> 1) & ~Bit7;
 }
 
-#pragma endregion Shift and rotate
-
-#pragma region BIT/SET/RES
-
 uint8_t EightBit::GameBoy::LR35902::bit(uint8_t& f, int n, uint8_t operand) {
 	auto carry = f & CF;
 	uint8_t discarded = operand;
@@ -277,10 +247,6 @@ uint8_t EightBit::GameBoy::LR35902::res(int n, uint8_t operand) {
 uint8_t EightBit::GameBoy::LR35902::set(int n, uint8_t operand) {
 	return operand | (1 << n);
 }
-
-#pragma endregion BIT/SET/RES
-
-#pragma region Miscellaneous instructions
 
 void EightBit::GameBoy::LR35902::daa(uint8_t& a, uint8_t& f) {
 
@@ -319,10 +285,6 @@ void EightBit::GameBoy::LR35902::ccf(uint8_t& a, uint8_t& f) {
 	clearFlag(f, NF | HC);
 	clearFlag(f, CF, f & CF);
 }
-
-#pragma endregion Miscellaneous instructions
-
-#pragma region Controlled instruction execution
 
 int EightBit::GameBoy::LR35902::runRasterLines() {
 	m_enabledLCD = !!(m_bus.peekRegister(Bus::LCDC) & Bus::LcdEnable);
@@ -477,10 +439,6 @@ int EightBit::GameBoy::LR35902::step() {
 	ExecutedInstruction.fire(*this);
 	return ran;
 }
-
-#pragma endregion Controlled instruction execution
-
-#pragma region Instruction decode and execution
 
 int EightBit::GameBoy::LR35902::execute(uint8_t opcode) {
 
@@ -975,5 +933,3 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 		break;
 	}
 }
-
-#pragma endregion Instruction decode and execution
