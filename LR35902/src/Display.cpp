@@ -50,7 +50,7 @@ void EightBit::GameBoy::Display::renderObjects() {
 
 void EightBit::GameBoy::Display::loadObjectAttributes() {
 
-	auto oamAddress = 0xfe00;
+	const auto oamAddress = 0xfe00;
 
 	const auto control = m_bus.peekRegister(Bus::LCDC);
 	const auto objBlockHeight = (control & Bus::ObjectBlockCompositionSelection) ? 16 : 8;
@@ -66,8 +66,8 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 	palettes[0] = createPalette(Bus::OBP0);
 	palettes[1] = createPalette(Bus::OBP1);
 
-	auto objDefinitionAddress = 0x8000;
-	auto oamAddress = 0xfe00;
+	const auto objDefinitionAddress = 0x8000;
+	const auto oamAddress = 0xfe00;
 
 	for (int i = 0; i < 40; ++i) {
 
@@ -88,7 +88,7 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 
 			renderTile(
 				objBlockHeight,
-				spriteX, spriteY, -8, -16,
+				spriteX - 8, spriteY - 16,
 				flipX, flipY, true,
 				palette,
 				definition);
@@ -115,13 +115,12 @@ void EightBit::GameBoy::Display::renderBackground() {
 	const auto scrollX = m_bus.peekRegister(Bus::SCX);
 	const auto scrollY = m_bus.peekRegister(Bus::SCY);
 
-	renderBackground(bgArea, bgCharacters, offsetX, offsetY, scrollX, scrollY, palette);
+	renderBackground(bgArea, bgCharacters, offsetX - scrollX, offsetY - scrollY, palette);
 }
 
 void EightBit::GameBoy::Display::renderBackground(
 		int bgArea, int bgCharacters,
 		int offsetX, int offsetY,
-		int scrollX, int scrollY,
 		const std::array<int, 4>& palette) {
 
 	std::map<int, CharacterDefinition> definitions;
@@ -129,21 +128,19 @@ void EightBit::GameBoy::Display::renderBackground(
 	for (int row = 0; row < BufferCharacterHeight; ++row) {
 		for (int column = 0; column < BufferCharacterWidth; ++column) {
 
-			auto address = bgArea + row * BufferCharacterWidth + column;
-			auto character = m_bus.peek(address);
+			const auto address = bgArea + row * BufferCharacterWidth + column;
+			const auto character = m_bus.peek(address);
 
 			auto definitionPair = definitions.find(character);
-
 			if (definitionPair == definitions.end()) {
 				definitions[character] = CharacterDefinition(&m_bus, bgCharacters + 16 * character, 8);
 				definitionPair = definitions.find(character);
 			}
 
-			auto definition = definitionPair->second;
-
+			const auto definition = definitionPair->second;
 			renderTile(
 				8,
-				column * 8, row * 8, offsetX - scrollX, offsetY - scrollY,
+				column * 8 + offsetX, row * 8 + offsetY,
 				false, false, false,
 				palette,
 				definition);
@@ -153,30 +150,33 @@ void EightBit::GameBoy::Display::renderBackground(
 
 void EightBit::GameBoy::Display::renderTile(
 		int height,
-		int drawX, int drawY, int offsetX, int offsetY,
+		int drawX, int drawY,
 		bool flipX, bool flipY, bool allowTransparencies,
 		const std::array<int, 4>& palette,
 		const CharacterDefinition& definition) {
 
 	const auto width = 8;
 
+	const auto flipMaskX = width - 1;
+	const auto flipMaskY = height - 1;
+
 	for (int cy = 0; cy < height; ++cy) {
 
-		uint8_t y = drawY + (flipY ? (height - 1) - cy : cy) + offsetY;
+		const uint8_t y = drawY + (flipY ? ~cy & flipMaskY : cy);
 		if (y >= RasterHeight)
 			continue;
 
-		auto rowDefinition = definition.get(cy);
+		const auto rowDefinition = definition.get(cy);
 
 		for (int cx = 0; cx < width; ++cx) {
 
-			uint8_t x = drawX + (flipX ? (width - 1) - cx : cx) + offsetX;
+			const uint8_t x = drawX + (flipX ? ~cx & flipMaskX : cx);
 			if (x >= RasterWidth)
 				break;
 
-			auto colour = rowDefinition[cx];
+			const auto colour = rowDefinition[cx];
 			if (!allowTransparencies || (allowTransparencies && (colour > 0))) {
-				auto outputPixel = y * RasterWidth + x;
+				const auto outputPixel = y * RasterWidth + x;
 				m_pixels[outputPixel] = m_colours->getColour(palette[colour]);
 			}
 		}

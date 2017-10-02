@@ -44,7 +44,6 @@ namespace EightBit {
 			void renderBackground(
 				int bgArea, int bgCharacters,
 				int offsetX, int offsetY,
-				int scrollX, int scrollY,
 				const std::array<int, 4>& palette);
 
 			void renderObjects();
@@ -52,7 +51,7 @@ namespace EightBit {
 
 			void renderTile(
 				int height,
-				int drawX, int drawY, int offsetX, int offsetY,
+				int drawX, int drawY,
 				bool flipX, bool flipY, bool allowTransparencies,
 				const std::array<int, 4>& palette,
 				const CharacterDefinition& definition);
