@@ -81,7 +81,7 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 
 		if (!hidden) {
 
-			const auto definition = CharacterDefinition(m_bus, objDefinitionAddress + 16 * sprite, objBlockHeight);
+			const auto definition = CharacterDefinition(&m_bus, objDefinitionAddress + 16 * sprite, objBlockHeight);
 			const auto& palette = palettes[current.palette()];
 			const auto flipX = current.flipX();
 			const auto flipY = current.flipY();
@@ -135,7 +135,7 @@ void EightBit::GameBoy::Display::renderBackground(
 			auto definitionPair = definitions.find(character);
 
 			if (definitionPair == definitions.end()) {
-				definitions[character] = CharacterDefinition(m_bus, bgCharacters + 16 * character, 8);
+				definitions[character] = CharacterDefinition(&m_bus, bgCharacters + 16 * character, 8);
 				definitionPair = definitions.find(character);
 			}
 
@@ -162,21 +162,23 @@ void EightBit::GameBoy::Display::renderTile(
 
 	for (int cy = 0; cy < height; ++cy) {
 
-		for (int cx = 0; cx < width; ++cx) {
+		uint8_t y = drawY + (flipY ? (height - 1) - cy : cy) + offsetY;
+		if (y >= RasterHeight)
+			continue;
 
-			uint8_t y = drawY + (flipY ? (height - 1) - cy : cy) + offsetY;
-			if (y >= RasterHeight)
-				break;
+		auto rowDefinition = definition.get(cy);
+
+		for (int cx = 0; cx < width; ++cx) {
 
 			uint8_t x = drawX + (flipX ? (width - 1) - cx : cx) + offsetX;
 			if (x >= RasterWidth)
 				break;
 
-			auto outputPixel = y * RasterWidth + x;
-
-			auto colour = definition.get()[cy * width + cx];
-			if (!allowTransparencies || (allowTransparencies && (colour > 0)))
+			auto colour = rowDefinition[cx];
+			if (!allowTransparencies || (allowTransparencies && (colour > 0))) {
+				auto outputPixel = y * RasterWidth + x;
 				m_pixels[outputPixel] = m_colours->getColour(palette[colour]);
+			}
 		}
 	}
 }

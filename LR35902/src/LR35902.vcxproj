@@ -150,6 +150,7 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CharacterDefinition.cpp" />
     <ClCompile Include="GameBoyBus.cpp" />
     <ClCompile Include="Disassembler.cpp" />
     <ClCompile Include="Display.cpp" />

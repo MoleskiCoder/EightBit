@@ -1,47 +1,24 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
-
-#include <Bus.h>
+#include <array>
 
 namespace EightBit {
+
+	class Bus;
+
 	namespace GameBoy {
 		class CharacterDefinition {
 		public:
-			CharacterDefinition() {}
+			CharacterDefinition();
+			CharacterDefinition(EightBit::Bus* bus, uint16_t address, int height);
 
-			CharacterDefinition(Bus& bus, uint16_t address, int height) {
-
-				const int width = 8;
-
-				m_definition.resize(width * height);
-
-				for (auto row = 0; row < height; ++row) {
-
-					auto planeAddress = address + row * 2;
-
-					auto planeLow = bus.peek(planeAddress);
-					auto planeHigh = bus.peek(planeAddress + 1);
-
-					for (int bit = 0; bit < width; ++bit) {
-
-						auto mask = 1 << bit;
-
-						auto bitLow = planeLow & mask ? 1 : 0;
-						auto bitHigh = planeHigh & mask ? 0b10 : 0;
-
-						auto colour = bitHigh | bitLow;
-
-						m_definition[row * width + ((width - 1) - bit)] = colour;
-					}
-				}
-			}
-
-			const std::vector<int>& get() const { return m_definition; }
+			std::array<int, 8> get(int row) const;
 
 		private:
-			std::vector<int> m_definition;
+			EightBit::Bus* m_bus;
+			uint16_t m_address;
+			int m_height;
 		};
 	}
 }
