@@ -296,7 +296,6 @@ int EightBit::GameBoy::LR35902::runRasterLines() {
 
 int EightBit::GameBoy::LR35902::runRasterLines(int limit, int lines) {
 	int count = 0;
-	int executed = 0;
 	int allowed = Bus::CyclesPerLine;
 	for (int line = 0; line < lines; ++line) {
 		auto executed = runRasterLine(allowed);
@@ -351,7 +350,7 @@ int EightBit::GameBoy::LR35902::runRasterLine(int limit) {
 		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::HBlank);
 		if (m_bus.peekRegister(Bus::STAT) & Bit3)
 			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
-		count += run(203);	// ~48.6us
+		count += run(limit - count);	// ~48.6us
 
 		m_bus.incrementLY();
 
