@@ -120,8 +120,8 @@ namespace EightBit {
 			}
 
 			register16_t& RP(int rp) {
-				__assume(rp < 4);
-				__assume(rp >= 0);
+				assert(rp < 4);
+				assert(rp >= 0);
 				switch (rp) {
 				case 0b00:
 					return BC();
@@ -132,13 +132,13 @@ namespace EightBit {
 				case 0b11:
 					return SP();
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 			}
 
 			register16_t& RP2(int rp) {
-				__assume(rp < 4);
-				__assume(rp >= 0);
+				assert(rp < 4);
+				assert(rp >= 0);
 				switch (rp) {
 				case 0b00:
 					return BC();
@@ -149,7 +149,7 @@ namespace EightBit {
 				case 0b11:
 					return AF();
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 			}
 

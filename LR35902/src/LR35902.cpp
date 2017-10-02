@@ -70,7 +70,7 @@ bool EightBit::GameBoy::LR35902::jrConditionalFlag(uint8_t& f, int flag) {
 	case 3:	// C
 		return jrConditional(f & CF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled JR conditional");
 }
@@ -86,7 +86,7 @@ bool EightBit::GameBoy::LR35902::jumpConditionalFlag(uint8_t& f, int flag) {
 	case 3:	// C
 		return jumpConditional(f & CF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled JP conditional");
 }
@@ -107,7 +107,7 @@ bool EightBit::GameBoy::LR35902::returnConditionalFlag(uint8_t& f, int flag) {
 	case 3:	// C
 		return returnConditional(f & CF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled RET conditional");
 }
@@ -123,7 +123,7 @@ bool EightBit::GameBoy::LR35902::callConditionalFlag(uint8_t& f, int flag) {
 	case 3:	// C
 		return callConditional(f & CF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled CALL conditional");
 }
@@ -536,7 +536,7 @@ void EightBit::GameBoy::LR35902::executeCB(int x, int y, int z, int p, int q) {
 			operand = srl(f, operand);
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		cycles += 2;
 		R(z, a, operand);
@@ -563,7 +563,7 @@ void EightBit::GameBoy::LR35902::executeCB(int x, int y, int z, int p, int q) {
 			cycles += 2;
 		break;
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 }
 
@@ -600,7 +600,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				cycles += 2;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 1:	// 16-bit load immediate/add
@@ -614,7 +614,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				cycles += 2;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 2:	// Indirect loading
@@ -638,7 +638,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 					cycles += 2;
 					break;
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 				break;
 			case 1:
@@ -660,11 +660,11 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 					cycles += 2;
 					break;
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 3:	// 16-bit INC/DEC
@@ -676,7 +676,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				--RP(p).word;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 2;
 			break;
@@ -727,12 +727,12 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				ccf(a, f);
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles++;
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	case 1:	// 8-bit loading
@@ -772,7 +772,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 			compare(f, a, R(z, a));
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		cycles++;
 		if (z == 6)
@@ -823,7 +823,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				cycles += 3;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 1:	// POP & various ops
@@ -851,11 +851,11 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 					cycles += 2;
 					break;
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 2:	// Conditional jump
@@ -886,7 +886,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				cycles += 4;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 3:	// Assorted operations
@@ -931,7 +931,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				}
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
@@ -961,7 +961,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				compare(f, a, fetchByte());
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 2;
 			break;
@@ -970,7 +970,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 			cycles += 4;
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	}

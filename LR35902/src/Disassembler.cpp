@@ -202,7 +202,7 @@ void EightBit::GameBoy::Disassembler::disassemble(std::ostringstream& output, LR
 	case Unused:
 		break;
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 }
 

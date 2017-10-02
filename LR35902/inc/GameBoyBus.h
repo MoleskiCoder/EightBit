@@ -159,7 +159,7 @@ namespace EightBit {
 				case 0b11:
 					return 256;		// 16.384 Khz
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 				throw std::domain_error("Invalid timer clock specification");
 			}

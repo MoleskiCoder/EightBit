@@ -173,7 +173,7 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 				m_ramBankSwitching = true;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			handled = true;
 		}
