@@ -67,7 +67,6 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 	palettes[1] = createPalette(Bus::OBP1);
 
 	const auto objDefinitionAddress = 0x8000;
-	const auto oamAddress = 0xfe00;
 
 	for (int i = 0; i < 40; ++i) {
 

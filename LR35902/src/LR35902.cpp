@@ -185,14 +185,16 @@ void EightBit::GameBoy::LR35902::compare(uint8_t& f, uint8_t check, uint8_t valu
 
 uint8_t EightBit::GameBoy::LR35902::rlc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
-	setFlag(f, CF, operand & Bit7);
-	return _rotl8(operand, 1);
+	auto carry = operand & Bit7;
+	setFlag(f, CF, carry);
+	return (operand << 1) | (carry >> 7);
 }
 
 uint8_t EightBit::GameBoy::LR35902::rrc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
-	setFlag(f, CF, operand & Bit0);
-	return _rotr8(operand, 1);
+	auto carry = operand & Bit0;
+	setFlag(f, CF, carry);
+	return (operand >> 1) | (carry << 7);
 }
 
 uint8_t EightBit::GameBoy::LR35902::rl(uint8_t& f, uint8_t operand) {
