@@ -272,7 +272,7 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 
 	// ROM size
 	{
-		int gameRomBanks = -1;
+		size_t gameRomBanks = 0;
 		int romSizeSpecification = m_gameRomBanks[0].peek(0x148);
 		switch (romSizeSpecification) {
 		case 0x52:
