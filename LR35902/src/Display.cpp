@@ -9,7 +9,8 @@
 EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& bus)
 : m_bus(bus),
   m_colours(colours),
-  m_currentScanLine(0) {
+  m_control(0),
+  m_scanLine(0) {
 }
 
 const std::vector<uint32_t>& EightBit::GameBoy::Display::pixels() const {
@@ -21,15 +22,12 @@ void EightBit::GameBoy::Display::initialise() {
 }
 
 void EightBit::GameBoy::Display::render() {
-
-	auto control = m_bus.peekRegister(Bus::LCDC);
-	if (control & Bus::LcdEnable) {
-
-		m_currentScanLine = m_bus.peekRegister(Bus::LY);
-		if (control & Bus::DisplayBackground)
+	m_control = m_bus.peekRegister(Bus::LCDC);
+	if (m_control & Bus::LcdEnable) {
+		m_scanLine = m_bus.peekRegister(Bus::LY);
+		if (m_control & Bus::DisplayBackground)
 			renderBackground();
-
-		if (control & Bus::ObjectEnable)
+		if (m_control & Bus::ObjectEnable)
 			renderObjects();
 	}
 }
@@ -45,8 +43,7 @@ std::array<int, 4> EightBit::GameBoy::Display::createPalette(const int address) 
 }
 
 void EightBit::GameBoy::Display::renderObjects() {
-	const auto control = m_bus.peekRegister(Bus::LCDC);
-	const auto objBlockHeight = (control & Bus::ObjectBlockCompositionSelection) ? 16 : 8;
+	const auto objBlockHeight = (m_control & Bus::ObjectBlockCompositionSelection) ? 16 : 8;
 	renderObjects(objBlockHeight);
 }
 
@@ -54,8 +51,7 @@ void EightBit::GameBoy::Display::loadObjectAttributes() {
 
 	const auto oamAddress = 0xfe00;
 
-	const auto control = m_bus.peekRegister(Bus::LCDC);
-	const auto objBlockHeight = (control & Bus::ObjectBlockCompositionSelection) ? 16 : 8;
+	const auto objBlockHeight = (m_control & Bus::ObjectBlockCompositionSelection) ? 16 : 8;
 
 	for (int i = 0; i < 40; ++i) {
 		m_objectAttributes[i] = ObjectAttribute(m_bus, oamAddress + 4 * i, objBlockHeight);
@@ -99,13 +95,11 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 
 void EightBit::GameBoy::Display::renderBackground() {
 
-	const auto control = m_bus.peekRegister(Bus::LCDC);
-
 	auto palette = createPalette(Bus::BGP);
 
-	const auto window = (control & Bus::WindowEnable) != 0;
-	const auto bgArea = (control & Bus::BackgroundCodeAreaSelection) ? 0x9c00 : 0x9800;
-	const auto bgCharacters = (control & Bus::BackgroundCharacterDataSelection) ? 0x8000 : 0x8800;
+	const auto window = (m_control & Bus::WindowEnable) != 0;
+	const auto bgArea = (m_control & Bus::BackgroundCodeAreaSelection) ? 0x9c00 : 0x9800;
+	const auto bgCharacters = (m_control & Bus::BackgroundCharacterDataSelection) ? 0x8000 : 0x8800;
 
 	const auto wx = m_bus.peekRegister(Bus::WX);
 	const auto wy = m_bus.peekRegister(Bus::WY);
@@ -124,7 +118,7 @@ void EightBit::GameBoy::Display::renderBackground(
 		int offsetX, int offsetY,
 		const std::array<int, 4>& palette) {
 
-	const int row = (m_currentScanLine - offsetY) / 8;
+	const int row = (m_scanLine - offsetY) / 8;
 
 	for (int column = 0; column < BufferCharacterWidth; ++column) {
 

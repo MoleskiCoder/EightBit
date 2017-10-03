@@ -37,7 +37,8 @@ namespace EightBit {
 			Bus& m_bus;
 			const AbstractColourPalette* m_colours;
 			std::array<ObjectAttribute, 40> m_objectAttributes;
-			uint8_t m_currentScanLine;
+			uint8_t m_control;
+			uint8_t m_scanLine;
 
 			std::array<int, 4> createPalette(int address);
 
