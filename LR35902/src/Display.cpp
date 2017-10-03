@@ -153,7 +153,7 @@ void EightBit::GameBoy::Display::renderTile(
 		if (y >= RasterHeight)
 			continue;
 
-		if (y != m_currentScanLine)
+		if (y != m_scanLine)
 			continue;
 
 		const auto rowDefinition = definition.get(cy);
