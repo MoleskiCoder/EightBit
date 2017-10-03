@@ -8,7 +8,8 @@
 
 EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& bus)
 : m_bus(bus),
-  m_colours(colours) {
+  m_colours(colours),
+  m_currentScanLine(0) {
 }
 
 const std::vector<uint32_t>& EightBit::GameBoy::Display::pixels() const {
@@ -24,6 +25,7 @@ void EightBit::GameBoy::Display::render() {
 	auto control = m_bus.peekRegister(Bus::LCDC);
 	if (control & Bus::LcdEnable) {
 
+		m_currentScanLine = m_bus.peekRegister(Bus::LY);
 		if (control & Bus::DisplayBackground)
 			renderBackground();
 
@@ -122,28 +124,20 @@ void EightBit::GameBoy::Display::renderBackground(
 		int offsetX, int offsetY,
 		const std::array<int, 4>& palette) {
 
-	std::map<int, CharacterDefinition> definitions;
+	const int row = (m_currentScanLine - offsetY) / 8;
 
-	for (int row = 0; row < BufferCharacterHeight; ++row) {
-		for (int column = 0; column < BufferCharacterWidth; ++column) {
+	for (int column = 0; column < BufferCharacterWidth; ++column) {
 
-			const auto address = bgArea + row * BufferCharacterWidth + column;
-			const auto character = m_bus.peek(address);
+		const auto address = bgArea + row * BufferCharacterWidth + column;
+		const auto character = m_bus.peek(address);
 
-			auto definitionPair = definitions.find(character);
-			if (definitionPair == definitions.end()) {
-				definitions[character] = CharacterDefinition(&m_bus, bgCharacters + 16 * character, 8);
-				definitionPair = definitions.find(character);
-			}
-
-			const auto definition = definitionPair->second;
-			renderTile(
-				8,
-				column * 8 + offsetX, row * 8 + offsetY,
-				false, false, false,
-				palette,
-				definition);
-		}
+		const auto definition = CharacterDefinition(&m_bus, bgCharacters + 16 * character, 8);
+		renderTile(
+			8,
+			column * 8 + offsetX, row * 8 + offsetY,
+			false, false, false,
+			palette,
+			definition);
 	}
 }
 
@@ -165,6 +159,9 @@ void EightBit::GameBoy::Display::renderTile(
 		if (y >= RasterHeight)
 			continue;
 
+		if (y != m_currentScanLine)
+			continue;
+
 		const auto rowDefinition = definition.get(cy);
 
 		for (int cx = 0; cx < width; ++cx) {
@@ -179,5 +176,7 @@ void EightBit::GameBoy::Display::renderTile(
 				m_pixels[outputPixel] = m_colours->getColour(palette[colour]);
 			}
 		}
+
+		break;
 	}
 }
