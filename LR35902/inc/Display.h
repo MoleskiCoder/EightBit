@@ -4,6 +4,8 @@
 #include <array>
 #include <cstdint>
 
+#include <Ram.h>
+
 #include "GameBoyBus.h"
 #include "AbstractColourPalette.h"
 #include "ObjectAttribute.h"
@@ -24,7 +26,7 @@ namespace EightBit {
 				RasterHeight = 144,
 			};
 
-			Display(const AbstractColourPalette* colours, Bus& bus);
+			Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram);
 
 			const std::vector<uint32_t>& pixels() const;
 
@@ -35,6 +37,8 @@ namespace EightBit {
 		private:
 			std::vector<uint32_t> m_pixels;
 			Bus& m_bus;
+			Ram& m_oam;
+			Ram& m_vram;
 			const AbstractColourPalette* m_colours;
 			std::array<ObjectAttribute, 40> m_objectAttributes;
 			uint8_t m_control;

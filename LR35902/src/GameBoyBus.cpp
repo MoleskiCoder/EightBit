@@ -39,8 +39,8 @@ EightBit::GameBoy::Bus::Bus()
 
 void EightBit::GameBoy::Bus::reset() {
 
-	poke(BASE + NR52, 0xf1);
-	poke(BASE + LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
+	pokeRegister(NR52, 0xf1);
+	pokeRegister(LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
 	m_divCounter.word = 0xabcc;
 	m_timerCounter = 0;
 }

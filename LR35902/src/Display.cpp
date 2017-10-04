@@ -6,8 +6,10 @@
 
 #include <vector>
 
-EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& bus)
+EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram)
 : m_bus(bus),
+  m_oam(oam),
+  m_vram(vram),
   m_colours(colours),
   m_control(0),
   m_scanLine(0) {
@@ -51,9 +53,8 @@ void EightBit::GameBoy::Display::renderObjects() {
 
 void EightBit::GameBoy::Display::loadObjectAttributes() {
 	const auto objBlockHeight = (m_control & Bus::ObjectBlockCompositionSelection) ? 16 : 8;
-	auto& oam = m_bus.OAMRAM();
 	for (int i = 0; i < 40; ++i) {
-		m_objectAttributes[i] = ObjectAttribute(oam, 4 * i, objBlockHeight);
+		m_objectAttributes[i] = ObjectAttribute(m_oam, 4 * i, objBlockHeight);
 	}
 }
 
@@ -62,8 +63,6 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 	std::vector<std::array<int, 4>> palettes(2);
 	palettes[0] = createPalette(Bus::OBP0);
 	palettes[1] = createPalette(Bus::OBP1);
-
-	auto& vram = m_bus.VRAM();
 
 	for (int i = 0; i < 40; ++i) {
 
@@ -78,7 +77,7 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 			const auto drawX = spriteX - 8;
 
 			const auto sprite = current.pattern();
-			const auto definition = CharacterDefinition(&vram, 16 * sprite, objBlockHeight);
+			const auto definition = CharacterDefinition(&m_vram, 16 * sprite, objBlockHeight);
 			const auto& palette = palettes[current.palette()];
 			const auto flipX = current.flipX();
 			const auto flipY = current.flipY();
@@ -118,17 +117,15 @@ void EightBit::GameBoy::Display::renderBackground(
 		int offsetX, int offsetY,
 		const std::array<int, 4>& palette) {
 
-	auto& vram = m_bus.VRAM();
-
 	const int row = (m_scanLine - offsetY) / 8;
 	const auto baseAddress = bgArea + row * BufferCharacterWidth;
 
 	for (int column = 0; column < BufferCharacterWidth; ++column) {
 
 		const auto address = baseAddress + column;
-		const auto character = vram.peek(address);
+		const auto character = m_vram.peek(address);
 
-		const auto definition = CharacterDefinition(&vram, bgCharacters + 16 * character, 8);
+		const auto definition = CharacterDefinition(&m_vram, bgCharacters + 16 * character, 8);
 		renderTile(
 			8,
 			column * 8 + offsetX, row * 8 + offsetY,
