@@ -1,16 +1,16 @@
 #include "stdafx.h"
 #include "CharacterDefinition.h"
 
-#include <Bus.h>
+#include <Ram.h>
 
 EightBit::GameBoy::CharacterDefinition::CharacterDefinition()
-: m_bus(nullptr),
+: m_ram(nullptr),
   m_address(~0),
   m_height(0) {
 }
 
-EightBit::GameBoy::CharacterDefinition::CharacterDefinition(EightBit::Bus* bus, uint16_t address, int height)
-: m_bus(bus),
+EightBit::GameBoy::CharacterDefinition::CharacterDefinition(Ram* ram, uint16_t address, int height)
+: m_ram(ram),
   m_address(address),
   m_height(height) {
 }
@@ -21,8 +21,8 @@ std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) const {
 
 	auto planeAddress = m_address + row * 2;
 	
-	auto planeLow = m_bus->peek(planeAddress);
-	auto planeHigh = m_bus->peek(planeAddress + 1);
+	auto planeLow = m_ram->peek(planeAddress);
+	auto planeHigh = m_ram->peek(planeAddress + 1);
 	
 	for (int bit = 0; bit < 8; ++bit) {
 	

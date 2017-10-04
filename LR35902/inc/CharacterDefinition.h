@@ -5,18 +5,18 @@
 
 namespace EightBit {
 
-	class Bus;
+	class Ram;
 
 	namespace GameBoy {
 		class CharacterDefinition {
 		public:
 			CharacterDefinition();
-			CharacterDefinition(EightBit::Bus* bus, uint16_t address, int height);
+			CharacterDefinition(Ram* ram, uint16_t address, int height);
 
 			std::array<int, 8> get(int row) const;
 
 		private:
-			EightBit::Bus* m_bus;
+			Ram* m_ram;
 			uint16_t m_address;
 			int m_height;
 		};

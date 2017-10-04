@@ -50,13 +50,10 @@ void EightBit::GameBoy::Display::renderObjects() {
 }
 
 void EightBit::GameBoy::Display::loadObjectAttributes() {
-
-	const auto oamAddress = 0xfe00;
-
 	const auto objBlockHeight = (m_control & Bus::ObjectBlockCompositionSelection) ? 16 : 8;
-
+	auto& oam = m_bus.OAMRAM();
 	for (int i = 0; i < 40; ++i) {
-		m_objectAttributes[i] = ObjectAttribute(m_bus, oamAddress + 4 * i, objBlockHeight);
+		m_objectAttributes[i] = ObjectAttribute(oam, 4 * i, objBlockHeight);
 	}
 }
 
@@ -66,13 +63,12 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 	palettes[0] = createPalette(Bus::OBP0);
 	palettes[1] = createPalette(Bus::OBP1);
 
-	const auto objDefinitionAddress = 0x8000;
+	auto& vram = m_bus.VRAM();
 
 	for (int i = 0; i < 40; ++i) {
 
 		const auto& current = m_objectAttributes[i];
 
-		const auto sprite = current.pattern();
 		const auto spriteY = current.positionY();
 		const auto drawY = spriteY - 16;
 
@@ -81,7 +77,8 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 			const auto spriteX = current.positionX();
 			const auto drawX = spriteX - 8;
 
-			const auto definition = CharacterDefinition(&m_bus, objDefinitionAddress + 16 * sprite, objBlockHeight);
+			const auto sprite = current.pattern();
+			const auto definition = CharacterDefinition(&vram, 16 * sprite, objBlockHeight);
 			const auto& palette = palettes[current.palette()];
 			const auto flipX = current.flipX();
 			const auto flipY = current.flipY();
@@ -101,8 +98,8 @@ void EightBit::GameBoy::Display::renderBackground() {
 	auto palette = createPalette(Bus::BGP);
 
 	const auto window = (m_control & Bus::WindowEnable) != 0;
-	const auto bgArea = (m_control & Bus::BackgroundCodeAreaSelection) ? 0x9c00 : 0x9800;
-	const auto bgCharacters = (m_control & Bus::BackgroundCharacterDataSelection) ? 0x8000 : 0x8800;
+	const auto bgArea = (m_control & Bus::BackgroundCodeAreaSelection) ? 0x1c00 : 0x1800;
+	const auto bgCharacters = (m_control & Bus::BackgroundCharacterDataSelection) ? 0 : 0x800;
 
 	const auto wx = m_bus.peekRegister(Bus::WX);
 	const auto wy = m_bus.peekRegister(Bus::WY);
@@ -121,15 +118,17 @@ void EightBit::GameBoy::Display::renderBackground(
 		int offsetX, int offsetY,
 		const std::array<int, 4>& palette) {
 
+	auto& vram = m_bus.VRAM();
+
 	const int row = (m_scanLine - offsetY) / 8;
 	const auto baseAddress = bgArea + row * BufferCharacterWidth;
 
 	for (int column = 0; column < BufferCharacterWidth; ++column) {
 
 		const auto address = baseAddress + column;
-		const auto character = m_bus.peek(address);
+		const auto character = vram.peek(address);
 
-		const auto definition = CharacterDefinition(&m_bus, bgCharacters + 16 * character, 8);
+		const auto definition = CharacterDefinition(&vram, bgCharacters + 16 * character, 8);
 		renderTile(
 			8,
 			column * 8 + offsetX, row * 8 + offsetY,

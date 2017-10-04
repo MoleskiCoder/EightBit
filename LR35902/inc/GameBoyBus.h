@@ -124,6 +124,9 @@ namespace EightBit {
 
 			Signal<int> DisplayStatusModeUpdated;
 
+			Ram& VRAM() { return m_videoRam; }
+			Ram& OAMRAM() { return m_oamRam; }
+
 			void reset();
 
 			void triggerInterrupt(int cause) {
@@ -200,7 +203,7 @@ namespace EightBit {
 
 			void transferDma() {
 				if (m_dmaTransferActive) {
-					m_oamRam.poke(m_dmaAddress.low, peek(m_dmaAddress.word));
+					OAMRAM().poke(m_dmaAddress.low, peek(m_dmaAddress.word));
 					m_dmaTransferActive = ++m_dmaAddress.low < 0xa0;
 				}
 			}
@@ -263,7 +266,7 @@ namespace EightBit {
 
 				rom = false;
 				if (address < 0xa000)
-					return m_videoRam.reference(address - 0x8000);
+					return VRAM().reference(address - 0x8000);
 				if (address < 0xc000)
 					return m_ramBanks.size() == 0 ? rom = true, placeDATA(0xff) : m_ramBanks[m_ramBank].reference(address - 0xa000);
 				if (address < 0xe000)
@@ -271,7 +274,7 @@ namespace EightBit {
 				if (address < 0xfe00)
 					return m_lowInternalRam.reference(address - 0xe000);	// Low internal RAM mirror
 				if (address < 0xfea0)
-					return m_oamRam.reference(address - 0xfe00);
+					return OAMRAM().reference(address - 0xfe00);
 				if (address < 0xff00)
 					return rom = true, placeDATA(0xff);
 				if (address < 0xff80)
