@@ -22,13 +22,15 @@ void EightBit::GameBoy::Display::initialise() {
 }
 
 void EightBit::GameBoy::Display::render() {
-	m_control = m_bus.peekRegister(Bus::LCDC);
-	if (m_control & Bus::LcdEnable) {
-		m_scanLine = m_bus.peekRegister(Bus::LY);
-		if (m_control & Bus::DisplayBackground)
-			renderBackground();
-		if (m_control & Bus::ObjectEnable)
-			renderObjects();
+	m_scanLine = m_bus.peekRegister(Bus::LY);
+	if (m_scanLine < RasterHeight) {
+		m_control = m_bus.peekRegister(Bus::LCDC);
+		if (m_control & Bus::LcdEnable) {
+			if (m_control & Bus::DisplayBackground)
+				renderBackground();
+			if (m_control & Bus::ObjectEnable)
+				renderObjects();
+		}
 	}
 }
 
@@ -71,12 +73,13 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 		const auto& current = m_objectAttributes[i];
 
 		const auto sprite = current.pattern();
-		const auto spriteX = current.positionX();
 		const auto spriteY = current.positionY();
+		const auto drawY = spriteY - 16;
 
-		const auto hidden = (spriteX == 0) && (spriteY == 0);
+		if ((m_scanLine >= drawY) && (m_scanLine < (drawY + objBlockHeight))) {
 
-		if (!hidden) {
+			const auto spriteX = current.positionX();
+			const auto drawX = spriteX - 8;
 
 			const auto definition = CharacterDefinition(&m_bus, objDefinitionAddress + 16 * sprite, objBlockHeight);
 			const auto& palette = palettes[current.palette()];
@@ -85,7 +88,7 @@ void EightBit::GameBoy::Display::renderObjects(int objBlockHeight) {
 
 			renderTile(
 				objBlockHeight,
-				spriteX - 8, spriteY - 16,
+				drawX, drawY,
 				flipX, flipY, true,
 				palette,
 				definition);
@@ -119,10 +122,11 @@ void EightBit::GameBoy::Display::renderBackground(
 		const std::array<int, 4>& palette) {
 
 	const int row = (m_scanLine - offsetY) / 8;
+	const auto baseAddress = bgArea + row * BufferCharacterWidth;
 
 	for (int column = 0; column < BufferCharacterWidth; ++column) {
 
-		const auto address = bgArea + row * BufferCharacterWidth + column;
+		const auto address = baseAddress + column;
 		const auto character = m_bus.peek(address);
 
 		const auto definition = CharacterDefinition(&m_bus, bgCharacters + 16 * character, 8);
@@ -136,9 +140,9 @@ void EightBit::GameBoy::Display::renderBackground(
 }
 
 void EightBit::GameBoy::Display::renderTile(
-		int height,
-		int drawX, int drawY,
-		bool flipX, bool flipY, bool allowTransparencies,
+		const int height,
+		const int drawX, const int drawY,
+		const bool flipX, const bool flipY, const bool allowTransparencies,
 		const std::array<int, 4>& palette,
 		const CharacterDefinition& definition) {
 
@@ -147,30 +151,25 @@ void EightBit::GameBoy::Display::renderTile(
 	const auto flipMaskX = width - 1;
 	const auto flipMaskY = height - 1;
 
-	for (int cy = 0; cy < height; ++cy) {
+	const auto y = m_scanLine;
 
-		const uint8_t y = drawY + (flipY ? ~cy & flipMaskY : cy);
-		if (y >= RasterHeight)
-			continue;
+	auto cy = y - drawY;
+	if (flipY)
+		cy = ~cy & flipMaskY;
 
-		if (y != m_scanLine)
-			continue;
+	const auto rowDefinition = definition.get(cy);
 
-		const auto rowDefinition = definition.get(cy);
+	const auto lineAddress = y * RasterWidth;
+	for (int cx = 0; cx < width; ++cx) {
 
-		for (int cx = 0; cx < width; ++cx) {
+		const uint8_t x = drawX + (flipX ? ~cx & flipMaskX : cx);
+		if (x >= RasterWidth)
+			break;
 
-			const uint8_t x = drawX + (flipX ? ~cx & flipMaskX : cx);
-			if (x >= RasterWidth)
-				break;
-
-			const auto colour = rowDefinition[cx];
-			if (!allowTransparencies || (allowTransparencies && (colour > 0))) {
-				const auto outputPixel = y * RasterWidth + x;
-				m_pixels[outputPixel] = m_colours->getColour(palette[colour]);
-			}
+		const auto colour = rowDefinition[cx];
+		if (!allowTransparencies || (allowTransparencies && (colour > 0))) {
+			const auto outputPixel = lineAddress + x;
+			m_pixels[outputPixel] = m_colours->getColour(palette[colour]);
 		}
-
-		break;
 	}
 }
