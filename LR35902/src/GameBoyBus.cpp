@@ -8,9 +8,8 @@ EightBit::GameBoy::Bus::Bus()
   m_ramBanks(0),
   m_lowInternalRam(0x2000),
   m_oamRam(0xa0),
-  m_ioPorts(0x80),
+  m_ioPorts(*this),
   m_highInternalRam(0x80),
-  m_disableBootRom(false),
   m_disableGameRom(false),
   m_rom(false),
   m_banked(false),
@@ -19,30 +18,12 @@ EightBit::GameBoy::Bus::Bus()
   m_higherRomBank(true),
   m_ramBankSwitching(false),
   m_romBank(1),
-  m_ramBank(0),
-  m_timerCounter(0),
-  m_timerRate(0),
-  m_dmaTransferActive(false),
-  m_scanP15(false),
-  m_scanP14(false),
-  m_p15(true),
-  m_p14(true),
-  m_p13(true),
-  m_p12(true),
-  m_p11(true),
-  m_p10(true) {
-	ReadingByte.connect(std::bind(&GameBoy::Bus::Bus_ReadingByte, this, std::placeholders::_1));
+  m_ramBank(0) {
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
-	m_divCounter.word = 0xabcc;
-	m_dmaAddress.word = 0;
 }
 
 void EightBit::GameBoy::Bus::reset() {
-
-	pokeRegister(NR52, 0xf1);
-	pokeRegister(LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
-	m_divCounter.word = 0xabcc;
-	m_timerCounter = 0;
+	m_ioPorts.reset();
 }
 
 void EightBit::GameBoy::Bus::loadBootRom(const std::string& path) {
@@ -60,84 +41,9 @@ void EightBit::GameBoy::Bus::loadGameRom(const std::string& path) {
 	validateCartridgeType();
 }
 
-void EightBit::GameBoy::Bus::Bus_ReadingByte(const uint16_t address) {
-	auto io = ((address >= BASE) && (address < 0xff80)) || (address == 0xffff);
-	if (io) {
-		auto ioRegister = address - BASE;
-		switch (ioRegister) {
-
-		// Port/Mode Registers
-		case P1: {
-				auto p14 = m_scanP14 && !m_p14;
-				auto p15 = m_scanP15 && !m_p15;
-				auto live = p14 || p15;
-				auto p10 = live && !m_p10;
-				auto p11 = live && !m_p11;
-				auto p12 = live && !m_p12;
-				auto p13 = live && !m_p13;
-				pokeRegister(P1,
-					   ((int)!p10)
-					| ((int)!p11 << 1)
-					| ((int)!p12 << 2)
-					| ((int)!p13 << 3)
-					| Processor::Bit4 | Processor::Bit5
-					| Processor::Bit6 | Processor::Bit7);
-			}
-			break;
-		case SB:
-			break;
-		case SC:
-			mask(Processor::Bit7 | Processor::Bit0);
-			break;
-
-		// Timer control
-		case DIV:
-		case TIMA:
-		case TMA:
-			break;
-		case TAC:
-			mask(Processor::Mask3);
-			break;
-
-		// Interrupt Flags
-		case IF:
-			mask(Processor::Mask5);
-			break;
-		case IE:
-			// Only the  bottom 5 bits are used,
-			// but all are available for use.
-			break;
-
-		// LCD Display Registers
-		case LCDC:
-			break;
-		case STAT:
-			mask(Processor::Mask7);
-			break;
-		case SCY:
-		case SCX:
-		case LY:
-		case LYC:
-		case DMA:
-		case BGP:
-		case OBP0:
-		case OBP1:
-		case WY:
-		case WX:
-			break;
-
-		default:
-			mask(0);
-			break;
-		}
-	}
-}
-
 void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 
 	const auto value = DATA();
-
-	auto handled = false;
 
 	switch (address & 0xe000) {
 	case 0x0000:
@@ -152,7 +58,6 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			assert((address >= 0x2000) && (address < 0x4000));
 			assert((value > 0) && (value < 0x20));
 			m_romBank = value & Processor::Mask5;
-			handled = true;
 		}
 		break;
 	case 0x4000:
@@ -175,76 +80,8 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 			default:
 				UNREACHABLE;
 			}
-			handled = true;
 		}
 		break;
-	}
-
-	if (!handled) {
-		switch (address) {
-
-		case BASE + P1:
-			m_scanP14 = (value & Processor::Bit4) == 0;
-			m_scanP15 = (value & Processor::Bit5) == 0;
-			break;
-
-		case BASE + SB:		// R/W
-		case BASE + SC:		// R/W
-			break;
-
-		case BASE + DIV:	// R/W
-			EightBit::Bus::reference() = 0;
-			m_timerCounter = m_divCounter.word = 0;
-			break;
-		case BASE + TIMA:	// R/W
-		case BASE + TMA:	// R/W
-			break;
-		case BASE + TAC:	// R/W
-			m_timerRate = timerClockTicks();
-			break;
-
-		case BASE + IF:		// R/W
-			break;
-
-		case BASE + LCDC:
-		case BASE + STAT:
-		case BASE + SCY:
-		case BASE + SCX:
-			break;
-		case BASE + DMA:
-			m_dmaAddress.high = value;
-			m_dmaAddress.low = 0;
-			m_dmaTransferActive = true;
-			break;
-		case BASE + LY:		// R/O
-			EightBit::Bus::reference() = 0;
-			break;
-		case BASE + BGP:
-		case BASE + OBP0:
-		case BASE + OBP1:
-		case BASE + WY:
-		case BASE + WX:
-			break;
-
-		case BASE + BOOT_DISABLE:
-			m_disableBootRom = value != 0;
-			break;
-		}
-	}
-}
-
-void EightBit::GameBoy::Bus::checkTimers(int cycles) {
-	incrementDIV(cycles);
-	checkTimer(cycles);
-}
-
-void EightBit::GameBoy::Bus::checkTimer(int cycles) {
-	if (timerEnabled()) {
-		m_timerCounter -= cycles;
-		if (m_timerCounter <= 0) {
-			m_timerCounter += m_timerRate;
-			incrementTIMA();
-		}
 	}
 }
 
@@ -321,4 +158,32 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 			}
 		}
 	}
+}
+
+uint8_t& EightBit::GameBoy::Bus::reference(uint16_t address, bool& rom) {
+
+	rom = true;
+	if ((address < 0x100) && m_ioPorts.bootRomEnabled())
+		return m_bootRom.reference(address);
+	if ((address < 0x4000) && gameRomEnabled())
+		return m_gameRomBanks[0].reference(address);
+	if ((address < 0x8000) && gameRomEnabled())
+		return m_gameRomBanks[m_romBank].reference(address - 0x4000);
+
+	rom = false;
+	if (address < 0xa000)
+		return VRAM().reference(address - 0x8000);
+	if (address < 0xc000)
+		return m_ramBanks.size() == 0 ? rom = true, placeDATA(0xff) : m_ramBanks[m_ramBank].reference(address - 0xa000);
+	if (address < 0xe000)
+		return m_lowInternalRam.reference(address - 0xc000);
+	if (address < 0xfe00)
+		return m_lowInternalRam.reference(address - 0xe000);	// Low internal RAM mirror
+	if (address < 0xfea0)
+		return OAMRAM().reference(address - 0xfe00);
+	if (address < IoRegisters::BASE)
+		return rom = true, placeDATA(0xff);
+	if (address < 0xff80)
+		return m_ioPorts.reference(address - IoRegisters::BASE);
+	return m_highInternalRam.reference(address - 0xff80);
 }

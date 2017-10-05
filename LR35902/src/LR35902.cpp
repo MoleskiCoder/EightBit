@@ -289,8 +289,8 @@ void EightBit::GameBoy::LR35902::ccf(uint8_t& a, uint8_t& f) {
 }
 
 int EightBit::GameBoy::LR35902::runRasterLines() {
-	m_enabledLCD = !!(m_bus.peekRegister(Bus::LCDC) & Bus::LcdEnable);
-	m_bus.resetLY();
+	m_enabledLCD = !!(m_bus.IO().peek(IoRegisters::LCDC) & IoRegisters::LcdEnable);
+	m_bus.IO().resetLY();
 	return runRasterLines(Display::RasterHeight * Bus::CyclesPerLine, Display::RasterHeight);
 }
 
@@ -333,26 +333,26 @@ int EightBit::GameBoy::LR35902::runRasterLine(int limit) {
 	int count = 0;
 	if (m_enabledLCD) {
 
-		if ((m_bus.peekRegister(Bus::STAT) & Bit6) && (m_bus.peekRegister(Bus::LYC) == m_bus.peekRegister(Bus::LY)))
-			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
+		if ((m_bus.IO().peek(IoRegisters::STAT) & Bit6) && (m_bus.IO().peek(IoRegisters::LYC) == m_bus.IO().peek(IoRegisters::LY)))
+			m_bus.IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
 
 		// Mode 2, OAM unavailable
-		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::SearchingOamRam);
-		if (m_bus.peekRegister(Bus::STAT) & Bit5)
-			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
+		m_bus.IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::SearchingOamRam);
+		if (m_bus.IO().peek(IoRegisters::STAT) & Bit5)
+			m_bus.IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
 		count += run(80);	// ~19us
 
 		// Mode 3, OAM/VRAM unavailable
-		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::TransferringDataToLcd);
+		m_bus.IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::TransferringDataToLcd);
 		count += run(170);	// ~41us
 
 		// Mode 0
-		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::HBlank);
-		if (m_bus.peekRegister(Bus::STAT) & Bit3)
-			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
+		m_bus.IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::HBlank);
+		if (m_bus.IO().peek(IoRegisters::STAT) & Bit3)
+			m_bus.IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
 		count += run(limit - count);	// ~48.6us
 
-		m_bus.incrementLY();
+		m_bus.IO().incrementLY();
 
 	} else {
 		count += run(Bus::CyclesPerLine);
@@ -386,10 +386,10 @@ int EightBit::GameBoy::LR35902::runVerticalBlankLines(int limit, int lines) {
 	*/
 
 	if (m_enabledLCD) {
-		m_bus.updateLcdStatusMode(Bus::LcdStatusMode::VBlank);
-		if (m_bus.peekRegister(Bus::STAT) & Bit4)
-			m_bus.triggerInterrupt(Bus::Interrupts::DisplayControlStatus);
-		m_bus.triggerInterrupt(Bus::Interrupts::VerticalBlank);
+		m_bus.IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::VBlank);
+		if (m_bus.IO().peek(IoRegisters::STAT) & Bit4)
+			m_bus.IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
+		m_bus.IO().triggerInterrupt(IoRegisters::Interrupts::VerticalBlank);
 	}
 	return runRasterLines(limit, lines);
 }
@@ -398,36 +398,36 @@ int EightBit::GameBoy::LR35902::singleStep() {
 
 	int current = 0;
 
-	auto interruptEnable = m_bus.peekRegister(Bus::IE);
-	auto interruptFlags = m_bus.peekRegister(Bus::IF);
+	auto interruptEnable = m_bus.peek(IoRegisters::BASE + IoRegisters::IE);
+	auto interruptFlags = m_bus.IO().peek(IoRegisters::IF);
 	auto ime = IME();
 
 	auto masked = interruptEnable & interruptFlags;
 	if (masked) {
 		if (ime) {
-			m_bus.pokeRegister(Bus::IF, 0);
+			m_bus.IO().poke(IoRegisters::IF, 0);
 		} else {
 			if (isHalted())
 				proceed();
 		}
 	}
 
-	if (ime && (masked & Bus::Interrupts::VerticalBlank)) {
+	if (ime && (masked & IoRegisters::Interrupts::VerticalBlank)) {
 		current += interrupt(0x40);
-	} else if (ime && (masked & Bus::Interrupts::DisplayControlStatus)) {
+	} else if (ime && (masked & IoRegisters::Interrupts::DisplayControlStatus)) {
 		current += interrupt(0x48);
-	} else if (ime && (masked & Bus::Interrupts::TimerOverflow)) {
+	} else if (ime && (masked & IoRegisters::Interrupts::TimerOverflow)) {
 		current += interrupt(0x50);
-	} else if (ime && (masked & Bus::Interrupts::SerialTransfer)) {
+	} else if (ime && (masked & IoRegisters::Interrupts::SerialTransfer)) {
 		current += interrupt(0x58);
-	} else if (ime && (masked & Bus::Interrupts::KeypadPressed)) {
+	} else if (ime && (masked & IoRegisters::Interrupts::KeypadPressed)) {
 		current += interrupt(0x60);
 	} else {
 		current += isHalted() ? 1 : step();
 	}
 
-	m_bus.checkTimers(current);
-	m_bus.transferDma();
+	m_bus.IO().checkTimers(current);
+	m_bus.IO().transferDma();
 
 	return current;
 }
@@ -750,7 +750,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				cycles += 2;
 				break;
 			case 4:	// GB: LD (FF00 + n),A
-				m_bus.writeRegister(fetchByte(), a);
+				m_bus.write(IoRegisters::BASE + fetchByte(), a);
 				cycles += 3;
 				break;
 			case 5: { // GB: ADD SP,dd
@@ -766,7 +766,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				cycles += 4;
 				break;
 			case 6:	// GB: LD A,(FF00 + n)
-				a = m_bus.readRegister(fetchByte());
+				a = m_bus.read(IoRegisters::BASE + fetchByte());
 				cycles += 3;
 				break;
 			case 7: { // GB: LD HL,SP + dd
@@ -827,7 +827,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				cycles += 3;
 				break;
 			case 4:	// GB: LD (FF00 + C),A
-				m_bus.writeRegister(C(), a);
+				m_bus.write(IoRegisters::BASE + C(), a);
 				cycles += 2;
 				break;
 			case 5:	// GB: LD (nn),A
@@ -836,7 +836,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				cycles += 4;
 				break;
 			case 6:	// GB: LD A,(FF00 + C)
-				a = m_bus.readRegister(C());
+				a = m_bus.read(IoRegisters::BASE + C());
 				cycles += 2;
 				break;
 			case 7:	// GB: LD A,(nn)

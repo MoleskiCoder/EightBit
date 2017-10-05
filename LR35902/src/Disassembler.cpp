@@ -579,104 +579,104 @@ std::string EightBit::GameBoy::Disassembler::io(uint8_t value) {
 	switch (value) {
 
 	// Port/Mode Registers
-	case Bus::P1:
+	case IoRegisters::P1:
 		return "P1";
-	case Bus::SB:
+	case IoRegisters::SB:
 		return "SB";
-	case Bus::SC:
+	case IoRegisters::SC:
 		return "SC";
-	case Bus::DIV:
+	case IoRegisters::DIV:
 		return "DIV";
-	case Bus::TIMA:
+	case IoRegisters::TIMA:
 		return "TIMA";
-	case Bus::TMA:
+	case IoRegisters::TMA:
 		return "TMA";
-	case Bus::TAC:
+	case IoRegisters::TAC:
 		return "TAC";
 
 	// Interrupt Flags
-	case Bus::IF:
+	case IoRegisters::IF:
 		return "IF";
-	case Bus::IE:
+	case IoRegisters::IE:
 		return "IE";
 
 	// LCD Display Registers
-	case Bus::LCDC:
+	case IoRegisters::LCDC:
 		return "LCDC";
-	case Bus::STAT:
+	case IoRegisters::STAT:
 		return "STAT";
-	case Bus::SCY:
+	case IoRegisters::SCY:
 		return "SCY";
-	case Bus::SCX:
+	case IoRegisters::SCX:
 		return "SCX";
-	case Bus::LY:
+	case IoRegisters::LY:
 		return "LY";
-	case Bus::LYC:
+	case IoRegisters::LYC:
 		return "LYC";
-	case Bus::DMA:
+	case IoRegisters::DMA:
 		return "DMA";
-	case Bus::BGP:
+	case IoRegisters::BGP:
 		return "BGP";
-	case Bus::OBP0:
+	case IoRegisters::OBP0:
 		return "OBP0";
-	case Bus::OBP1:
+	case IoRegisters::OBP1:
 		return "OBP1";
-	case Bus::WY:
+	case IoRegisters::WY:
 		return "WY";
-	case Bus::WX:
+	case IoRegisters::WX:
 		return "WX";
 
 	// Sound Registers
-	case Bus::NR10:
+	case IoRegisters::NR10:
 		return "NR10";
-	case Bus::NR11:
+	case IoRegisters::NR11:
 		return "NR11";
-	case Bus::NR12:
+	case IoRegisters::NR12:
 		return "NR12";
-	case Bus::NR13:
+	case IoRegisters::NR13:
 		return "NR13";
-	case Bus::NR14:
+	case IoRegisters::NR14:
 		return "NR14";
-	case Bus::NR21:
+	case IoRegisters::NR21:
 		return "NR21";
-	case Bus::NR22:
+	case IoRegisters::NR22:
 		return "NR22";
-	case Bus::NR23:
+	case IoRegisters::NR23:
 		return "NR23";
-	case Bus::NR24:
+	case IoRegisters::NR24:
 		return "NR24";
-	case Bus::NR30:
+	case IoRegisters::NR30:
 		return "NR30";
-	case Bus::NR31:
+	case IoRegisters::NR31:
 		return "NR31";
-	case Bus::NR32:
+	case IoRegisters::NR32:
 		return "NR32";
-	case Bus::NR33:
+	case IoRegisters::NR33:
 		return "NR33";
-	case Bus::NR34:
+	case IoRegisters::NR34:
 		return "NR34";
-	case Bus::NR41:
+	case IoRegisters::NR41:
 		return "NR41";
-	case Bus::NR42:
+	case IoRegisters::NR42:
 		return "NR42";
-	case Bus::NR43:
+	case IoRegisters::NR43:
 		return "NR43";
-	case Bus::NR44:
+	case IoRegisters::NR44:
 		return "NR44";
-	case Bus::NR50:
+	case IoRegisters::NR50:
 		return "NR50";
-	case Bus::NR51:
+	case IoRegisters::NR51:
 		return "NR51";
-	case Bus::NR52:
+	case IoRegisters::NR52:
 		return "NR52";
 
-	case Bus::WAVE_PATTERN_RAM_START:
+	case IoRegisters::WAVE_PATTERN_RAM_START:
 		return "WAVE_PATTERN_RAM_START";
-	case Bus::WAVE_PATTERN_RAM_END:
+	case IoRegisters::WAVE_PATTERN_RAM_END:
 		return "WAVE_PATTERN_RAM_END";
 
 	// Boot rom control
-	case Bus::BOOT_DISABLE:
+	case IoRegisters::BOOT_DISABLE:
 		return "BOOT_DISABLE";
 
 	default:
