@@ -7,6 +7,7 @@
 
 #include "Memory.h"
 #include "LR35902.h"
+#include "IoRegisters.h"
 
 EightBit::GameBoy::Disassembler::Disassembler() {
 	// Disable exceptions where too many format arguments are available

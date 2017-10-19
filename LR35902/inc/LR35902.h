@@ -4,12 +4,13 @@
 
 #include <IntelProcessor.h>
 #include <Signal.h>
-
-#include "GameBoyBus.h"
-#include "Display.h"
+#include <Register.h>
 
 namespace EightBit {
 	namespace GameBoy {
+
+		class Bus;
+
 		class LR35902 : public IntelProcessor {
 		public:
 			enum StatusBits {

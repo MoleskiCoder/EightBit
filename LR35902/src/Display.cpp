@@ -1,9 +1,11 @@
 #include "stdafx.h"
 #include "Display.h"
-#include "Processor.h"
 #include "CharacterDefinition.h"
 #include "ObjectAttribute.h"
+#include "GameBoyBus.h"
+#include "AbstractColourPalette.h"
 
+#include <Processor.h>
 #include <vector>
 
 EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram)

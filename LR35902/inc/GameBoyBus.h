@@ -7,6 +7,7 @@
 #include <Ram.h>
 #include <Bus.h>
 
+#include "LR35902.h"
 #include "IoRegisters.h"
 
 namespace EightBit {
@@ -32,6 +33,7 @@ namespace EightBit {
 
 			Bus();
 
+			LR35902& CPU() { return m_cpu; }
 			Ram& VRAM() { return m_videoRam; }
 			Ram& OAMRAM() { return m_oamRam; }
 			IoRegisters& IO() { return m_ioPorts; }
@@ -51,6 +53,8 @@ namespace EightBit {
 			virtual uint8_t& reference(uint16_t address, bool& rom);
 
 		private:
+			LR35902 m_cpu;
+
 			Rom m_bootRom;						// 0x0000 - 0x00ff
 			std::vector<Rom> m_gameRomBanks;	// 0x0000 - 0x3fff, 0x4000 - 0x7fff (switchable)
 			Ram m_videoRam;						// 0x8000 - 0x9fff
