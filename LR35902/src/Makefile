@@ -2,7 +2,7 @@ LIB = liblr35902.a
 
 CXXFLAGS = -Wall -std=c++11 -pipe -I ../inc -I ../../inc
 
-CXXFILES = CharacterDefinition.cpp Disassembler.cpp Display.cpp GameBoyBus.cpp LR35902.cpp Profiler.cpp
+CXXFILES = CharacterDefinition.cpp Disassembler.cpp Display.cpp GameBoyBus.cpp IoRegisters.cpp LR35902.cpp Profiler.cpp
 
 CXXOBJECTS = $(CXXFILES:.cpp=.o)
 
