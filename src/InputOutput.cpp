@@ -15,21 +15,17 @@ void EightBit::InputOutput::writeOutputPort(uint8_t port, uint8_t value) {
 }
 
 void EightBit::InputOutput::OnReadingPort(uint8_t port) {
-	PortEventArgs event(port);
-	ReadingPort.fire(event);
+	ReadingPort.fire(port);
 }
 
 void EightBit::InputOutput::OnReadPort(uint8_t port) {
-	PortEventArgs event(port);
-	ReadPort.fire(event);
+	ReadPort.fire(port);
 }
 
 void EightBit::InputOutput::OnWritingPort(uint8_t port) {
-	PortEventArgs event(port);
-	WritingPort.fire(event);
+	WritingPort.fire(port);
 }
 
 void EightBit::InputOutput::OnWrittenPort(uint8_t port) {
-	PortEventArgs event(port);
-	WrittenPort.fire(event);
+	WrittenPort.fire(port);
 }
