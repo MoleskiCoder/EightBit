@@ -2,10 +2,18 @@
 
 // Auxiliary carry logic from https://github.com/begoon/i8080-core
 
+#include <cstdint>
+#include <stdexcept>
+
 #include <IntelProcessor.h>
-#include <InputOutput.h>
+#include <Signal.h>
+#include <Register.h>
 
 namespace EightBit {
+
+	class InputOutput;
+	class Bus;
+
 	class Intel8080 : public IntelProcessor {
 	public:
 		enum StatusBits {

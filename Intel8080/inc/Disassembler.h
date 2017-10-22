@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
+#include <sstream>
 #include <boost/format.hpp>
 
 namespace EightBit {
