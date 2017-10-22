@@ -4,7 +4,6 @@
 #include <array>
 
 #include "Signal.h"
-#include "PortEventArgs.h"
 
 namespace EightBit {
 	class InputOutput {
@@ -18,11 +17,11 @@ namespace EightBit {
 		uint8_t readOutputPort(uint8_t port) { return output[port]; }
 		void writeOutputPort(uint8_t port, uint8_t value);
 
-		Signal<PortEventArgs> ReadingPort;
-		Signal<PortEventArgs> ReadPort;
+		Signal<uint8_t> ReadingPort;
+		Signal<uint8_t> ReadPort;
 
-		Signal<PortEventArgs> WritingPort;
-		Signal<PortEventArgs> WrittenPort;
+		Signal<uint8_t> WritingPort;
+		Signal<uint8_t> WrittenPort;
 
 	protected:
 		void OnReadingPort(uint8_t port);
