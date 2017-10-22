@@ -54,7 +54,6 @@ namespace EightBit {
 				const std::array<int, 4>& palette);
 
 			void renderObjects();
-			void renderObjects(int objBlockHeight);
 
 			void renderTile(
 				int height,

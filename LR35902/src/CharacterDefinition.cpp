@@ -5,14 +5,12 @@
 
 EightBit::GameBoy::CharacterDefinition::CharacterDefinition()
 : m_ram(nullptr),
-  m_address(~0),
-  m_height(0) {
+  m_address(~0) {
 }
 
-EightBit::GameBoy::CharacterDefinition::CharacterDefinition(Ram* ram, uint16_t address, int height)
+EightBit::GameBoy::CharacterDefinition::CharacterDefinition(Ram* ram, uint16_t address)
 : m_ram(ram),
-  m_address(address),
-  m_height(height) {
+  m_address(address) {
 }
 
 std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) const {

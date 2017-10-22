@@ -12,7 +12,7 @@ namespace EightBit {
 		class ObjectAttribute {
 		public:
 			ObjectAttribute();
-			ObjectAttribute(Ram& ram, uint16_t address, int height);
+			ObjectAttribute(Ram& ram, uint16_t address);
 
 			uint8_t positionY() const { return m_positionY; }
 			uint8_t positionX() const { return m_positionX; }
