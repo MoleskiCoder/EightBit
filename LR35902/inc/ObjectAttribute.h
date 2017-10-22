@@ -2,22 +2,17 @@
 
 #include <cstdint>
 
-#include <Ram.h>
 #include <Processor.h>
 
 namespace EightBit {
+
+	class Ram;
+
 	namespace GameBoy {
 		class ObjectAttribute {
 		public:
-			ObjectAttribute() {}
-			ObjectAttribute(Ram& ram, uint16_t address, int height) {
-				m_positionY = ram.peek(address);
-				m_positionX = ram.peek(address + 1);
-				m_pattern = ram.peek(address + 2);
-				if (height == 16)
-					m_pattern >>= 1;
-				m_flags = ram.peek(address + 3);
-			}
+			ObjectAttribute();
+			ObjectAttribute(Ram& ram, uint16_t address, int height);
 
 			uint8_t positionY() const { return m_positionY; }
 			uint8_t positionX() const { return m_positionX; }

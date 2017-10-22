@@ -2,7 +2,8 @@
 #include "GameBoyBus.h"
 
 EightBit::GameBoy::Bus::Bus()
-: m_bootRom(0x100),
+: m_cpu(*this),
+  m_bootRom(0x100),
   m_gameRomBanks(1),
   m_videoRam(0x2000),
   m_ramBanks(0),
@@ -24,6 +25,7 @@ EightBit::GameBoy::Bus::Bus()
 
 void EightBit::GameBoy::Bus::reset() {
 	m_ioPorts.reset();
+	m_cpu.initialise();
 }
 
 void EightBit::GameBoy::Bus::loadBootRom(const std::string& path) {

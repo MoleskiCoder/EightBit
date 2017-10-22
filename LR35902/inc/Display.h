@@ -4,16 +4,17 @@
 #include <array>
 #include <cstdint>
 
-#include <Ram.h>
-
-#include "GameBoyBus.h"
-#include "AbstractColourPalette.h"
 #include "ObjectAttribute.h"
 
 namespace EightBit {
+
+	class Ram;
+
 	namespace GameBoy {
 
+		class AbstractColourPalette;
 		class CharacterDefinition;
+		class Bus;
 
 		class Display {
 		public:

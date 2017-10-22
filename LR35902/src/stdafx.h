@@ -28,7 +28,11 @@
 #include <Memory.h>
 #include <Processor.h>
 #include <IntelProcessor.h>
+#include <Register.h>
 #include <Signal.h>
+#include <Rom.h>
+#include <Ram.h>
+#include <Bus.h>
 
 #ifdef _MSC_VER
 #include <intrin.h>

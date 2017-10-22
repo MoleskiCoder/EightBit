@@ -157,6 +157,7 @@
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="IoRegisters.cpp" />
     <ClCompile Include="LR35902.cpp" />
+    <ClCompile Include="ObjectAttribute.cpp" />
     <ClCompile Include="Profiler.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
