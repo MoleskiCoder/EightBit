@@ -4,8 +4,12 @@
 #include <array>
 
 #include "Processor.h"
+#include "Register.h"
 
 namespace EightBit {
+
+	class Bus;
+
 	class IntelProcessor : public Processor
 	{
 	public:
