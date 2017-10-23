@@ -17,19 +17,19 @@ std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) const {
 
 	std::array<int, 8> returned;
 
-	auto planeAddress = m_address + row * 2;
+	const auto planeAddress = m_address + row * 2;
 	
-	auto planeLow = m_ram->peek(planeAddress);
-	auto planeHigh = m_ram->peek(planeAddress + 1);
+	const auto planeLow = m_ram->peek(planeAddress);
+	const auto planeHigh = m_ram->peek(planeAddress + 1);
 	
 	for (int bit = 0; bit < 8; ++bit) {
 	
-		auto mask = 1 << bit;
+		const auto mask = 1 << bit;
 	
-		auto bitLow = planeLow & mask ? 1 : 0;
-		auto bitHigh = planeHigh & mask ? 0b10 : 0;
+		const auto bitLow = planeLow & mask ? 1 : 0;
+		const auto bitHigh = planeHigh & mask ? 0b10 : 0;
 	
-		auto colour = bitHigh | bitLow;
+		const auto colour = bitHigh | bitLow;
 	
 		returned[7 - bit] = colour;
 	}

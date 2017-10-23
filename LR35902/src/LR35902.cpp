@@ -1,14 +1,12 @@
 #include "stdafx.h"
 #include "LR35902.h"
 #include "GameBoyBus.h"
-#include "Display.h"
 
 // based on http://www.z80.info/decoding.htm
 
 EightBit::GameBoy::LR35902::LR35902(Bus& memory)
 : IntelProcessor(memory),
   m_bus(memory),
-  m_enabledLCD(false),
   m_ime(false),
   m_stopped(false),
   m_prefixCB(false) {
@@ -187,14 +185,14 @@ void EightBit::GameBoy::LR35902::compare(uint8_t& f, uint8_t check, uint8_t valu
 
 uint8_t EightBit::GameBoy::LR35902::rlc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
-	auto carry = operand & Bit7;
+	const auto carry = operand & Bit7;
 	setFlag(f, CF, carry);
 	return (operand << 1) | (carry >> 7);
 }
 
 uint8_t EightBit::GameBoy::LR35902::rrc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC | ZF);
-	auto carry = operand & Bit0;
+	const auto carry = operand & Bit0;
 	setFlag(f, CF, carry);
 	return (operand >> 1) | (carry << 7);
 }
@@ -237,7 +235,7 @@ uint8_t EightBit::GameBoy::LR35902::srl(uint8_t& f, uint8_t operand) {
 }
 
 uint8_t EightBit::GameBoy::LR35902::bit(uint8_t& f, int n, uint8_t operand) {
-	auto carry = f & CF;
+	const auto carry = f & CF;
 	uint8_t discarded = operand;
 	andr(f, discarded, 1 << n);
 	setFlag(f, CF, carry);
@@ -290,119 +288,13 @@ void EightBit::GameBoy::LR35902::ccf(uint8_t& a, uint8_t& f) {
 	clearFlag(f, CF, f & CF);
 }
 
-int EightBit::GameBoy::LR35902::runRasterLines() {
-	m_enabledLCD = !!(m_bus.IO().peek(IoRegisters::LCDC) & IoRegisters::LcdEnable);
-	m_bus.IO().resetLY();
-	return runRasterLines(Display::RasterHeight * Bus::CyclesPerLine, Display::RasterHeight);
-}
-
-int EightBit::GameBoy::LR35902::runRasterLines(int limit, int lines) {
-	int count = 0;
-	int allowed = Bus::CyclesPerLine;
-	for (int line = 0; line < lines; ++line) {
-		auto executed = runRasterLine(allowed);
-		count += executed;
-		allowed = Bus::CyclesPerLine - (executed - Bus::CyclesPerLine);
-	}
-	return count;
-}
-
-int EightBit::GameBoy::LR35902::runRasterLine(int limit) {
-
-	/*
-	A scanline normally takes 456 clocks (912 clocks in double speed
-	mode) to complete. A scanline starts in mode 2, then goes to
-	mode 3 and, when the LCD controller has finished drawing the
-	line (the timings depend on lots of things) it goes to mode 0.
-	During lines 144-153 the LCD controller is in mode 1.
-	Line 153 takes only a few clocks to complete (the exact
-	timings are below). The rest of the clocks of line 153 are
-	spent in line 0 in mode 1! 
-
-	During mode 0 and mode 1 the CPU can access both VRAM and OAM.
-	During mode 2 the CPU can only access VRAM, not OAM.
-	During mode 3 OAM and VRAM can't be accessed.
-	In GBC mode the CPU can't access Palette RAM(FF69h and FF6Bh)
-	during mode 3.
-	A scanline normally takes 456 clocks(912 clocks in double speed mode) to complete.
-	A scanline starts in mode 2, then goes to mode 3 and , when the LCD controller has
-	finished drawing the line(the timings depend on lots of things) it goes to mode 0.
-	During lines 144 - 153 the LCD controller is in mode 1.
-	Line 153 takes only a few clocks to complete(the exact timings are below).
-	The rest of the clocks of line 153 are spent in line 0 in mode 1!
-	*/
-
-	int count = 0;
-	if (m_enabledLCD) {
-
-		if ((m_bus.IO().peek(IoRegisters::STAT) & Bit6) && (m_bus.IO().peek(IoRegisters::LYC) == m_bus.IO().peek(IoRegisters::LY)))
-			m_bus.IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
-
-		// Mode 2, OAM unavailable
-		m_bus.IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::SearchingOamRam);
-		if (m_bus.IO().peek(IoRegisters::STAT) & Bit5)
-			m_bus.IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
-		count += run(80);	// ~19us
-
-		// Mode 3, OAM/VRAM unavailable
-		m_bus.IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::TransferringDataToLcd);
-		count += run(170);	// ~41us
-
-		// Mode 0
-		m_bus.IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::HBlank);
-		if (m_bus.IO().peek(IoRegisters::STAT) & Bit3)
-			m_bus.IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
-		count += run(limit - count);	// ~48.6us
-
-		m_bus.IO().incrementLY();
-
-	} else {
-		count += run(Bus::CyclesPerLine);
-	}
-
-	return count;
-}
-
-int EightBit::GameBoy::LR35902::runVerticalBlankLines() {
-	auto lines = Bus::TotalLineCount - Display::RasterHeight;
-	return runVerticalBlankLines(lines * Bus::CyclesPerLine, lines);
-}
-
-int EightBit::GameBoy::LR35902::runVerticalBlankLines(int limit, int lines) {
-
-	/*
-	Vertical Blank interrupt is triggered when the LCD
-	controller enters the VBL screen mode (mode 1, LY=144).
-	This happens once per frame, so this interrupt is
-	triggered 59.7 times per second. During this period the
-	VRAM and OAM can be accessed freely, so it's the best
-	time to update graphics (for example, use the OAM DMA to
-	update sprites for next frame, or update tiles to make
-	animations).
-	This period lasts 4560 clocks in normal speed mode and
-	9120 clocks in double speed mode. That's exactly the
-	time needed to draw 10 scanlines.
-	The VBL interrupt isn't triggered when the LCD is
-	powered off or on, even when it was on VBL mode.
-	It's only triggered when the VBL period starts. 
-	*/
-
-	if (m_enabledLCD) {
-		m_bus.IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::VBlank);
-		if (m_bus.IO().peek(IoRegisters::STAT) & Bit4)
-			m_bus.IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
-		m_bus.IO().triggerInterrupt(IoRegisters::Interrupts::VerticalBlank);
-	}
-	return runRasterLines(limit, lines);
-}
-
 int EightBit::GameBoy::LR35902::singleStep() {
 
 	int current = 0;
 
-	auto interruptEnable = m_bus.peek(IoRegisters::BASE + IoRegisters::IE);
-	auto interruptFlags = m_bus.IO().peek(IoRegisters::IF);
-	auto ime = IME();
+	const auto interruptEnable = m_bus.peek(IoRegisters::BASE + IoRegisters::IE);
+	const auto interruptFlags = m_bus.IO().peek(IoRegisters::IF);
+	const auto ime = IME();
 
 	auto masked = interruptEnable & interruptFlags;
 	if (masked) {
@@ -438,7 +330,7 @@ int EightBit::GameBoy::LR35902::step() {
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;
 	cycles = 0;
-	auto ran = fetchExecute();
+	const auto ran = fetchExecute();
 	ExecutedInstruction.fire(*this);
 	return ran;
 }
@@ -447,12 +339,12 @@ int EightBit::GameBoy::LR35902::execute(uint8_t opcode) {
 
 	const auto& decoded = getDecodedOpcode(opcode);
 
-	auto x = decoded.x;
-	auto y = decoded.y;
-	auto z = decoded.z;
+	const auto x = decoded.x;
+	const auto y = decoded.y;
+	const auto z = decoded.z;
 
-	auto p = decoded.p;
-	auto q = decoded.q;
+	const auto p = decoded.p;
+	const auto q = decoded.q;
 
 	if (m_prefixCB)
 		executeCB(x, y, z, p, q);
@@ -756,11 +648,11 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				cycles += 3;
 				break;
 			case 5: { // GB: ADD SP,dd
-					auto before = SP().word;
-					int8_t value = fetchByte();
-					auto result = before + value;
+					const auto before = SP().word;
+					const int8_t value = fetchByte();
+					const auto result = before + value;
 					SP().word = result;
-					auto carried = before ^ value ^ (result & Mask16);
+					const auto carried = before ^ value ^ (result & Mask16);
 					clearFlag(f, ZF | NF);
 					setFlag(f, CF, carried & Bit8);
 					setFlag(f, HC, carried & Bit4);
@@ -772,11 +664,11 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				cycles += 3;
 				break;
 			case 7: { // GB: LD HL,SP + dd
-					auto before = SP().word;
-					int8_t value = fetchByte();
-					auto result = before + value;
+					const auto before = SP().word;
+					const int8_t value = fetchByte();
+					const auto result = before + value;
 					HL().word = result;
-					auto carried = before ^ value ^ (result & Mask16);
+					const auto carried = before ^ value ^ (result & Mask16);
 					clearFlag(f, ZF | NF);
 					setFlag(f, CF, carried & Bit8);
 					setFlag(f, HC, carried & Bit4);

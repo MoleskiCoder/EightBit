@@ -2,10 +2,12 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 
 #include <Rom.h>
 #include <Ram.h>
 #include <Bus.h>
+#include <Register.h>
 
 #include "LR35902.h"
 #include "IoRegisters.h"
@@ -49,6 +51,9 @@ namespace EightBit {
 			void loadBootRom(const std::string& path);
 			void loadGameRom(const std::string& path);
 
+			int runRasterLines();
+			int runVerticalBlankLines();
+
 		protected:
 			virtual uint8_t& reference(uint16_t address, bool& rom);
 
@@ -63,6 +68,8 @@ namespace EightBit {
 			Ram m_oamRam;						// 0xfe00 - 0xfe9f
 			IoRegisters m_ioPorts;				// 0xff00 - 0xff7f
 			Ram m_highInternalRam;				// 0xff80 - 0xffff
+
+			bool m_enabledLCD;
 
 			bool m_disableGameRom;
 
@@ -80,6 +87,10 @@ namespace EightBit {
 			void validateCartridgeType();
 
 			void Bus_WrittenByte(uint16_t address);
+
+			int runRasterLines(int lines);
+			int runVerticalBlankLines(int lines);
+			int runRasterLine(int limit);
 		};
 	}
 }

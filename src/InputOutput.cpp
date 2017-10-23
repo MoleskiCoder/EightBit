@@ -3,7 +3,7 @@
 
 uint8_t EightBit::InputOutput::readInputPort(uint8_t port) {
 	OnReadingPort(port);
-	auto value = input[port];
+	const auto value = input[port];
 	OnReadPort(port);
 	return value;
 }

@@ -49,8 +49,7 @@ namespace EightBit {
 
 		uint8_t read() {
 			ReadingByte.fire(ADDRESS().word);
-			auto content = reference();
-			return content;
+			return reference();
 		}
 
 		uint8_t read(uint16_t offset) {

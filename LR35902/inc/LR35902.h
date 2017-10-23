@@ -40,22 +40,14 @@ namespace EightBit {
 
 			virtual void reset() override;
 
-			int runRasterLines();
-			int runVerticalBlankLines();
-
 			int singleStep();
 
 		protected:
-			int runRasterLines(int limit, int lines);
-			int runVerticalBlankLines(int limit, int lines);
-			int runRasterLine(int limit);
-
 			virtual int execute(uint8_t opcode);
 			int step();
 
 		private:
 			Bus& m_bus;
-			bool m_enabledLCD;
 
 			register16_t af;
 			register16_t bc;

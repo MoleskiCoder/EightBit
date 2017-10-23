@@ -107,13 +107,13 @@ namespace EightBit {
 
 		static bool calculateHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
 			static std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
-			auto index = buildHalfCarryIndex(before, value, calculation);
+			const auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableAdd[index & Mask3];
 		}
 
 		static bool calculateHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
 			std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
-			auto index = buildHalfCarryIndex(before, value, calculation);
+			const auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableSub[index & Mask3];
 		}
 
@@ -180,7 +180,7 @@ namespace EightBit {
 		}
 
 		bool jrConditional(int conditional) {
-			auto offset = fetchByte();
+			const auto offset = fetchByte();
 			if (conditional)
 				jr(offset);
 			return conditional != 0;

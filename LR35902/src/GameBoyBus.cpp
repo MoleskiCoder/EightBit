@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "GameBoyBus.h"
+#include "Display.h"
 
 EightBit::GameBoy::Bus::Bus()
 : m_cpu(*this),
@@ -10,6 +11,7 @@ EightBit::GameBoy::Bus::Bus()
   m_lowInternalRam(0x2000),
   m_oamRam(0xa0),
   m_ioPorts(*this),
+  m_enabledLCD(false),
   m_highInternalRam(0x80),
   m_disableGameRom(false),
   m_rom(false),
@@ -24,8 +26,8 @@ EightBit::GameBoy::Bus::Bus()
 }
 
 void EightBit::GameBoy::Bus::reset() {
-	m_ioPorts.reset();
-	m_cpu.initialise();
+	IO().reset();
+	CPU().initialise();
 }
 
 void EightBit::GameBoy::Bus::loadBootRom(const std::string& path) {
@@ -113,7 +115,7 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 	// ROM size
 	{
 		size_t gameRomBanks = 0;
-		int romSizeSpecification = m_gameRomBanks[0].peek(0x148);
+		const int romSizeSpecification = m_gameRomBanks[0].peek(0x148);
 		switch (romSizeSpecification) {
 		case 0x52:
 			gameRomBanks = 72;
@@ -166,7 +168,7 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 uint8_t& EightBit::GameBoy::Bus::reference(uint16_t address, bool& rom) {
 
 	rom = true;
-	if ((address < 0x100) && m_ioPorts.bootRomEnabled())
+	if ((address < 0x100) && IO().bootRomEnabled())
 		return m_bootRom.reference(address);
 	if ((address < 0x4000) && gameRomEnabled())
 		return m_gameRomBanks[0].reference(address);
@@ -187,6 +189,111 @@ uint8_t& EightBit::GameBoy::Bus::reference(uint16_t address, bool& rom) {
 	if (address < IoRegisters::BASE)
 		return rom = true, placeDATA(0xff);
 	if (address < 0xff80)
-		return m_ioPorts.reference(address - IoRegisters::BASE);
+		return IO().reference(address - IoRegisters::BASE);
 	return m_highInternalRam.reference(address - 0xff80);
+}
+
+int EightBit::GameBoy::Bus::runRasterLines() {
+	m_enabledLCD = !!(IO().peek(IoRegisters::LCDC) & IoRegisters::LcdEnable);
+	IO().resetLY();
+	return runRasterLines(Display::RasterHeight);
+}
+
+int EightBit::GameBoy::Bus::runRasterLines(int lines) {
+	int count = 0;
+	int allowed = CyclesPerLine;
+	for (int line = 0; line < lines; ++line) {
+		auto executed = runRasterLine(allowed);
+		count += executed;
+		allowed = CyclesPerLine - (executed - CyclesPerLine);
+	}
+	return count;
+}
+
+int EightBit::GameBoy::Bus::runRasterLine(int limit) {
+
+	/*
+	A scanline normally takes 456 clocks (912 clocks in double speed
+	mode) to complete. A scanline starts in mode 2, then goes to
+	mode 3 and, when the LCD controller has finished drawing the
+	line (the timings depend on lots of things) it goes to mode 0.
+	During lines 144-153 the LCD controller is in mode 1.
+	Line 153 takes only a few clocks to complete (the exact
+	timings are below). The rest of the clocks of line 153 are
+	spent in line 0 in mode 1!
+
+	During mode 0 and mode 1 the CPU can access both VRAM and OAM.
+	During mode 2 the CPU can only access VRAM, not OAM.
+	During mode 3 OAM and VRAM can't be accessed.
+	In GBC mode the CPU can't access Palette RAM(FF69h and FF6Bh)
+	during mode 3.
+	A scanline normally takes 456 clocks(912 clocks in double speed mode) to complete.
+	A scanline starts in mode 2, then goes to mode 3 and , when the LCD controller has
+	finished drawing the line(the timings depend on lots of things) it goes to mode 0.
+	During lines 144 - 153 the LCD controller is in mode 1.
+	Line 153 takes only a few clocks to complete(the exact timings are below).
+	The rest of the clocks of line 153 are spent in line 0 in mode 1!
+	*/
+
+	int count = 0;
+	if (m_enabledLCD) {
+
+		if ((IO().peek(IoRegisters::STAT) & Processor::Bit6) && (IO().peek(IoRegisters::LYC) == IO().peek(IoRegisters::LY)))
+			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
+
+		// Mode 2, OAM unavailable
+		IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::SearchingOamRam);
+		if (IO().peek(IoRegisters::STAT) & Processor::Bit5)
+			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
+		count += CPU().run(80);	// ~19us
+
+		// Mode 3, OAM/VRAM unavailable
+		IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::TransferringDataToLcd);
+		count += CPU().run(170);	// ~41us
+
+		// Mode 0
+		IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::HBlank);
+		if (IO().peek(IoRegisters::STAT) & Processor::Bit3)
+			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
+		count += CPU().run(limit - count);	// ~48.6us
+
+		IO().incrementLY();
+	} else {
+		count += CPU().run(CyclesPerLine);
+	}
+
+	return count;
+}
+
+int EightBit::GameBoy::Bus::runVerticalBlankLines() {
+	const auto lines = TotalLineCount - Display::RasterHeight;
+	return runVerticalBlankLines(lines);
+}
+
+int EightBit::GameBoy::Bus::runVerticalBlankLines(int lines) {
+
+	/*
+	Vertical Blank interrupt is triggered when the LCD
+	controller enters the VBL screen mode (mode 1, LY=144).
+	This happens once per frame, so this interrupt is
+	triggered 59.7 times per second. During this period the
+	VRAM and OAM can be accessed freely, so it's the best
+	time to update graphics (for example, use the OAM DMA to
+	update sprites for next frame, or update tiles to make
+	animations).
+	This period lasts 4560 clocks in normal speed mode and
+	9120 clocks in double speed mode. That's exactly the
+	time needed to draw 10 scanlines.
+	The VBL interrupt isn't triggered when the LCD is
+	powered off or on, even when it was on VBL mode.
+	It's only triggered when the VBL period starts.
+	*/
+
+	if (m_enabledLCD) {
+		IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::VBlank);
+		if (IO().peek(IoRegisters::STAT) & Processor::Bit4)
+			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
+		IO().triggerInterrupt(IoRegisters::Interrupts::VerticalBlank);
+	}
+	return runRasterLines(lines);
 }
