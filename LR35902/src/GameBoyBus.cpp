@@ -67,6 +67,7 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(const uint16_t address) {
 		if (m_banked) {
 			assert(false);
 		}
+		break;
 	case 0x6000:
 		// Register 3: ROM/RAM change
 		if (m_banked) {
