@@ -4,7 +4,7 @@
 
 int main(int, char*[]) {
 
-	Fuse::TestSuite testSuite("C:\\github\\cpp\\EightBitWrapper\\libraries\\EightBit\\Z80\\fusetest_Z80\\fuse-tests\\tests");
+	Fuse::TestSuite testSuite("fuse-tests\\tests");
 	testSuite.run();
 
 	return 0;
