@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cassert>
 
 #include <IntelProcessor.h>
 #include <Signal.h>

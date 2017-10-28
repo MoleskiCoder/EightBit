@@ -15,7 +15,6 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expecte
 //
 
 void Fuse::TestRunner::initialise() {
-	disableBootRom();
 	disableGameRom();
 	initialiseRegisters();
 	initialiseMemory();
