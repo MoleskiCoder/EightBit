@@ -52,7 +52,7 @@ void Board::initialise() {
 	}
 
 	if (m_configuration.allowInput()) {
-		ReadByte.connect(std::bind(&Board::Memory_ReadByte_Input, this, std::placeholders::_1));
+		ReadingByte.connect(std::bind(&Board::Memory_ReadingByte_Input, this, std::placeholders::_1));
 		m_cpu.ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Poll, this, std::placeholders::_1));
 	}
 
@@ -105,7 +105,7 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 	std::cout << "\n";
 }
 
-void Board::Memory_ReadByte_Input(const uint16_t address) {
+void Board::Memory_ReadingByte_Input(const uint16_t address) {
 	if (address == m_configuration.getInputAddress()) {
 		if (DATA() != 0) {
 			assert(address == ADDRESS().word);

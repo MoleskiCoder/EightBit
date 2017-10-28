@@ -11,7 +11,6 @@
 #include "Disassembly.h"
 #include "Symbols.h"
 
-#include "AddressEventArgs.h"
 #include "ProfileLineEventArgs.h"
 #include "ProfileScopeEventArgs.h"
 

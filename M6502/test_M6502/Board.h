@@ -45,7 +45,7 @@ private:
 
 	void Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu);
 
-	void Memory_ReadByte_Input(uint16_t address);
+	void Memory_ReadingByte_Input(uint16_t address);
 	void Memory_WrittenByte_Output(uint16_t address);
 
 	void Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu);
