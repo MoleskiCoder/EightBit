@@ -127,7 +127,7 @@ bool EightBit::Z80::jrConditionalFlag(uint8_t& f, int flag) {
 	case 3:	// C
 		return jrConditional(f & CF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled JR conditional");
 }
@@ -151,7 +151,7 @@ bool EightBit::Z80::jumpConditionalFlag(uint8_t& f, int flag) {
 	case 7:	// M
 		return jumpConditional(f & SF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled JP conditional");
 }
@@ -184,7 +184,7 @@ bool EightBit::Z80::returnConditionalFlag(uint8_t& f, int flag) {
 	case 7:	// M
 		return returnConditional(f & SF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled RET conditional");
 }
@@ -208,7 +208,7 @@ bool EightBit::Z80::callConditionalFlag(uint8_t& f, int flag) {
 	case 7:	// M
 		return callConditional(f & SF);
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 	throw std::logic_error("Unhandled CALL conditional");
 }
@@ -818,7 +818,7 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 			operand = srl(f, operand);
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		adjustSZP<Z80>(f, operand);
 		if (m_displaced) {
@@ -878,7 +878,7 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 		}
 		break;
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 }
 
@@ -921,7 +921,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				adc(f, HL2(), RP(p));
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 15;
 			break;
@@ -936,7 +936,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				getWordViaMemptr(RP(p));
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 20;
 			break;
@@ -974,7 +974,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				IM() = 0;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 8;
 			break;
@@ -1015,11 +1015,11 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				cycles += 4;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	case 2:
@@ -1165,7 +1165,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 11;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 2:	// Indirect loading
@@ -1196,7 +1196,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 13;
 					break;
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 				break;
 			case 1:
@@ -1225,11 +1225,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 13;
 					break;
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 3:	// 16-bit INC/DEC
@@ -1241,7 +1241,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				--RP(p).word;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 6;
 			break;
@@ -1298,12 +1298,12 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				ccf(a, f);
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 4;
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	case 1:	// 8-bit loading
@@ -1375,7 +1375,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			compare(f, a, R(z, a));
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		cycles += 4;
 		if (z == 6)
@@ -1413,11 +1413,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					cycles += 4;
 					break;
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 2:	// Conditional jump
@@ -1462,7 +1462,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 4;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
@@ -1496,11 +1496,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					fetchExecute();
 					break;
 				default:
-					__assume(0);
+					UNREACHABLE;
 				}
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
@@ -1530,7 +1530,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				compare(f, a, fetchByte());
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			cycles += 7;
 			break;
@@ -1539,7 +1539,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			cycles += 11;
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	}

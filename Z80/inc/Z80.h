@@ -162,7 +162,7 @@ namespace EightBit {
 			case 7:
 				return a;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			throw std::logic_error("Unhandled registry mechanism");
 		}
@@ -194,7 +194,7 @@ namespace EightBit {
 				a = value;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -217,7 +217,7 @@ namespace EightBit {
 			case 7:
 				return a;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			throw std::logic_error("Unhandled registry mechanism");
 		}
@@ -249,7 +249,7 @@ namespace EightBit {
 				a = value;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
