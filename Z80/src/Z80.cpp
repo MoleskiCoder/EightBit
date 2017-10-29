@@ -3,8 +3,6 @@
 
 // based on http://www.z80.info/decoding.htm
 
-#pragma region Reset and initialisation
-
 EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 : IntelProcessor(bus),
   m_ports(ports),
@@ -51,10 +49,6 @@ void EightBit::Z80::reset() {
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 }
 
-#pragma endregion Reset and initialisation
-
-#pragma region Interrupt routines
-
 void EightBit::Z80::di() {
 	IFF1() = IFF2() = false;
 }
@@ -94,10 +88,6 @@ int EightBit::Z80::interrupt(bool maskable, uint8_t value) {
 	return cycles;
 }
 
-#pragma endregion Interrupt routines
-
-#pragma region Flag manipulation helpers
-
 void EightBit::Z80::increment(uint8_t& f, uint8_t& operand) {
 	clearFlag(f, NF);
 	adjustSZXY<Z80>(f, ++operand);
@@ -111,10 +101,6 @@ void EightBit::Z80::decrement(uint8_t& f, uint8_t& operand) {
 	adjustSZXY<Z80>(f, --operand);
 	setFlag(f, VF, operand == Mask7);
 }
-
-#pragma endregion Flag manipulation helpers
-
-#pragma region PC manipulation: call/ret/jp/jr
 
 bool EightBit::Z80::jrConditionalFlag(uint8_t& f, int flag) {
 	switch (flag) {
@@ -213,10 +199,6 @@ bool EightBit::Z80::callConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled CALL conditional");
 }
 
-#pragma endregion PC manipulation: call/ret/jp/jr
-
-#pragma region 16-bit arithmetic
-
 void EightBit::Z80::sbc(uint8_t& f, register16_t& operand, register16_t value) {
 
 	MEMPTR() = operand;
@@ -278,10 +260,6 @@ void EightBit::Z80::add(uint8_t& f, register16_t& operand, register16_t value) {
 
 	MEMPTR().word++;
 }
-
-#pragma endregion 16-bit arithmetic
-
-#pragma region ALU
 
 void EightBit::Z80::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
 
@@ -346,10 +324,6 @@ void EightBit::Z80::compare(uint8_t& f, uint8_t check, uint8_t value) {
 	subtract(f, check, value);
 	adjustXY<Z80>(f, value);
 }
-
-#pragma endregion ALU
-
-#pragma region Shift and rotate
 
 uint8_t EightBit::Z80::rlc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
@@ -420,10 +394,6 @@ uint8_t EightBit::Z80::srl(uint8_t& f, uint8_t operand) {
 	return operand;
 }
 
-#pragma endregion Shift and rotate
-
-#pragma region BIT/SET/RES
-
 uint8_t EightBit::Z80::bit(uint8_t& f, int n, uint8_t operand) {
 	setFlag(f, HC);
 	clearFlag(f, NF);
@@ -440,10 +410,6 @@ uint8_t EightBit::Z80::res(int n, uint8_t operand) {
 uint8_t EightBit::Z80::set(int n, uint8_t operand) {
 	return operand | (1 << n);
 }
-
-#pragma endregion BIT/SET/RES
-
-#pragma region Miscellaneous instructions
 
 void EightBit::Z80::neg(uint8_t& a, uint8_t& f) {
 
@@ -515,12 +481,6 @@ void EightBit::Z80::xhtl(register16_t& operand) {
 	operand.high = MEMPTR().high;
 }
 
-#pragma endregion Miscellaneous instructions
-
-#pragma region Block instructions
-
-#pragma region Block compare instructions
-
 void EightBit::Z80::blockCompare(uint8_t a, uint8_t& f) {
 
 	const auto value = getByte(HL());
@@ -568,10 +528,6 @@ bool EightBit::Z80::cpdr(uint8_t a, uint8_t& f) {
 	return again;
 }
 
-#pragma endregion Block compare instructions
-
-#pragma region Block load instructions
-
 void EightBit::Z80::blockLoad(uint8_t a, uint8_t& f, register16_t source, register16_t destination) {
 	const auto value = getByte(source);
 	setByte(destination, value);
@@ -610,10 +566,6 @@ bool EightBit::Z80::lddr(uint8_t a, uint8_t& f) {
 	return again;
 }
 
-#pragma endregion Block load instructions
-
-#pragma region Block input instructions
-
 void EightBit::Z80::ini(uint8_t& f) {
 	MEMPTR() = BUS().ADDRESS() = BC();
 	MEMPTR().word++;
@@ -643,10 +595,6 @@ bool EightBit::Z80::indr(uint8_t& f) {
 	ind(f);
 	return !(f & ZF);	// See IND
 }
-
-#pragma endregion Block input instructions
-
-#pragma region Block output instructions
 
 void EightBit::Z80::blockOut(uint8_t& f) {
 	auto value = getByte();
@@ -680,12 +628,6 @@ bool EightBit::Z80::otdr(uint8_t& f) {
 	return !(f & ZF);	// See OUTD
 }
 
-#pragma endregion Block output instructions
-
-#pragma endregion Block instructions
-
-#pragma region Nibble rotation
-
 void EightBit::Z80::rrd(uint8_t& a, uint8_t& f) {
 	MEMPTR() = HL();
 	memptrReference();
@@ -705,10 +647,6 @@ void EightBit::Z80::rld(uint8_t& a, uint8_t& f) {
 	adjustSZPXY<Z80>(f, a);
 	clearFlag(f, NF | HC);
 }
-
-#pragma endregion Nibble rotation
-
-#pragma region I/O instructions
 
 void EightBit::Z80::writePort(uint8_t port, uint8_t data) {
 	BUS().ADDRESS().low = port;
@@ -736,20 +674,12 @@ void EightBit::Z80::readPort() {
 	BUS().placeDATA(m_ports.read(BUS().ADDRESS().low));
 }
 
-#pragma endregion I/O instructions
-
-#pragma region Controlled instruction execution
-
 int EightBit::Z80::step() {
 	ExecutingInstruction.fire(*this);
 	m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	cycles = 0;
 	return fetchExecute();
 }
-
-#pragma endregion Controlled instruction execution
-
-#pragma region Instruction decode and execution
 
 int EightBit::Z80::execute(uint8_t opcode) {
 
@@ -1151,13 +1081,13 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				cycles += 5;
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			break;
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0: // LD rp,nn
-				Processor::fetchWord(RP(p));
+				fetchWord(RP(p));
 				cycles += 10;
 				break;
 			case 1:	// ADD HL,rp
@@ -1544,5 +1474,3 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		break;
 	}
 }
-
-#pragma endregion Instruction decode and execution
