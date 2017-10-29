@@ -327,16 +327,18 @@ void EightBit::Z80::compare(uint8_t& f, uint8_t check, uint8_t value) {
 
 uint8_t EightBit::Z80::rlc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
-	setFlag(f, CF, operand & Bit7);
-	operand = _rotl8(operand, 1);
+	const auto carry = operand & Bit7;
+	operand = (operand << 1) | (carry >> 7);
+	setFlag(f, CF, carry);
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
 
 uint8_t EightBit::Z80::rrc(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
-	setFlag(f, CF, operand & Bit0);
-	operand = _rotr8(operand, 1);
+	const auto carry = operand & Bit0;
+	operand = (operand >> 1) | (carry << 7);
+	setFlag(f, CF, carry);
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
@@ -372,7 +374,7 @@ uint8_t EightBit::Z80::sla(uint8_t& f, uint8_t operand) {
 uint8_t EightBit::Z80::sra(uint8_t& f, uint8_t operand) {
 	clearFlag(f, NF | HC);
 	setFlag(f, CF, operand & Bit0);
-	operand = (operand >> 1) | operand & Bit7;
+	operand = (operand >> 1) | (operand & Bit7);
 	adjustXY<Z80>(f, operand);
 	return operand;
 }
