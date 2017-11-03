@@ -27,7 +27,7 @@ namespace EightBit {
 			Signal<LR35902> ExecutedInstruction;
 
 			int clockCycles() const {
-				return cycles * 4;
+				return cycles() * 4;
 			}
 
 			virtual register16_t& AF() override {

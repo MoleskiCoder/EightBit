@@ -64,10 +64,10 @@ namespace EightBit {
 
 		Bus& BUS() { return m_bus; }
 
-		register16_t& PC() { return pc; }
+		register16_t& PC() { return m_pc; }
 		register16_t& MEMPTR() { return m_memptr; }
 
-		bool isHalted() const { return m_halted; }
+		bool halted() const { return m_halted; }
 		void halt() { --PC().word;  m_halted = true; }
 		void proceed() { ++PC().word; m_halted = false; }
 
@@ -97,9 +97,6 @@ namespace EightBit {
 		static void clearFlag(uint8_t& f, int flag, bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
 
 		Processor(Bus& memory);
-
-		Bus& m_bus;
-		int cycles;
 
 		virtual uint8_t fetchByte() {
 			return getByte(PC().word++);
@@ -153,8 +150,15 @@ namespace EightBit {
 			jump();
 		}
 
+		int cycles() const { return m_cycles; }
+		void resetCycles() { m_cycles = 0; }
+		void addCycles(int extra) { m_cycles += extra; }
+		void addCycle() { ++m_cycles;  }
+
 	private:
-		register16_t pc;
+		Bus& m_bus;
+		int m_cycles;
+		register16_t m_pc;
 		register16_t m_memptr;
 		bool m_halted;
 		bool m_power;

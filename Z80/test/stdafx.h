@@ -3,14 +3,13 @@
 #endif
 
 #include <string>
-#include <cstdint>
-#include <stdexcept>
-#include <algorithm>
-#include <memory>
 
-#include <iostream>
-#include <chrono>
-
-#include <array>
-#include <vector>
-#include <map>
+#include <TestHarness.h>
+#include <Disassembler.h>
+#include <Register.h>
+#include <Ram.h>
+#include <Bus.h>
+#include <InputOutput.h>
+#include <Profiler.h>
+#include <EventArgs.h>
+#include <Z80.h>

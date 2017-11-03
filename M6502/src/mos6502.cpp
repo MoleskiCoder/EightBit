@@ -40,7 +40,7 @@ void EightBit::MOS6502::initialise() {
 
 int EightBit::MOS6502::step() {
 	ExecutingInstruction.fire(*this);
-	cycles = 0;
+	resetCycles();
 	auto returned = fetchExecute();
 	ExecutedInstruction.fire(*this);
 	return returned;
@@ -83,7 +83,7 @@ void EightBit::MOS6502::interrupt(uint16_t vector) {
 
 int EightBit::MOS6502::execute(uint8_t cell) {
 
-	cycles = m_timings[cell];
+	addCycles(m_timings[cell]);
 
 	// http://www.llx.com/~nparker/a2/opcodes.html
 
@@ -338,10 +338,10 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 		__assume(0);
 	}
 
-	if (cycles == 0)
+	if (cycles() == 0)
 		throw std::logic_error("Unhandled opcode");
 
-	return cycles;
+	return cycles();
 }
 
 ////
@@ -483,8 +483,8 @@ void EightBit::MOS6502::Branch(int8_t displacement) {
 	const auto page = PC().high;
 	PC().word += displacement;
 	if (PC().high != page)
-		cycles++;
-	cycles++;
+		addCycle();
+	addCycle();
 }
 
 void EightBit::MOS6502::Branch(bool flag) {

@@ -9,16 +9,16 @@ namespace EightBit {
 		typedef std::function<void(const T&)> delegate_t;
 		typedef std::vector<delegate_t> delegates_t;
 
-		delegates_t delegates;
+		delegates_t m_delegates;
 
 	public:
 		void connect(delegate_t functor) {
-			delegates.push_back(functor);
+			m_delegates.push_back(functor);
 		}
 
 		void fire(const T& e) const {
-			if (!delegates.empty())
-				for (auto& delegate : delegates)
+			if (!m_delegates.empty())
+				for (auto& delegate : m_delegates)
 					delegate(e);
 		}
 	};

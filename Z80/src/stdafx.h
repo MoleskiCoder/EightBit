@@ -5,17 +5,18 @@
 #include <string>
 #include <cstdint>
 #include <stdexcept>
-#include <functional>
-#include <algorithm>
-#include <memory>
+#include <cassert>
 
 #include <sstream>
 #include <iostream>
-#include <fstream>
 #include <iomanip>
 
 #include <array>
-#include <vector>
 #include <bitset>
 
 #include <boost/format.hpp>
+
+#include <Memory.h>
+#include <IntelProcessor.h>
+#include <InputOutput.h>
+#include <Signal.h>

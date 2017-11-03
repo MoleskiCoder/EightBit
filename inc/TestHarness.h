@@ -63,7 +63,7 @@ namespace EightBit {
 			auto& cpu = m_board.CPU();
 			cpu.powerOn();
 
-			while (!cpu.isHalted()) {
+			while (!cpu.halted()) {
 				m_totalCycles += cpu.step();
 				++m_instructions;
 			}

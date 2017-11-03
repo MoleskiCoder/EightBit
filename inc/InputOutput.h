@@ -12,9 +12,9 @@ namespace EightBit {
 		void write(uint8_t port, uint8_t value) { return writeOutputPort(port, value); }
 
 		uint8_t readInputPort(uint8_t port);
-		void writeInputPort(uint8_t port, uint8_t value) { input[port] = value; }
+		void writeInputPort(uint8_t port, uint8_t value) { m_input[port] = value; }
 
-		uint8_t readOutputPort(uint8_t port) { return output[port]; }
+		uint8_t readOutputPort(uint8_t port) { return m_output[port]; }
 		void writeOutputPort(uint8_t port, uint8_t value);
 
 		Signal<uint8_t> ReadingPort;
@@ -31,7 +31,7 @@ namespace EightBit {
 		void OnWrittenPort(uint8_t port);
 
 	private:
-		std::array<uint8_t, 0x100> input;
-		std::array<uint8_t, 0x100> output;
+		std::array<uint8_t, 0x100> m_input;
+		std::array<uint8_t, 0x100> m_output;
 	};
 }

@@ -58,34 +58,34 @@ void EightBit::Z80::ei() {
 }
 
 int EightBit::Z80::interrupt(bool maskable, uint8_t value) {
-	cycles = 0;
+	resetCycles();
 	if (!maskable || (maskable && IFF1())) {
 		if (maskable) {
 			di();
 			switch (IM()) {
 			case 0:
 				M1() = true;
-				cycles += execute(value);
+				addCycles(execute(value));
 				break;
 			case 1:
 				restart(7 << 3);
-				cycles += 13;
+				addCycles(13);
 				break;
 			case 2:
 				pushWord(PC());
 				PC().low = value;
 				PC().high = IV();
-				cycles += 19;
+				addCycles(19);
 				break;
 			}
 		} else {
 			IFF1() = false;
 			restart(0x66);
-			cycles += 13;
+			addCycles(13);
 		}
 	}
 	// Could be zero for a masked interrupt...
-	return cycles;
+	return cycles();
 }
 
 void EightBit::Z80::increment(uint8_t& f, uint8_t& operand) {
@@ -679,7 +679,7 @@ void EightBit::Z80::readPort() {
 int EightBit::Z80::step() {
 	ExecutingInstruction.fire(*this);
 	m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
-	cycles = 0;
+	resetCycles();
 	return fetchExecute();
 }
 
@@ -712,10 +712,10 @@ int EightBit::Z80::execute(uint8_t opcode) {
 			executeED(x, y, z, p, q);
 	}
 
-	if (cycles == 0)
+	if (cycles() == 0)
 		throw std::logic_error("Unhandled opcode");
 
-	return cycles;
+	return cycles();
 }
 
 void EightBit::Z80::executeCB(int x, int y, int z) {
@@ -757,56 +757,56 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 			if (z != 6)
 				R2(z, a, operand);
 			setByte(operand);
-			cycles += 15;
+			addCycles(15);
 		} else {
 			R(z, a, operand);
 			if (z == 6)
-				cycles += 7;
+				addCycles(7);
 		}
-		cycles += 8;
+		addCycles(8);
 		break;
 	} case 1:	// BIT y, r[z]
-		cycles += 8;
+		addCycles(8);
 		if (!m_displaced) {
 			auto operand = bit(f, y, R(z, a));
 			if (z == 6) {
 				adjustXY<Z80>(f, MEMPTR().high);
-				cycles += 4;
+				addCycles(4);
 			} else {
 				adjustXY<Z80>(f, operand);
 			}
 		} else {
 			bit(f, y, getByte(displacedAddress()));
 			adjustXY<Z80>(f, MEMPTR().high);
-			cycles += 12;
+			addCycles(12);
 		}
 		break;
 	case 2:	// RES y, r[z]
-		cycles += 8;
+		addCycles(8);
 		if (!m_displaced) {
 			R(z, a, res(y, R(z, a)));
 			if (z == 6)
-				cycles += 7;
+				addCycles(7);
 		} else {
 			auto operand = getByte(displacedAddress());
 			operand = res(y, operand);
 			setByte(operand);
 			R2(z, a, operand);
-			cycles += 15;
+			addCycles(15);
 		}
 		break;
 	case 3:	// SET y, r[z]
-		cycles += 8;
+		addCycles(8);
 		if (!m_displaced) {
 			R(z, a, set(y, R(z, a)));
 			if (z == 6)
-				cycles += 7;
+				addCycles(7);
 		} else {
 			auto operand = getByte(displacedAddress());
 			operand = set(y, operand);
 			setByte(operand);
 			R2(z, a, operand);
-			cycles += 15;
+			addCycles(15);
 		}
 		break;
 	default:
@@ -820,7 +820,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 	switch (x) {
 	case 0:
 	case 3:	// Invalid instruction, equivalent to NONI followed by NOP
-		cycles += 8;
+		addCycles(8);
 		break;
 	case 1:
 		switch (z) {
@@ -832,7 +832,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				R(y, a, BUS().DATA());
 			adjustSZPXY<Z80>(f, BUS().DATA());
 			clearFlag(f, NF | HC);
-			cycles += 12;
+			addCycles(12);
 			break;
 		case 1:	// Output to port with 16-bit address
 			MEMPTR() = BUS().ADDRESS() = BC();
@@ -842,7 +842,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			else		// OUT (C),r[y]
 				BUS().placeDATA(R(y, a));
 			writePort();
-			cycles += 12;
+			addCycles(12);
 			break;
 		case 2:	// 16-bit add/subtract with carry
 			switch (q) {
@@ -855,7 +855,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			default:
 				UNREACHABLE;
 			}
-			cycles += 15;
+			addCycles(15);
 			break;
 		case 3:	// Retrieve/store register pair from/to immediate address
 			switch (q) {
@@ -870,11 +870,11 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			default:
 				UNREACHABLE;
 			}
-			cycles += 20;
+			addCycles(20);
 			break;
 		case 4:	// Negate accumulator
 			neg(a, f);
-			cycles += 8;
+			addCycles(8);
 			break;
 		case 5:	// Return from interrupt
 			switch (y) {
@@ -885,7 +885,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				retn();	// RETN
 				break;
 			}
-			cycles += 14;
+			addCycles(14);
 			break;
 		case 6:	// Set interrupt mode
 			switch (y) {
@@ -908,43 +908,43 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			default:
 				UNREACHABLE;
 			}
-			cycles += 8;
+			addCycles(8);
 			break;
 		case 7:	// Assorted ops
 			switch (y) {
 			case 0:	// LD I,A
 				IV() = a;
-				cycles += 9;
+				addCycles(9);
 				break;
 			case 1:	// LD R,A
 				REFRESH() = a;
-				cycles += 9;
+				addCycles(9);
 				break;
 			case 2:	// LD A,I
 				a = IV();
 				adjustSZXY<Z80>(f, a);
 				clearFlag(f, NF | HC);
 				setFlag(f, PF, IFF2());
-				cycles += 9;
+				addCycles(9);
 				break;
 			case 3:	// LD A,R
 				a = REFRESH();
 				adjustSZXY<Z80>(f, a);
 				clearFlag(f, NF | HC);
 				setFlag(f, PF, IFF2());
-				cycles += 9;
+				addCycles(9);
 				break;
 			case 4:	// RRD
 				rrd(a, f);
-				cycles += 18;
+				addCycles(18);
 				break;
 			case 5:	// RLD
 				rld(a, f);
-				cycles += 18;
+				addCycles(18);
 				break;
 			case 6:	// NOP
 			case 7:	// NOP
-				cycles += 4;
+				addCycles(4);
 				break;
 			default:
 				UNREACHABLE;
@@ -967,13 +967,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			case 6:	// LDIR
 				if (ldir(a, f)) {
 					PC().word -= 2;
-					cycles += 5;
+					addCycles(5);
 				}
 				break;
 			case 7:	// LDDR
 				if (lddr(a, f)) {
 					PC().word -= 2;
-					cycles += 5;
+					addCycles(5);
 				}
 				break;
 			}
@@ -989,13 +989,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			case 6:	// CPIR
 				if (cpir(a, f)) {
 					PC().word -= 2;
-					cycles += 5;
+					addCycles(5);
 				}
 				break;
 			case 7:	// CPDR
 				if (cpdr(a, f)) {
 					PC().word -= 2;
-					cycles += 5;
+					addCycles(5);
 				}
 				break;
 			}
@@ -1011,13 +1011,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			case 6:	// INIR
 				if (inir(f)) {
 					PC().word -= 2;
-					cycles += 5;
+					addCycles(5);
 				}
 				break;
 			case 7:	// INDR
 				if (indr(f)) {
 					PC().word -= 2;
-					cycles += 5;
+					addCycles(5);
 				}
 				break;
 			}
@@ -1033,19 +1033,19 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 			case 6:	// OTIR
 				if (otir(f)) {
 					PC().word -= 2;
-					cycles += 5;
+					addCycles(5);
 				}
 				break;
 			case 7:	// OTDR
 				if (otdr(f)) {
 					PC().word -= 2;
-					cycles += 5;
+					addCycles(5);
 				}
 				break;
 			}
 			break;
 		}
-		cycles += 16;
+		addCycles(16);
 		break;
 	}
 }
@@ -1059,28 +1059,28 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		case 0:	// Relative jumps and assorted ops
 			switch (y) {
 			case 0:	// NOP
-				cycles += 4;
+				addCycles(4);
 				break;
 			case 1:	// EX AF AF'
 				exxAF();
-				cycles += 4;
+				addCycles(4);
 				break;
 			case 2:	// DJNZ d
 				if (jrConditional(--B()))
-					cycles += 5;
-				cycles += 8;
+					addCycles(5);
+				addCycles(8);
 				break;
 			case 3:	// JR d
 				jr(fetchByte());
-				cycles += 12;
+				addCycles(12);
 				break;
 			case 4: // JR cc,d
 			case 5:
 			case 6:
 			case 7:
 				if (jrConditionalFlag(f, y - 4))
-					cycles += 5;
-				cycles += 5;
+					addCycles(5);
+				addCycles(5);
 				break;
 			default:
 				UNREACHABLE;
@@ -1090,11 +1090,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			switch (q) {
 			case 0: // LD rp,nn
 				fetchWord(RP(p));
-				cycles += 10;
+				addCycles(10);
 				break;
 			case 1:	// ADD HL,rp
 				add(f, HL2(), RP(p));
-				cycles += 11;
+				addCycles(11);
 				break;
 			default:
 				UNREACHABLE;
@@ -1108,24 +1108,24 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					MEMPTR() = BC();
 					memptrReference();
 					setByte(MEMPTR().high = a);
-					cycles += 7;
+					addCycles(7);
 					break;
 				case 1:	// LD (DE),A
 					MEMPTR() = DE();
 					memptrReference();
 					setByte(MEMPTR().high = a);
-					cycles += 7;
+					addCycles(7);
 					break;
 				case 2:	// LD (nn),HL
 					fetchWord();
 					setWordViaMemptr(HL2());
-					cycles += 16;
+					addCycles(16);
 					break;
 				case 3: // LD (nn),A
 					fetchWord();
 					memptrReference();
 					setByte(MEMPTR().high = a);
-					cycles += 13;
+					addCycles(13);
 					break;
 				default:
 					UNREACHABLE;
@@ -1137,24 +1137,24 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 					MEMPTR() = BC();
 					memptrReference();
 					a = getByte();
-					cycles += 7;
+					addCycles(7);
 					break;
 				case 1:	// LD A,(DE)
 					MEMPTR() = DE();
 					memptrReference();
 					a = getByte();
-					cycles += 7;
+					addCycles(7);
 					break;
 				case 2:	// LD HL,(nn)
 					fetchWord();
 					getWordViaMemptr(HL2());
-					cycles += 16;
+					addCycles(16);
 					break;
 				case 3:	// LD A,(nn)
 					fetchWord();
 					memptrReference();
 					a = getByte();
-					cycles += 13;
+					addCycles(13);
 					break;
 				default:
 					UNREACHABLE;
@@ -1175,7 +1175,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			default:
 				UNREACHABLE;
 			}
-			cycles += 6;
+			addCycles(6);
 			break;
 		case 4: { // 8-bit INC
 			if (m_displaced && (y == 6))
@@ -1183,7 +1183,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			auto operand = R(y, a);
 			increment(f, operand);
 			R(y, a, operand);
-			cycles += 4;
+			addCycles(4);
 			break;
 		} case 5: {	// 8-bit DEC
 			if (m_displaced && (y == 6))
@@ -1191,17 +1191,17 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			auto operand = R(y, a);
 			decrement(f, operand);
 			R(y, a, operand);
-			cycles += 4;
+			addCycles(4);
 			if (y == 6)
-				cycles += 7;
+				addCycles(7);
 			break;
 		} case 6:	// 8-bit load immediate
 			if (m_displaced && (y == 6))
 				fetchDisplacement();
 			R(y, a, fetchByte());	// LD r,n
-			cycles += 7;
+			addCycles(7);
 			if (y == 6)
-				cycles += 3;
+				addCycles(3);
 			break;
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
@@ -1232,7 +1232,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			default:
 				UNREACHABLE;
 			}
-			cycles += 4;
+			addCycles(4);
 			break;
 		default:
 			UNREACHABLE;
@@ -1274,9 +1274,9 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			if (normal)
 				R(y, a, R(z, a));
 			if ((y == 6) || (z == 6))	// M operations
-				cycles += 3;
+				addCycles(3);
 		}
-		cycles += 4;
+		addCycles(4);
 		break;
 	case 2:	// Operate on accumulator and register/memory location
 		if (m_displaced && (z == 6))
@@ -1309,40 +1309,40 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		default:
 			UNREACHABLE;
 		}
-		cycles += 4;
+		addCycles(4);
 		if (z == 6)
-			cycles += 3;
+			addCycles(3);
 		break;
 	case 3:
 		switch (z) {
 		case 0:	// Conditional return
 			if (returnConditionalFlag(f, y))
-				cycles += 6;
-			cycles += 5;
+				addCycles(6);
+			addCycles(5);
 			break;
 		case 1:	// POP & various ops
 			switch (q) {
 			case 0:	// POP rp2[p]
 				popWord(RP2(p));
-				cycles += 10;
+				addCycles(10);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// RET
 					ret();
-					cycles += 10;
+					addCycles(10);
 					break;
 				case 1:	// EXX
 					exx();
-					cycles += 4;
+					addCycles(4);
 					break;
 				case 2:	// JP HL
 					PC() = HL2();
-					cycles += 4;
+					addCycles(4);
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL2();
-					cycles += 4;
+					addCycles(4);
 					break;
 				default:
 					UNREACHABLE;
@@ -1354,14 +1354,14 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			break;
 		case 2:	// Conditional jump
 			jumpConditionalFlag(f, y);
-			cycles += 10;
+			addCycles(10);
 			break;
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0:	// JP nn
 				fetchWord();
 				jump();
-				cycles += 10;
+				addCycles(10);
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
@@ -1371,27 +1371,27 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			case 2:	// OUT (n),A
 				writePort(fetchByte(), a);
-				cycles += 11;
+				addCycles(11);
 				break;
 			case 3:	// IN A,(n)
 				readPort(fetchByte(), a);
-				cycles += 11;
+				addCycles(11);
 				break;
 			case 4:	// EX (SP),HL
 				xhtl(HL2());
-				cycles += 19;
+				addCycles(19);
 				break;
 			case 5:	// EX DE,HL
 				std::swap(DE(), HL());
-				cycles += 4;
+				addCycles(4);
 				break;
 			case 6:	// DI
 				di();
-				cycles += 4;
+				addCycles(4);
 				break;
 			case 7:	// EI
 				ei();
-				cycles += 4;
+				addCycles(4);
 				break;
 			default:
 				UNREACHABLE;
@@ -1399,21 +1399,21 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
 			if (callConditionalFlag(f, y))
-				cycles += 7;
-			cycles += 10;
+				addCycles(7);
+			addCycles(10);
 			break;
 		case 5:	// PUSH & various ops
 			switch (q) {
 			case 0:	// PUSH rp2[p]
 				pushWord(RP2(p));
-				cycles += 11;
+				addCycles(11);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
 					fetchWord();
 					call();
-					cycles += 17;
+					addCycles(17);
 					break;
 				case 1:	// DD prefix
 					m_displaced = m_prefixDD = true;
@@ -1464,11 +1464,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			default:
 				UNREACHABLE;
 			}
-			cycles += 7;
+			addCycles(7);
 			break;
 		case 7:	// Restart: RST y * 8
 			restart(y << 3);
-			cycles += 11;
+			addCycles(11);
 			break;
 		default:
 			UNREACHABLE;

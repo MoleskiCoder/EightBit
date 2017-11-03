@@ -53,7 +53,7 @@ namespace EightBit {
 		register16_t de;
 		register16_t hl;
 
-		uint8_t R(int r) {
+		uint8_t R(int r, uint8_t a) {
 			switch (r) {
 			case 0b000:
 				return B();
@@ -70,14 +70,14 @@ namespace EightBit {
 			case 0b110:
 				return getByte(HL());
 			case 0b111:
-				return A();
+				return a;
 			default:
 				UNREACHABLE;
 			}
 			throw std::logic_error("Unhandled registry mechanism");
 		}
 
-		void R(int r, uint8_t value) {
+		void R(int r, uint8_t& a, uint8_t value) {
 			switch (r) {
 			case 0b000:
 				B() = value;
@@ -101,7 +101,7 @@ namespace EightBit {
 				setByte(HL(), value);
 				break;
 			case 0b111:
-				A() = value;
+				a = value;
 				break;
 			default:
 				UNREACHABLE;
@@ -153,6 +153,9 @@ namespace EightBit {
 		static void increment(uint8_t& f, uint8_t& operand);
 		static void decrement(uint8_t& f, uint8_t& operand);
 
+		void di();
+		void ei();
+
 		bool returnConditionalFlag(uint8_t& f, int flag);
 		bool jumpConditionalFlag(uint8_t& f, int flag);
 		bool callConditionalFlag(uint8_t& f, int flag);
@@ -178,12 +181,12 @@ namespace EightBit {
 		static void stc(uint8_t& a, uint8_t& f);
 		static void cmc(uint8_t& a, uint8_t& f);
 
-		void xhtl();
+		void xhtl(register16_t& operand);
 
-		void out();
-		void in();
+		void writePort(uint8_t port, uint8_t a);
+		void writePort();
 
-		void ei();
-		void di();
+		void readPort(uint8_t port, uint8_t& a);
+		void readPort();
 	};
 }

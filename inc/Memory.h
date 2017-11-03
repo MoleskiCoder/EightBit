@@ -19,7 +19,7 @@ namespace EightBit {
 		}
 
 	protected:
-		std::vector<uint8_t> m_bytes;
+		std::vector<uint8_t>& BYTES() { return m_bytes; }
 
 		uint8_t read(uint16_t address) const {
 			return m_bytes[address];
@@ -30,6 +30,8 @@ namespace EightBit {
 		}
 
 	private:
+		std::vector<uint8_t> m_bytes;
+
 		static int loadBinary(
 			const std::string& path,
 			std::vector<uint8_t>& output,

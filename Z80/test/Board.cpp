@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Board.h"
-#include "Disassembler.h"
+
+#include <Disassembler.h>
 
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration),

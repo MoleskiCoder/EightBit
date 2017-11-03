@@ -158,7 +158,7 @@ namespace EightBit {
 			Address_AbsoluteX();
 			BUS().ADDRESS() = MEMPTR();
 			if (BUS().ADDRESS().low == Mask8)
-				++cycles;
+				addCycle();
 			return getByte();
 		}
 
@@ -166,7 +166,7 @@ namespace EightBit {
 			Address_AbsoluteY();
 			BUS().ADDRESS() = MEMPTR();
 			if (BUS().ADDRESS().low == Mask8)
-				++cycles;
+				addCycle();
 			return getByte();
 		}
 
@@ -189,7 +189,7 @@ namespace EightBit {
 			Address_IndirectIndexedY();
 			BUS().ADDRESS() = MEMPTR();
 			if (BUS().ADDRESS().low == Mask8)
-				++cycles;
+				addCycle();
 			return getByte();
 		}
 

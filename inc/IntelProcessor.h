@@ -41,7 +41,7 @@ namespace EightBit {
 		virtual void initialise() override;
 		virtual void reset() override;
 
-		register16_t& SP() { return sp; }
+		register16_t& SP() { return m_sp; }
 
 		virtual register16_t& AF() = 0;
 		uint8_t& A() { return AF().high; }
@@ -188,6 +188,6 @@ namespace EightBit {
 
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
-		register16_t sp;
+		register16_t m_sp;
 	};
 }

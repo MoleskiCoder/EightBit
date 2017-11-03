@@ -4,8 +4,10 @@
 #include <sstream>
 #include <iomanip>
 #include <bitset>
+#include <iostream>
 
-#include "Memory.h"
+#include <Memory.h>
+
 #include "Z80.h"
 
 EightBit::Disassembler::Disassembler() {

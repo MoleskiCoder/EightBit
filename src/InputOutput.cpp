@@ -3,14 +3,14 @@
 
 uint8_t EightBit::InputOutput::readInputPort(uint8_t port) {
 	OnReadingPort(port);
-	const auto value = input[port];
+	const auto value = m_input[port];
 	OnReadPort(port);
 	return value;
 }
 
 void EightBit::InputOutput::writeOutputPort(uint8_t port, uint8_t value) {
 	OnWritingPort(port);
-	output[port] = value;
+	m_output[port] = value;
 	OnWrittenPort(port);
 }
 

@@ -19,7 +19,7 @@ namespace EightBit {
 		}
 
 		uint8_t& reference(uint16_t address) {
-			return m_bytes[address];
+			return BYTES()[address];
 		}
 	};
 }

@@ -2,12 +2,17 @@
 
 #include <cstdint>
 #include <cassert>
+#include <stdexcept>
 
-#include "IntelProcessor.h"
-#include "InputOutput.h"
-#include "Signal.h"
+#include <IntelProcessor.h>
+#include <Signal.h>
+#include <Register.h>
 
 namespace EightBit {
+
+	class InputOutput;
+	class Bus;
+
 	class Z80 : public IntelProcessor {
 	public:
 		struct refresh_t {
@@ -255,12 +260,16 @@ namespace EightBit {
 
 		register16_t& RP(int rp) {
 			switch (rp) {
+			case 0:
+				return BC();
+			case 1:
+				return DE();
+			case 2:
+				return HL2();
 			case 3:
 				return SP();
-			case HL_IDX:
-				return HL2();
 			default:
-				return m_registers[m_registerSet][rp];
+				UNREACHABLE;
 			}
 		}
 
@@ -275,12 +284,16 @@ namespace EightBit {
 
 		register16_t& RP2(int rp) {
 			switch (rp) {
+			case 0:
+				return BC();
+			case 1:
+				return DE();
+			case 2:
+				return HL2();
 			case 3:
 				return AF();
-			case HL_IDX:
-				return HL2();
 			default:
-				return m_registers[m_registerSet][rp];
+				UNREACHABLE;
 			}
 		}
 
