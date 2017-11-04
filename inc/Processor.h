@@ -10,7 +10,6 @@
 #endif
 
 #ifdef __GNUG__
-#	define __popcnt __builtin_popcount
 #	define UNREACHABLE __builtin_unreachable();
 #endif
 

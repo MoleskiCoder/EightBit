@@ -6,6 +6,15 @@
 #include "Processor.h"
 #include "Register.h"
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
+#ifdef __GNUG__
+#include <x86intrin.h>
+#define __popcnt __builtin_popcount
+#endif
+
 namespace EightBit {
 
 	class Bus;

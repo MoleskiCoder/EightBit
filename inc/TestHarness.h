@@ -6,7 +6,9 @@
 
 #ifdef _MSC_VER
 #include <intrin.h>
-#else
+#endif
+
+#ifdef __GNUG__
 #include <x86intrin.h>
 #endif
 
