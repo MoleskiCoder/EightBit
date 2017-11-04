@@ -1,6 +1,6 @@
 LIB = libeightbit.a
 
-CXXFLAGS = -Wall -std=c++11 -pipe -I ../inc
+CXXFLAGS = -Wall -std=c++14 -pipe -I ../inc
 
 CXXFILES = EventArgs.cpp InputOutput.cpp IntelProcessor.cpp Memory.cpp Processor.cpp
 
@@ -13,7 +13,7 @@ PCH = stdafx.h.gch
 
 all: opt
 
-opt: CXXFLAGS += -DNDEBUG -march=native -O2
+opt: CXXFLAGS += -DNDEBUG -march=native -O3
 opt: $(LIB)
 
 debug: CXXFLAGS += -g -D_DEBUG

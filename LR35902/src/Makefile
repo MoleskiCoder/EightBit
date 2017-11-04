@@ -1,6 +1,6 @@
 LIB = liblr35902.a
 
-CXXFLAGS = -Wall -std=c++11 -pipe -I ../inc -I ../../inc
+CXXFLAGS = -Wall -std=c++14 -pipe -I ../inc -I ../../inc
 
 CXXFILES = CharacterDefinition.cpp Disassembler.cpp Display.cpp GameBoyBus.cpp IoRegisters.cpp LR35902.cpp ObjectAttribute.cpp Profiler.cpp
 
@@ -13,7 +13,7 @@ PCH = stdafx.h.gch
 
 all: opt
 
-opt: CXXFLAGS += -DNDEBUG -march=native -O2
+opt: CXXFLAGS += -DNDEBUG -march=native -O3
 opt: $(LIB)
 
 debug: CXXFLAGS += -g -D_DEBUG
