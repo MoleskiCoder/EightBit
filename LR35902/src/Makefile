@@ -13,7 +13,7 @@ PCH = stdafx.h.gch
 
 all: opt
 
-opt: CXXFLAGS += -DNDEBUG -march=native -O3
+opt: CXXFLAGS += -DNDEBUG -march=native -O3 -flto
 opt: $(LIB)
 
 debug: CXXFLAGS += -g -D_DEBUG
