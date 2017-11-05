@@ -28,3 +28,18 @@ int EightBit::Processor::run(int limit) {
 int EightBit::Processor::singleStep() {
 	return step();
 }
+
+uint8_t EightBit::Processor::fetchByte() {
+	return getByte(PC().word++);
+}
+
+void EightBit::Processor::fetchWord(register16_t& output) {
+	output.low = fetchByte();
+	output.high = fetchByte();
+}
+
+int EightBit::Processor::fetchExecute() {
+	if (!powered())
+		return 0;
+	return execute(fetchByte());
+}

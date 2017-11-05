@@ -5,15 +5,13 @@
 #include <cstdint>
 #include <stdexcept>
 
+#include <Bus.h>
+#include <InputOutput.h>
 #include <IntelProcessor.h>
 #include <Signal.h>
 #include <Register.h>
 
 namespace EightBit {
-
-	class InputOutput;
-	class Bus;
-
 	class Intel8080 : public IntelProcessor {
 	public:
 		enum StatusBits {
@@ -34,15 +32,10 @@ namespace EightBit {
 		virtual int execute(uint8_t opcode);
 		int step();
 
-		virtual register16_t& AF() override {
-			auto& f = af.low;
-			f = (f | Bit1) & ~(Bit5 | Bit3);
-			return af;
-		}
-
-		virtual register16_t& BC() override { return bc; }
-		virtual register16_t& DE() override { return de; }
-		virtual register16_t& HL() override { return hl; }
+		virtual register16_t& AF() override;
+		virtual register16_t& BC() override;
+		virtual register16_t& DE() override;
+		virtual register16_t& HL() override;
 
 	private:
 		bool m_interrupt;

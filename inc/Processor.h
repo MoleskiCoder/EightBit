@@ -97,24 +97,14 @@ namespace EightBit {
 
 		Processor(Bus& memory);
 
-		virtual uint8_t fetchByte() {
-			return getByte(PC().word++);
-		}
-
-		virtual void fetchWord(register16_t& output) {
-			output.low = fetchByte();
-			output.high = fetchByte();
-		}
+		virtual uint8_t fetchByte();
+		virtual void fetchWord(register16_t& output);
 
 		void fetchWord() {
 			fetchWord(MEMPTR());
 		}
 
-		virtual int fetchExecute() {
-			if (!powered())
-				return 0;
-			return execute(fetchByte());
-		}
+		virtual int fetchExecute();
 
 		uint8_t getByte() { return BUS().read(); }
 		template<class T> uint8_t getByte(T offset) { return BUS().read(offset); }

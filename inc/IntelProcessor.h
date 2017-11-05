@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <array>
 
+#include "Bus.h"
 #include "Processor.h"
 #include "Register.h"
 
@@ -16,9 +17,6 @@
 #endif
 
 namespace EightBit {
-
-	class Bus;
-
 	class IntelProcessor : public Processor
 	{
 	public:
@@ -126,13 +124,8 @@ namespace EightBit {
 			return m_halfCarryTableSub[index & Mask3];
 		}
 
-		virtual void push(uint8_t value) {
-			setByte(--SP().word, value);
-		}
-
-		virtual uint8_t pop() {
-			return getByte(SP().word++);
-		}
+		virtual void push(uint8_t value);
+		virtual uint8_t pop();
 
 		//
 
@@ -141,19 +134,8 @@ namespace EightBit {
 			MEMPTR().word++;
 		}
 
-		virtual void getWordViaMemptr(register16_t& value) {
-			memptrReference();
-			value.low = getByte();
-			BUS().ADDRESS().word++;
-			value.high = getByte();
-		}
-
-		virtual void setWordViaMemptr(register16_t value) {
-			memptrReference();
-			setByte(value.low);
-			BUS().ADDRESS().word++;
-			setByte(value.high);
-		}
+		virtual void getWordViaMemptr(register16_t& value);
+		virtual void setWordViaMemptr(register16_t value);
 
 		//
 

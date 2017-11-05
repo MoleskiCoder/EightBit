@@ -5,10 +5,9 @@
 #include <sstream>
 #include <boost/format.hpp>
 
+#include <Intel8080.h>
+
 namespace EightBit {
-
-	class Intel8080;
-
 	class Disassembler {
 	public:
 		Disassembler();

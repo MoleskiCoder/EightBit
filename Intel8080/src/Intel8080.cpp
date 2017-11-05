@@ -8,6 +8,24 @@ EightBit::Intel8080::Intel8080(Bus& bus, InputOutput& ports)
 	bc.word = de.word = hl.word = Mask16;
 }
 
+EightBit::register16_t& EightBit::Intel8080::AF() {
+	auto& f = af.low;
+	f = (f | Bit1) & ~(Bit5 | Bit3);
+	return af;
+}
+
+EightBit::register16_t& EightBit::Intel8080::BC() {
+	return bc;
+}
+
+EightBit::register16_t& EightBit::Intel8080::DE() {
+	return de;
+}
+
+EightBit::register16_t& EightBit::Intel8080::HL() {
+	return hl;
+}
+
 void EightBit::Intel8080::di() {
 	m_interrupt = false;
 }
