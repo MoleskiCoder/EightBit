@@ -4,15 +4,13 @@
 #include <cassert>
 #include <stdexcept>
 
+#include <Bus.h>
+#include <InputOutput.h>
 #include <IntelProcessor.h>
 #include <Signal.h>
 #include <Register.h>
 
 namespace EightBit {
-
-	class InputOutput;
-	class Bus;
-
 	class Z80 : public IntelProcessor {
 	public:
 		struct refresh_t {
@@ -60,21 +58,10 @@ namespace EightBit {
 		virtual int execute(uint8_t opcode);
 		int step();
 
-		virtual register16_t& AF() override {
-			return m_accumulatorFlags[m_accumulatorFlagsSet];
-		}
-
-		virtual register16_t& BC() override {
-			return m_registers[m_registerSet][BC_IDX];
-		}
-
-		virtual register16_t& DE() override {
-			return m_registers[m_registerSet][DE_IDX];
-		}
-
-		virtual register16_t& HL() override {
-			return m_registers[m_registerSet][HL_IDX];
-		}
+		virtual register16_t& AF() override;
+		virtual register16_t& BC() override;
+		virtual register16_t& DE() override;
+		virtual register16_t& HL() override;
 
 		register16_t& IX() { return m_ix; }
 		uint8_t& IXH() { return IX().high; }
@@ -103,10 +90,7 @@ namespace EightBit {
 		virtual void reset() override;
 
 	protected:
-		virtual int fetchExecute() override {
-			M1() = true;
-			return IntelProcessor::fetchExecute();
-		}
+		virtual int fetchExecute() override;
 
 	private:
 		InputOutput& m_ports;
