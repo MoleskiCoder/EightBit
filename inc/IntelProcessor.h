@@ -179,6 +179,6 @@ namespace EightBit {
 
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
-		register16_t m_sp;
+		register16_t m_sp = { 0xff, 0xff };
 	};
 }

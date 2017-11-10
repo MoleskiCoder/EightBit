@@ -152,6 +152,7 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Bus.cpp" />
     <ClCompile Include="EventArgs.cpp" />
     <ClCompile Include="InputOutput.cpp" />
     <ClCompile Include="IntelProcessor.cpp" />

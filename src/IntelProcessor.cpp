@@ -3,7 +3,6 @@
 
 EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 : Processor(bus) {
-	SP().word = Mask16;
 }
 
 void EightBit::IntelProcessor::initialise() {

@@ -5,23 +5,7 @@
 
 EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 : IntelProcessor(bus),
-  m_ports(ports),
-  m_registerSet(0),
-  m_accumulatorFlagsSet(0),
-  m_refresh(0x7f),
-  iv(0xff),
-  m_interruptMode(0),
-  m_iff1(false),
-  m_iff2(false),
-  m1(false),
-  m_prefixCB(false),
-  m_prefixDD(false),
-  m_prefixED(false),
-  m_prefixFD(false),
-  m_displacement(0),
-  m_displaced(false) {
-	IX().word = 0xffff;
-	IY().word = 0xffff;
+  m_ports(ports) {
 }
 
 EightBit::register16_t& EightBit::Z80::AF() {

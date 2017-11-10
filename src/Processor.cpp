@@ -2,11 +2,7 @@
 #include "Processor.h"
 
 EightBit::Processor::Processor(Bus& bus)
-: m_bus(bus),
-  m_cycles(0),
-  m_halted(false),
-  m_power(false) {
-	PC().word = MEMPTR().word = 0;
+: m_bus(bus) {
 }
 
 void EightBit::Processor::reset() {

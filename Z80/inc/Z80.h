@@ -98,30 +98,30 @@ namespace EightBit {
 		enum { BC_IDX, DE_IDX, HL_IDX };
 
 		std::array<std::array<register16_t, 3>, 2> m_registers;
-		int m_registerSet;
+		int m_registerSet = 0;
 
 		std::array<register16_t, 2> m_accumulatorFlags;
-		int m_accumulatorFlagsSet;
+		int m_accumulatorFlagsSet = 0;
 
-		register16_t m_ix;
-		register16_t m_iy;
+		register16_t m_ix = { 0xff, 0xff };
+		register16_t m_iy = { 0xff, 0xff };
 
-		refresh_t m_refresh;
+		refresh_t m_refresh = 0x7f;
 
-		uint8_t iv;
-		int m_interruptMode;
-		bool m_iff1;
-		bool m_iff2;
+		uint8_t iv = 0xff;
+		int m_interruptMode = 0;
+		bool m_iff1 = false;
+		bool m_iff2 = false;
 
-		bool m1;
+		bool m1 = false;
 
-		bool m_prefixCB;
-		bool m_prefixDD;
-		bool m_prefixED;
-		bool m_prefixFD;
+		bool m_prefixCB = false;
+		bool m_prefixDD = false;
+		bool m_prefixED = false;
+		bool m_prefixFD = false;
 
-		int8_t m_displacement;
-		bool m_displaced;
+		int8_t m_displacement = 0;
+		bool m_displaced = false;
 
 		uint16_t displacedAddress() {
 			assert(m_displaced);

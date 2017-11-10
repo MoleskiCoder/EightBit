@@ -115,7 +115,7 @@ namespace EightBit {
 		virtual void push(uint8_t value) = 0;
 		virtual uint8_t pop() = 0;
 
-		void pushWord(const register16_t& value) {
+		void pushWord(register16_t value) {
 			push(value.high);
 			push(value.low);
 		}
@@ -146,10 +146,10 @@ namespace EightBit {
 
 	private:
 		Bus& m_bus;
-		int m_cycles;
-		register16_t m_pc;
-		register16_t m_memptr;
-		bool m_halted;
-		bool m_power;
+		int m_cycles = 0;
+		register16_t m_pc = { 0, 0 };
+		register16_t m_memptr = { 0, 0 };
+		bool m_halted = false;
+		bool m_power = false;
 	};
 }
