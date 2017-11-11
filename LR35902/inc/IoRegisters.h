@@ -166,24 +166,24 @@ namespace EightBit {
 		private:
 			Bus& m_bus;
 
-			bool m_disableBootRom;
+			bool m_disableBootRom = false;
 
-			register16_t m_divCounter;
-			int m_timerCounter;
-			int m_timerRate;
+			register16_t m_divCounter = { 0xab, 0xcc };
+			int m_timerCounter = 0;
+			int m_timerRate = 0;
 
-			register16_t m_dmaAddress;
-			bool m_dmaTransferActive;
+			register16_t m_dmaAddress = { 0, 0 };
+			bool m_dmaTransferActive = false;
 
-			bool m_scanP15;
-			bool m_scanP14;
+			bool m_scanP15 = false;
+			bool m_scanP14 = false;
 
-			bool m_p15;	// misc keys
-			bool m_p14;	// direction keys
-			bool m_p13;	// down/start
-			bool m_p12;	// up/select
-			bool m_p11;	// left/b
-			bool m_p10;	// right/a
+			bool m_p15 = true;	// misc keys
+			bool m_p14 = true;	// direction keys
+			bool m_p13 = true;	// down/start
+			bool m_p12 = true;	// up/select
+			bool m_p11 = true;	// left/b
+			bool m_p10 = true;	// right/a
 
 			void checkTimer(int cycles);
 

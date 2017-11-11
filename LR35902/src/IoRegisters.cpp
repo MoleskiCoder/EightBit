@@ -4,23 +4,9 @@
 
 EightBit::GameBoy::IoRegisters::IoRegisters(Bus& bus)
 : Ram(0x80),
-  m_bus(bus),
-  m_disableBootRom(false),
-  m_timerCounter(0),
-  m_timerRate(0),
-  m_dmaTransferActive(false),
-  m_scanP15(false),
-  m_scanP14(false),
-  m_p15(true),
-  m_p14(true),
-  m_p13(true),
-  m_p12(true),
-  m_p11(true),
-  m_p10(true) {
+  m_bus(bus) {
 	m_bus.ReadingByte.connect(std::bind(&IoRegisters::Bus_ReadingByte, this, std::placeholders::_1));
 	m_bus.WrittenByte.connect(std::bind(&IoRegisters::Bus_WrittenByte, this, std::placeholders::_1));
-	m_divCounter.word = 0xabcc;
-	m_dmaAddress.word = 0;
 }
 
 void EightBit::GameBoy::IoRegisters::reset() {

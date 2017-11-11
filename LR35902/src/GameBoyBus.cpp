@@ -4,24 +4,9 @@
 
 EightBit::GameBoy::Bus::Bus()
 : m_cpu(*this),
-  m_bootRom(0x100),
   m_gameRomBanks(1),
-  m_videoRam(0x2000),
   m_ramBanks(0),
-  m_lowInternalRam(0x2000),
-  m_oamRam(0xa0),
-  m_ioPorts(*this),
-  m_highInternalRam(0x80),
-  m_enabledLCD(false),
-  m_disableGameRom(false),
-  m_rom(false),
-  m_banked(false),
-  m_ram(false),
-  m_battery(false),
-  m_higherRomBank(true),
-  m_ramBankSwitching(false),
-  m_romBank(1),
-  m_ramBank(0) {
+  m_ioPorts(*this) {
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
 }
 

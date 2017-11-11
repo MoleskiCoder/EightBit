@@ -3,11 +3,6 @@
 
 #include <Ram.h>
 
-EightBit::GameBoy::CharacterDefinition::CharacterDefinition()
-: m_ram(nullptr),
-  m_address(~0) {
-}
-
 EightBit::GameBoy::CharacterDefinition::CharacterDefinition(Ram* ram, uint16_t address)
 : m_ram(ram),
   m_address(address) {

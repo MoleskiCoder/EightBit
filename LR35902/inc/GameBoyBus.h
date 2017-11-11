@@ -60,29 +60,29 @@ namespace EightBit {
 		private:
 			LR35902 m_cpu;
 
-			Rom m_bootRom;						// 0x0000 - 0x00ff
+			Rom m_bootRom = 0x100;				// 0x0000 - 0x00ff
 			std::vector<Rom> m_gameRomBanks;	// 0x0000 - 0x3fff, 0x4000 - 0x7fff (switchable)
-			Ram m_videoRam;						// 0x8000 - 0x9fff
+			Ram m_videoRam = 0x2000;			// 0x8000 - 0x9fff
 			std::vector<Ram> m_ramBanks;		// 0xa000 - 0xbfff (switchable)
-			Ram m_lowInternalRam;				// 0xc000 - 0xdfff (mirrored at 0xe000)
-			Ram m_oamRam;						// 0xfe00 - 0xfe9f
+			Ram m_lowInternalRam = 0x2000;		// 0xc000 - 0xdfff (mirrored at 0xe000)
+			Ram m_oamRam = 0xa0;				// 0xfe00 - 0xfe9f
 			IoRegisters m_ioPorts;				// 0xff00 - 0xff7f
-			Ram m_highInternalRam;				// 0xff80 - 0xffff
+			Ram m_highInternalRam = 0x80;		// 0xff80 - 0xffff
 
-			bool m_enabledLCD;
+			bool m_enabledLCD = false;
 
-			bool m_disableGameRom;
+			bool m_disableGameRom = false;
 
-			bool m_rom;
-			bool m_banked;
-			bool m_ram;
-			bool m_battery;
+			bool m_rom = false;
+			bool m_banked = false;
+			bool m_ram = false;
+			bool m_battery = false;
 
-			bool m_higherRomBank;
-			bool m_ramBankSwitching;
+			bool m_higherRomBank = true;
+			bool m_ramBankSwitching = false;
 
-			int m_romBank;
-			int m_ramBank;
+			int m_romBank = 1;
+			int m_ramBank = 0;
 
 			void validateCartridgeType();
 

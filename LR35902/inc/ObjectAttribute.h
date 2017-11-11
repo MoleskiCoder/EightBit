@@ -11,7 +11,7 @@ namespace EightBit {
 	namespace GameBoy {
 		class ObjectAttribute {
 		public:
-			ObjectAttribute();
+			ObjectAttribute() = default;
 			ObjectAttribute(Ram& ram, uint16_t address);
 
 			uint8_t positionY() const { return m_positionY; }

@@ -55,10 +55,10 @@ namespace EightBit {
 			register16_t de;
 			register16_t hl;
 
-			bool m_ime;
-			bool m_stopped;
+			bool m_ime = false;
+			bool m_stopped = false;
 
-			bool m_prefixCB;
+			bool m_prefixCB = false;
 
 			bool& IME() { return m_ime; }
 

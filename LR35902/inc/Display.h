@@ -42,8 +42,8 @@ namespace EightBit {
 			Ram& m_vram;
 			const AbstractColourPalette* m_colours;
 			std::array<ObjectAttribute, 40> m_objectAttributes;
-			uint8_t m_control;
-			uint8_t m_scanLine;
+			uint8_t m_control = 0;
+			uint8_t m_scanLine = 0;
 
 			std::array<int, 4> createPalette(int address);
 

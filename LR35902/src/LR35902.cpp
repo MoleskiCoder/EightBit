@@ -6,10 +6,7 @@
 
 EightBit::GameBoy::LR35902::LR35902(Bus& memory)
 : IntelProcessor(memory),
-  m_bus(memory),
-  m_ime(false),
-  m_stopped(false),
-  m_prefixCB(false) {
+  m_bus(memory) {
 }
 
 void EightBit::GameBoy::LR35902::reset() {

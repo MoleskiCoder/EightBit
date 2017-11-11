@@ -12,9 +12,7 @@ EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& b
 : m_bus(bus),
   m_oam(oam),
   m_vram(vram),
-  m_colours(colours),
-  m_control(0),
-  m_scanLine(0) {
+  m_colours(colours) {
 }
 
 const std::vector<uint32_t>& EightBit::GameBoy::Display::pixels() const {
