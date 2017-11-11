@@ -77,7 +77,7 @@ namespace EightBit {
 		virtual void initialise();
 		virtual void reset();
 
-		virtual int run(int limit);
+		int run(int limit);
 		virtual int singleStep();
 		virtual int step() = 0;
 
