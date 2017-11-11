@@ -124,8 +124,8 @@ namespace EightBit {
 			return m_halfCarryTableSub[index & Mask3];
 		}
 
-		virtual void push(uint8_t value);
-		virtual uint8_t pop();
+		virtual void push(uint8_t value) final;
+		virtual uint8_t pop() final;
 
 		//
 

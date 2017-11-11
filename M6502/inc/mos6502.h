@@ -74,8 +74,8 @@ namespace EightBit {
 		void getWord(uint16_t offset, register16_t& output);
 		void getWord(const register16_t& offset, register16_t& output);
 
-		virtual void push(uint8_t value) override;
-		virtual uint8_t pop() override;
+		virtual void push(uint8_t value) final;
+		virtual uint8_t pop() final;
 
 		void interrupt(uint16_t vector);
 

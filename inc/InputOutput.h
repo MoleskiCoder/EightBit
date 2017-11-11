@@ -8,6 +8,8 @@
 namespace EightBit {
 	class InputOutput {
 	public:
+		InputOutput() = default;
+
 		uint8_t read(uint8_t port) { return readInputPort(port); }
 		void write(uint8_t port, uint8_t value) { return writeOutputPort(port, value); }
 
