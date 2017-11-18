@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <array>
 
+#include <gsl/gsl>
+
 namespace EightBit {
 
 	class Ram;
@@ -11,7 +13,7 @@ namespace EightBit {
 		class CharacterDefinition {
 		public:
 			CharacterDefinition() = default;
-			CharacterDefinition(Ram* ram, uint16_t address);
+			CharacterDefinition(gsl::not_null<Ram*> ram, uint16_t address);
 
 			std::array<int, 8> get(int row) const;
 

@@ -2,16 +2,12 @@
 
 #include <cstdint>
 
+#include <gsl/gsl>
+
 #include "Bus.h"
 #include "Register.h"
 
-#ifdef _MSC_VER
-#	define UNREACHABLE __assume(0)
-#endif
-
-#ifdef __GNUG__
-#	define UNREACHABLE __builtin_unreachable();
-#endif
+#define UNREACHABLE GSL_ASSUME(0)
 
 namespace EightBit {
 	class Processor {

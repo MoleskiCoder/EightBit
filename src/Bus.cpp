@@ -70,5 +70,5 @@ void EightBit::Bus::write(register16_t address, uint8_t value) {
 uint8_t& EightBit::Bus::reference() {
 	bool rom;
 	auto& value = reference(ADDRESS().word, rom);
-	return rom ? placeDATA(value) : referenceDATA(value);
+	return GSL_LIKELY(!rom) ? referenceDATA(value) : placeDATA(value);
 }

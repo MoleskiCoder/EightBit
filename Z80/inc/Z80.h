@@ -4,6 +4,8 @@
 #include <cassert>
 #include <stdexcept>
 
+#include <gsl/gsl>
+
 #include <Bus.h>
 #include <InputOutput.h>
 #include <IntelProcessor.h>
@@ -147,7 +149,7 @@ namespace EightBit {
 			case 5:
 				return HL2().low;
 			case 6:
-				return getByte(m_displaced ? displacedAddress() : HL().word);
+				return getByte(GSL_LIKELY(!m_displaced) ?  HL().word : displacedAddress());
 			case 7:
 				return a;
 			default:
@@ -177,7 +179,7 @@ namespace EightBit {
 				HL2().low = value;
 				break;
 			case 6:
-				setByte(m_displaced ? displacedAddress() : HL().word, value);
+				setByte(GSL_LIKELY(!m_displaced) ?  HL().word : displacedAddress(), value);
 				break;
 			case 7:
 				a = value;

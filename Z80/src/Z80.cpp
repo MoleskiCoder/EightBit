@@ -62,7 +62,7 @@ void EightBit::Z80::ei() {
 	IFF1() = IFF2() = true;
 }
 
-int EightBit::Z80::interrupt(bool maskable, uint8_t value) {
+int EightBit::Z80::interrupt(const bool maskable, const uint8_t value) {
 	resetCycles();
 	if (!maskable || (maskable && IFF1())) {
 		if (maskable) {
@@ -107,7 +107,7 @@ void EightBit::Z80::decrement(uint8_t& f, uint8_t& operand) {
 	setFlag(f, VF, operand == Mask7);
 }
 
-bool EightBit::Z80::jrConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::Z80::jrConditionalFlag(uint8_t& f, const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jrConditional(!(f & ZF));
@@ -123,7 +123,7 @@ bool EightBit::Z80::jrConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled JR conditional");
 }
 
-bool EightBit::Z80::jumpConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::Z80::jumpConditionalFlag(uint8_t& f, const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jumpConditional(!(f & ZF));
@@ -156,7 +156,7 @@ void EightBit::Z80::reti() {
 	retn();
 }
 
-bool EightBit::Z80::returnConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::Z80::returnConditionalFlag(uint8_t& f, const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return returnConditional(!(f & ZF));
@@ -180,7 +180,7 @@ bool EightBit::Z80::returnConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled RET conditional");
 }
 
-bool EightBit::Z80::callConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::Z80::callConditionalFlag(uint8_t& f, const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return callConditional(!(f & ZF));
@@ -204,7 +204,7 @@ bool EightBit::Z80::callConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled CALL conditional");
 }
 
-void EightBit::Z80::sbc(uint8_t& f, register16_t& operand, register16_t value) {
+void EightBit::Z80::sbc(uint8_t& f, register16_t& operand, const register16_t value) {
 
 	MEMPTR() = operand;
 
@@ -227,7 +227,7 @@ void EightBit::Z80::sbc(uint8_t& f, register16_t& operand, register16_t value) {
 	MEMPTR().word++;
 }
 
-void EightBit::Z80::adc(uint8_t& f, register16_t& operand, register16_t value) {
+void EightBit::Z80::adc(uint8_t& f, register16_t& operand, const register16_t value) {
 
 	MEMPTR() = operand;
 
@@ -237,7 +237,7 @@ void EightBit::Z80::adc(uint8_t& f, register16_t& operand, register16_t value) {
 	const auto result = MEMPTR().word + value.word + (f & CF);
 	operand.word = result;
 
-	auto afterNegative = operand.high & SF;
+	const auto afterNegative = operand.high & SF;
 
 	setFlag(f, SF, afterNegative);
 	clearFlag(f, ZF, operand.word);
@@ -250,7 +250,7 @@ void EightBit::Z80::adc(uint8_t& f, register16_t& operand, register16_t value) {
 	MEMPTR().word++;
 }
 
-void EightBit::Z80::add(uint8_t& f, register16_t& operand, register16_t value) {
+void EightBit::Z80::add(uint8_t& f, register16_t& operand, const register16_t value) {
 
 	MEMPTR() = operand;
 
@@ -266,7 +266,7 @@ void EightBit::Z80::add(uint8_t& f, register16_t& operand, register16_t value) {
 	MEMPTR().word++;
 }
 
-void EightBit::Z80::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
+void EightBit::Z80::add(uint8_t& f, uint8_t& operand, const uint8_t value, const int carry) {
 
 	register16_t result;
 	result.word = operand + value + carry;
@@ -281,11 +281,11 @@ void EightBit::Z80::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) 
 	adjustSZXY<Z80>(f, operand);
 }
 
-void EightBit::Z80::adc(uint8_t& f, uint8_t& operand, uint8_t value) {
+void EightBit::Z80::adc(uint8_t& f, uint8_t& operand, const uint8_t value) {
 	add(f, operand, value, f & CF);
 }
 
-void EightBit::Z80::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
+void EightBit::Z80::subtract(uint8_t& f, uint8_t& operand, const uint8_t value, const int carry) {
 
 	register16_t result;
 	result.word = operand - value - carry;
@@ -300,32 +300,32 @@ void EightBit::Z80::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int ca
 	adjustSZ<Z80>(f, operand);
 }
 
-void EightBit::Z80::sub(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
+void EightBit::Z80::sub(uint8_t& f, uint8_t& operand, const uint8_t value, const int carry) {
 	subtract(f, operand, value, carry);
 	adjustXY<Z80>(f, operand);
 }
 
-void EightBit::Z80::sbc(uint8_t& f, uint8_t& operand, uint8_t value) {
+void EightBit::Z80::sbc(uint8_t& f, uint8_t& operand, const uint8_t value) {
 	sub(f, operand, value, f & CF);
 }
 
-void EightBit::Z80::andr(uint8_t& f, uint8_t& operand, uint8_t value) {
+void EightBit::Z80::andr(uint8_t& f, uint8_t& operand, const uint8_t value) {
 	setFlag(f, HC);
 	clearFlag(f, CF | NF);
 	adjustSZPXY<Z80>(f, operand &= value);
 }
 
-void EightBit::Z80::xorr(uint8_t& f, uint8_t& operand, uint8_t value) {
+void EightBit::Z80::xorr(uint8_t& f, uint8_t& operand, const uint8_t value) {
 	clearFlag(f, HC | CF | NF);
 	adjustSZPXY<Z80>(f, operand ^= value);
 }
 
-void EightBit::Z80::orr(uint8_t& f, uint8_t& operand, uint8_t value) {
+void EightBit::Z80::orr(uint8_t& f, uint8_t& operand, const uint8_t value) {
 	clearFlag(f, HC | CF | NF);
 	adjustSZPXY<Z80>(f, operand |= value);
 }
 
-void EightBit::Z80::compare(uint8_t& f, uint8_t check, uint8_t value) {
+void EightBit::Z80::compare(uint8_t& f, uint8_t check, const uint8_t value) {
 	subtract(f, check, value);
 	adjustXY<Z80>(f, value);
 }
@@ -410,11 +410,11 @@ uint8_t EightBit::Z80::bit(uint8_t& f, int n, uint8_t operand) {
 	return operand;
 }
 
-uint8_t EightBit::Z80::res(int n, uint8_t operand) {
+uint8_t EightBit::Z80::res(int n, const uint8_t operand) {
 	return operand & ~(1 << n);
 }
 
-uint8_t EightBit::Z80::set(int n, uint8_t operand) {
+uint8_t EightBit::Z80::set(int n, const uint8_t operand) {
 	return operand | (1 << n);
 }
 
@@ -438,8 +438,8 @@ void EightBit::Z80::daa(uint8_t& a, uint8_t& f) {
 
 	auto updated = a;
 
-	auto lowAdjust = (f & HC) || (lowNibble(a) > 9);
-	auto highAdjust = (f & CF) || (a > 0x99);
+	const auto lowAdjust = (f & HC) || (lowNibble(a) > 9);
+	const auto highAdjust = (f & CF) || (a > 0x99);
 
 	if (f & NF) {
 		if (lowAdjust)
@@ -464,13 +464,13 @@ void EightBit::Z80::cpl(uint8_t& a, uint8_t& f) {
 	adjustXY<Z80>(f, a = ~a);
 }
 
-void EightBit::Z80::scf(uint8_t a, uint8_t& f) {
+void EightBit::Z80::scf(const uint8_t a, uint8_t& f) {
 	setFlag(f, CF);
 	clearFlag(f, HC | NF);
 	adjustXY<Z80>(f, a);
 }
 
-void EightBit::Z80::ccf(uint8_t a, uint8_t& f) {
+void EightBit::Z80::ccf(const uint8_t a, uint8_t& f) {
 	clearFlag(f, NF);
 	const auto carry = f & CF;
 	setFlag(f, HC, carry);
@@ -488,7 +488,7 @@ void EightBit::Z80::xhtl(register16_t& operand) {
 	operand.high = MEMPTR().high;
 }
 
-void EightBit::Z80::blockCompare(uint8_t a, uint8_t& f) {
+void EightBit::Z80::blockCompare(const uint8_t a, uint8_t& f) {
 
 	const auto value = getByte(HL());
 	uint8_t result = a - value;
@@ -505,37 +505,37 @@ void EightBit::Z80::blockCompare(uint8_t a, uint8_t& f) {
 	setFlag(f, XF, result & Bit3);
 }
 
-void EightBit::Z80::cpi(uint8_t a, uint8_t& f) {
+void EightBit::Z80::cpi(const uint8_t a, uint8_t& f) {
 	blockCompare(a, f);
 	HL().word++;
 	MEMPTR().word++;
 }
 
-void EightBit::Z80::cpd(uint8_t a, uint8_t& f) {
+void EightBit::Z80::cpd(const uint8_t a, uint8_t& f) {
 	blockCompare(a, f);
 	HL().word--;
 	MEMPTR().word--;
 }
 
-bool EightBit::Z80::cpir(uint8_t a, uint8_t& f) {
+bool EightBit::Z80::cpir(const uint8_t a, uint8_t& f) {
 	cpi(a, f);
 	MEMPTR() = PC();
-	auto again = (f & PF) && !(f & ZF);	// See CPI
-	if (again)
+	const auto again = (f & PF) && !(f & ZF);	// See CPI
+	if (GSL_LIKELY(again))
 		MEMPTR().word--;
 	return again;
 }
 
-bool EightBit::Z80::cpdr(uint8_t a, uint8_t& f) {
+bool EightBit::Z80::cpdr(const uint8_t a, uint8_t& f) {
 	cpd(a, f);
 	MEMPTR().word = PC().word - 1;
-	auto again = (f & PF) && !(f & ZF);	// See CPD
-	if (!again)
+	const auto again = (f & PF) && !(f & ZF);	// See CPD
+	if (GSL_UNLIKELY(!again))
 		MEMPTR().word--;
 	return again;
 }
 
-void EightBit::Z80::blockLoad(uint8_t a, uint8_t& f, register16_t source, register16_t destination) {
+void EightBit::Z80::blockLoad(const uint8_t a, uint8_t& f, const register16_t source, const register16_t destination) {
 	const auto value = getByte(source);
 	setByte(destination, value);
 	const auto xy = a + value;
@@ -545,30 +545,30 @@ void EightBit::Z80::blockLoad(uint8_t a, uint8_t& f, register16_t source, regist
 	setFlag(f, PF, --BC().word);
 }
 
-void EightBit::Z80::ldd(uint8_t a, uint8_t& f) {
+void EightBit::Z80::ldd(const uint8_t a, uint8_t& f) {
 	blockLoad(a, f, HL(), DE());
 	HL().word--;
 	DE().word--;
 }
 
-void EightBit::Z80::ldi(uint8_t a, uint8_t& f) {
+void EightBit::Z80::ldi(const uint8_t a, uint8_t& f) {
 	blockLoad(a, f, HL(), DE());
 	HL().word++;
 	DE().word++;
 }
 
-bool EightBit::Z80::ldir(uint8_t a, uint8_t& f) {
+bool EightBit::Z80::ldir(const uint8_t a, uint8_t& f) {
 	ldi(a, f);
-	auto again = (f & PF) != 0;
-	if (again)		// See LDI
+	const auto again = (f & PF) != 0;
+	if (GSL_LIKELY(again))		// See LDI
 		MEMPTR().word = PC().word - 1;
 	return again;
 }
 
-bool EightBit::Z80::lddr(uint8_t a, uint8_t& f) {
+bool EightBit::Z80::lddr(const uint8_t a, uint8_t& f) {
 	ldd(a, f);
-	auto again = (f & PF) != 0;
-	if (again)		// See LDR
+	const auto again = (f & PF) != 0;
+	if (GSL_LIKELY(again))		// See LDR
 		MEMPTR().word = PC().word - 1;
 	return again;
 }
@@ -604,7 +604,7 @@ bool EightBit::Z80::indr(uint8_t& f) {
 }
 
 void EightBit::Z80::blockOut(uint8_t& f) {
-	auto value = getByte();
+	const auto value = getByte();
 	BUS().ADDRESS() = BC();
 	writePort();
 	decrement(f, B());
@@ -638,7 +638,7 @@ bool EightBit::Z80::otdr(uint8_t& f) {
 void EightBit::Z80::rrd(uint8_t& a, uint8_t& f) {
 	MEMPTR() = HL();
 	memptrReference();
-	auto memory = getByte();
+	const auto memory = getByte();
 	setByte(promoteNibble(a) | highNibble(memory));
 	a = (a & 0xf0) | lowNibble(memory);
 	adjustSZPXY<Z80>(f, a);
@@ -648,14 +648,14 @@ void EightBit::Z80::rrd(uint8_t& a, uint8_t& f) {
 void EightBit::Z80::rld(uint8_t& a, uint8_t& f) {
 	MEMPTR() = HL();
 	memptrReference();
-	auto memory = getByte();
+	const auto memory = getByte();
 	setByte(promoteNibble(memory) | lowNibble(a));
 	a = (a & 0xf0) | highNibble(memory);
 	adjustSZPXY<Z80>(f, a);
 	clearFlag(f, NF | HC);
 }
 
-void EightBit::Z80::writePort(uint8_t port, uint8_t data) {
+void EightBit::Z80::writePort(const uint8_t port, const uint8_t data) {
 	BUS().ADDRESS().low = port;
 	BUS().ADDRESS().high = data;
 	MEMPTR() = BUS().ADDRESS();
@@ -668,7 +668,7 @@ void EightBit::Z80::writePort() {
 	m_ports.write(BUS().ADDRESS().low, BUS().DATA());
 }
 
-void EightBit::Z80::readPort(uint8_t port, uint8_t& a) {
+void EightBit::Z80::readPort(const uint8_t port, uint8_t& a) {
 	BUS().ADDRESS().low = port;
 	BUS().ADDRESS().high = a;
 	MEMPTR() = BUS().ADDRESS();
@@ -688,9 +688,9 @@ int EightBit::Z80::step() {
 	return fetchExecute();
 }
 
-int EightBit::Z80::execute(uint8_t opcode) {
+int EightBit::Z80::execute(const uint8_t opcode) {
 
-	if (!M1())
+	if (GSL_UNLIKELY(!M1()))
 		throw std::logic_error("M1 cannot be high");
 
 	if (!(m_prefixCB && m_displaced)) {
@@ -700,35 +700,37 @@ int EightBit::Z80::execute(uint8_t opcode) {
 
 	const auto& decoded = getDecodedOpcode(opcode);
 
-	auto x = decoded.x;
-	auto y = decoded.y;
-	auto z = decoded.z;
+	const auto x = decoded.x;
+	const auto y = decoded.y;
+	const auto z = decoded.z;
 
-	auto p = decoded.p;
-	auto q = decoded.q;
+	const auto p = decoded.p;
+	const auto q = decoded.q;
 
 	auto prefixed = m_prefixCB || m_prefixED;
-	if (!prefixed) {
+	if (GSL_LIKELY(!prefixed)) {
 		executeOther(x, y, z, p, q);
 	} else {
 		if (m_prefixCB)
 			executeCB(x, y, z);
 		else if (m_prefixED)
 			executeED(x, y, z, p, q);
+		else
+			UNREACHABLE;
 	}
 
-	if (cycles() == 0)
+	if (GSL_UNLIKELY(cycles() == 0))
 		throw std::logic_error("Unhandled opcode");
 
 	return cycles();
 }
 
-void EightBit::Z80::executeCB(int x, int y, int z) {
+void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 	auto& a = A();
 	auto& f = F();
 	switch (x) {
 	case 0:	{ // rot[y] r[z]
-		auto operand = m_displaced ? getByte(displacedAddress()) : R(z, a);
+		auto operand = GSL_LIKELY(!m_displaced) ? R(z, a) : getByte(displacedAddress());
 		switch (y) {
 		case 0:
 			operand = rlc(f, operand);
@@ -758,22 +760,22 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 			UNREACHABLE;
 		}
 		adjustSZP<Z80>(f, operand);
-		if (m_displaced) {
+		if (GSL_LIKELY(!m_displaced)) {
+			R(z, a, operand);
+			if (z == 6)
+				addCycles(7);
+		} else {
 			if (z != 6)
 				R2(z, a, operand);
 			setByte(operand);
 			addCycles(15);
-		} else {
-			R(z, a, operand);
-			if (z == 6)
-				addCycles(7);
 		}
 		addCycles(8);
 		break;
 	} case 1:	// BIT y, r[z]
 		addCycles(8);
-		if (!m_displaced) {
-			auto operand = bit(f, y, R(z, a));
+		if (GSL_LIKELY(!m_displaced)) {
+			const auto operand = bit(f, y, R(z, a));
 			if (z == 6) {
 				adjustXY<Z80>(f, MEMPTR().high);
 				addCycles(4);
@@ -788,7 +790,7 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 		break;
 	case 2:	// RES y, r[z]
 		addCycles(8);
-		if (!m_displaced) {
+		if (GSL_LIKELY(!m_displaced)) {
 			R(z, a, res(y, R(z, a)));
 			if (z == 6)
 				addCycles(7);
@@ -802,7 +804,7 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 		break;
 	case 3:	// SET y, r[z]
 		addCycles(8);
-		if (!m_displaced) {
+		if (GSL_LIKELY(!m_displaced)) {
 			R(z, a, set(y, R(z, a)));
 			if (z == 6)
 				addCycles(7);
@@ -819,7 +821,7 @@ void EightBit::Z80::executeCB(int x, int y, int z) {
 	}
 }
 
-void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
+void EightBit::Z80::executeED(const int x, const int y, const int z, const int p, const int q) {
 	auto& a = A();
 	auto& f = F();
 	switch (x) {
@@ -970,13 +972,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				ldd(a, f);
 				break;
 			case 6:	// LDIR
-				if (ldir(a, f)) {
+				if (GSL_LIKELY(ldir(a, f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
 				break;
 			case 7:	// LDDR
-				if (lddr(a, f)) {
+				if (GSL_LIKELY(lddr(a, f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
@@ -992,13 +994,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				cpd(a, f);
 				break;
 			case 6:	// CPIR
-				if (cpir(a, f)) {
+				if (GSL_LIKELY(cpir(a, f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
 				break;
 			case 7:	// CPDR
-				if (cpdr(a, f)) {
+				if (GSL_LIKELY(cpdr(a, f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
@@ -1014,13 +1016,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				ind(f);
 				break;
 			case 6:	// INIR
-				if (inir(f)) {
+				if (GSL_LIKELY(inir(f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
 				break;
 			case 7:	// INDR
-				if (indr(f)) {
+				if (GSL_LIKELY(indr(f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
@@ -1036,13 +1038,13 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 				outd(f);
 				break;
 			case 6:	// OTIR
-				if (otir(f)) {
+				if (GSL_LIKELY(otir(f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
 				break;
 			case 7:	// OTDR
-				if (otdr(f)) {
+				if (GSL_LIKELY(otdr(f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
@@ -1055,7 +1057,7 @@ void EightBit::Z80::executeED(int x, int y, int z, int p, int q) {
 	}
 }
 
-void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
+void EightBit::Z80::executeOther(const int x, const int y, const int z, const int p, const int q) {
 	auto& a = A();
 	auto& f = F();
 	switch (x) {
@@ -1183,7 +1185,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			addCycles(6);
 			break;
 		case 4: { // 8-bit INC
-			if (m_displaced && (y == 6))
+			if (GSL_UNLIKELY(m_displaced && (y == 6)))
 				fetchDisplacement();
 			auto operand = R(y, a);
 			increment(f, operand);
@@ -1191,7 +1193,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 			addCycles(4);
 			break;
 		} case 5: {	// 8-bit DEC
-			if (m_displaced && (y == 6))
+			if (GSL_UNLIKELY(m_displaced && (y == 6)))
 				fetchDisplacement();
 			auto operand = R(y, a);
 			decrement(f, operand);
@@ -1201,7 +1203,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				addCycles(7);
 			break;
 		} case 6:	// 8-bit load immediate
-			if (m_displaced && (y == 6))
+			if (GSL_UNLIKELY(m_displaced && (y == 6)))
 				fetchDisplacement();
 			R(y, a, fetchByte());	// LD r,n
 			addCycles(7);
@@ -1244,11 +1246,11 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		}
 		break;
 	case 1:	// 8-bit loading
-		if (z == 6 && y == 6) { 	// Exception (replaces LD (HL), (HL))
+		if (GSL_UNLIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
 			halt();
 		} else {
 			bool normal = true;
-			if (m_displaced) {
+			if (GSL_UNLIKELY(m_displaced)) {
 				if (z == 6) {
 					fetchDisplacement();
 					switch (y) {
@@ -1284,7 +1286,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 		addCycles(4);
 		break;
 	case 2:	// Operate on accumulator and register/memory location
-		if (m_displaced && (z == 6))
+		if (GSL_UNLIKELY(m_displaced && (z == 6)))
 			fetchDisplacement();
 		switch (y) {
 		case 0:	// ADD A,r
@@ -1370,7 +1372,7 @@ void EightBit::Z80::executeOther(int x, int y, int z, int p, int q) {
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
-				if (m_displaced)
+				if (GSL_UNLIKELY(m_displaced))
 					fetchDisplacement();
 				fetchExecute();
 				break;

@@ -4,6 +4,8 @@
 #include <array>
 #include <cstdint>
 
+#include <gsl/gsl>
+
 #include "ObjectAttribute.h"
 
 namespace EightBit {
@@ -27,7 +29,7 @@ namespace EightBit {
 				RasterHeight = 144,
 			};
 
-			Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram);
+			Display(const gsl::not_null<AbstractColourPalette*> colours, Bus& bus, Ram& oam, Ram& vram);
 
 			const std::vector<uint32_t>& pixels() const;
 

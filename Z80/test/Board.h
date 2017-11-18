@@ -28,7 +28,7 @@ protected:
 
 private:
 	const Configuration& m_configuration;
-	EightBit::Ram m_ram;
+	EightBit::Ram m_ram = 0x10000;
 	EightBit::InputOutput m_ports;
 	EightBit::Z80 m_cpu;
 	EightBit::Disassembler m_disassembler;

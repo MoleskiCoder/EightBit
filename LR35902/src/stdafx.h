@@ -25,6 +25,8 @@
 
 #include <boost/format.hpp>
 
+#include <gsl/gsl>
+
 #include <Memory.h>
 #include <Processor.h>
 #include <IntelProcessor.h>

@@ -5,7 +5,6 @@
 
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration),
-  m_ram(0x10000),
   m_cpu(EightBit::Z80(*this, m_ports)),
   m_profiler(m_cpu, m_disassembler) {
 }
