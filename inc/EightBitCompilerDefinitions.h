@@ -11,7 +11,7 @@
 
 #	define UNREACHABLE __assume(0)
 
-#elif definef(__GNUG__)
+#elif defined(__GNUG__)
 
 #	include <x86intrin.h>
 
