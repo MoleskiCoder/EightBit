@@ -70,16 +70,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\inc;..\..\inc;..\..\libraries\GSL\include;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\inc;..\..\inc;..\..\libraries\GSL\include;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\inc;..\..\inc;..\..\libraries\GSL\include;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\inc;..\..\inc;..\..\libraries\GSL\include;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

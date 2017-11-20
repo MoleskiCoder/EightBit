@@ -15,7 +15,7 @@ void EightBit::Processor::initialise() {
 
 int EightBit::Processor::run(int limit) {
 	int current = 0;
-	while (GSL_LIKELY(powered()) && current < limit) {
+	while (LIKELY(powered()) && current < limit) {
 		current += singleStep();
 	}
 	return current;
@@ -35,7 +35,7 @@ void EightBit::Processor::fetchWord(register16_t& output) {
 }
 
 int EightBit::Processor::fetchExecute() {
-	if (GSL_LIKELY(powered()))
+	if (LIKELY(powered()))
 		return execute(fetchByte());
 	return 0;
 }

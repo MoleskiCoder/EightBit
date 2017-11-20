@@ -2,12 +2,10 @@
 
 #include <cstdint>
 
-#include <gsl/gsl>
-
 #include "Bus.h"
 #include "Register.h"
 
-#define UNREACHABLE GSL_ASSUME(0)
+#include "EightBitCompilerDefinitions.h"
 
 namespace EightBit {
 	class Processor {

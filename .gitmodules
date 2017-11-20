@@ -1,3 +1,0 @@
-[submodule "libraries/GSL"]
-	path = libraries/GSL
-	url = https://github.com/Microsoft/GSL.git

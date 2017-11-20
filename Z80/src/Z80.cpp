@@ -521,7 +521,7 @@ bool EightBit::Z80::cpir(const uint8_t a, uint8_t& f) {
 	cpi(a, f);
 	MEMPTR() = PC();
 	const auto again = (f & PF) && !(f & ZF);	// See CPI
-	if (GSL_LIKELY(again))
+	if (LIKELY(again))
 		MEMPTR().word--;
 	return again;
 }
@@ -530,7 +530,7 @@ bool EightBit::Z80::cpdr(const uint8_t a, uint8_t& f) {
 	cpd(a, f);
 	MEMPTR().word = PC().word - 1;
 	const auto again = (f & PF) && !(f & ZF);	// See CPD
-	if (GSL_UNLIKELY(!again))
+	if (UNLIKELY(!again))
 		MEMPTR().word--;
 	return again;
 }
@@ -560,7 +560,7 @@ void EightBit::Z80::ldi(const uint8_t a, uint8_t& f) {
 bool EightBit::Z80::ldir(const uint8_t a, uint8_t& f) {
 	ldi(a, f);
 	const auto again = (f & PF) != 0;
-	if (GSL_LIKELY(again))		// See LDI
+	if (LIKELY(again))		// See LDI
 		MEMPTR().word = PC().word - 1;
 	return again;
 }
@@ -568,7 +568,7 @@ bool EightBit::Z80::ldir(const uint8_t a, uint8_t& f) {
 bool EightBit::Z80::lddr(const uint8_t a, uint8_t& f) {
 	ldd(a, f);
 	const auto again = (f & PF) != 0;
-	if (GSL_LIKELY(again))		// See LDR
+	if (LIKELY(again))		// See LDR
 		MEMPTR().word = PC().word - 1;
 	return again;
 }
@@ -690,7 +690,7 @@ int EightBit::Z80::step() {
 
 int EightBit::Z80::execute(const uint8_t opcode) {
 
-	if (GSL_UNLIKELY(!M1()))
+	if (UNLIKELY(!M1()))
 		throw std::logic_error("M1 cannot be high");
 
 	if (!(m_prefixCB && m_displaced)) {
@@ -708,7 +708,7 @@ int EightBit::Z80::execute(const uint8_t opcode) {
 	const auto q = decoded.q;
 
 	auto prefixed = m_prefixCB || m_prefixED;
-	if (GSL_LIKELY(!prefixed)) {
+	if (LIKELY(!prefixed)) {
 		executeOther(x, y, z, p, q);
 	} else {
 		if (m_prefixCB)
@@ -719,7 +719,7 @@ int EightBit::Z80::execute(const uint8_t opcode) {
 			UNREACHABLE;
 	}
 
-	if (GSL_UNLIKELY(cycles() == 0))
+	if (UNLIKELY(cycles() == 0))
 		throw std::logic_error("Unhandled opcode");
 
 	return cycles();
@@ -730,7 +730,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 	auto& f = F();
 	switch (x) {
 	case 0:	{ // rot[y] r[z]
-		auto operand = GSL_LIKELY(!m_displaced) ? R(z, a) : getByte(displacedAddress());
+		auto operand = LIKELY(!m_displaced) ? R(z, a) : getByte(displacedAddress());
 		switch (y) {
 		case 0:
 			operand = rlc(f, operand);
@@ -760,7 +760,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 			UNREACHABLE;
 		}
 		adjustSZP<Z80>(f, operand);
-		if (GSL_LIKELY(!m_displaced)) {
+		if (LIKELY(!m_displaced)) {
 			R(z, a, operand);
 			if (z == 6)
 				addCycles(7);
@@ -774,7 +774,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		break;
 	} case 1:	// BIT y, r[z]
 		addCycles(8);
-		if (GSL_LIKELY(!m_displaced)) {
+		if (LIKELY(!m_displaced)) {
 			const auto operand = bit(f, y, R(z, a));
 			if (z == 6) {
 				adjustXY<Z80>(f, MEMPTR().high);
@@ -790,7 +790,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		break;
 	case 2:	// RES y, r[z]
 		addCycles(8);
-		if (GSL_LIKELY(!m_displaced)) {
+		if (LIKELY(!m_displaced)) {
 			R(z, a, res(y, R(z, a)));
 			if (z == 6)
 				addCycles(7);
@@ -804,7 +804,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		break;
 	case 3:	// SET y, r[z]
 		addCycles(8);
-		if (GSL_LIKELY(!m_displaced)) {
+		if (LIKELY(!m_displaced)) {
 			R(z, a, set(y, R(z, a)));
 			if (z == 6)
 				addCycles(7);
@@ -972,13 +972,13 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				ldd(a, f);
 				break;
 			case 6:	// LDIR
-				if (GSL_LIKELY(ldir(a, f))) {
+				if (LIKELY(ldir(a, f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
 				break;
 			case 7:	// LDDR
-				if (GSL_LIKELY(lddr(a, f))) {
+				if (LIKELY(lddr(a, f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
@@ -994,13 +994,13 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				cpd(a, f);
 				break;
 			case 6:	// CPIR
-				if (GSL_LIKELY(cpir(a, f))) {
+				if (LIKELY(cpir(a, f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
 				break;
 			case 7:	// CPDR
-				if (GSL_LIKELY(cpdr(a, f))) {
+				if (LIKELY(cpdr(a, f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
@@ -1016,13 +1016,13 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				ind(f);
 				break;
 			case 6:	// INIR
-				if (GSL_LIKELY(inir(f))) {
+				if (LIKELY(inir(f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
 				break;
 			case 7:	// INDR
-				if (GSL_LIKELY(indr(f))) {
+				if (LIKELY(indr(f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
@@ -1038,13 +1038,13 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				outd(f);
 				break;
 			case 6:	// OTIR
-				if (GSL_LIKELY(otir(f))) {
+				if (LIKELY(otir(f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
 				break;
 			case 7:	// OTDR
-				if (GSL_LIKELY(otdr(f))) {
+				if (LIKELY(otdr(f))) {
 					PC().word -= 2;
 					addCycles(5);
 				}
@@ -1185,7 +1185,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			addCycles(6);
 			break;
 		case 4: { // 8-bit INC
-			if (GSL_UNLIKELY(m_displaced && (y == 6)))
+			if (UNLIKELY(m_displaced && (y == 6)))
 				fetchDisplacement();
 			auto operand = R(y, a);
 			increment(f, operand);
@@ -1193,7 +1193,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			addCycles(4);
 			break;
 		} case 5: {	// 8-bit DEC
-			if (GSL_UNLIKELY(m_displaced && (y == 6)))
+			if (UNLIKELY(m_displaced && (y == 6)))
 				fetchDisplacement();
 			auto operand = R(y, a);
 			decrement(f, operand);
@@ -1203,7 +1203,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				addCycles(7);
 			break;
 		} case 6:	// 8-bit load immediate
-			if (GSL_UNLIKELY(m_displaced && (y == 6)))
+			if (LIKELY(m_displaced && (y == 6)))
 				fetchDisplacement();
 			R(y, a, fetchByte());	// LD r,n
 			addCycles(7);
@@ -1246,11 +1246,11 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		}
 		break;
 	case 1:	// 8-bit loading
-		if (GSL_UNLIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
+		if (LIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
 			halt();
 		} else {
 			bool normal = true;
-			if (GSL_UNLIKELY(m_displaced)) {
+			if (LIKELY(m_displaced)) {
 				if (z == 6) {
 					fetchDisplacement();
 					switch (y) {
@@ -1286,7 +1286,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		addCycles(4);
 		break;
 	case 2:	// Operate on accumulator and register/memory location
-		if (GSL_UNLIKELY(m_displaced && (z == 6)))
+		if (LIKELY(m_displaced && (z == 6)))
 			fetchDisplacement();
 		switch (y) {
 		case 0:	// ADD A,r
@@ -1372,7 +1372,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
-				if (GSL_UNLIKELY(m_displaced))
+				if (LIKELY(m_displaced))
 					fetchDisplacement();
 				fetchExecute();
 				break;

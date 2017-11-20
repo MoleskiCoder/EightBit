@@ -7,15 +7,7 @@
 #include "Processor.h"
 #include "Register.h"
 
-#ifdef _MSC_VER
-#include <intrin.h>
-#define EIGHT_BIT_INTELPROCESSOR_PARITY(x)	(__popcnt(value) % 2)
-#elif definef(__GNUG__)
-#include <x86intrin.h>
-#define EIGHT_BIT_INTELPROCESSOR_PARITY(x)	__builtin_parity(value)
-#else
-#error No parity macro defined
-#endif
+#include "EightBitCompilerDefinitions.h"
 
 namespace EightBit {
 	class IntelProcessor : public Processor
@@ -79,7 +71,7 @@ namespace EightBit {
 		}
 
 		template<class T> static void adjustParity(uint8_t& f, uint8_t value) {
-			clearFlag(f, T::PF, EIGHT_BIT_INTELPROCESSOR_PARITY(value));
+			clearFlag(f, T::PF, EIGHTBIT_PARITY(value));
 		}
 
 		template<class T> static void adjustSZ(uint8_t& f, uint8_t value) {

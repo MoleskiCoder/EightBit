@@ -19,5 +19,3 @@
 #else
 #include <x86intrin.h>
 #endif
-
-#include <gsl/gsl>

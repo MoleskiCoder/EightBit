@@ -70,16 +70,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\inc;..\libraries\GSL\include;C:\Libraries\boost_1_65_1;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\inc;C:\Libraries\boost_1_65_1;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\inc;..\libraries\GSL\include;C:\Libraries\boost_1_65_1;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\inc;C:\Libraries\boost_1_65_1;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\inc;..\libraries\GSL\include;C:\Libraries\boost_1_65_1;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\inc;C:\Libraries\boost_1_65_1;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\inc;..\libraries\GSL\include;C:\Libraries\boost_1_65_1;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\inc;C:\Libraries\boost_1_65_1;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -151,6 +151,7 @@
     <ClInclude Include="..\inc\Rom.h" />
     <ClInclude Include="..\inc\Signal.h" />
     <ClInclude Include="..\inc\TestHarness.h" />
+    <ClInclude Include="EightBitCompilerDefinitions.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

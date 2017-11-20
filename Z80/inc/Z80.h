@@ -4,13 +4,12 @@
 #include <cassert>
 #include <stdexcept>
 
-#include <gsl/gsl>
-
 #include <Bus.h>
 #include <InputOutput.h>
 #include <IntelProcessor.h>
 #include <Signal.h>
 #include <Register.h>
+#include <EightBitCompilerDefinitions.h>
 
 namespace EightBit {
 	class Z80 : public IntelProcessor {
@@ -149,7 +148,7 @@ namespace EightBit {
 			case 5:
 				return HL2().low;
 			case 6:
-				return getByte(GSL_LIKELY(!m_displaced) ?  HL().word : displacedAddress());
+				return getByte(LIKELY(!m_displaced) ?  HL().word : displacedAddress());
 			case 7:
 				return a;
 			default:
@@ -179,7 +178,7 @@ namespace EightBit {
 				HL2().low = value;
 				break;
 			case 6:
-				setByte(GSL_LIKELY(!m_displaced) ?  HL().word : displacedAddress(), value);
+				setByte(LIKELY(!m_displaced) ?  HL().word : displacedAddress(), value);
 				break;
 			case 7:
 				a = value;

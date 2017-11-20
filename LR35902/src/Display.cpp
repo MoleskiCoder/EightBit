@@ -8,7 +8,7 @@
 #include <Processor.h>
 #include <vector>
 
-EightBit::GameBoy::Display::Display(const gsl::not_null<AbstractColourPalette*> colours, Bus& bus, Ram& oam, Ram& vram)
+EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram)
 : m_bus(bus),
   m_oam(oam),
   m_vram(vram),

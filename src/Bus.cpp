@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Bus.h"
 
+#include "EightBitCompilerDefinitions.h"
+
 EightBit::register16_t& EightBit::Bus::ADDRESS() {
 	return m_address;
 }
@@ -70,5 +72,5 @@ void EightBit::Bus::write(register16_t address, uint8_t value) {
 uint8_t& EightBit::Bus::reference() {
 	bool rom;
 	auto& value = reference(ADDRESS().word, rom);
-	return GSL_LIKELY(!rom) ? referenceDATA(value) : placeDATA(value);
+	return LIKELY(!rom) ? referenceDATA(value) : placeDATA(value);
 }
