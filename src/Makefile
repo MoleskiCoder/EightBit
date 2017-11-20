@@ -2,7 +2,7 @@ LIB = libeightbit.a
 
 CXXFLAGS = -Wall -std=c++14 -pipe -I ../inc
 
-CXXFILES = EventArgs.cpp InputOutput.cpp IntelProcessor.cpp Memory.cpp Processor.cpp
+CXXFILES = Bus.cpp EventArgs.cpp InputOutput.cpp IntelProcessor.cpp Memory.cpp Processor.cpp
 
 CXXOBJECTS = $(CXXFILES:.cpp=.o)
 

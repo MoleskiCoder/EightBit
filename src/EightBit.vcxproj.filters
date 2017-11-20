@@ -47,7 +47,7 @@
     <ClInclude Include="..\inc\Register.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EightBitCompilerDefinitions.h">
+    <ClInclude Include="..\inc\EightBitCompilerDefinitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\Bus.h" />
+    <ClInclude Include="..\inc\EightBitCompilerDefinitions.h" />
     <ClInclude Include="..\inc\EventArgs.h" />
     <ClInclude Include="..\inc\InputOutput.h" />
     <ClInclude Include="..\inc\IntelProcessor.h" />
@@ -151,7 +152,6 @@
     <ClInclude Include="..\inc\Rom.h" />
     <ClInclude Include="..\inc\Signal.h" />
     <ClInclude Include="..\inc\TestHarness.h" />
-    <ClInclude Include="EightBitCompilerDefinitions.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
