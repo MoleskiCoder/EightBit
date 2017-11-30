@@ -56,8 +56,8 @@ namespace EightBit {
 
 		int interrupt(bool maskable, uint8_t value);
 
-		virtual int execute(uint8_t opcode);
-		int step();
+		virtual int execute(uint8_t opcode) final;
+		virtual int step() final;
 
 		virtual register16_t& AF() override;
 		virtual register16_t& BC() override;
@@ -104,8 +104,8 @@ namespace EightBit {
 		std::array<register16_t, 2> m_accumulatorFlags;
 		int m_accumulatorFlagsSet = 0;
 
-		register16_t m_ix = { 0xff, 0xff };
-		register16_t m_iy = { 0xff, 0xff };
+		register16_t m_ix = { { 0xff, 0xff } };
+		register16_t m_iy = { { 0xff, 0xff } };
 
 		refresh_t m_refresh = 0x7f;
 

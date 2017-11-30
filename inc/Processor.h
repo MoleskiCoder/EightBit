@@ -141,8 +141,8 @@ namespace EightBit {
 	private:
 		Bus& m_bus;
 		int m_cycles = 0;
-		register16_t m_pc = { 0, 0 };
-		register16_t m_memptr = { 0, 0 };
+		register16_t m_pc = { { 0, 0 } };
+		register16_t m_memptr = { { 0, 0 } };
 		bool m_halted = false;
 		bool m_power = false;
 	};
