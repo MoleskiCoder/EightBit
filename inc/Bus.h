@@ -38,7 +38,7 @@ namespace EightBit {
 
 	private:
 		uint8_t* m_data = nullptr;
-		register16_t m_address { 0xff, 0xff };
+		register16_t m_address{ { 0xff, 0xff } };
 		uint8_t m_temporary = 0xff;	// Used to simulate ROM
 	};
 }
