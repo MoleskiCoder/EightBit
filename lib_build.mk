@@ -1,5 +1,3 @@
-CXXFLAGS += -g -Wall -std=c++14 -pipe
-
 CXXOBJECTS = $(CXXFILES:.cpp=.o)
 
 SOURCES = $(CXXFILES)
@@ -7,20 +5,22 @@ OBJECTS = $(CXXOBJECTS)
 
 PCH = stdafx.h.gch
 
-.PHONY: all
 all: opt
 
-.PHONY: opt
-opt: CXXFLAGS += -DNDEBUG -march=native -O3 -flto
+opt: CXXFLAGS += $(CXXFLAGS_OPT)
 opt: $(LIB)
 
-.PHONY: debug
-debug: CXXFLAGS += -D_DEBUG
+debug: CXXFLAGS += $(CXXFLAGS_DEBUG)
 debug: $(LIB)
 
-.PHONY: coverage
-coverage: CXXFLAGS += -D_DEBUG -fprofile-arcs -ftest-coverage
+coverage: CXXFLAGS += $(CXXFLAGS_COVERAGE)
 coverage: $(LIB)
+
+profile: CXXFLAGS += $(CXXFLAGS_PROFILE)
+profile: $(LIB)
+
+profiled: CXXFLAGS += $(CXXFLAGS_PROFILED)
+profiled: $(LIB)
 
 $(PCH): stdafx.h
 	$(CXX) $(CXXFLAGS) -x c++-header $<
