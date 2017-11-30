@@ -27,7 +27,7 @@ namespace EightBit {
 			Bit13 = Bit12 << 1,
 			Bit14 = Bit13 << 1,
 			Bit15 = Bit14 << 1,
-			Bit16 = Bit15 << 1,
+			Bit16 = Bit15 << 1
 		};
 
 		enum Masks {
@@ -46,7 +46,7 @@ namespace EightBit {
 			Mask13 = Bit13 - 1,
 			Mask14 = Bit14 - 1,
 			Mask15 = Bit15 - 1,
-			Mask16 = Bit16 - 1,
+			Mask16 = Bit16 - 1
 		};
 
 		static int highNibble(int value) { return value >> 4; }
@@ -90,6 +90,7 @@ namespace EightBit {
 		static void clearFlag(uint8_t& f, int flag, bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
 
 		Processor(Bus& memory);
+		virtual ~Processor() = default;
 
 		virtual uint8_t fetchByte();
 		virtual void fetchWord(register16_t& output);

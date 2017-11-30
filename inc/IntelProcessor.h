@@ -61,6 +61,7 @@ namespace EightBit {
 
 	protected:
 		IntelProcessor(Bus& bus);
+		virtual ~IntelProcessor() = default;
 
 		template<class T> static void adjustSign(uint8_t& f, uint8_t value) {
 			setFlag(f, T::SF, value & T::SF);
