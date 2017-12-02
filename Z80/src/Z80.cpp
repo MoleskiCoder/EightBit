@@ -693,7 +693,7 @@ int EightBit::Z80::execute(const uint8_t opcode) {
 	if (UNLIKELY(!M1()))
 		throw std::logic_error("M1 cannot be high");
 
-	if (!(m_prefixCB && m_displaced)) {
+	if (LIKELY(!(m_prefixCB && m_displaced))) {
 		++REFRESH();
 		M1() = false;
 	}
@@ -762,10 +762,10 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		adjustSZP<Z80>(f, operand);
 		if (LIKELY(!m_displaced)) {
 			R(z, a, operand);
-			if (z == 6)
+			if (UNLIKELY(z == 6))
 				addCycles(7);
 		} else {
-			if (z != 6)
+			if (LIKELY(z != 6))
 				R2(z, a, operand);
 			setByte(operand);
 			addCycles(15);
@@ -776,7 +776,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		addCycles(8);
 		if (LIKELY(!m_displaced)) {
 			const auto operand = bit(f, y, R(z, a));
-			if (z == 6) {
+			if (UNLIKELY(z == 6)) {
 				adjustXY<Z80>(f, MEMPTR().high);
 				addCycles(4);
 			} else {
@@ -792,7 +792,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		addCycles(8);
 		if (LIKELY(!m_displaced)) {
 			R(z, a, res(y, R(z, a)));
-			if (z == 6)
+			if (UNLIKELY(z == 6))
 				addCycles(7);
 		} else {
 			auto operand = getByte(displacedAddress());
@@ -806,7 +806,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		addCycles(8);
 		if (LIKELY(!m_displaced)) {
 			R(z, a, set(y, R(z, a)));
-			if (z == 6)
+			if (UNLIKELY(z == 6))
 				addCycles(7);
 		} else {
 			auto operand = getByte(displacedAddress());
@@ -835,7 +835,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			MEMPTR() = BUS().ADDRESS() = BC();
 			MEMPTR().word++;
 			readPort();
-			if (y != 6)	// IN r[y],(C)
+			if (LIKELY(y != 6))	// IN r[y],(C)
 				R(y, a, BUS().DATA());
 			adjustSZPXY<Z80>(f, BUS().DATA());
 			clearFlag(f, NF | HC);
@@ -844,7 +844,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 		case 1:	// Output to port with 16-bit address
 			MEMPTR() = BUS().ADDRESS() = BC();
 			MEMPTR().word++;
-			if (y == 6)	// OUT (C),0
+			if (UNLIKELY(y == 6))	// OUT (C),0
 				BUS().placeDATA(0);
 			else		// OUT (C),r[y]
 				BUS().placeDATA(R(y, a));
@@ -1073,7 +1073,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				addCycles(4);
 				break;
 			case 2:	// DJNZ d
-				if (jrConditional(--B()))
+				if (LIKELY(jrConditional(--B())))
 					addCycles(5);
 				addCycles(8);
 				break;
@@ -1199,7 +1199,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			decrement(f, operand);
 			R(y, a, operand);
 			addCycles(4);
-			if (y == 6)
+			if (UNLIKELY(y == 6))
 				addCycles(7);
 			break;
 		} case 6:	// 8-bit load immediate
@@ -1207,7 +1207,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				fetchDisplacement();
 			R(y, a, fetchByte());	// LD r,n
 			addCycles(7);
-			if (y == 6)
+			if (UNLIKELY(y == 6))
 				addCycles(3);
 			break;
 		case 7:	// Assorted operations on accumulator/flags
@@ -1264,7 +1264,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 						break;
 					}
 				}
-				if (y == 6) {
+				if (UNLIKELY(y == 6)) {
 					fetchDisplacement();
 					switch (z) {
 					case 4:
@@ -1278,9 +1278,9 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					}
 				}
 			}
-			if (normal)
+			if (LIKELY(normal))
 				R(y, a, R(z, a));
-			if ((y == 6) || (z == 6))	// M operations
+			if (UNLIKELY((y == 6) || (z == 6)))	// M operations
 				addCycles(3);
 		}
 		addCycles(4);
@@ -1317,7 +1317,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			UNREACHABLE;
 		}
 		addCycles(4);
-		if (z == 6)
+		if (UNLIKELY(z == 6))
 			addCycles(3);
 		break;
 	case 3:

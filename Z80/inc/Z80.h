@@ -259,7 +259,7 @@ namespace EightBit {
 		}
 
 		register16_t& HL2() {
-			if (!m_displaced)
+			if (LIKELY(!m_displaced))
 				return HL();
 			if (m_prefixDD)
 				return IX();
