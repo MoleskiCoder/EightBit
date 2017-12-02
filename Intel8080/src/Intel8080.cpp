@@ -3,7 +3,6 @@
 
 EightBit::Intel8080::Intel8080(Bus& bus, InputOutput& ports)
 : IntelProcessor(bus),
-  m_interrupt(false),
   m_ports(ports) {
 	bc.word = de.word = hl.word = Mask16;
 }
@@ -27,23 +26,11 @@ EightBit::register16_t& EightBit::Intel8080::HL() {
 }
 
 void EightBit::Intel8080::di() {
-	m_interrupt = false;
+	m_interruptEnable = false;
 }
 
 void EightBit::Intel8080::ei() {
-	m_interrupt = true;
-}
-
-int EightBit::Intel8080::interrupt(uint8_t value) {
-	if (isInterruptable()) {
-		di();
-		return execute(value);
-	}
-	return 0;
-}
-
-bool EightBit::Intel8080::isInterruptable() const {
-	return m_interrupt;
+	m_interruptEnable = true;
 }
 
 void EightBit::Intel8080::increment(uint8_t& f, uint8_t& operand) {
@@ -278,7 +265,17 @@ void EightBit::Intel8080::readPort() {
 int EightBit::Intel8080::step() {
 	ExecutingInstruction.fire(*this);
 	resetCycles();
-	return fetchExecute();
+	if (LIKELY(powered())) {
+		uint8_t instruction;
+		if (UNLIKELY(INT() && m_interruptEnable)) {
+			INT() = false;
+			di();
+			instruction = BUS().DATA();
+		} else {
+			instruction = fetchByte();
+		}
+		return execute(instruction);
+	}
 }
 
 int EightBit::Intel8080::execute(uint8_t opcode) {

@@ -99,8 +99,6 @@ namespace EightBit {
 			fetchWord(MEMPTR());
 		}
 
-		virtual int fetchExecute();
-
 		uint8_t getByte() { return BUS().read(); }
 		template<class T> uint8_t getByte(T offset) { return BUS().read(offset); }
 
