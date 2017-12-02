@@ -33,9 +33,3 @@ void EightBit::Processor::fetchWord(register16_t& output) {
 	output.low = fetchByte();
 	output.high = fetchByte();
 }
-
-int EightBit::Processor::fetchExecute() {
-	if (LIKELY(powered()))
-		return execute(fetchByte());
-	return 0;
-}
