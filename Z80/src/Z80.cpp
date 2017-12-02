@@ -1203,7 +1203,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				addCycles(7);
 			break;
 		} case 6:	// 8-bit load immediate
-			if (LIKELY(m_displaced && (y == 6)))
+			if (UNLIKELY(m_displaced && (y == 6)))
 				fetchDisplacement();
 			R(y, a, fetchByte());	// LD r,n
 			addCycles(7);
@@ -1246,12 +1246,12 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		}
 		break;
 	case 1:	// 8-bit loading
-		if (LIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
+		if (UNLIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
 			halt();
 		} else {
 			bool normal = true;
-			if (LIKELY(m_displaced)) {
-				if (z == 6) {
+			if (UNLIKELY(m_displaced)) {
+				if (UNLIKELY(z == 6)) {
 					fetchDisplacement();
 					switch (y) {
 					case 4:
@@ -1286,7 +1286,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		addCycles(4);
 		break;
 	case 2:	// Operate on accumulator and register/memory location
-		if (LIKELY(m_displaced && (z == 6)))
+		if (UNLIKELY(m_displaced && (z == 6)))
 			fetchDisplacement();
 		switch (y) {
 		case 0:	// ADD A,r
@@ -1372,7 +1372,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
-				if (LIKELY(m_displaced))
+				if (UNLIKELY(m_displaced))
 					fetchDisplacement();
 				fetchExecute();
 				break;
