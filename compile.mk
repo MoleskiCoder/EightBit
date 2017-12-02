@@ -1,7 +1,6 @@
 CXXFLAGS += -g -Wall -std=c++14 -pipe
 
-#CXXFLAGS_OPT = -DNDEBUG -march=native -Ofast -flto
-CXXFLAGS_OPT = -DNDEBUG -march=native -Ofast
+CXXFLAGS_OPT = -DNDEBUG -march=native -Ofast -flto
 CXXFLAGS_DEBUG = -D_DEBUG
 CXXFLAGS_COVERAGE = $(CXXFLAGS_DEBUG) -fprofile-arcs -ftest-coverage
 
