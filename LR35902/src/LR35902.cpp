@@ -327,7 +327,7 @@ int EightBit::GameBoy::LR35902::step() {
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;
 	resetCycles();
-	const auto ran = fetchExecute();
+	const auto ran = execute(fetchByte());
 	ExecutedInstruction.fire(*this);
 	return ran;
 }
@@ -748,7 +748,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
-				fetchExecute();
+				execute(fetchByte());
 				break;
 			case 6:	// DI
 				di();

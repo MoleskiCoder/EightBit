@@ -24,11 +24,6 @@ EightBit::register16_t& EightBit::Z80::HL() {
 	return m_registers[m_registerSet][HL_IDX];
 }
 
-int EightBit::Z80::fetchExecute() {
-	M1() = true;
-	return IntelProcessor::fetchExecute();
-}
-
 void EightBit::Z80::reset() {
 
 	IntelProcessor::reset();
@@ -60,37 +55,6 @@ void EightBit::Z80::di() {
 
 void EightBit::Z80::ei() {
 	IFF1() = IFF2() = true;
-}
-
-int EightBit::Z80::interrupt(const bool maskable, const uint8_t value) {
-	resetCycles();
-	if (!maskable || (maskable && IFF1())) {
-		if (maskable) {
-			di();
-			switch (IM()) {
-			case 0:
-				M1() = true;
-				addCycles(execute(value));
-				break;
-			case 1:
-				restart(7 << 3);
-				addCycles(13);
-				break;
-			case 2:
-				pushWord(PC());
-				PC().low = value;
-				PC().high = IV();
-				addCycles(19);
-				break;
-			}
-		} else {
-			IFF1() = false;
-			restart(0x66);
-			addCycles(13);
-		}
-	}
-	// Could be zero for a masked interrupt...
-	return cycles();
 }
 
 void EightBit::Z80::increment(uint8_t& f, uint8_t& operand) {
@@ -685,7 +649,40 @@ int EightBit::Z80::step() {
 	ExecutingInstruction.fire(*this);
 	m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	resetCycles();
-	return fetchExecute();
+	if (LIKELY(powered())) {
+		M1() = true;
+		uint8_t instruction;
+		if (UNLIKELY(NMI())) {
+			NMI() = IFF1() = false;
+			restart(0x66);
+			addCycles(13);
+			return cycles();
+		} else if (UNLIKELY(INT() && IFF1())) {
+			di();
+			switch (IM()) {
+			case 0:
+				instruction = BUS().DATA();
+				break;
+			case 1:
+				restart(7 << 3);
+				addCycles(13);
+				return cycles();
+			case 2:
+				pushWord(PC());
+				PC().low = BUS().DATA();
+				PC().high = IV();
+				addCycles(19);
+				return cycles();
+			default:
+				UNREACHABLE;
+			}
+		} else {
+			instruction = fetchByte();
+		}
+		M1() = true;
+		return execute(instruction);
+	}
+	return cycles();
 }
 
 int EightBit::Z80::execute(const uint8_t opcode) {
@@ -1374,7 +1371,8 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				m_prefixCB = true;
 				if (UNLIKELY(m_displaced))
 					fetchDisplacement();
-				fetchExecute();
+				M1() = true;
+				execute(fetchByte());
 				break;
 			case 2:	// OUT (n),A
 				writePort(fetchByte(), a);
@@ -1424,15 +1422,18 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					break;
 				case 1:	// DD prefix
 					m_displaced = m_prefixDD = true;
-					fetchExecute();
+					M1() = true;
+					execute(fetchByte());
 					break;
 				case 2:	// ED prefix
 					m_prefixED = true;
-					fetchExecute();
+					M1() = true;
+					execute(fetchByte());
 					break;
 				case 3:	// FD prefix
 					m_displaced = m_prefixFD = true;
-					fetchExecute();
+					M1() = true;
+					execute(fetchByte());
 					break;
 				default:
 					UNREACHABLE;

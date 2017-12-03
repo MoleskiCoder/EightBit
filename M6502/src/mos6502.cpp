@@ -41,7 +41,7 @@ void EightBit::MOS6502::initialise() {
 int EightBit::MOS6502::step() {
 	ExecutingInstruction.fire(*this);
 	resetCycles();
-	auto returned = fetchExecute();
+	auto returned = execute(fetchByte());
 	ExecutedInstruction.fire(*this);
 	return returned;
 }

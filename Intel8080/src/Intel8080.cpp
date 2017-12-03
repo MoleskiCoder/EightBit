@@ -276,6 +276,7 @@ int EightBit::Intel8080::step() {
 		}
 		return execute(instruction);
 	}
+	return cycles();
 }
 
 int EightBit::Intel8080::execute(uint8_t opcode) {

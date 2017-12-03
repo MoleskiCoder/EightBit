@@ -26,7 +26,7 @@ namespace EightBit {
 
 		Signal<Intel8080> ExecutingInstruction;
 
-		bool& INT() { return m_interruptLine; }
+		bool& INT() { return m_intLine; }
 
 		virtual int execute(uint8_t opcode);
 		int step();
@@ -38,7 +38,8 @@ namespace EightBit {
 
 	private:
 		bool m_interruptEnable = false;
-		bool m_interruptLine = false;
+		bool m_intLine = false;
+
 		InputOutput& m_ports;
 
 		register16_t af;

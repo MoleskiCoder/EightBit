@@ -50,11 +50,10 @@ namespace EightBit {
 
 		Signal<Z80> ExecutingInstruction;
 
-		int interruptMaskable(uint8_t value) { return interrupt(true, value); }
-		int interruptMaskable() { return interruptMaskable(0); }
-		int interruptNonMaskable() { return interrupt(false, 0); }
+		bool& INT() { return m_intLine; }
+		bool& NMI() { return m_nmiLine; }
 
-		int interrupt(bool maskable, uint8_t value);
+		//int interrupt(bool maskable, uint8_t value);
 
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
@@ -90,10 +89,10 @@ namespace EightBit {
 
 		virtual void reset() override;
 
-	protected:
-		virtual int fetchExecute() override;
-
 	private:
+		bool m_intLine = false;
+		bool m_nmiLine = false;
+
 		InputOutput& m_ports;
 
 		enum { BC_IDX, DE_IDX, HL_IDX };
