@@ -266,15 +266,14 @@ int EightBit::Intel8080::step() {
 	ExecutingInstruction.fire(*this);
 	resetCycles();
 	if (LIKELY(powered())) {
-		uint8_t instruction;
-		if (UNLIKELY(INT() && m_interruptEnable)) {
+		if (UNLIKELY(INT())) {
 			INT() = false;
-			di();
-			instruction = BUS().DATA();
-		} else {
-			instruction = fetchByte();
+			if (m_interruptEnable) {
+				di();
+				return execute(BUS().DATA());
+			}
 		}
-		return execute(instruction);
+		return execute(fetchByte());
 	}
 	return cycles();
 }
