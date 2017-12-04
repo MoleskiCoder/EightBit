@@ -53,8 +53,6 @@ namespace EightBit {
 		bool& INT() { return m_intLine; }
 		bool& NMI() { return m_nmiLine; }
 
-		//int interrupt(bool maskable, uint8_t value);
-
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
 

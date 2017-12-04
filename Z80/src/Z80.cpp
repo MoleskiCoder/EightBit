@@ -651,36 +651,36 @@ int EightBit::Z80::step() {
 	resetCycles();
 	if (LIKELY(powered())) {
 		M1() = true;
-		uint8_t instruction;
 		if (UNLIKELY(NMI())) {
 			NMI() = IFF1() = false;
 			restart(0x66);
 			addCycles(13);
 			return cycles();
-		} else if (UNLIKELY(INT() && IFF1())) {
-			di();
-			switch (IM()) {
-			case 0:
-				instruction = BUS().DATA();
-				break;
-			case 1:
-				restart(7 << 3);
-				addCycles(13);
-				return cycles();
-			case 2:
-				pushWord(PC());
-				PC().low = BUS().DATA();
-				PC().high = IV();
-				addCycles(19);
-				return cycles();
-			default:
-				UNREACHABLE;
-			}
-		} else {
-			instruction = fetchByte();
 		}
-		M1() = true;
-		return execute(instruction);
+		if (UNLIKELY(INT())) {
+			INT() = false;
+			if (IFF1()) {
+				di();
+				switch (IM()) {
+				case 0:
+					return execute(BUS().DATA());
+					break;
+				case 1:
+					restart(7 << 3);
+					addCycles(13);
+					return cycles();
+				case 2:
+					pushWord(PC());
+					PC().low = BUS().DATA();
+					PC().high = IV();
+					addCycles(19);
+					return cycles();
+				default:
+					UNREACHABLE;
+				}
+			}
+		}
+		return execute(fetchByte());
 	}
 	return cycles();
 }
