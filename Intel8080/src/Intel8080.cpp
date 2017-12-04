@@ -25,6 +25,12 @@ EightBit::register16_t& EightBit::Intel8080::HL() {
 	return hl;
 }
 
+void EightBit::Intel8080::reset() {
+	IntelProcessor::reset();
+	INT() = false;
+	di();
+}
+
 void EightBit::Intel8080::di() {
 	m_interruptEnable = false;
 }

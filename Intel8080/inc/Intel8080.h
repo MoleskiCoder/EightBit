@@ -36,6 +36,8 @@ namespace EightBit {
 		virtual register16_t& DE() override;
 		virtual register16_t& HL() override;
 
+		virtual void reset() override;
+
 	private:
 		bool m_interruptEnable = false;
 		bool m_intLine = false;

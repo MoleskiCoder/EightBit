@@ -28,6 +28,7 @@ void EightBit::Z80::reset() {
 
 	IntelProcessor::reset();
 
+	INT() = NMI() = false;
 	di();
 	IM() = 0;
 
@@ -662,9 +663,8 @@ int EightBit::Z80::step() {
 			if (IFF1()) {
 				di();
 				switch (IM()) {
-				case 0:
+				case 0:		// i8080 equivalent
 					return execute(BUS().DATA());
-					break;
 				case 1:
 					restart(7 << 3);
 					addCycles(13);
