@@ -175,7 +175,7 @@ namespace EightBit {
 				HL2().low = value;
 				break;
 			case 6:
-				setByte(LIKELY(!m_displaced) ?  HL().word : displacedAddress(), value);
+				setByte(LIKELY(!m_displaced) ? HL().word : displacedAddress(), value);
 				break;
 			case 7:
 				a = value;

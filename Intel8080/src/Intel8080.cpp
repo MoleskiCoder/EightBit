@@ -297,7 +297,7 @@ int EightBit::Intel8080::execute(uint8_t opcode) {
 
 	execute(x, y, z, p, q);
 
-	if (cycles() == 0)
+	if (UNLIKELY(cycles() == 0))
 		throw std::logic_error("Unhandled opcode");
 
 	return cycles();
@@ -416,13 +416,13 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 			decrement(f, operand);
 			R(y, a, operand);
 			addCycles(4);
-			if (y == 6)
+			if (UNLIKELY(y == 6))
 				addCycles(7);
 			break;
 		} case 6:	// 8-bit load immediate
 			R(y, a, fetchByte());
 			addCycles(7);
-			if (y == 6)
+			if (UNLIKELY(y == 6))
 				addCycles(3);
 			break;
 		case 7:	// Assorted operations on accumulator/flags
@@ -461,11 +461,11 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 		}
 		break;
 	case 1:	// 8-bit loading
-		if (z == 6 && y == 6) { 	// Exception (replaces LD (HL), (HL))
+		if (UNLIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
 			halt();
 		} else {
 			R(y, a, R(z, a));
-			if ((y == 6) || (z == 6))	// M operations
+			if (UNLIKELY((y == 6) || (z == 6)))	// M operations
 				addCycles(3);
 		}
 		addCycles(4);
@@ -500,7 +500,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 			UNREACHABLE;
 		}
 		addCycles(4);
-		if (z == 6)
+		if (UNLIKELY(z == 6))
 			addCycles(3);
 		break;
 	case 3:
