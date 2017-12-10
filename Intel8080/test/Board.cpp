@@ -6,7 +6,6 @@
 
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration),
-  m_ram(0x10000),
   m_cpu(EightBit::Intel8080(*this, m_ports)) {
 }
 
@@ -30,15 +29,15 @@ void Board::initialise() {
 		m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
 	}
 
-	m_cpu.initialise();
-	m_cpu.PC() = m_configuration.getStartAddress();
+	CPU().powerOn();
+	CPU().PC() = m_configuration.getStartAddress();
 }
 
 void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Intel8080&) {
-	auto pc = m_cpu.PC();
+	auto pc = CPU().PC();
 	switch (pc.word) {
 	case 0x0:	// CP/M warm start
-		m_cpu.halt();
+		CPU().powerOff();
 		if (m_configuration.isProfileMode()) {
 			m_profiler.dump();
 		}
@@ -52,15 +51,15 @@ void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Intel8080&) {
 }
 
 void Board::bdos() {
-	auto c = m_cpu.C();
+	auto c = CPU().C();
 	switch (c) {
 	case 0x2: {
-		auto character = m_cpu.E();
+		auto character = CPU().E();
 		std::cout << character;
 		break;
 	}
 	case 0x9:
-		for (uint16_t i = m_cpu.DE().word; peek(i) != '$'; ++i) {
+		for (uint16_t i = CPU().DE().word; peek(i) != '$'; ++i) {
 			std::cout << peek(i);
 		}
 		break;
@@ -69,7 +68,7 @@ void Board::bdos() {
 
 void Board::Cpu_ExecutingInstruction_Profile(const EightBit::Intel8080& cpu) {
 
-	const auto pc = m_cpu.PC();
+	const auto pc = CPU().PC();
 
 	m_profiler.addAddress(pc.word);
 	m_profiler.addInstruction(peek(pc.word));
@@ -78,8 +77,8 @@ void Board::Cpu_ExecutingInstruction_Profile(const EightBit::Intel8080& cpu) {
 void Board::Cpu_ExecutingInstruction_Debug(const EightBit::Intel8080&) {
 
 	std::cerr
-		<< EightBit::Disassembler::state(m_cpu)
+		<< EightBit::Disassembler::state(CPU())
 		<< "\t"
-		<< m_disassembler.disassemble(m_cpu)
+		<< m_disassembler.disassemble(CPU())
 		<< '\n';
 }

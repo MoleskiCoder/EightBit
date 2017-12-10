@@ -30,15 +30,17 @@ void Board::initialise() {
 		m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
 	}
 
-	m_cpu.initialise();
-	m_cpu.PC() = m_configuration.getStartAddress();
+	CPU().powerOn();
+	CPU().PC() = m_configuration.getStartAddress();
 }
 
 void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Z80&) {
+	if (UNLIKELY(EightBit::Processor::lowered(m_cpu.HALT())))
+		m_cpu.powerOff();
 	auto pc = m_cpu.PC();
 	switch (pc.word) {
 	case 0x0:	// CP/M warm start
-		m_cpu.halt();
+		m_cpu.powerOff();
 		if (m_configuration.isProfileMode()) {
 			m_profiler.dump();
 		}

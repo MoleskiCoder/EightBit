@@ -12,7 +12,7 @@ namespace EightBit {
 
 		class Bus;
 
-		class LR35902 : public IntelProcessor {
+		class LR35902 final : public IntelProcessor {
 		public:
 			enum StatusBits {
 				ZF = Bit7,
@@ -30,30 +30,29 @@ namespace EightBit {
 				return cycles() * 4;
 			}
 
-			virtual register16_t& AF() override {
+			virtual register16_t& AF() final {
 				af.low &= 0xf0;
 				return af;
 			}
 
-			virtual register16_t& BC() override { return bc; }
-			virtual register16_t& DE() override { return de; }
-			virtual register16_t& HL() override { return hl; }
-
-			virtual void reset() override;
+			virtual register16_t& BC() final { return bc; }
+			virtual register16_t& DE() final { return de; }
+			virtual register16_t& HL() final { return hl; }
 
 			int singleStep();
 
 		protected:
-			virtual int execute(uint8_t opcode);
-			int step();
+			virtual void reset() final;
+			virtual int execute(uint8_t opcode) final;
+			virtual int step() final;
 
 		private:
 			Bus& m_bus;
 
-			register16_t af;
-			register16_t bc;
-			register16_t de;
-			register16_t hl;
+			register16_t af = { { 0xff, 0xff } };
+			register16_t bc = { { 0xff, 0xff } };
+			register16_t de = { { 0xff, 0xff } };
+			register16_t hl = { { 0xff, 0xff } };
 
 			bool m_ime = false;
 			bool m_stopped = false;
@@ -80,6 +79,8 @@ namespace EightBit {
 					return getByte(HL());
 				case 7:
 					return a;
+				default:
+					UNREACHABLE;
 				}
 				throw std::logic_error("Unhandled registry mechanism");
 			}
@@ -110,6 +111,8 @@ namespace EightBit {
 				case 7:
 					a = value;
 					break;
+				default:
+					UNREACHABLE;
 				}
 			}
 
@@ -157,7 +160,7 @@ namespace EightBit {
 
 			static void subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
 
-			int interrupt(uint8_t value);
+//			int interrupt(uint8_t value);
 
 			void executeCB(int x, int y, int z, int p, int q);
 			void executeOther(int x, int y, int z, int p, int q);

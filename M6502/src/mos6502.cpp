@@ -22,11 +22,7 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 		/* E */	2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 0, 4, 4, 6, 0,
 		/* F */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
 	};
-}
 
-void EightBit::MOS6502::initialise() {
-
-	Processor::initialise();
 
 	for (int i = 0; i < 0x100; ++i)
 		m_decodedOpcodes[i] = i;
@@ -41,22 +37,40 @@ void EightBit::MOS6502::initialise() {
 int EightBit::MOS6502::step() {
 	ExecutingInstruction.fire(*this);
 	resetCycles();
-	auto returned = execute(fetchByte());
-	ExecutedInstruction.fire(*this);
+	auto returned = 0;
+	if (LIKELY(powered())) {
+		if (UNLIKELY(lowered(NMI()))) {
+			raise(NMI());
+			interrupt(NMIvector);
+			returned = 4;	// ?? TBC
+		} else if (UNLIKELY(lowered(INT()))) {
+			raise(INT());
+			interrupt(IRQvector);
+			returned = 4;	// ?? TBC
+		} else if (UNLIKELY(lowered(HALT()))) {
+			execute(0);	// NOP ??
+			returned = 4;	// ?? TBC
+		}
+
+
+		returned = execute(fetchByte());
+		ExecutedInstruction.fire(*this);
+	}
 	return returned;
 }
 
 void EightBit::MOS6502::reset() {
+	Processor::reset();
 	getWord(RSTvector, PC());
 }
 
-void EightBit::MOS6502::triggerIRQ() {
-	interrupt(IRQvector);
-}
-
-void EightBit::MOS6502::triggerNMI() {
-	interrupt(NMIvector);
-}
+//void EightBit::MOS6502::triggerIRQ() {
+//	interrupt(IRQvector);
+//}
+//
+//void EightBit::MOS6502::triggerNMI() {
+//	interrupt(NMIvector);
+//}
 
 void EightBit::MOS6502::getWord(register16_t& output) {
 	output.low = getByte();
@@ -75,6 +89,7 @@ void EightBit::MOS6502::getWord(const register16_t& offset, register16_t& output
 }
 
 void EightBit::MOS6502::interrupt(uint16_t vector) {
+	raise(HALT());
 	pushWord(PC());
 	push(P());
 	setFlag(P(), IF);

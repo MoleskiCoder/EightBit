@@ -14,10 +14,10 @@ namespace Fuse {
 		const Test& m_test;
 		const ExpectedTestResult& m_expected;
 
-		bool m_failed;
-		bool m_unimplemented;
+		bool m_failed = false;
+		bool m_unimplemented = false;
 
-		EightBit::Ram m_ram;
+		EightBit::Ram m_ram = 0x10000;
 		EightBit::InputOutput m_ports;
 		EightBit::Z80 m_cpu;
 

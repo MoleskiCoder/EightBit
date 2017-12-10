@@ -24,12 +24,6 @@ void EightBit::GameBoy::LR35902::ei() {
 	IME() = true;
 }
 
-int EightBit::GameBoy::LR35902::interrupt(uint8_t value) {
-	di();
-	restart(value);
-	return 4;
-}
-
 void EightBit::GameBoy::LR35902::increment(uint8_t& f, uint8_t& operand) {
 	clearFlag(f, NF);
 	adjustZero<LR35902>(f, ++operand);
@@ -304,18 +298,23 @@ int EightBit::GameBoy::LR35902::singleStep() {
 	}
 
 	if (ime && (masked & IoRegisters::Interrupts::VerticalBlank)) {
-		current += interrupt(0x40);
+		lower(INT());
+		BUS().placeDATA(0x40);
 	} else if (ime && (masked & IoRegisters::Interrupts::DisplayControlStatus)) {
-		current += interrupt(0x48);
+		lower(INT());
+		BUS().placeDATA(0x48);
 	} else if (ime && (masked & IoRegisters::Interrupts::TimerOverflow)) {
-		current += interrupt(0x50);
+		lower(INT());
+		BUS().placeDATA(0x50);
 	} else if (ime && (masked & IoRegisters::Interrupts::SerialTransfer)) {
-		current += interrupt(0x58);
+		lower(INT());
+		BUS().placeDATA(0x58);
 	} else if (ime && (masked & IoRegisters::Interrupts::KeypadPressed)) {
-		current += interrupt(0x60);
-	} else {
-		current += halted() ? 1 : step();
+		lower(INT());
+		BUS().placeDATA(0x60);
 	}
+
+	current += step();
 
 	m_bus.IO().checkTimers(current);
 	m_bus.IO().transferDma();
@@ -327,7 +326,20 @@ int EightBit::GameBoy::LR35902::step() {
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;
 	resetCycles();
-	const auto ran = execute(fetchByte());
+	int ran = 0;
+	if (LIKELY(powered())) {
+		if (UNLIKELY(lowered(INT()))) {
+			raise(HALT());
+			raise(INT());
+			di();
+			restart(BUS().DATA());
+			ran = 4;
+		} else if (UNLIKELY(lowered(HALT()))) {
+			ran = execute(0);	// NOP
+		} else {
+			ran = execute(fetchByte());
+		}
+	}
 	ExecutedInstruction.fire(*this);
 	return ran;
 }

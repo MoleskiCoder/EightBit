@@ -12,7 +12,7 @@ EightBit::GameBoy::Bus::Bus()
 
 void EightBit::GameBoy::Bus::reset() {
 	IO().reset();
-	CPU().initialise();
+	LR35902::lower(CPU().RESET());
 }
 
 void EightBit::GameBoy::Bus::loadBootRom(const std::string& path) {

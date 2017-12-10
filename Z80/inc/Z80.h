@@ -12,7 +12,7 @@
 #include <EightBitCompilerDefinitions.h>
 
 namespace EightBit {
-	class Z80 : public IntelProcessor {
+	class Z80 final : public IntelProcessor {
 	public:
 		struct refresh_t {
 
@@ -50,16 +50,15 @@ namespace EightBit {
 
 		Signal<Z80> ExecutingInstruction;
 
-		bool& INT() { return m_intLine; }
-		bool& NMI() { return m_nmiLine; }
+		PinLevel& M1() { return m_m1Line; }			// Out
 
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
 
-		virtual register16_t& AF() override;
-		virtual register16_t& BC() override;
-		virtual register16_t& DE() override;
-		virtual register16_t& HL() override;
+		virtual register16_t& AF() final;
+		virtual register16_t& BC() final;
+		virtual register16_t& DE() final;
+		virtual register16_t& HL() final;
 
 		register16_t& IX() { return m_ix; }
 		uint8_t& IXH() { return IX().high; }
@@ -75,8 +74,6 @@ namespace EightBit {
 		bool& IFF1() { return m_iff1; }
 		bool& IFF2() { return m_iff2; }
 
-		bool& M1() { return m1; }
-
 		void exx() {
 			m_registerSet ^= 1;
 		}
@@ -85,11 +82,11 @@ namespace EightBit {
 			m_accumulatorFlagsSet = !m_accumulatorFlagsSet;
 		}
 
-		virtual void reset() override;
+	protected:
+		virtual void reset() final;
 
 	private:
-		bool m_intLine = false;
-		bool m_nmiLine = false;
+		PinLevel m_m1Line = Low;
 
 		InputOutput& m_ports;
 
@@ -110,8 +107,6 @@ namespace EightBit {
 		int m_interruptMode = 0;
 		bool m_iff1 = false;
 		bool m_iff2 = false;
-
-		bool m1 = false;
 
 		bool m_prefixCB = false;
 		bool m_prefixDD = false;

@@ -6,11 +6,12 @@ EightBit::Processor::Processor(Bus& bus)
 }
 
 void EightBit::Processor::reset() {
+	if (lowered(POWER()))
+		throw std::logic_error("POWER cannot be low");
+	raise(INT());
+	raise(NMI());
+	raise(RESET());
 	PC().word = MEMPTR().word = 0;
-}
-
-void EightBit::Processor::initialise() {
-	reset();
 }
 
 int EightBit::Processor::run(int limit) {
@@ -22,6 +23,8 @@ int EightBit::Processor::run(int limit) {
 }
 
 int EightBit::Processor::singleStep() {
+	if (UNLIKELY(lowered(RESET())))
+		reset();
 	return step();
 }
 

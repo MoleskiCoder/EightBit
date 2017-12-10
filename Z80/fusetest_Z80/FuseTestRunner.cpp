@@ -5,19 +5,15 @@
 Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expected)
 : m_test(test),
   m_expected(expected),
-  m_ram(0x10000),
-  m_cpu(*this, m_ports),
-  m_failed(false),
-  m_unimplemented(false) {
-	m_cpu.initialise();
+  m_cpu(*this, m_ports) {
 }
 
 //
 
 void Fuse::TestRunner::initialise() {
+	m_cpu.powerOn();
 	initialiseRegisters();
 	initialiseMemory();
-	m_cpu.powerOn();
 }
 
 void Fuse::TestRunner::initialiseRegisters() {

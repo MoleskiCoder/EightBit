@@ -4,6 +4,8 @@
 #include <chrono>
 #include <iostream>
 
+#include "EightBitCompilerDefinitions.h"
+
 #ifdef _MSC_VER
 #include <intrin.h>
 #endif
@@ -63,9 +65,8 @@ namespace EightBit {
 			m_startHostCycles = currentHostCycles();
 
 			auto& cpu = m_board.CPU();
-			cpu.powerOn();
 
-			while (!cpu.halted()) {
+			while (LIKELY(cpu.powered())) {
 				m_totalCycles += cpu.step();
 				++m_instructions;
 			}

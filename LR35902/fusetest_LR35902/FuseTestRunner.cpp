@@ -9,16 +9,15 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expecte
   m_cpu(*this),
   m_failed(false),
   m_unimplemented(false) {
-	m_cpu.initialise();
 }
 
 //
 
 void Fuse::TestRunner::initialise() {
+	m_cpu.powerOn();
 	disableGameRom();
 	initialiseRegisters();
 	initialiseMemory();
-	m_cpu.powerOn();
 }
 
 void Fuse::TestRunner::initialiseRegisters() {

@@ -15,15 +15,13 @@ namespace EightBit {
 	public:
 		struct opcode_decoded_t {
 
-			int x;
-			int y;
-			int z;
-			int p;
-			int q;
+			int x = 0;
+			int y = 0;
+			int z = 0;
+			int p = 0;
+			int q = 0;
 
-			opcode_decoded_t() {
-				x = y = z = p = q = 0;
-			}
+			opcode_decoded_t() {}
 
 			opcode_decoded_t(uint8_t opcode) {
 				x = (opcode & 0b11000000) >> 6;	// 0 - 3
@@ -37,9 +35,6 @@ namespace EightBit {
 		const opcode_decoded_t& getDecodedOpcode(const int i) const {
 			return m_decodedOpcodes[i];
 		}
-
-		virtual void initialise() override;
-		virtual void reset() override;
 
 		register16_t& SP() { return m_sp; }
 
@@ -62,6 +57,8 @@ namespace EightBit {
 	protected:
 		IntelProcessor(Bus& bus);
 		virtual ~IntelProcessor() = default;
+
+		virtual void reset() override;
 
 		template<class T> static void adjustSign(uint8_t& f, uint8_t value) {
 			setFlag(f, T::SF, value & T::SF);

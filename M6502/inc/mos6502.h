@@ -11,17 +11,15 @@
 #include <Signal.h>
 
 namespace EightBit {
-	class MOS6502 : public Processor {
+	class MOS6502 final : public Processor {
 	public:
 		struct opcode_decoded_t {
 
-			int aaa;
-			int bbb;
-			int cc;
+			int aaa = 0;
+			int bbb = 0;
+			int cc = 0;
 
-			opcode_decoded_t() {
-				aaa = bbb = cc = 0;
-			}
+			opcode_decoded_t() {}
 
 			opcode_decoded_t(uint8_t opcode) {
 				aaa = (opcode & 0b11100000) >> 5;	// 0 - 7
@@ -46,11 +44,8 @@ namespace EightBit {
 		Signal<MOS6502> ExecutingInstruction;
 		Signal<MOS6502> ExecutedInstruction;
 
-		virtual void triggerIRQ();
-		virtual void triggerNMI();
-
-		virtual int execute(uint8_t opcode);
-		int step();
+		virtual int execute(uint8_t opcode) final;
+		virtual int step() final;
 
 		uint8_t& X() { return x; }
 		uint8_t& Y() { return y; }
@@ -58,10 +53,12 @@ namespace EightBit {
 		uint8_t& S() { return s; }
 		uint8_t& P() { return p; }
 
-		virtual void initialise() override;
-		virtual void reset() override;
+	protected:
+		virtual void reset() final;
 
 	private:
+		void interrupt(uint16_t vector);
+
 		void adjustZero(uint8_t datum) { clearFlag(P(), ZF, datum); }
 		void adjustNegative(uint8_t datum) { setFlag(P(), NF, datum & NF); }
 		
@@ -76,8 +73,6 @@ namespace EightBit {
 
 		virtual void push(uint8_t value) final;
 		virtual uint8_t pop() final;
-
-		void interrupt(uint16_t vector);
 
 #pragma region 6502 addressing modes
 

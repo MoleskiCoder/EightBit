@@ -49,6 +49,15 @@ namespace EightBit {
 			Mask16 = Bit16 - 1
 		};
 
+		enum PinLevel {
+			Low, High
+		};
+
+		static bool raised(PinLevel line) { return line == High; }
+		static void raise(PinLevel& line) { line = High; }
+		static bool lowered(PinLevel line) { return line == Low; }
+		static void lower(PinLevel& line) { line = Low; }
+
 		static int highNibble(int value) { return value >> 4; }
 		static int lowNibble(int value) { return value & Mask4; }
 
@@ -60,16 +69,15 @@ namespace EightBit {
 		register16_t& PC() { return m_pc; }
 		register16_t& MEMPTR() { return m_memptr; }
 
-		bool halted() const { return m_halted; }
-		void halt() { --PC().word;  m_halted = true; }
-		void proceed() { ++PC().word; m_halted = false; }
+		PinLevel& RESET() { return m_resetLine; }	// In
+		PinLevel& HALT() { return m_haltLine; }		// Out
+		PinLevel& INT() { return m_intLine; }		// In
+		PinLevel& NMI() { return m_nmiLine; }		// In
+		PinLevel& POWER() { return m_powerLine; }	// In
 
-		bool powered() const { return m_power; }
-		void powerOn() { m_power = true; }
-		void powerOff() { m_power = false; }
-
-		virtual void initialise();
-		virtual void reset();
+		bool powered() { return raised(POWER()); }
+		void powerOn() { raise(POWER()); raise(HALT()); reset(); }
+		void powerOff() { lower(POWER()); }
 
 		int run(int limit);
 		virtual int singleStep();
@@ -91,6 +99,12 @@ namespace EightBit {
 
 		Processor(Bus& memory);
 		virtual ~Processor() = default;
+
+		virtual void reset();
+
+		bool halted() { return lowered(HALT()); }
+		void halt() { --PC().word;  lower(HALT()); }
+		void proceed() { ++PC().word; raise(HALT()); }
 
 		virtual uint8_t fetchByte();
 		virtual void fetchWord(register16_t& output);
@@ -142,7 +156,11 @@ namespace EightBit {
 		int m_cycles = 0;
 		register16_t m_pc = { { 0, 0 } };
 		register16_t m_memptr = { { 0, 0 } };
-		bool m_halted = false;
-		bool m_power = false;
+
+		PinLevel m_intLine = Low;
+		PinLevel m_nmiLine = Low;
+		PinLevel m_haltLine = Low;
+		PinLevel m_resetLine = Low;
+		PinLevel m_powerLine = Low;
 	};
 }

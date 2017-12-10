@@ -4,7 +4,6 @@
 EightBit::Intel8080::Intel8080(Bus& bus, InputOutput& ports)
 : IntelProcessor(bus),
   m_ports(ports) {
-	bc.word = de.word = hl.word = Mask16;
 }
 
 EightBit::register16_t& EightBit::Intel8080::AF() {
@@ -27,7 +26,6 @@ EightBit::register16_t& EightBit::Intel8080::HL() {
 
 void EightBit::Intel8080::reset() {
 	IntelProcessor::reset();
-	INT() = false;
 	di();
 }
 
@@ -272,13 +270,16 @@ int EightBit::Intel8080::step() {
 	ExecutingInstruction.fire(*this);
 	resetCycles();
 	if (LIKELY(powered())) {
-		if (UNLIKELY(INT())) {
-			INT() = false;
+		if (UNLIKELY(lowered(INT()))) {
+			raise(HALT());
+			raise(INT());
 			if (m_interruptEnable) {
 				di();
 				return execute(BUS().DATA());
 			}
 		}
+		if (UNLIKELY(lowered(HALT())))
+			return execute(0);	// NOP
 		return execute(fetchByte());
 	}
 	return cycles();
@@ -326,6 +327,8 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				add(f, HL(), RP(p));
 				addCycles(11);
 				break;
+			default:
+				UNREACHABLE;
 			}
 			break;
 		case 2:	// Indirect loading

@@ -12,7 +12,7 @@
 #include <Register.h>
 
 namespace EightBit {
-	class Intel8080 : public IntelProcessor {
+	class Intel8080 final : public IntelProcessor {
 	public:
 		enum StatusBits {
 			SF = Bit7,
@@ -26,28 +26,26 @@ namespace EightBit {
 
 		Signal<Intel8080> ExecutingInstruction;
 
-		bool& INT() { return m_intLine; }
+		virtual int execute(uint8_t opcode) final;
+		virtual int step() final;
 
-		virtual int execute(uint8_t opcode);
-		int step();
+		virtual register16_t& AF() final;
+		virtual register16_t& BC() final;
+		virtual register16_t& DE() final;
+		virtual register16_t& HL() final;
 
-		virtual register16_t& AF() override;
-		virtual register16_t& BC() override;
-		virtual register16_t& DE() override;
-		virtual register16_t& HL() override;
-
-		virtual void reset() override;
+	protected:
+		virtual void reset() final;
 
 	private:
 		bool m_interruptEnable = false;
-		bool m_intLine = false;
 
 		InputOutput& m_ports;
 
 		register16_t af;
-		register16_t bc;
-		register16_t de;
-		register16_t hl;
+		register16_t bc = { { 0xff, 0xff } };
+		register16_t de = { { 0xff, 0xff } };
+		register16_t hl = { { 0xff, 0xff } };
 
 		uint8_t R(int r, uint8_t a) {
 			switch (r) {

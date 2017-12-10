@@ -28,7 +28,8 @@ void EightBit::Z80::reset() {
 
 	IntelProcessor::reset();
 
-	INT() = NMI() = false;
+	raise(M1());
+
 	di();
 	IM() = 0;
 
@@ -651,15 +652,18 @@ int EightBit::Z80::step() {
 	m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	resetCycles();
 	if (LIKELY(powered())) {
-		M1() = true;
-		if (UNLIKELY(NMI())) {
-			NMI() = IFF1() = false;
+		lower(M1());
+		if (UNLIKELY(lowered(NMI()))) {
+			raise(HALT());
+			raise(NMI());
+			IFF1() = false;
 			restart(0x66);
 			addCycles(13);
 			return cycles();
 		}
-		if (UNLIKELY(INT())) {
-			INT() = false;
+		if (UNLIKELY(lowered(INT()))) {
+			raise(HALT());
+			raise(INT());
 			if (IFF1()) {
 				di();
 				switch (IM()) {
@@ -670,9 +674,9 @@ int EightBit::Z80::step() {
 					addCycles(13);
 					return cycles();
 				case 2:
-					pushWord(PC());
-					PC().low = BUS().DATA();
-					PC().high = IV();
+					MEMPTR().low = BUS().DATA();
+					MEMPTR().high = IV();
+					call();
 					addCycles(19);
 					return cycles();
 				default:
@@ -680,6 +684,8 @@ int EightBit::Z80::step() {
 				}
 			}
 		}
+		if (UNLIKELY(lowered(HALT())))
+			return execute(0);	// NOP
 		return execute(fetchByte());
 	}
 	return cycles();
@@ -687,12 +693,12 @@ int EightBit::Z80::step() {
 
 int EightBit::Z80::execute(const uint8_t opcode) {
 
-	if (UNLIKELY(!M1()))
+	if (UNLIKELY(raised(M1())))
 		throw std::logic_error("M1 cannot be high");
 
 	if (LIKELY(!(m_prefixCB && m_displaced))) {
 		++REFRESH();
-		M1() = false;
+		raise(M1());
 	}
 
 	const auto& decoded = getDecodedOpcode(opcode);
@@ -1371,7 +1377,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				m_prefixCB = true;
 				if (UNLIKELY(m_displaced))
 					fetchDisplacement();
-				M1() = true;
+				lower(M1());
 				execute(fetchByte());
 				break;
 			case 2:	// OUT (n),A
@@ -1422,17 +1428,17 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					break;
 				case 1:	// DD prefix
 					m_displaced = m_prefixDD = true;
-					M1() = true;
+					lower(M1());
 					execute(fetchByte());
 					break;
 				case 2:	// ED prefix
 					m_prefixED = true;
-					M1() = true;
+					lower(M1());
 					execute(fetchByte());
 					break;
 				case 3:	// FD prefix
 					m_displaced = m_prefixFD = true;
-					M1() = true;
+					lower(M1());
 					execute(fetchByte());
 					break;
 				default:
