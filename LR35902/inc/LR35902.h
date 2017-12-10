@@ -160,8 +160,6 @@ namespace EightBit {
 
 			static void subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
 
-//			int interrupt(uint8_t value);
-
 			void executeCB(int x, int y, int z, int p, int q);
 			void executeOther(int x, int y, int z, int p, int q);
 

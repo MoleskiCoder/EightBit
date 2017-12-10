@@ -355,12 +355,12 @@ int EightBit::GameBoy::LR35902::execute(uint8_t opcode) {
 	const auto p = decoded.p;
 	const auto q = decoded.q;
 
-	if (m_prefixCB)
-		executeCB(x, y, z, p, q);
-	else
+	if (LIKELY(!m_prefixCB))
 		executeOther(x, y, z, p, q);
+	else
+		executeCB(x, y, z, p, q);
 
-	if (cycles() == 0)
+	if (UNLIKELY(cycles() == 0))
 		throw std::logic_error("Unhandled opcode");
 
 	return clockCycles();
@@ -403,25 +403,25 @@ void EightBit::GameBoy::LR35902::executeCB(int x, int y, int z, int p, int q) {
 		addCycles(2);
 		R(z, a, operand);
 		adjustZero<LR35902>(f, operand);
-		if (z == 6)
+		if (UNLIKELY(z == 6))
 			addCycles(2);
 		break;
 	} case 1:	// BIT y, r[z]
 		bit(f, y, R(z, a));
 		addCycles(2);
-		if (z == 6)
+		if (UNLIKELY(z == 6))
 			addCycles(2);
 		break;
 	case 2:	// RES y, r[z]
 		R(z, a, res(y, R(z, a)));
 		addCycles(2);
-		if (z == 6)
+		if (UNLIKELY(z == 6))
 			addCycles(2);
 		break;
 	case 3:	// SET y, r[z]
 		R(z, a, set(y, R(z, a)));
 		addCycles(2);
-		if (z == 6)
+		if (UNLIKELY(z == 6))
 			addCycles(2);
 		break;
 	default:
@@ -547,7 +547,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 			increment(f, operand);
 			R(y, a, operand);
 			addCycle();
-			if (y == 6)
+			if (UNLIKELY(y == 6))
 				addCycles(2);
 			break;
 		} case 5: {	// 8-bit DEC
@@ -555,7 +555,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 			decrement(f, operand);
 			R(y, a, operand);
 			addCycle();
-			if (y == 6)
+			if (UNLIKELY(y == 6))
 				addCycles(2);
 			break;
 		} case 6:	// 8-bit load immediate
@@ -598,11 +598,11 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 		}
 		break;
 	case 1:	// 8-bit loading
-		if (z == 6 && y == 6) { 	// Exception (replaces LD (HL), (HL))
+		if (UNLIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
 			halt();
 		} else {
 			R(y, a, R(z, a));
-			if ((y == 6) || (z == 6)) // M operations
+			if (UNLIKELY((y == 6) || (z == 6))) // M operations
 				addCycle();
 		}
 		addCycle();
@@ -637,7 +637,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 			UNREACHABLE;
 		}
 		addCycle();
-		if (z == 6)
+		if (UNLIKELY(z == 6))
 			addCycle();
 		break;
 	case 3:
