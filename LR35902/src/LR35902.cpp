@@ -281,40 +281,23 @@ void EightBit::GameBoy::LR35902::ccf(uint8_t& a, uint8_t& f) {
 
 int EightBit::GameBoy::LR35902::singleStep() {
 
-	int current = 0;
-
-	const auto interruptEnable = m_bus.peek(IoRegisters::BASE + IoRegisters::IE);
+	const auto interruptEnable = BUS().peek(IoRegisters::BASE + IoRegisters::IE);
 	const auto interruptFlags = m_bus.IO().peek(IoRegisters::IF);
-	const auto ime = IME();
 
 	auto masked = interruptEnable & interruptFlags;
 	if (masked) {
-		if (ime) {
+		if (IME()) {
 			m_bus.IO().poke(IoRegisters::IF, 0);
+			lower(INT());
+			const int index = EightBit::findFirstSet(masked);
+			BUS().placeDATA(0x38 + (index << 3));
 		} else {
 			if (halted())
 				proceed();
 		}
 	}
 
-	if (ime && (masked & IoRegisters::Interrupts::VerticalBlank)) {
-		lower(INT());
-		BUS().placeDATA(0x40);
-	} else if (ime && (masked & IoRegisters::Interrupts::DisplayControlStatus)) {
-		lower(INT());
-		BUS().placeDATA(0x48);
-	} else if (ime && (masked & IoRegisters::Interrupts::TimerOverflow)) {
-		lower(INT());
-		BUS().placeDATA(0x50);
-	} else if (ime && (masked & IoRegisters::Interrupts::SerialTransfer)) {
-		lower(INT());
-		BUS().placeDATA(0x58);
-	} else if (ime && (masked & IoRegisters::Interrupts::KeypadPressed)) {
-		lower(INT());
-		BUS().placeDATA(0x60);
-	}
-
-	current += step();
+	const auto current = step();
 
 	m_bus.IO().checkTimers(current);
 	m_bus.IO().transferDma();
@@ -653,7 +636,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				addCycles(2);
 				break;
 			case 4:	// GB: LD (FF00 + n),A
-				m_bus.write(IoRegisters::BASE + fetchByte(), a);
+				BUS().write(IoRegisters::BASE + fetchByte(), a);
 				addCycles(3);
 				break;
 			case 5: { // GB: ADD SP,dd
@@ -669,7 +652,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				addCycles(4);
 				break;
 			case 6:	// GB: LD A,(FF00 + n)
-				a = m_bus.read(IoRegisters::BASE + fetchByte());
+				a = BUS().read(IoRegisters::BASE + fetchByte());
 				addCycles(3);
 				break;
 			case 7: { // GB: LD HL,SP + dd
@@ -730,7 +713,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				addCycles(3);
 				break;
 			case 4:	// GB: LD (FF00 + C),A
-				m_bus.write(IoRegisters::BASE + C(), a);
+				BUS().write(IoRegisters::BASE + C(), a);
 				addCycles(2);
 				break;
 			case 5:	// GB: LD (nn),A
@@ -739,7 +722,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				addCycles(4);
 				break;
 			case 6:	// GB: LD A,(FF00 + C)
-				a = m_bus.read(IoRegisters::BASE + C());
+				a = BUS().read(IoRegisters::BASE + C());
 				addCycles(2);
 				break;
 			case 7:	// GB: LD A,(nn)
