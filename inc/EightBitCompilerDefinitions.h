@@ -61,7 +61,7 @@ inline int EightBit::findFirstSet(int value) {
 #	define LIKELY(x)	__builtin_expect(!!(x), 1)
 #	define UNLIKELY(x)	__builtin_expect(!!(x), 0)
 
-#	define EIGHTBIT_PARITY(x)	__builtin_parity(x)
+#	define PARITY(x)	__builtin_parity(x)
 
 #	define UNREACHABLE __builtin_unreachable();
 

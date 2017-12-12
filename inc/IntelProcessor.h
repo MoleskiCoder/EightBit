@@ -69,7 +69,7 @@ namespace EightBit {
 		}
 
 		template<class T> static void adjustParity(uint8_t& f, uint8_t value) {
-			clearFlag(f, T::PF, EIGHTBIT_PARITY(value));
+			clearFlag(f, T::PF, PARITY(value));
 		}
 
 		template<class T> static void adjustSZ(uint8_t& f, uint8_t value) {
