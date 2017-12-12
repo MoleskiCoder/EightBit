@@ -1,8 +1,17 @@
 #pragma once
 
+#ifdef _MSC_VER
+#	include <intrin.h>
+#endif
+
+#ifdef __GNUG__
+#	include <x86intrin.h>
+#endif
+
 namespace EightBit {
 	int countBits(uint8_t value);
 	bool oddParity(uint8_t value);
+	int findFirstSet(int value);
 }
 
 /*
@@ -25,25 +34,34 @@ inline bool EightBit::oddParity(uint8_t value) {
 	return countBits(value) % 2;
 }
 
+inline int EightBit::findFirstSet(int value) {
 #ifdef _MSC_VER
+	unsigned long index;
+	if (_BitScanForward(&index, value))
+		return index + 1;
+	return 0;
+#elif defined(__GNUG__)
+	return __builtin_ffs(value);
+#else
+#	error Find first set not implemented
+#endif
+}
 
-#	include <intrin.h>
+#ifdef _MSC_VER
 
 #	define LIKELY(x)	(x)
 #	define UNLIKELY(x)	(x)
 
-#	define EIGHTBIT_PARITY(x)	(__popcnt(x) % 2)
+#	define PARITY(x)	(__popcnt(x) % 2)
 
 #	define UNREACHABLE __assume(0)
 
 #elif defined(__GNUG__)
 
-#	include <x86intrin.h>
-
 #	define LIKELY(x)	__builtin_expect(!!(x), 1)
 #	define UNLIKELY(x)	__builtin_expect(!!(x), 0)
 
-#	define EIGHTBIT_PARITY(x)	__builtin_parity(value)
+#	define PARITY(x)	__builtin_parity(value)
 
 #	define UNREACHABLE __builtin_unreachable();
 
@@ -52,7 +70,7 @@ inline bool EightBit::oddParity(uint8_t value) {
 #	define LIKELY(x)	(x)
 #	define UNLIKELY(x)	(x)
 
-#	define EIGHTBIT_PARITY(x)	EightBit::oddParity(x)
+#	define PARITY(x)	EightBit::oddParity(x)
 
 #	define UNREACHABLE
 
