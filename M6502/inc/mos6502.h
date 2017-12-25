@@ -11,7 +11,7 @@
 #include <Signal.h>
 
 namespace EightBit {
-	class MOS6502 final : public Processor {
+	class MOS6502 : public Processor {
 	public:
 		struct opcode_decoded_t {
 
@@ -55,6 +55,14 @@ namespace EightBit {
 
 	protected:
 		virtual void reset() final;
+
+		virtual void SBC(uint8_t data);
+		void SBC_b(uint8_t data);
+		void SBC_d(uint8_t data);
+
+		virtual void ADC(uint8_t data);
+		void ADC_b(uint8_t data);
+		void ADC_d(uint8_t data);
 
 	private:
 		void interrupt(uint16_t vector);
@@ -484,15 +492,7 @@ namespace EightBit {
 
 		void ASL(uint8_t& output);
 
-		void SBC(uint8_t data);
-		void SBC_b(uint8_t data);
-		void SBC_d(uint8_t data);
-
 		void CMP(uint8_t first, uint8_t second);
-
-		void ADC(uint8_t data);
-		void ADC_b(uint8_t data);
-		void ADC_d(uint8_t data);
 
 		void Branch(int8_t displacement);
 

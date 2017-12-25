@@ -35,10 +35,10 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 }
 
 int EightBit::MOS6502::step() {
-	ExecutingInstruction.fire(*this);
 	resetCycles();
 	auto returned = 0;
 	if (LIKELY(powered())) {
+		ExecutingInstruction.fire(*this);
 		if (UNLIKELY(lowered(NMI()))) {
 			raise(NMI());
 			interrupt(NMIvector);
@@ -50,10 +50,9 @@ int EightBit::MOS6502::step() {
 		} else if (UNLIKELY(lowered(HALT()))) {
 			execute(0);	// NOP ??
 			returned = 4;	// ?? TBC
+		} else {
+			returned = execute(fetchByte());
 		}
-
-
-		returned = execute(fetchByte());
 		ExecutedInstruction.fire(*this);
 	}
 	return returned;
@@ -63,14 +62,6 @@ void EightBit::MOS6502::reset() {
 	Processor::reset();
 	getWord(RSTvector, PC());
 }
-
-//void EightBit::MOS6502::triggerIRQ() {
-//	interrupt(IRQvector);
-//}
-//
-//void EightBit::MOS6502::triggerNMI() {
-//	interrupt(NMIvector);
-//}
 
 void EightBit::MOS6502::getWord(register16_t& output) {
 	output.low = getByte();
