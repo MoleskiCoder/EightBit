@@ -3,19 +3,35 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <fstream>
 
 namespace EightBit {
 	class Memory {
 	public:
+		static int load(std::ifstream& file, std::vector<uint8_t>& output, int writeOffset, int readOffset, int limit, int maximumSize);
+		static int load(const std::string& path, std::vector<uint8_t>& output, int writeOffset, int readOffset, int limit, int maximumSize);
+
 		Memory(size_t size = 0)
 		: m_bytes(size) {
 		}
 
 		size_t size() const { return m_bytes.size();  }
 
+		int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) {
+			const auto maximumSize = (int)m_bytes.size() - writeOffset;
+			return load(file, m_bytes, writeOffset, readOffset, limit, maximumSize);
+		}
+
 		int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) {
 			const auto maximumSize = (int)m_bytes.size() - writeOffset;
-			return loadBinary(path, m_bytes, writeOffset, readOffset, limit, maximumSize);
+			return load(path, m_bytes, writeOffset, readOffset, limit, maximumSize);
+		}
+
+		int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) {
+			if (limit < 0)
+				limit = (int)bytes.size() - readOffset;
+			std::copy(bytes.cbegin() + readOffset, bytes.cbegin() + limit, m_bytes.begin() + writeOffset);
+			return limit;
 		}
 
 	protected:
@@ -31,13 +47,5 @@ namespace EightBit {
 
 	private:
 		std::vector<uint8_t> m_bytes;
-
-		static int loadBinary(
-			const std::string& path,
-			std::vector<uint8_t>& output,
-			int writeOffset,
-			int readOffset,
-			int limit,
-			int maximumSize);
 	};
 }

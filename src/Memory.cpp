@@ -2,20 +2,11 @@
 #include "Memory.h"
 
 #include <iostream>
-#include <fstream>
 
-int EightBit::Memory::loadBinary(
-		const std::string& path,
-		std::vector<uint8_t>& output,
-		int writeOffset,
-		int readOffset,
-		int limit,
-		int maximumSize) {
+int EightBit::Memory::load(std::ifstream& file, std::vector<uint8_t>& output, const int writeOffset, const int readOffset, int limit, const int maximumSize) {
 
-	std::ifstream file;
-	file.exceptions(std::ios::failbit | std::ios::badbit);
+	file.seekg(0, std::ios::end);
 
-	file.open(path, std::ios::binary | std::ios::ate);
 	const auto size = (int)file.tellg();
 	if ((maximumSize > 0) && ((size - readOffset) > maximumSize))
 		throw std::runtime_error("Binary cannot fit");
@@ -30,6 +21,17 @@ int EightBit::Memory::loadBinary(
 		output.resize(extent);
 
 	file.read((char*)&output[writeOffset], limit);
+
+	return size;
+}
+
+int EightBit::Memory::load(const std::string& path, std::vector<uint8_t>& output, const int writeOffset, const int readOffset, const int limit, const int maximumSize) {
+
+	std::ifstream file;
+	file.exceptions(std::ios::failbit | std::ios::badbit);
+
+	file.open(path, std::ios::binary | std::ios::ate);
+	const auto size = load(file, output, writeOffset, readOffset, limit, maximumSize);
 	file.close();
 
 	return size;

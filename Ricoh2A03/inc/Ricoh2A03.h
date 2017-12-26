@@ -8,7 +8,7 @@ namespace EightBit {
 	class Ricoh2A03 final : public MOS6502 {
 	public:
 		Ricoh2A03(Bus& bus);
-		~Ricoh2A03();
+		virtual ~Ricoh2A03() = default;
 
 	protected:
 		virtual void SBC(uint8_t data) final;
