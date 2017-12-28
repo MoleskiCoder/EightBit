@@ -63,6 +63,14 @@ void EightBit::MOS6502::reset() {
 	getWord(RSTvector, PC());
 }
 
+void EightBit::MOS6502::getWord(uint8_t offset, register16_t& output) {
+	BUS().ADDRESS().low = offset;
+	BUS().ADDRESS().high = 0;
+	output.low = getByte();
+	BUS().ADDRESS().low++;
+	output.high = getByte();
+}
+
 void EightBit::MOS6502::getWord(register16_t& output) {
 	output.low = getByte();
 	BUS().ADDRESS().word++;
@@ -502,12 +510,12 @@ void EightBit::MOS6502::Branch(bool flag) {
 //
 
 void EightBit::MOS6502::PHP() {
-	setFlag(P(), BF);
-	push(P());
+	//setFlag(P(), BF);
+	push(P() | BF);
 }
 
 void EightBit::MOS6502::PLP() {
-	P() = pop() | RF;
+	P() = pop() | RF & (~BF);
 }
 
 //
