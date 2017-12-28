@@ -63,12 +63,16 @@ void EightBit::MOS6502::reset() {
 	getWord(RSTvector, PC());
 }
 
-void EightBit::MOS6502::getWord(uint8_t offset, register16_t& output) {
+void EightBit::MOS6502::getWord(uint8_t page, uint8_t offset, register16_t& output) {
 	BUS().ADDRESS().low = offset;
-	BUS().ADDRESS().high = 0;
+	BUS().ADDRESS().high = page;
 	output.low = getByte();
 	BUS().ADDRESS().low++;
 	output.high = getByte();
+}
+
+void EightBit::MOS6502::getWord(uint8_t offset, register16_t& output) {
+	getWord(0, offset, output);
 }
 
 void EightBit::MOS6502::getWord(register16_t& output) {

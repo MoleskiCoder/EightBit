@@ -75,6 +75,7 @@ namespace EightBit {
 			adjustNegative(datum);
 		}
 
+		void getWord(uint8_t page, uint8_t offset, register16_t& output);
 		void getWord(uint8_t offset, register16_t& output);
 
 		void getWord(register16_t& output);
@@ -104,7 +105,7 @@ namespace EightBit {
 
 		void Address_Indirect() {
 			Address_Absolute();
-			getWord(MEMPTR(), MEMPTR());
+			getWord(MEMPTR().high, MEMPTR().low, MEMPTR());
 		}
 
 		void Address_ZeroPageX() {
