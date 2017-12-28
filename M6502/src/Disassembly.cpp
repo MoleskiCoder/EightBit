@@ -25,15 +25,19 @@ std::string EightBit::Disassembly::dump_Flags(uint8_t value) const {
 	return returned;
 }
 
+void EightBit::Disassembly::dump(std::ostream& out, int value, int width) {
+	out << std::hex << std::uppercase << std::setw(width) << std::setfill('0') << value;
+}
+
 std::string EightBit::Disassembly::dump_ByteValue(uint8_t value) const {
 	std::ostringstream output;
-	output << std::hex << std::setw(2) << std::setfill('0') << (int)value;
+	dump(output, value, 2);
 	return output.str();
 }
 
 std::string EightBit::Disassembly::dump_WordValue(uint16_t value) const {
 	std::ostringstream output;
-	output << std::hex << std::setw(4) << std::setfill('0') << (int)value;
+	dump(output, value, 4);
 	return output.str();
 }
 
@@ -47,7 +51,7 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 
 	auto cell = bus.peek(current);
 
-	output << dump_ByteValue(cell);
+	output << dump_ByteValue(cell) << " ";
 
 	auto byte = bus.peek(current + 1);
 	uint16_t relative = processor.PC().word + 2 + (int8_t)byte;
@@ -332,7 +336,7 @@ std::string EightBit::Disassembly::dump_Byte(uint16_t address) const {
 }
 
 std::string EightBit::Disassembly::dump_DByte(uint16_t address) const {
-	return dump_Byte(address) + dump_Byte(address + 1);
+	return dump_Byte(address) + " " + dump_Byte(address + 1);
 }
 
 ////

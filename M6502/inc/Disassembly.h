@@ -64,7 +64,7 @@ namespace EightBit {
 		}
 
 		std::string AM_Immediate() const {
-			return "#" + AM_Immediate_dump();
+			return "#$" + AM_Immediate_dump();
 		}
 
 		std::string AM_Absolute_dump() const {
@@ -314,6 +314,8 @@ namespace EightBit {
 #pragma endregion 6502 addressing mode switching
 
 #pragma endregion 6502 addressing modes
+
+		static void dump(std::ostream& out, int value, int width);
 
 		uint8_t getByte(uint16_t address) const;
 
