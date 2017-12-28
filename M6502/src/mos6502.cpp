@@ -510,12 +510,13 @@ void EightBit::MOS6502::Branch(bool flag) {
 //
 
 void EightBit::MOS6502::PHP() {
-	//setFlag(P(), BF);
 	push(P() | BF);
 }
 
 void EightBit::MOS6502::PLP() {
-	P() = pop() | RF & (~BF);
+	P() = pop();
+	P() |= RF;		// Reserved flag is always set;
+	P() &= ~BF;		// Break flag is never set
 }
 
 //
