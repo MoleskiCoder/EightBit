@@ -10,6 +10,8 @@ namespace EightBit {
 		Ricoh2A03(Bus& bus);
 		virtual ~Ricoh2A03() = default;
 
+		int clockCycles() const { return cycles();	}
+
 	protected:
 		virtual void SBC(uint8_t data) final;
 		virtual void ADC(uint8_t data) final;

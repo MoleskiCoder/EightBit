@@ -113,14 +113,18 @@ namespace EightBit {
 			MEMPTR().low += Y();
 		}
 
-		void Address_AbsoluteX() {
+		bool Address_AbsoluteX() {
 			Address_Absolute();
+			const auto page = MEMPTR().high;
 			MEMPTR().word += X();
+			return MEMPTR().high != page;
 		}
 
-		void Address_AbsoluteY() {
+		bool Address_AbsoluteY() {
 			Address_Absolute();
+			const auto page = MEMPTR().high;
 			MEMPTR().word += Y();
+			return MEMPTR().high != page;
 		}
 
 		void Address_IndexedIndirectX() {
@@ -128,9 +132,11 @@ namespace EightBit {
 			getWord(0, MEMPTR().low, MEMPTR());
 		}
 
-		void Address_IndirectIndexedY() {
+		bool Address_IndirectIndexedY() {
 			Address_ZeroPageIndirect();
+			const auto page = MEMPTR().high;
 			MEMPTR().word += Y();
+			return MEMPTR().high != page;
 		}
 
 #pragma endregion Addresses
@@ -156,18 +162,16 @@ namespace EightBit {
 		}
 
 		uint8_t AM_AbsoluteX() {
-			Address_AbsoluteX();
-			BUS().ADDRESS() = MEMPTR();
-			if (BUS().ADDRESS().low == Mask8)
+			if (Address_AbsoluteX())
 				addCycle();
+			BUS().ADDRESS() = MEMPTR();
 			return getByte();
 		}
 
 		uint8_t AM_AbsoluteY() {
-			Address_AbsoluteY();
-			BUS().ADDRESS() = MEMPTR();
-			if (BUS().ADDRESS().low == Mask8)
+			if (Address_AbsoluteY())
 				addCycle();
+			BUS().ADDRESS() = MEMPTR();
 			return getByte();
 		}
 
@@ -187,10 +191,9 @@ namespace EightBit {
 		}
 
 		uint8_t AM_IndirectIndexedY() {
-			Address_IndirectIndexedY();
-			BUS().ADDRESS() = MEMPTR();
-			if (BUS().ADDRESS().low == Mask8)
+			if (Address_IndirectIndexedY())
 				addCycle();
+			BUS().ADDRESS() = MEMPTR();
 			return getByte();
 		}
 
