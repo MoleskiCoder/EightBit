@@ -336,7 +336,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 		__assume(0);
 	}
 
-	if (cycles() == 0)
+	if (UNLIKELY(cycles() == 0))
 		throw std::logic_error("Unhandled opcode");
 
 	return cycles();
@@ -480,7 +480,7 @@ void EightBit::MOS6502::ADC_d(uint8_t data) {
 void EightBit::MOS6502::Branch(int8_t displacement) {
 	const auto page = PC().high;
 	PC().word += displacement;
-	if (PC().high != page)
+	if (UNLIKELY(PC().high != page))
 		addCycle();
 	addCycle();
 }

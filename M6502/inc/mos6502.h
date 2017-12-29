@@ -162,14 +162,14 @@ namespace EightBit {
 		}
 
 		uint8_t AM_AbsoluteX() {
-			if (Address_AbsoluteX())
+			if (UNLIKELY(Address_AbsoluteX()))
 				addCycle();
 			BUS().ADDRESS() = MEMPTR();
 			return getByte();
 		}
 
 		uint8_t AM_AbsoluteY() {
-			if (Address_AbsoluteY())
+			if (UNLIKELY(Address_AbsoluteY()))
 				addCycle();
 			BUS().ADDRESS() = MEMPTR();
 			return getByte();
@@ -191,7 +191,7 @@ namespace EightBit {
 		}
 
 		uint8_t AM_IndirectIndexedY() {
-			if (Address_IndirectIndexedY())
+			if (UNLIKELY(Address_IndirectIndexedY()))
 				addCycle();
 			BUS().ADDRESS() = MEMPTR();
 			return getByte();
