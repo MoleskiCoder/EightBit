@@ -65,7 +65,7 @@ namespace EightBit {
 		void ADC_d(uint8_t data);
 
 	private:
-		void interrupt(uint16_t vector);
+		void interrupt(uint8_t vector);
 
 		void adjustZero(uint8_t datum) { clearFlag(P(), ZF, datum); }
 		void adjustNegative(uint8_t datum) { setFlag(P(), NF, datum & NF); }
@@ -76,11 +76,6 @@ namespace EightBit {
 		}
 
 		void getWord(uint8_t page, uint8_t offset, register16_t& output);
-		void getWord(uint8_t offset, register16_t& output);
-
-		void getWord(register16_t& output);
-		void getWord(uint16_t offset, register16_t& output);
-		void getWord(const register16_t& offset, register16_t& output);
 
 		virtual void push(uint8_t value) final;
 		virtual uint8_t pop() final;
@@ -100,7 +95,7 @@ namespace EightBit {
 
 		void Address_ZeroPageIndirect() {
 			Address_ZeroPage();
-			getWord(MEMPTR().low, MEMPTR());
+			getWord(0, MEMPTR().low, MEMPTR());
 		}
 
 		void Address_Indirect() {
@@ -130,7 +125,7 @@ namespace EightBit {
 
 		void Address_IndexedIndirectX() {
 			Address_ZeroPageX();
-			getWord(MEMPTR().low, MEMPTR());
+			getWord(0, MEMPTR().low, MEMPTR());
 		}
 
 		void Address_IndirectIndexedY() {
@@ -512,9 +507,11 @@ namespace EightBit {
 		void BRK();
 
 		const uint16_t PageOne = 0x100;
-		const uint16_t IRQvector = 0xfffe;
-		const uint16_t RSTvector = 0xfffc;
-		const uint16_t NMIvector = 0xfffa;
+
+		// All interrupt vectors are on the 0xFF page
+		const uint8_t IRQvector = 0xfe;
+		const uint8_t RSTvector = 0xfc;
+		const uint8_t NMIvector = 0xfa;
 
 		uint8_t x;		// index register X
 		uint8_t y;		// index register Y

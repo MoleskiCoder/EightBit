@@ -60,7 +60,7 @@ int EightBit::MOS6502::step() {
 
 void EightBit::MOS6502::reset() {
 	Processor::reset();
-	getWord(RSTvector, PC());
+	getWord(0xff, RSTvector, PC());
 }
 
 void EightBit::MOS6502::getWord(uint8_t page, uint8_t offset, register16_t& output) {
@@ -71,32 +71,12 @@ void EightBit::MOS6502::getWord(uint8_t page, uint8_t offset, register16_t& outp
 	output.high = getByte();
 }
 
-void EightBit::MOS6502::getWord(uint8_t offset, register16_t& output) {
-	getWord(0, offset, output);
-}
-
-void EightBit::MOS6502::getWord(register16_t& output) {
-	output.low = getByte();
-	BUS().ADDRESS().word++;
-	output.high = getByte();
-}
-
-void EightBit::MOS6502::getWord(uint16_t offset, register16_t& output) {
-	BUS().ADDRESS().word = offset;
-	getWord(output);
-}
-
-void EightBit::MOS6502::getWord(const register16_t& offset, register16_t& output) {
-	BUS().ADDRESS() = offset;
-	getWord(output);
-}
-
-void EightBit::MOS6502::interrupt(uint16_t vector) {
+void EightBit::MOS6502::interrupt(uint8_t vector) {
 	raise(HALT());
 	pushWord(PC());
 	push(P());
 	setFlag(P(), IF);
-	getWord(vector, PC());
+	getWord(0xff, vector, PC());
 }
 
 int EightBit::MOS6502::execute(uint8_t cell) {
@@ -556,5 +536,5 @@ void EightBit::MOS6502::BRK() {
 	pushWord(PC());
 	PHP();
 	setFlag(P(), IF);
-	getWord(IRQvector, PC());
+	getWord(0xff, IRQvector, PC());
 }
