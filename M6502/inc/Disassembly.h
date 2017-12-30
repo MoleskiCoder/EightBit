@@ -55,10 +55,6 @@ namespace EightBit {
 			return AM_10_x_dump(bbb) + "\t" + instruction + " " + AM_10_x(bbb);
 		}
 
-#pragma region 6502 addressing modes
-
-#pragma region References
-
 		std::string AM_Immediate_dump() const {
 			return dump_Byte(m_address + 1);
 		}
@@ -130,10 +126,6 @@ namespace EightBit {
 		std::string AM_IndirectIndexedY() const {
 			return "($" + dump_Byte(m_address + 1) + "),Y";
 		}
-
-#pragma endregion References
-
-#pragma region 6502 addressing mode switching
 
 		std::string AM_00_dump(int bbb) const {
 			switch (bbb) {
@@ -310,10 +302,6 @@ namespace EightBit {
 				__assume(0);
 			}
 		}
-
-#pragma endregion 6502 addressing mode switching
-
-#pragma endregion 6502 addressing modes
 
 		static void dump(std::ostream& out, int value, int width);
 

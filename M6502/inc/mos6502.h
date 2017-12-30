@@ -80,9 +80,7 @@ namespace EightBit {
 		virtual void push(uint8_t value) final;
 		virtual uint8_t pop() final;
 
-#pragma region 6502 addressing modes
-
-#pragma region Addresses
+		// Address resolution
 
 		void Address_Absolute() {
 			fetchWord();
@@ -139,9 +137,7 @@ namespace EightBit {
 			return MEMPTR().high != page;
 		}
 
-#pragma endregion Addresses
-
-#pragma region Addressing modes, read
+		// Addressing modes, read
 
 		uint8_t AM_A() {
 			return A();
@@ -194,9 +190,7 @@ namespace EightBit {
 			return getByte(MEMPTR());
 		}
 
-#pragma endregion Addressing modes, read
-
-#pragma region Addressing modes, write
+		// Addressing modes, write
 
 		void AM_A(uint8_t value) {
 			A() = value;
@@ -242,9 +236,7 @@ namespace EightBit {
 			setByte(MEMPTR(), value);
 		}
 
-#pragma endregion Addressing modes, write
-
-#pragma region 6502 addressing mode switching
+		// 6502 addressing mode switching
 
 		uint8_t AM_00(int bbb) {
 			switch (bbb) {
@@ -263,7 +255,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -289,7 +281,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -312,7 +304,7 @@ namespace EightBit {
 			case 0b111:
 				return AM_AbsoluteX();
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -343,7 +335,7 @@ namespace EightBit {
 				AM_AbsoluteX(value);
 				break;
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -365,7 +357,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 			return 0xff;
 		}
@@ -386,7 +378,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -408,7 +400,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -436,13 +428,11 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
-#pragma endregion 6502 addressing mode switching
-
-#pragma endregion 6502 addressing modes
+		// Operations
 
 		void ASL(int bbb) {
 			auto operand = AM_10(bbb);

@@ -267,7 +267,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			SBC(AM_01(decoded.bbb));
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	case 0b10:
@@ -327,13 +327,13 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			}
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	case 0b11:
 		throw std::domain_error("Illegal instruction group");
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 
 	if (UNLIKELY(cycles() == 0))
