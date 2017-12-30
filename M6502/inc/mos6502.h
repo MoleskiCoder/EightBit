@@ -164,15 +164,13 @@ namespace EightBit {
 		uint8_t AM_AbsoluteX() {
 			if (UNLIKELY(Address_AbsoluteX()))
 				addCycle();
-			BUS().ADDRESS() = MEMPTR();
-			return getByte();
+			return getByte(MEMPTR());
 		}
 
 		uint8_t AM_AbsoluteY() {
 			if (UNLIKELY(Address_AbsoluteY()))
 				addCycle();
-			BUS().ADDRESS() = MEMPTR();
-			return getByte();
+			return getByte(MEMPTR());
 		}
 
 		uint8_t AM_ZeroPageX() {
@@ -193,8 +191,7 @@ namespace EightBit {
 		uint8_t AM_IndirectIndexedY() {
 			if (UNLIKELY(Address_IndirectIndexedY()))
 				addCycle();
-			BUS().ADDRESS() = MEMPTR();
-			return getByte();
+			return getByte(MEMPTR());
 		}
 
 #pragma endregion Addressing modes, read
