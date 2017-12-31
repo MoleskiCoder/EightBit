@@ -68,14 +68,26 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			case 0b000:	// BRK
 				output << disassemble_Implied("BRK");
 				break;
+			case 0b001:	// DOP/NOP (0x04)
+				output << disassemble_AM_00(bbb, "*NOP");
+				break;
 			case 0b010:	// PHP
 				output << disassemble_Implied("PHP");
+				break;
+			case 0b011:	// TOP/NOP (0b00001100, 0x0c)
+				output << disassemble_AM_00(bbb, "*NOP");
 				break;
 			case 0b100:	// BPL
 				output << disassemble_Relative("BPL", relative);
 				break;
+			case 0b101:	// DOP/NOP (0x14)
+				output << disassemble_AM_00(bbb, "*NOP");
+				break;
 			case 0b110:	// CLC
 				output << disassemble_Implied("CLC");
+				break;
+			case 0b111:	// TOP/NOP (0b00011100, 0x1c)
+				output << disassemble_AM_00(bbb, "*NOP");
 				break;
 			default:
 				throw std::domain_error("Illegal instruction");
@@ -92,8 +104,14 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			case 0b100:	// BMI
 				output << disassemble_Relative("BMI", relative);
 				break;
+			case 0b101:	// DOP/NOP (0x34)
+				output << disassemble_AM_00(bbb, "*NOP");
+				break;
 			case 0b110:	// SEC
 				output << disassemble_Implied("SEC");
+				break;
+			case 0b111:	// TOP/NOP (0b00111100, 0x3c)
+				output << disassemble_AM_00(bbb, "*NOP");
 				break;
 			default:	// BIT
 				output << disassemble_AM_00(bbb, "BIT");
@@ -105,6 +123,9 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			case 0b000:	// RTI
 				output << disassemble_Implied("RTI");
 				break;
+			case 0b001:	// DOP/NOP (0x44)
+				output << disassemble_AM_00(bbb, "*NOP");
+				break;
 			case 0b010:	// PHA
 				output << disassemble_Implied("PHA");
 				break;
@@ -114,8 +135,14 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			case 0b100:	// BVC
 				output << disassemble_Relative("BVC", relative);
 				break;
+			case 0b101:	// DOP/NOP (0x54)
+				output << disassemble_AM_00(bbb, "*NOP");
+				break;
 			case 0b110:	// CLI
 				output << disassemble_Implied("CLI");
+				break;
+			case 0b111:	// TOP/NOP (0b01011100, 0x5c)
+				output << disassemble_AM_00(bbb, "*NOP");
 				break;
 			default:
 				throw std::domain_error("Illegal addressing mode");
@@ -126,6 +153,9 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			case 0b000:	// RTS
 				output << disassemble_Implied("RTS");
 				break;
+			case 0b001:	// DOP/NOP (0x64)
+				output << disassemble_AM_00(bbb, "*NOP");
+				break;
 			case 0b010:	// PLA
 				output << disassemble_Implied("PLA");
 				break;
@@ -135,8 +165,14 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			case 0b100:	// BVS
 				output << disassemble_Relative("BVS", relative);
 				break;
+			case 0b101:	// DOP/NOP (0x74)
+				output << disassemble_AM_00(bbb, "*NOP");
+				break;
 			case 0b110:	// SEI
 				output << disassemble_Implied("SEI");
+				break;
+			case 0b111:	// TOP/NOP (0b01111100, 0x7c)
+				output << disassemble_AM_00(bbb, "*NOP");
 				break;
 			default:
 				throw std::domain_error("Illegal addressing mode");
@@ -144,6 +180,9 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			break;
 		case 0b100:
 			switch (bbb) {
+			case 0b000:	// DOP/NOP (0x80)
+				output << disassemble_AM_00(bbb, "*NOP");
+				break;
 			case 0b010:	// DEY
 				output << disassemble_Implied("DEY");
 				break;
@@ -182,8 +221,14 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			case 0b100:	// BNE
 				output << disassemble_Relative("BNE", relative);
 				break;
+			case 0b101:	// DOP/NOP (0xd4)
+				output << disassemble_AM_00(bbb, "*NOP");
+				break;
 			case 0b110:	// CLD
 				output << disassemble_Implied("CLD");
+				break;
+			case 0b111:	// TOP/NOP (0b11011100, 0xdc)
+				output << disassemble_AM_00(bbb, "*NOP");
 				break;
 			default:	// CPY
 				output << disassemble_AM_00(bbb, "CPY");
@@ -198,8 +243,14 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			case 0b100:	// BEQ
 				output << disassemble_Relative("BEQ", relative);
 				break;
+			case 0b101:	// DOP/NOP (0xf4)
+				output << disassemble_AM_00(bbb, "*NOP");
+				break;
 			case 0b110:	// SED
 				output << disassemble_Implied("SED");
+				break;
+			case 0b111:	// TOP/NOP (0b11111100, 0xfc)
+				output << disassemble_AM_00(bbb, "*NOP");
 				break;
 			default:	// CPX
 				output << disassemble_AM_00(bbb, "CPX");
@@ -241,16 +292,44 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 	case 0b10:
 		switch (aaa) {
 		case 0b000:		// ASL
-			output << disassemble_AM_10(bbb, "ASL");
+			switch (bbb) {
+			case 0b110:	// 0x1a
+				output << disassemble_Implied("*NOP");
+				break;
+			default:
+				output << disassemble_AM_10(bbb, "ASL");
+				break;
+			}
 			break;
 		case 0b001:		// ROL
-			output << disassemble_AM_10(bbb, "ROL");
+			switch (bbb) {
+			case 0b110:	// 0x3a
+				output << disassemble_Implied("*NOP");
+				break;
+			default:
+				output << disassemble_AM_10(bbb, "ROL");
+				break;
+			}
 			break;
 		case 0b010:		// LSR
-			output << disassemble_AM_10(bbb, "LSR");
+			switch (bbb) {
+			case 0b110:	// 0x5a
+				output << disassemble_Implied("*NOP");
+				break;
+			default:
+				output << disassemble_AM_10(bbb, "LSR");
+				break;
+			}
 			break;
 		case 0b011:		// ROR
-			output << disassemble_AM_10(bbb, "ROR");
+			switch (bbb) {
+			case 0b110:	// 0x7a
+				output << disassemble_Implied("*NOP");
+				break;
+			default:
+				output << disassemble_AM_10(bbb, "ROR");
+				break;
+			}
 			break;
 		case 0b100:
 			switch (bbb) {
@@ -283,6 +362,9 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			case 0b010:	// DEX
 				output << disassemble_Implied("DEX");
 				break;
+			case 0b110:	// 0xda
+				output << disassemble_Implied("*NOP");
+				break;
 			default:	// DEC
 				output << disassemble_AM_10(bbb, "DEC");
 				break;
@@ -292,6 +374,9 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			switch (bbb) {
 			case 0b010:	// NOP
 				output << disassemble_Implied("NOP");
+				break;
+			case 0b110:	// 0xfa
+				output << disassemble_Implied("*NOP");
 				break;
 			default:	// INC
 				output << disassemble_AM_10(bbb, "INC");

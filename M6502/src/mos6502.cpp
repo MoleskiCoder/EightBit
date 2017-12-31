@@ -5,22 +5,22 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 : Processor(bus) {
 	m_timings = {
 		////	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-		/* 0 */	7, 6, 0, 0, 0, 3, 5, 0, 3, 2, 2, 0, 0, 4, 6, 0,
-		/* 1 */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
+		/* 0 */	7, 6, 0, 0, 3, 3, 5, 0, 3, 2, 2, 0, 4, 4, 6, 0,
+		/* 1 */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
 		/* 2 */	6, 6, 0, 0, 3, 3, 5, 0, 4, 2, 2, 0, 4, 4, 6, 0,
-		/* 3 */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
-		/* 4 */	6, 6, 0, 0, 0, 3, 5, 0, 3, 2, 2, 0, 3, 4, 6, 0,
-		/* 5 */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
-		/* 6 */	6, 6, 0, 0, 0, 3, 5, 0, 4, 2, 2, 0, 5, 4, 6, 0,
-		/* 7 */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
-		/* 8 */	0, 6, 0, 0, 3, 3, 3, 0, 2, 0, 2, 0, 4, 4, 4, 0,
+		/* 3 */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
+		/* 4 */	6, 6, 0, 0, 3, 3, 5, 0, 3, 2, 2, 0, 3, 4, 6, 0,
+		/* 5 */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
+		/* 6 */	6, 6, 0, 0, 3, 3, 5, 0, 4, 2, 2, 0, 5, 4, 6, 0,
+		/* 7 */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
+		/* 8 */	2, 6, 0, 0, 3, 3, 3, 0, 2, 0, 2, 0, 4, 4, 4, 0,
 		/* 9 */	2, 6, 0, 0, 4, 4, 4, 0, 2, 5, 2, 0, 0, 5, 0, 0,
 		/* A */	2, 6, 2, 0, 3, 3, 3, 0, 2, 2, 2, 0, 4, 4, 4, 0,
 		/* B */	2, 5, 0, 0, 4, 4, 4, 0, 2, 4, 2, 0, 4, 4, 4, 0,
 		/* C */	2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 0, 4, 4, 6, 0,
-		/* D */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
+		/* D */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
 		/* E */	2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 0, 4, 4, 6, 0,
-		/* F */	2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
+		/* F */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
 	};
 
 
@@ -100,14 +100,26 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			case 0b000:	// BRK
 				BRK();
 				break;
+			case 0b001:	// DOP/NOP (0x04)
+				AM_ZeroPage();
+				break;
 			case 0b010:	// PHP
 				PHP();
+				break;
+			case 0b011:	// TOP/NOP (0b00001100, 0x0c)
+				AM_Absolute();
 				break;
 			case 0b100:	// BPL
 				Branch(!(P() & NF));
 				break;
+			case 0b101:	// DOP/NOP (0x14)
+				AM_ZeroPageX();
+				break;
 			case 0b110:	// CLC
 				clearFlag(P(), CF);
+				break;
+			case 0b111:	// TOP/NOP (0b‭00011100‬, 0x1c)
+				AM_AbsoluteX();
 				break;
 			default:
 				throw std::domain_error("Illegal instruction");
@@ -124,8 +136,14 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			case 0b100:	// BMI
 				Branch((P() & NF) != 0);
 				break;
+			case 0b101:	// DOP/NOP (0x34)
+				AM_ZeroPageX();
+				break;
 			case 0b110:	// SEC
 				setFlag(P(), CF);
+				break;
+			case 0b111:	// TOP/NOP (0b‭00111100‬, 0x3c)
+				AM_AbsoluteX();
 				break;
 			default:	// BIT
 				BIT(AM_00(decoded.bbb));
@@ -137,6 +155,9 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			case 0b000:	// RTI
 				RTI();
 				break;
+			case 0b001:	// DOP/NOP (0x44)
+				AM_ZeroPage();
+				break;
 			case 0b010:	// PHA
 				push(A());
 				break;
@@ -146,8 +167,14 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			case 0b100:	// BVC
 				Branch(!(P() & VF));
 				break;
+			case 0b101:	// DOP/NOP (0x54)
+				AM_ZeroPageX();
+				break;
 			case 0b110:	// CLI
 				clearFlag(P(), IF);
+				break;
+			case 0b111:	// TOP/NOP (0b‭01011100‬, 0x5c)
+				AM_AbsoluteX();
 				break;
 			default:
 				throw std::domain_error("Illegal addressing mode");
@@ -158,6 +185,9 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			case 0b000:	// RTS
 				RTS();
 				break;
+			case 0b001:	// DOP/NOP (0x64)
+				AM_ZeroPage();
+				break;
 			case 0b010:	// PLA
 				adjustNZ(A() = pop());
 				break;
@@ -167,8 +197,14 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			case 0b100:	// BVS
 				Branch((P() & VF) != 0);
 				break;
+			case 0b101:	// DOP/NOP (0x74)
+				AM_ZeroPageX();
+				break;
 			case 0b110:	// SEI
 				setFlag(P(), IF);
+				break;
+			case 0b111:	// TOP/NOP (0b‭01111100‬, 0x7c)
+				AM_AbsoluteX();
 				break;
 			default:
 				throw std::domain_error("Illegal addressing mode");
@@ -176,6 +212,9 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			break;
 		case 0b100:
 			switch (decoded.bbb) {
+			case 0b000:	// DOP/NOP (0x80)
+				AM_Immediate();
+				break;
 			case 0b010:	// DEY
 				adjustNZ(--Y());
 				break;
@@ -214,8 +253,14 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			case 0b100:	// BNE
 				Branch(!(P() & ZF));
 				break;
+			case 0b101:	// DOP/NOP (0xd4)
+				AM_ZeroPageX();
+				break;
 			case 0b110:	// CLD
 				clearFlag(P(), DF);
+				break;
+			case 0b111:	// TOP/NOP (0b‭11011100‬, 0xdc)
+				AM_AbsoluteX();
 				break;
 			default:	// CPY
 				CMP(Y(), AM_00(decoded.bbb));
@@ -230,8 +275,14 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			case 0b100:	// BEQ
 				Branch((P() & ZF) != 0);
 				break;
+			case 0b101:	// DOP/NOP (0xf4)
+				AM_ZeroPageX();
+				break;
 			case 0b110:	// SED
 				setFlag(P(), DF);
+				break;
+			case 0b111:	// TOP/NOP (0b‭11111100‬, 0xfc)
+				AM_AbsoluteX();
 				break;
 			default:	// CPX
 				CMP(X(), AM_00(decoded.bbb));
@@ -273,16 +324,40 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0b10:
 		switch (decoded.aaa) {
 		case 0b000:		// ASL
-			ASL(decoded.bbb);
+			switch (decoded.bbb) {
+			case 0b110:
+				break;	// *NOP (0x1a)
+			default:
+				ASL(decoded.bbb);
+				break;
+			}
 			break;
 		case 0b001:		// ROL
-			ROL(decoded.bbb);
+			switch (decoded.bbb) {
+			case 0b110:
+				break;	// *NOP (0x3a)
+			default:
+				ROL(decoded.bbb);
+				break;
+			}
 			break;
 		case 0b010:		// LSR
-			LSR(decoded.bbb);
+			switch (decoded.bbb) {
+			case 0b110:
+				break;	// *NOP (0x5a)
+			default:
+				LSR(decoded.bbb);
+				break;
+			}
 			break;
-		case 0b011:		// ROR
-			ROR(decoded.bbb);
+		case 0b011:		// ROR (0x7a)
+			switch (decoded.bbb) {
+			case 0b110:
+				break;	// *NOP
+			default:
+				ROR(decoded.bbb);
+				break;
+			}
 			break;
 		case 0b100:
 			switch (decoded.bbb) {
@@ -312,6 +387,8 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			case 0b010:	// DEX
 				adjustNZ(--X());
 				break;
+			case 0b110:	// *NOP (0xda)
+				break;
 			default:	// DEC
 				DEC(decoded.bbb);
 				break;
@@ -320,6 +397,8 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 		case 0b111:
 			switch (decoded.bbb) {
 			case 0b010:	// NOP
+				break;
+			case 0b110:	// *NOP (0xfa)
 				break;
 			default:	// INC
 				INC(decoded.bbb);
