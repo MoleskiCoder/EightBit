@@ -388,7 +388,14 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 		}
 		break;
 	case 0b11:
-		throw std::domain_error("Illegal instruction group");
+		switch (aaa) {
+		case 0b101:
+			output << disassemble_AM_11(bbb, "*LAX");
+			break;
+		default:
+			throw std::domain_error("Illegal instruction group");
+		}
+		break;
 	default:
 		UNREACHABLE;
 	}

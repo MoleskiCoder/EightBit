@@ -55,6 +55,10 @@ namespace EightBit {
 			return AM_10_x_dump(bbb) + "\t" + instruction + " " + AM_10_x(bbb);
 		}
 
+		std::string disassemble_AM_11(int bbb, const std::string& instruction) const {
+			return AM_11_dump(bbb) + "\t" + instruction + " " + AM_11(bbb);
+		}
+
 		std::string AM_Immediate_dump() const {
 			return dump_Byte(m_address + 1);
 		}
@@ -298,6 +302,52 @@ namespace EightBit {
 			case 0b100:
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
+			default:
+				UNREACHABLE;
+			}
+		}
+
+		std::string AM_11_dump(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_IndexedIndirectX_dump();
+			case 0b001:
+				return AM_ZeroPage_dump();
+			case 0b010:
+				return AM_Immediate_dump();
+			case 0b011:
+				return AM_Absolute_dump();
+			case 0b100:
+				return AM_IndirectIndexedY_dump();
+			case 0b101:
+				return AM_ZeroPageY_dump();
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			case 0b111:
+				return AM_AbsoluteY_dump();
+			default:
+				UNREACHABLE;
+			}
+		}
+
+		std::string AM_11(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_IndexedIndirectX();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b010:
+				return AM_Immediate();
+			case 0b011:
+				return AM_Absolute();
+			case 0b100:
+				return AM_IndirectIndexedY();
+			case 0b101:
+				return AM_ZeroPageY();
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			case 0b111:
+				return AM_AbsoluteY();
 			default:
 				UNREACHABLE;
 			}

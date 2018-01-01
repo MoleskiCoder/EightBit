@@ -432,6 +432,30 @@ namespace EightBit {
 			}
 		}
 
+		uint8_t AM_11(int bbb) {
+			switch (bbb) {
+			case 0b000:
+				return AM_IndexedIndirectX();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b010:
+				return AM_Immediate();
+			case 0b011:
+				return AM_Absolute();
+			case 0b100:
+				return AM_IndirectIndexedY();
+			case 0b101:
+				return AM_ZeroPageY();
+			case 0b110:
+				assert(false);
+				break;
+			case 0b111:
+				return AM_AbsoluteY();
+			default:
+				UNREACHABLE;
+			}
+		}
+
 		// Operations
 
 		void ASL(int bbb) {
