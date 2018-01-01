@@ -395,6 +395,9 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 		case 0b101:
 			output << disassemble_AM_11(bbb, "*LAX");
 			break;
+		case 0b111:
+			output << disassemble_AM_11(bbb, "*SBC");
+			break;
 		default:
 			throw std::domain_error("Illegal instruction group");
 		}
