@@ -286,7 +286,7 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			output << disassemble_AM_01(bbb, "SBC");
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	case 0b10:
@@ -384,13 +384,13 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			}
 			break;
 		default:
-			__assume(0);
+			UNREACHABLE;
 		}
 		break;
 	case 0b11:
 		throw std::domain_error("Illegal instruction group");
 	default:
-		__assume(0);
+		UNREACHABLE;
 	}
 
 	//const auto& instruction = processor.getInstruction(content);

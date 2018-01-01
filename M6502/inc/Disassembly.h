@@ -144,7 +144,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -165,7 +165,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -188,7 +188,7 @@ namespace EightBit {
 			case 0b111:
 				return AM_AbsoluteX_dump();
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -211,7 +211,7 @@ namespace EightBit {
 			case 0b111:
 				return AM_AbsoluteX();
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -233,7 +233,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -255,7 +255,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -277,7 +277,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
@@ -299,7 +299,7 @@ namespace EightBit {
 			case 0b110:
 				throw std::domain_error("Illegal addressing mode");
 			default:
-				__assume(0);
+				UNREACHABLE;
 			}
 		}
 
