@@ -447,10 +447,38 @@ namespace EightBit {
 			case 0b101:
 				return AM_ZeroPageY();
 			case 0b110:
-				assert(false);
-				break;
+				throw std::domain_error("Illegal addressing mode");
 			case 0b111:
 				return AM_AbsoluteY();
+			default:
+				UNREACHABLE;
+			}
+		}
+
+		void AM_11(int bbb, uint8_t value) {
+			switch (bbb) {
+			case 0b000:
+				AM_IndexedIndirectX(value);
+				break;
+			case 0b001:
+				AM_ZeroPage(value);
+				break;
+			case 0b010:
+				throw std::domain_error("Illegal addressing mode");
+			case 0b011:
+				AM_Absolute(value);
+				break;
+			case 0b100:
+				AM_IndirectIndexedY(value);
+				break;
+			case 0b101:
+				AM_ZeroPageY(value);
+				break;
+			case 0b110:
+				throw std::domain_error("Illegal addressing mode");
+			case 0b111:
+				AM_AbsoluteY(value);
+				break;
 			default:
 				UNREACHABLE;
 			}

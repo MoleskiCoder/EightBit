@@ -389,6 +389,9 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 		break;
 	case 0b11:
 		switch (aaa) {
+		case 0b100:
+			output << disassemble_AM_11(bbb, "*SAX");
+			break;
 		case 0b101:
 			output << disassemble_AM_11(bbb, "*LAX");
 			break;
