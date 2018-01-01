@@ -59,6 +59,10 @@ namespace EightBit {
 			return AM_11_dump(bbb) + "\t" + instruction + " " + AM_11(bbb);
 		}
 
+		std::string disassemble_AM_11_x(int bbb, const std::string& instruction) const {
+			return AM_11_x_dump(bbb) + "\t" + instruction + " " + AM_11_x(bbb);
+		}
+
 		std::string AM_Immediate_dump() const {
 			return dump_Byte(m_address + 1);
 		}
@@ -72,7 +76,7 @@ namespace EightBit {
 		}
 
 		std::string AM_Absolute() const {
-			return "$" + dump_WordValue(processor.BUS().peekWord(m_address + 1));
+			return "$" + dump_Word(m_address + 1);
 		}
 
 		std::string AM_ZeroPage_dump() const {
@@ -330,6 +334,29 @@ namespace EightBit {
 			}
 		}
 
+		std::string AM_11_x_dump(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_IndexedIndirectX_dump();
+			case 0b001:
+				return AM_ZeroPage_dump();
+			case 0b010:
+				return AM_Immediate_dump();
+			case 0b011:
+				return AM_Absolute_dump();
+			case 0b100:
+				return AM_IndirectIndexedY_dump();
+			case 0b101:
+				return AM_ZeroPageX_dump();
+			case 0b110:
+				return AM_AbsoluteY_dump();
+			case 0b111:
+				return AM_AbsoluteX_dump();
+			default:
+				UNREACHABLE;
+			}
+		}
+
 		std::string AM_11(int bbb) const {
 			switch (bbb) {
 			case 0b000:
@@ -353,12 +380,37 @@ namespace EightBit {
 			}
 		}
 
+		std::string AM_11_x(int bbb) const {
+			switch (bbb) {
+			case 0b000:
+				return AM_IndexedIndirectX();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b010:
+				return AM_Immediate();
+			case 0b011:
+				return AM_Absolute();
+			case 0b100:
+				return AM_IndirectIndexedY();
+			case 0b101:
+				return AM_ZeroPageX();
+			case 0b110:
+				return AM_AbsoluteY();
+			case 0b111:
+				return AM_AbsoluteX();
+			default:
+				UNREACHABLE;
+			}
+		}
+
 		static void dump(std::ostream& out, int value, int width);
 
 		uint8_t getByte(uint16_t address) const;
+		uint16_t getWord(uint16_t address) const;
 
 		std::string dump_Byte(uint16_t address) const;
 		std::string dump_DByte(uint16_t address) const;
+		std::string dump_Word(uint16_t address) const;
 
 		std::string convertAddress(uint16_t address) const;
 		std::string convertAddress(uint8_t address) const;

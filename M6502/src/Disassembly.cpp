@@ -395,6 +395,9 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 		case 0b101:
 			output << disassemble_AM_11(bbb, "*LAX");
 			break;
+		case 0b110:
+			output << disassemble_AM_11_x(bbb, "*DCP");
+			break;
 		case 0b111:
 			output << disassemble_AM_11(bbb, "*SBC");
 			break;
@@ -427,6 +430,10 @@ uint8_t EightBit::Disassembly::getByte(uint16_t address) const {
 	return processor.BUS().peek(address);
 }
 
+uint16_t EightBit::Disassembly::getWord(uint16_t address) const {
+	return processor.BUS().peekWord(address);
+}
+
 ////
 
 std::string EightBit::Disassembly::dump_Byte(uint16_t address) const {
@@ -435,6 +442,10 @@ std::string EightBit::Disassembly::dump_Byte(uint16_t address) const {
 
 std::string EightBit::Disassembly::dump_DByte(uint16_t address) const {
 	return dump_Byte(address) + " " + dump_Byte(address + 1);
+}
+
+std::string EightBit::Disassembly::dump_Word(uint16_t address) const {
+	return dump_WordValue(getWord(address));
 }
 
 ////

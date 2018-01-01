@@ -17,8 +17,8 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 		/* 9 */	2, 6, 0, 0, 4, 4, 4, 4, 2, 5, 2, 0, 0, 5, 0, 0,
 		/* A */	2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 0, 4, 4, 4, 4,
 		/* B */	2, 5, 0, 5, 4, 4, 4, 4, 2, 4, 2, 0, 4, 4, 4, 4,
-		/* C */	2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 0, 4, 4, 6, 0,
-		/* D */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
+		/* C */	2, 6, 0, 8, 3, 3, 5, 5, 2, 2, 2, 0, 4, 4, 6, 6,
+		/* D */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
 		/* E */	2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 2, 4, 4, 6, 0,
 		/* F */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
 	};
@@ -315,7 +315,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			CMP(A(), AM_01(decoded.bbb));
 			break;
 		case 0b111:		// SBC
-			SBC(AM_01(decoded.bbb));
+			A() = SBC(A(), AM_01(decoded.bbb));
 			break;
 		default:
 			UNREACHABLE;
@@ -417,8 +417,15 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 		case 0b101:	// *LAX
 			adjustNZ(X() = A() = AM_11(decoded.bbb));
 			break;
+		case 0b110: { // *DCP
+				const auto operand = AM_11_x(decoded.bbb);
+				const auto result = SUB(operand, 1);
+				setByte(result);
+				CMP(A(), result);
+			}
+			break;
 		case 0b111:	// *SBC
-			SBC(AM_11(decoded.bbb));
+			A() = SBC(A(), AM_11(decoded.bbb));
 			break;
 		default:
 			throw std::domain_error("Illegal instruction group");
@@ -475,47 +482,40 @@ void EightBit::MOS6502::ASL(uint8_t& output) {
 	adjustNZ(output <<= 1);
 }
 
-void EightBit::MOS6502::SBC(uint8_t data) {
-	if (P() & DF)
-		SBC_d(data);
-	else
-		SBC_b(data);
-}
+uint8_t EightBit::MOS6502::SBC(const uint8_t operand, const uint8_t data) {
 
-void EightBit::MOS6502::SBC_b(uint8_t data) {
-	register16_t difference;
-	difference.word = A() - data - (~P() & CF);
+	const auto returned = SUB(operand, data, ~P() & CF);
 
+	const register16_t& difference = MEMPTR();
 	adjustNZ(difference.low);
-	setFlag(P(), VF, (A() ^ data) & (A() ^ difference.low) & NF);
+	setFlag(P(), VF, (operand ^ data) & (operand ^ difference.low) & NF);
 	clearFlag(P(), CF, difference.high);
 
-	A() = difference.low;
+	return returned;
 }
 
-void EightBit::MOS6502::SBC_d(uint8_t data) {
-	auto carry = ~P() & CF;
+uint8_t EightBit::MOS6502::SUB(const uint8_t operand, const uint8_t data, const int borrow) {
+	return P() & DF ? SUB_d(operand, data, borrow) : SUB_b(operand, data, borrow);
+}
 
-	register16_t difference;
-	difference.word = A() - data - carry;
+uint8_t EightBit::MOS6502::SUB_b(const uint8_t operand, const uint8_t data, const int borrow) {
+	MEMPTR().word = operand - data - borrow;
+	return MEMPTR().low;
+}
 
-	adjustNZ(difference.low);
+uint8_t EightBit::MOS6502::SUB_d(const uint8_t operand, const uint8_t data, const int borrow) {
+	MEMPTR().word = operand - data - borrow;
 
-	setFlag(P(), VF, (A() ^ data) & (A() ^ difference.low) & NF);
-	clearFlag(P(), CF, difference.high);
-
-	auto low = (uint8_t)(lowNibble(A()) - lowNibble(data) - carry);
-
+	auto low = (uint8_t)(lowNibble(operand) - lowNibble(data) - borrow);
 	auto lowNegative = (int8_t)low < 0;
 	if (lowNegative)
 		low -= 6;
 
-	uint8_t high = highNibble(A()) - highNibble(data) - (lowNegative ? 1 : 0);
-
+	uint8_t high = highNibble(operand) - highNibble(data) - (lowNegative ? 1 : 0);
 	if ((int8_t)high < 0)
 		high -= 6;
 
-	A() = promoteNibble(high) | lowNibble(low);
+	return promoteNibble(high) | lowNibble(low);
 }
 
 void EightBit::MOS6502::CMP(uint8_t first, uint8_t second) {

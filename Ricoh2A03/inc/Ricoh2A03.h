@@ -13,7 +13,7 @@ namespace EightBit {
 		int clockCycles() const { return cycles();	}
 
 	protected:
-		virtual void SBC(uint8_t data) final;
+		virtual uint8_t SUB(uint8_t operand, uint8_t data, int borrow) final;
 		virtual void ADC(uint8_t data) final;
 	};
 }

@@ -56,9 +56,10 @@ namespace EightBit {
 	protected:
 		virtual void reset() final;
 
-		virtual void SBC(uint8_t data);
-		void SBC_b(uint8_t data);
-		void SBC_d(uint8_t data);
+		virtual uint8_t SUB(uint8_t operand, uint8_t data, int borrow = 0);
+		uint8_t SBC(uint8_t operand, uint8_t data);
+		uint8_t SUB_b(uint8_t operand, uint8_t data, int borrow);
+		uint8_t SUB_d(uint8_t operand, uint8_t data, int borrow);
 
 		virtual void ADC(uint8_t data);
 		void ADC_b(uint8_t data);
@@ -478,6 +479,58 @@ namespace EightBit {
 				throw std::domain_error("Illegal addressing mode");
 			case 0b111:
 				AM_AbsoluteY(value);
+				break;
+			default:
+				UNREACHABLE;
+			}
+		}
+
+		uint8_t AM_11_x(int bbb) {
+			switch (bbb) {
+			case 0b000:
+				return AM_IndexedIndirectX();
+			case 0b001:
+				return AM_ZeroPage();
+			case 0b010:
+				return AM_Immediate();
+			case 0b011:
+				return AM_Absolute();
+			case 0b100:
+				return AM_IndirectIndexedY();
+			case 0b101:
+				return AM_ZeroPageX();
+			case 0b110:
+				return AM_AbsoluteY();
+			case 0b111:
+				return AM_AbsoluteX();
+			default:
+				UNREACHABLE;
+			}
+		}
+
+		void AM_11_x(int bbb, uint8_t value) {
+			switch (bbb) {
+			case 0b000:
+				AM_IndexedIndirectX(value);
+				break;
+			case 0b001:
+				AM_ZeroPage(value);
+				break;
+			case 0b010:
+				throw std::domain_error("Illegal addressing mode");
+			case 0b011:
+				AM_Absolute(value);
+				break;
+			case 0b100:
+				AM_IndirectIndexedY(value);
+				break;
+			case 0b101:
+				AM_ZeroPageX(value);
+				break;
+			case 0b110:
+				AM_AbsoluteY(value);
+			case 0b111:
+				AM_AbsoluteX(value);
 				break;
 			default:
 				UNREACHABLE;
