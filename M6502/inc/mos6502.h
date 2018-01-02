@@ -61,9 +61,10 @@ namespace EightBit {
 		uint8_t SUB_b(uint8_t operand, uint8_t data, int borrow);
 		uint8_t SUB_d(uint8_t operand, uint8_t data, int borrow);
 
-		virtual void ADC(uint8_t data);
-		void ADC_b(uint8_t data);
-		void ADC_d(uint8_t data);
+		virtual uint8_t ADD(uint8_t operand, uint8_t data, int carry = 0);
+		uint8_t ADC(uint8_t operand, uint8_t data);
+		uint8_t ADD_b(uint8_t operand, uint8_t data, int carry);
+		uint8_t ADD_d(uint8_t operand, uint8_t data, int carry);
 
 	private:
 		void interrupt(uint8_t vector);
@@ -318,8 +319,7 @@ namespace EightBit {
 				AM_ZeroPage(value);
 				break;
 			case 0b010:
-				assert(false);
-				break;
+				throw std::domain_error("Illegal addressing mode");
 			case 0b011:
 				AM_Absolute(value);
 				break;
@@ -573,6 +573,12 @@ namespace EightBit {
 			auto operand = AM_10(bbb);
 			adjustNZ(++operand);
 			AM_10(bbb, operand);
+		}
+
+		void DCP(int bbb) {
+			const auto result = AM_11_x(bbb) - 1;
+			setByte(result);
+			CMP(A(), result);
 		}
 
 		void ROR(uint8_t& output);

@@ -303,7 +303,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			adjustNZ(A() ^= AM_01(decoded.bbb));
 			break;
 		case 0b011:		// ADC
-			ADC(AM_01(decoded.bbb));
+			A() = ADC(A(), AM_01(decoded.bbb));
 			break;
 		case 0b100:		// STA
 			AM_01(decoded.bbb, A());
@@ -417,12 +417,8 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 		case 0b101:	// *LAX
 			adjustNZ(X() = A() = AM_11(decoded.bbb));
 			break;
-		case 0b110: { // *DCP
-				const auto operand = AM_11_x(decoded.bbb);
-				const auto result = SUB(operand, 1);
-				setByte(result);
-				CMP(A(), result);
-			}
+		case 0b110:	// *DCP
+			DCP(decoded.bbb);
 			break;
 		case 0b111:	// *SBC
 			A() = SBC(A(), AM_11(decoded.bbb));
@@ -525,46 +521,42 @@ void EightBit::MOS6502::CMP(uint8_t first, uint8_t second) {
 	clearFlag(P(), CF, result.high);
 }
 
-void EightBit::MOS6502::ADC(uint8_t data) {
-	if (P() & DF)
-		ADC_d(data);
-	else
-		ADC_b(data);
+uint8_t EightBit::MOS6502::ADC(const uint8_t operand, const uint8_t data) {
+	const auto returned = ADD(operand, data, P() & CF);
+	adjustNZ(MEMPTR().low);
+	return returned;
 }
 
-void EightBit::MOS6502::ADC_b(uint8_t data) {
-
-	register16_t sum;
-	sum.word = A() + data + (P() & CF);
-
-	adjustNZ(sum.low);
-	setFlag(P(), VF, ~(A() ^ data) & (A() ^ sum.low) & NF);
-	setFlag(P(), CF, sum.high & CF);
-
-	A() = sum.low;
+uint8_t EightBit::MOS6502::ADD(uint8_t operand, uint8_t data, int carry) {
+	return P() & DF ? ADD_d(operand, data, carry) : ADD_b(operand, data, carry);
 }
 
-void EightBit::MOS6502::ADC_d(uint8_t data) {
-	auto carry = P() & CF;
+uint8_t EightBit::MOS6502::ADD_b(uint8_t operand, uint8_t data, int carry) {
+	MEMPTR().word = operand + data + carry;
 
-	register16_t sum;
-	sum.word = A() + data + carry;
+	setFlag(P(), VF, ~(operand ^ data) & (operand ^ MEMPTR().low) & NF);
+	setFlag(P(), CF, MEMPTR().high & CF);
 
-	adjustNZ(sum.low);
+	return MEMPTR().low;
+}
 
-	auto low = (uint8_t)(lowNibble(A()) + lowNibble(data) + carry);
+uint8_t EightBit::MOS6502::ADD_d(uint8_t operand, uint8_t data, int carry) {
+
+	MEMPTR().word = operand + data + carry;
+
+	auto low = (uint8_t)(lowNibble(operand) + lowNibble(data) + carry);
 	if (low > 9)
 		low += 6;
 
-	auto high = (uint8_t)(highNibble(A()) + highNibble(data) + (low > 0xf ? 1 : 0));
-	setFlag(P(), VF, ~(A() ^ data) & (A() ^ promoteNibble(high)) & NF);
+	auto high = (uint8_t)(highNibble(operand) + highNibble(data) + (low > 0xf ? 1 : 0));
+	setFlag(P(), VF, ~(operand ^ data) & (operand ^ promoteNibble(high)) & NF);
 
 	if (high > 9)
 		high += 6;
 
 	setFlag(P(), CF, high > 0xf);
 
-	A() = (uint8_t)(promoteNibble(high) | lowNibble(low));
+	return (uint8_t)(promoteNibble(high) | lowNibble(low));
 }
 
 ////

@@ -14,6 +14,6 @@ namespace EightBit {
 
 	protected:
 		virtual uint8_t SUB(uint8_t operand, uint8_t data, int borrow) final;
-		virtual void ADC(uint8_t data) final;
+		virtual uint8_t ADD(uint8_t operand, uint8_t data, int carry) final;
 	};
 }

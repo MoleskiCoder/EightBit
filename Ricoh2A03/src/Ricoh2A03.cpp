@@ -9,6 +9,6 @@ uint8_t EightBit::Ricoh2A03::SUB(uint8_t operand, uint8_t data, int borrow) {
 	return MOS6502::SUB_b(operand ,data, borrow);
 }
 
-void EightBit::Ricoh2A03::ADC(uint8_t data) {
-	MOS6502::ADC_b(data);
+uint8_t EightBit::Ricoh2A03::ADD(uint8_t operand, uint8_t data, int carry) {
+	return MOS6502::ADD_b(operand, data, carry);
 }
