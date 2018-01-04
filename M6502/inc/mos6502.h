@@ -583,6 +583,17 @@ namespace EightBit {
 			A() = SBC(A(), operand);
 		}
 
+		void ORA(uint8_t value) {
+			adjustNZ(A() |= value);
+		}
+
+		void SLO(int bbb) {
+			auto operand = AM_01(bbb);
+			ASL(operand);
+			setByte(operand);
+			ORA(operand);
+		}
+
 		void ROR(uint8_t& output);
 
 		void LSR(uint8_t& output);

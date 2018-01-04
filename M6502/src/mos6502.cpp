@@ -5,8 +5,8 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 : Processor(bus) {
 	m_timings = {
 		////	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-		/* 0 */	7, 6, 0, 0, 3, 3, 5, 0, 3, 2, 2, 0, 4, 4, 6, 0,
-		/* 1 */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
+		/* 0 */	7, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 0, 4, 4, 6, 6,
+		/* 1 */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
 		/* 2 */	6, 6, 0, 0, 3, 3, 5, 0, 4, 2, 2, 0, 4, 4, 6, 0,
 		/* 3 */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
 		/* 4 */	6, 6, 0, 0, 3, 3, 5, 0, 3, 2, 2, 0, 3, 4, 6, 0,
@@ -294,7 +294,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0b01:
 		switch (decoded.aaa) {
 		case 0b000:		// ORA
-			adjustNZ(A() |= AM_01(decoded.bbb));
+			ORA(AM_01(decoded.bbb));
 			break;
 		case 0b001:		// AND
 			adjustNZ(A() &= AM_01(decoded.bbb));
@@ -411,6 +411,9 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 		break;
 	case 0b11:
 		switch (decoded.aaa) {
+		case 0b000:	// *SLO
+			SLO(decoded.bbb);
+			break;
 		case 0b100: // *SAX
 			AM_11(decoded.bbb, A() & X());
 			break;
