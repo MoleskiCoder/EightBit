@@ -19,8 +19,8 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 		/* B */	2, 5, 0, 5, 4, 4, 4, 4, 2, 4, 2, 0, 4, 4, 4, 4,
 		/* C */	2, 6, 0, 8, 3, 3, 5, 5, 2, 2, 2, 0, 4, 4, 6, 6,
 		/* D */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
-		/* E */	2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 2, 4, 4, 6, 0,
-		/* F */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
+		/* E */	2, 6, 0, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
+		/* F */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
 	};
 
 
@@ -421,7 +421,22 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			DCP(decoded.bbb);
 			break;
 		case 0b111:	// *SBC
-			A() = SBC(A(), AM_11(decoded.bbb));
+			switch (decoded.bbb) {
+			case 0b000:	// *ISB
+			case 0b001:
+			case 0b011:
+			case 0b100:
+			case 0b101:
+			case 0b110:
+			case 0b111:
+				ISB(decoded.bbb);
+				break;
+			case 0b010:
+				A() = SBC(A(), AM_11(decoded.bbb));
+				break;
+			default:
+				UNREACHABLE;
+			}
 			break;
 		default:
 			throw std::domain_error("Illegal instruction group");

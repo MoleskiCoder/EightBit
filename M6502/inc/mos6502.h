@@ -572,9 +572,15 @@ namespace EightBit {
 		}
 
 		void DCP(int bbb) {
-			const auto result = AM_11_x(bbb) - 1;
-			setByte(result);
-			CMP(A(), result);
+			auto operand = AM_11_x(bbb);
+			setByte(--operand);
+			CMP(A(), operand);
+		}
+
+		void ISB(int bbb) {
+			auto operand = AM_01(bbb);
+			setByte(++operand);
+			A() = SBC(A(), operand);
 		}
 
 		void ROR(uint8_t& output);

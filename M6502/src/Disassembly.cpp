@@ -399,7 +399,22 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 			output << disassemble_AM_11_x(bbb, "*DCP");
 			break;
 		case 0b111:
-			output << disassemble_AM_11(bbb, "*SBC");
+			switch (bbb) {
+			case 0b000:	// *ISB
+			case 0b001:
+			case 0b011:
+			case 0b100:
+			case 0b101:
+			case 0b110:
+			case 0b111:
+				output << disassemble_AM_01(bbb, "*ISB");
+				break;
+			case 0b010:
+				output << disassemble_AM_11(bbb, "*SBC");
+				break;
+			default:
+				UNREACHABLE;
+			}
 			break;
 		default:
 			throw std::domain_error("Illegal instruction group");
