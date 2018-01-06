@@ -4,7 +4,7 @@
 
 #include <cstdint>
 #include <functional>
-#include <stdexcept>
+#include <cassert>
 
 #include <string>
 #include <array>
@@ -19,3 +19,9 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/regex.hpp>
+
+#include <Bus.h>
+#include <Processor.h>
+#include <Signal.h>
+#include <EventArgs.h>
+#include <Signal.h>

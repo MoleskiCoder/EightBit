@@ -1,7 +1,8 @@
 #include "stdafx.h"
-#include "TestHarness.h"
 #include "Configuration.h"
 #include "Board.h"
+
+#include <TestHarness.h>
 
 #include <iostream>
 
