@@ -1,5 +1,7 @@
 EXE = test_m6502
 
+CXXFLAGS = -I ../inc -I ../../inc
+
 CXXFILES = Board.cpp Configuration.cpp test.cpp
 
 LDFLAGS  = -L ../src -L ../../src -lm6502 -leightbit
