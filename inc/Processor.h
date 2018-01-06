@@ -106,8 +106,14 @@ namespace EightBit {
 		void halt() { --PC().word;  lower(HALT()); }
 		void proceed() { ++PC().word; raise(HALT()); }
 
-		virtual uint8_t fetchByte();
-		virtual void fetchWord(register16_t& output);
+		uint8_t fetchByte() {
+			return getByte(PC().word++);
+		}
+
+		void fetchWord(register16_t& output) {
+			output.low = fetchByte();
+			output.high = fetchByte();
+		}
 
 		void fetchWord() {
 			fetchWord(MEMPTR());

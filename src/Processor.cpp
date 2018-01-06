@@ -27,12 +27,3 @@ int EightBit::Processor::singleStep() {
 		reset();
 	return step();
 }
-
-uint8_t EightBit::Processor::fetchByte() {
-	return getByte(PC().word++);
-}
-
-void EightBit::Processor::fetchWord(register16_t& output) {
-	output.low = fetchByte();
-	output.high = fetchByte();
-}

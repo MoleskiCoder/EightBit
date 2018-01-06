@@ -125,8 +125,8 @@ namespace EightBit {
 			MEMPTR().word++;
 		}
 
-		virtual void getWordViaMemptr(register16_t& value);
-		virtual void setWordViaMemptr(register16_t value);
+		void getWordViaMemptr(register16_t& value);
+		void setWordViaMemptr(register16_t value);
 
 		//
 
