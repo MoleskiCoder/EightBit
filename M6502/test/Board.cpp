@@ -21,7 +21,7 @@ Board::Board(const Configuration& configuration)
 void Board::initialise() {
 
 	auto programFilename = m_configuration.getProgram();
-	auto programPath = m_configuration.getRomDirectory() + "\\" + m_configuration.getProgram();
+	auto programPath = m_configuration.getRomDirectory() + "/" + m_configuration.getProgram();
 	auto loadAddress = m_configuration.getLoadAddress();
 
 	switch (m_configuration.getLoadMethod()) {
