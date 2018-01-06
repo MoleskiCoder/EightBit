@@ -116,7 +116,9 @@ void Board::Memory_ReadingByte_Input(const uint16_t address) {
 
 void Board::Memory_WrittenByte_Output(const uint16_t address) {
 	if (address == m_configuration.getOutputAddress()) {
+#ifdef _MSC_VER
 		_putch(DATA());
+#endif
 	}
 }
 
@@ -128,6 +130,8 @@ void Board::Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu) {
 }
 
 void Board::pollKeyboard() {
+#ifdef _MSC_VER
 	if (_kbhit())
 		poke(m_configuration.getInputAddress(), _getch());
+#endif
 }

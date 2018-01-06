@@ -8,5 +8,6 @@
 
 #include <assert.h>
 
-// Windows!!
+#ifdef _MSC_VER
 #include <conio.h>
+#endif
