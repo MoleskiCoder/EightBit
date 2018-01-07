@@ -398,6 +398,9 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 		case 0b010:
 			output << disassemble_AM_01(bbb, "*SRE");
 			break;
+		case 0b011:
+			output << disassemble_AM_01(bbb, "*RRA");
+			break;
 		case 0b100:
 			output << disassemble_AM_11(bbb, "*SAX");
 			break;

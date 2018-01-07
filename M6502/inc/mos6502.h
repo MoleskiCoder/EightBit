@@ -616,6 +616,13 @@ namespace EightBit {
 			EORA(operand);
 		}
 
+		void RRA(int bbb) {
+			auto operand = AM_01(bbb);
+			ROR(operand);
+			setByte(operand);
+			A() = ADC(A(), operand);
+		}
+
 		void ROR(uint8_t& output);
 
 		void LSR(uint8_t& output);
