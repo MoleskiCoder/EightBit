@@ -7,8 +7,8 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 		////	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
 		/* 0 */	7, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 0, 4, 4, 6, 6,
 		/* 1 */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
-		/* 2 */	6, 6, 0, 0, 3, 3, 5, 0, 4, 2, 2, 0, 4, 4, 6, 0,
-		/* 3 */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
+		/* 2 */	6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 0, 4, 4, 6, 6,
+		/* 3 */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
 		/* 4 */	6, 6, 0, 0, 3, 3, 5, 0, 3, 2, 2, 0, 3, 4, 6, 0,
 		/* 5 */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
 		/* 6 */	6, 6, 0, 0, 3, 3, 5, 0, 4, 2, 2, 0, 5, 4, 6, 0,
@@ -297,7 +297,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			ORA(AM_01(decoded.bbb));
 			break;
 		case 0b001:		// AND
-			adjustNZ(A() &= AM_01(decoded.bbb));
+			ANDA(AM_01(decoded.bbb));
 			break;
 		case 0b010:		// EOR
 			adjustNZ(A() ^= AM_01(decoded.bbb));
@@ -413,6 +413,9 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 		switch (decoded.aaa) {
 		case 0b000:	// *SLO
 			SLO(decoded.bbb);
+			break;
+		case 0b001:	// *RLA
+			RLA(decoded.bbb);
 			break;
 		case 0b100: // *SAX
 			AM_11(decoded.bbb, A() & X());

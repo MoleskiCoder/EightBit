@@ -594,6 +594,17 @@ namespace EightBit {
 			ORA(operand);
 		}
 
+		void ANDA(uint8_t value) {
+			adjustNZ(A() &= value);
+		}
+
+		void RLA(int bbb) {
+			auto operand = AM_01(bbb);
+			ROL(operand);
+			setByte(operand);
+			ANDA(operand);
+		}
+
 		void ROR(uint8_t& output);
 
 		void LSR(uint8_t& output);
