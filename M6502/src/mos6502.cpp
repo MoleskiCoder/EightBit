@@ -9,8 +9,8 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 		/* 1 */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
 		/* 2 */	6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 0, 4, 4, 6, 6,
 		/* 3 */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
-		/* 4 */	6, 6, 0, 0, 3, 3, 5, 0, 3, 2, 2, 0, 3, 4, 6, 0,
-		/* 5 */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
+		/* 4 */	6, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 0, 3, 4, 6, 6,
+		/* 5 */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
 		/* 6 */	6, 6, 0, 0, 3, 3, 5, 0, 4, 2, 2, 0, 5, 4, 6, 0,
 		/* 7 */	2, 5, 0, 0, 4, 4, 6, 0, 2, 4, 2, 0, 4, 4, 7, 0,
 		/* 8 */	2, 6, 0, 6, 3, 3, 3, 3, 2, 0, 2, 0, 4, 4, 4, 4,
@@ -300,7 +300,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			ANDA(AM_01(decoded.bbb));
 			break;
 		case 0b010:		// EOR
-			adjustNZ(A() ^= AM_01(decoded.bbb));
+			EORA(AM_01(decoded.bbb));
 			break;
 		case 0b011:		// ADC
 			A() = ADC(A(), AM_01(decoded.bbb));
@@ -416,6 +416,9 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			break;
 		case 0b001:	// *RLA
 			RLA(decoded.bbb);
+			break;
+		case 0b010:	// *SRE
+			SRE(decoded.bbb);
 			break;
 		case 0b100: // *SAX
 			AM_11(decoded.bbb, A() & X());
