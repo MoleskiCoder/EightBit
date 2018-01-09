@@ -710,14 +710,18 @@ int EightBit::Z80::execute(const uint8_t opcode) {
 	const auto p = decoded.p;
 	const auto q = decoded.q;
 
+	auto& af = AF();
+	auto& a = af.high;
+	auto& f = af.low;
+
 	auto prefixed = m_prefixCB || m_prefixED;
 	if (LIKELY(!prefixed)) {
-		executeOther(x, y, z, p, q);
+		executeOther(a, f, x, y, z, p, q);
 	} else {
 		if (m_prefixCB)
-			executeCB(x, y, z);
+			executeCB(a, f, x, y, z);
 		else if (m_prefixED)
-			executeED(x, y, z, p, q);
+			executeED(a, f, x, y, z, p, q);
 		else
 			UNREACHABLE;
 	}
@@ -728,9 +732,7 @@ int EightBit::Z80::execute(const uint8_t opcode) {
 	return cycles();
 }
 
-void EightBit::Z80::executeCB(const int x, const int y, const int z) {
-	auto& a = A();
-	auto& f = F();
+void EightBit::Z80::executeCB(uint8_t& a, uint8_t& f, const int x, const int y, const int z) {
 	switch (x) {
 	case 0:	{ // rot[y] r[z]
 		auto operand = LIKELY(!m_displaced) ? R(z, a) : getByte(displacedAddress());
@@ -824,9 +826,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 	}
 }
 
-void EightBit::Z80::executeED(const int x, const int y, const int z, const int p, const int q) {
-	auto& a = A();
-	auto& f = F();
+void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, const int z, const int p, const int q) {
 	switch (x) {
 	case 0:
 	case 3:	// Invalid instruction, equivalent to NONI followed by NOP
@@ -1060,9 +1060,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 	}
 }
 
-void EightBit::Z80::executeOther(const int x, const int y, const int z, const int p, const int q) {
-	auto& a = A();
-	auto& f = F();
+void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int y, const int z, const int p, const int q) {
 	switch (x) {
 	case 0:
 		switch (z) {
