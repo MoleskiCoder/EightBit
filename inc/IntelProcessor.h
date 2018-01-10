@@ -120,13 +120,8 @@ namespace EightBit {
 
 		//
 
-		void memptrReference() {
-			BUS().ADDRESS() = MEMPTR();
-			MEMPTR().word++;
-		}
-
-		void getWordViaMemptr(register16_t& value);
-		void setWordViaMemptr(register16_t value);
+		void getWord(register16_t& value);
+		void setWord(register16_t value);
 
 		//
 

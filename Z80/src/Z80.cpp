@@ -602,9 +602,9 @@ bool EightBit::Z80::otdr(uint8_t& f) {
 }
 
 void EightBit::Z80::rrd(uint8_t& a, uint8_t& f) {
-	MEMPTR() = HL();
-	memptrReference();
+	BUS().ADDRESS() = MEMPTR() = HL();
 	const auto memory = getByte();
+	MEMPTR().word++;
 	setByte(promoteNibble(a) | highNibble(memory));
 	a = (a & 0xf0) | lowNibble(memory);
 	adjustSZPXY<Z80>(f, a);
@@ -612,9 +612,9 @@ void EightBit::Z80::rrd(uint8_t& a, uint8_t& f) {
 }
 
 void EightBit::Z80::rld(uint8_t& a, uint8_t& f) {
-	MEMPTR() = HL();
-	memptrReference();
+	BUS().ADDRESS() = MEMPTR() = HL();
 	const auto memory = getByte();
+	MEMPTR().word++;
 	setByte(promoteNibble(memory) | lowNibble(a));
 	a = (a & 0xf0) | highNibble(memory);
 	adjustSZPXY<Z80>(f, a);
@@ -871,11 +871,11 @@ void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, 
 			switch (q) {
 			case 0:	// LD (nn), rp[p]
 				fetchWord();
-				setWordViaMemptr(RP(p));
+				setWord(RP(p));
 				break;
 			case 1:	// LD rp[p], (nn)
 				fetchWord();
-				getWordViaMemptr(RP(p));
+				getWord(RP(p));
 				break;
 			default:
 				UNREACHABLE;
@@ -1114,25 +1114,25 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 				switch (p) {
 				case 0:	// LD (BC),A
 					MEMPTR() = BC();
-					memptrReference();
-					setByte(MEMPTR().high = a);
+					setByte(MEMPTR().word++, a);
+					MEMPTR().high = a;
 					addCycles(7);
 					break;
 				case 1:	// LD (DE),A
 					MEMPTR() = DE();
-					memptrReference();
-					setByte(MEMPTR().high = a);
+					setByte(MEMPTR().word++, a);
+					MEMPTR().high = a;
 					addCycles(7);
 					break;
 				case 2:	// LD (nn),HL
 					fetchWord();
-					setWordViaMemptr(HL2());
+					setWord(HL2());
 					addCycles(16);
 					break;
 				case 3: // LD (nn),A
 					fetchWord();
-					memptrReference();
-					setByte(MEMPTR().high = a);
+					setByte(MEMPTR().word++, a);
+					MEMPTR().high = a;
 					addCycles(13);
 					break;
 				default:
@@ -1143,25 +1143,22 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 				switch (p) {
 				case 0:	// LD A,(BC)
 					MEMPTR() = BC();
-					memptrReference();
-					a = getByte();
+					a = getByte(MEMPTR().word++);
 					addCycles(7);
 					break;
 				case 1:	// LD A,(DE)
 					MEMPTR() = DE();
-					memptrReference();
-					a = getByte();
+					a = getByte(MEMPTR().word++);
 					addCycles(7);
 					break;
 				case 2:	// LD HL,(nn)
 					fetchWord();
-					getWordViaMemptr(HL2());
+					getWord(HL2());
 					addCycles(16);
 					break;
 				case 3:	// LD A,(nn)
 					fetchWord();
-					memptrReference();
-					a = getByte();
+					a = getByte(MEMPTR().word++);
 					addCycles(13);
 					break;
 				default:

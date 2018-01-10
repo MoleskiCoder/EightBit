@@ -338,10 +338,14 @@ int EightBit::GameBoy::LR35902::execute(uint8_t opcode) {
 	const auto p = decoded.p;
 	const auto q = decoded.q;
 
+	auto& af = AF();
+	auto& a = af.high;
+	auto& f = af.low;
+	
 	if (LIKELY(!m_prefixCB))
-		executeOther(x, y, z, p, q);
+		executeOther(a, f, x, y, z, p, q);
 	else
-		executeCB(x, y, z, p, q);
+		executeCB(a, f, x, y, z, p, q);
 
 	if (UNLIKELY(cycles() == 0))
 		throw std::logic_error("Unhandled opcode");
@@ -349,9 +353,7 @@ int EightBit::GameBoy::LR35902::execute(uint8_t opcode) {
 	return clockCycles();
 }
 
-void EightBit::GameBoy::LR35902::executeCB(int x, int y, int z, int p, int q) {
-	auto& a = A();
-	auto& f = F();
+void EightBit::GameBoy::LR35902::executeCB(uint8_t& a, uint8_t& f, int x, int y, int z, int p, int q) {
 	switch (x) {
 	case 0:	{ // rot[y] r[z]
 		auto operand = R(z, a);
@@ -412,9 +414,7 @@ void EightBit::GameBoy::LR35902::executeCB(int x, int y, int z, int p, int q) {
 	}
 }
 
-void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q) {
-	auto& a = A();
-	auto& f = F();
+void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int y, int z, int p, int q) {
 	switch (x) {
 	case 0:
 		switch (z) {
@@ -425,7 +425,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 				break;
 			case 1:	// GB: LD (nn),SP
 				fetchWord();
-				setWordViaMemptr(SP());
+				setWord(SP());
 				addCycles(5);
 				break;
 			case 2:	// GB: STOP

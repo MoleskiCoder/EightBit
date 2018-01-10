@@ -142,7 +142,7 @@ namespace EightBit {
 
 		static void subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
 
-		void execute(int x, int y, int z, int p, int q);
+		void execute(uint8_t& a, uint8_t& f, int x, int y, int z, int p, int q);
 
 		static void increment(uint8_t& f, uint8_t& operand);
 		static void decrement(uint8_t& f, uint8_t& operand);

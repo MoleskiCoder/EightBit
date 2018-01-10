@@ -20,16 +20,14 @@ uint8_t EightBit::IntelProcessor::pop() {
 	return getByte(SP().word++);
 }
 
-void EightBit::IntelProcessor::getWordViaMemptr(register16_t& value) {
-	memptrReference();
-	value.low = getByte();
+void EightBit::IntelProcessor::getWord(register16_t& value) {
+	value.low = getByte(MEMPTR().word++);
 	BUS().ADDRESS().word++;
 	value.high = getByte();
 }
 
-void EightBit::IntelProcessor::setWordViaMemptr(register16_t value) {
-	memptrReference();
-	setByte(value.low);
+void EightBit::IntelProcessor::setWord(register16_t value) {
+	setByte(MEMPTR().word++, value.low);
 	BUS().ADDRESS().word++;
 	setByte(value.high);
 }

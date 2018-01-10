@@ -296,7 +296,11 @@ int EightBit::Intel8080::execute(uint8_t opcode) {
 	const auto p = decoded.p;
 	const auto q = decoded.q;
 
-	execute(x, y, z, p, q);
+	auto& af = AF();
+	auto& a = af.high;
+	auto& f = af.low;
+
+	execute(a, f, x, y, z, p, q);
 
 	if (UNLIKELY(cycles() == 0))
 		throw std::logic_error("Unhandled opcode");
@@ -304,9 +308,7 @@ int EightBit::Intel8080::execute(uint8_t opcode) {
 	return cycles();
 }
 
-void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
-	auto& a = A();
-	auto& f = F();
+void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, int p, int q) {
 	switch (x) {
 	case 0:
 		switch (z) {
@@ -337,25 +339,25 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				switch (p) {
 				case 0:	// LD (BC),A
 					MEMPTR() = BC();
-					memptrReference();
-					setByte(MEMPTR().high = a);
+					setByte(MEMPTR().word++, a);
+					MEMPTR().high = a;
 					addCycles(7);
 					break;
 				case 1:	// LD (DE),A
 					MEMPTR() = DE();
-					memptrReference();
-					setByte(MEMPTR().high = a);
+					setByte(MEMPTR().word++, a);
+					MEMPTR().high = a;
 					addCycles(7);
 					break;
 				case 2:	// LD (nn),HL
 					fetchWord();
-					setWordViaMemptr(HL());
+					setWord(HL());
 					addCycles(16);
 					break;
 				case 3: // LD (nn),A
 					fetchWord();
-					memptrReference();
-					setByte(MEMPTR().high = a);
+					setByte(MEMPTR().word++, a);
+					MEMPTR().high = a;
 					addCycles(13);
 					break;
 				default:
@@ -366,25 +368,22 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 				switch (p) {
 				case 0:	// LD A,(BC)
 					MEMPTR() = BC();
-					memptrReference();
-					a = getByte();
+					a = getByte(MEMPTR().word++);
 					addCycles(7);
 					break;
 				case 1:	// LD A,(DE)
 					MEMPTR() = DE();
-					memptrReference();
-					a = getByte();
+					a = getByte(MEMPTR().word++);
 					addCycles(7);
 					break;
 				case 2:	// LD HL,(nn)
 					fetchWord();
-					getWordViaMemptr(HL());
+					getWord(HL());
 					addCycles(16);
 					break;
 				case 3:	// LD A,(nn)
 					fetchWord();
-					memptrReference();
-					a = getByte();
+					a = getByte(MEMPTR().word++);
 					addCycles(13);
 					break;
 				default:
