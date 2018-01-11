@@ -338,15 +338,11 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					MEMPTR() = BC();
-					setByte(MEMPTR().word++, a);
-					MEMPTR().high = a;
+					setByte(BC(), a);
 					addCycles(7);
 					break;
 				case 1:	// LD (DE),A
-					MEMPTR() = DE();
-					setByte(MEMPTR().word++, a);
-					MEMPTR().high = a;
+					setByte(DE(), a);
 					addCycles(7);
 					break;
 				case 2:	// LD (nn),HL
@@ -356,8 +352,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 					break;
 				case 3: // LD (nn),A
 					fetchWord();
-					setByte(MEMPTR().word++, a);
-					MEMPTR().high = a;
+					setByte(MEMPTR(), a);
 					addCycles(13);
 					break;
 				default:
@@ -367,13 +362,11 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					MEMPTR() = BC();
-					a = getByte(MEMPTR().word++);
+					a = getByte(BC());
 					addCycles(7);
 					break;
 				case 1:	// LD A,(DE)
-					MEMPTR() = DE();
-					a = getByte(MEMPTR().word++);
+					a = getByte(DE());
 					addCycles(7);
 					break;
 				case 2:	// LD HL,(nn)
@@ -383,7 +376,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 					break;
 				case 3:	// LD A,(nn)
 					fetchWord();
-					a = getByte(MEMPTR().word++);
+					a = getByte(MEMPTR());
 					addCycles(13);
 					break;
 				default:
