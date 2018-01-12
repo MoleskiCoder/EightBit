@@ -54,8 +54,8 @@ int EightBit::MOS6502::step() {
 			interrupt(IRQvector);
 			returned = 4;	// ?? TBC
 		} else if (UNLIKELY(lowered(HALT()))) {
-			execute(0);	// NOP ??
-			returned = 4;	// ?? TBC
+			execute(0xea);	// NOP
+			returned = 2;	//
 		} else {
 			returned = execute(fetchByte());
 		}
@@ -615,9 +615,7 @@ void EightBit::MOS6502::PHP() {
 }
 
 void EightBit::MOS6502::PLP() {
-	P() = pop();
-	P() |= RF;		// Reserved flag is always set;
-	P() &= ~BF;		// Break flag is never set
+	P() = (pop() | RF) & ~BF;
 }
 
 //
