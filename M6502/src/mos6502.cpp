@@ -440,20 +440,12 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 			break;
 		case 0b111:	// *SBC
 			switch (decoded.bbb) {
-			case 0b000:	// *ISB
-			case 0b001:
-			case 0b011:
-			case 0b100:
-			case 0b101:
-			case 0b110:
-			case 0b111:
-				ISB(decoded.bbb);
-				break;
 			case 0b010:
 				A() = SBC(A(), AM_11(decoded.bbb));
 				break;
-			default:
-				UNREACHABLE;
+			default:	// *ISB
+				ISB(decoded.bbb);
+				break;
 			}
 			break;
 		default:
@@ -483,7 +475,7 @@ uint8_t EightBit::MOS6502::pop() {
 ////
 
 void EightBit::MOS6502::ROR(uint8_t& output) {
-	auto carry = P() & CF;
+	const auto carry = P() & CF;
 	setFlag(P(), CF, output & CF);
 	output = (output >> 1) | (carry << 7);
 	adjustNZ(output);
@@ -501,7 +493,7 @@ void EightBit::MOS6502::BIT(uint8_t data) {
 }
 
 void EightBit::MOS6502::ROL(uint8_t& output) {
-	uint8_t result = (output << 1) | (P() & CF);
+	const uint8_t result = (output << 1) | (P() & CF);
 	setFlag(P(), CF, output & Bit7);
 	adjustNZ(output = result);
 }
@@ -535,13 +527,14 @@ uint8_t EightBit::MOS6502::SUB_b(const uint8_t operand, const uint8_t data, cons
 uint8_t EightBit::MOS6502::SUB_d(const uint8_t operand, const uint8_t data, const int borrow) {
 	MEMPTR().word = operand - data - borrow;
 
-	auto low = (uint8_t)(lowNibble(operand) - lowNibble(data) - borrow);
-	auto lowNegative = (int8_t)low < 0;
+	uint8_t low = lowNibble(operand) - lowNibble(data) - borrow;
+	const auto lowNegative = low & NF;
 	if (lowNegative)
 		low -= 6;
 
-	uint8_t high = highNibble(operand) - highNibble(data) - (lowNegative ? 1 : 0);
-	if ((int8_t)high < 0)
+	uint8_t high = highNibble(operand) - highNibble(data) - (lowNegative >> 7);
+	const auto highNegative = high & NF;
+	if (highNegative)
 		high -= 6;
 
 	return promoteNibble(high) | lowNibble(low);
@@ -577,11 +570,11 @@ uint8_t EightBit::MOS6502::ADD_d(uint8_t operand, uint8_t data, int carry) {
 
 	MEMPTR().word = operand + data + carry;
 
-	auto low = (uint8_t)(lowNibble(operand) + lowNibble(data) + carry);
+	uint8_t low = lowNibble(operand) + lowNibble(data) + carry;
 	if (low > 9)
 		low += 6;
 
-	auto high = (uint8_t)(highNibble(operand) + highNibble(data) + (low > 0xf ? 1 : 0));
+	uint8_t high = highNibble(operand) + highNibble(data) + (low > 0xf ? 1 : 0);
 	setFlag(P(), VF, ~(operand ^ data) & (operand ^ promoteNibble(high)) & NF);
 
 	if (high > 9)
@@ -589,7 +582,7 @@ uint8_t EightBit::MOS6502::ADD_d(uint8_t operand, uint8_t data, int carry) {
 
 	setFlag(P(), CF, high > 0xf);
 
-	return (uint8_t)(promoteNibble(high) | lowNibble(low));
+	return promoteNibble(high) | lowNibble(low);
 }
 
 ////
