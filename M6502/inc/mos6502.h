@@ -53,6 +53,8 @@ namespace EightBit {
 		uint8_t& S() { return s; }
 		uint8_t& P() { return p; }
 
+		PinLevel& SO() { return m_soLine;  }	// In
+
 	protected:
 		virtual void reset() final;
 
@@ -664,5 +666,7 @@ namespace EightBit {
 
 		std::array<int, 0x100> m_timings;
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
+
+		PinLevel m_soLine = Low;
 	};
 }

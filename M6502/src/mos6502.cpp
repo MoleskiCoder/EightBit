@@ -32,6 +32,8 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 	A() = 0;
 	P() = RF;
 	S() = Mask8;
+
+	raise(SO());
 }
 
 int EightBit::MOS6502::step() {
@@ -39,6 +41,10 @@ int EightBit::MOS6502::step() {
 	auto returned = 0;
 	if (LIKELY(powered())) {
 		ExecutingInstruction.fire(*this);
+		if (UNLIKELY(lowered(SO()))) {
+			P() |= VF;
+			raise(SO());
+		}
 		if (UNLIKELY(lowered(NMI()))) {
 			raise(NMI());
 			interrupt(NMIvector);
