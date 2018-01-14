@@ -474,16 +474,18 @@ uint8_t EightBit::MOS6502::pop() {
 
 ////
 
-void EightBit::MOS6502::ROR(uint8_t& output) {
+uint8_t EightBit::MOS6502::ROR(uint8_t value) {
 	const auto carry = P() & CF;
-	setFlag(P(), CF, output & CF);
-	output = (output >> 1) | (carry << 7);
-	adjustNZ(output);
+	setFlag(P(), CF, value & CF);
+	value = (value >> 1) | (carry << 7);
+	adjustNZ(value);
+	return value;
 }
 
-void EightBit::MOS6502::LSR(uint8_t& output) {
-	setFlag(P(), CF, output & CF);
-	adjustNZ(output >>= 1);
+uint8_t EightBit::MOS6502::LSR(uint8_t value) {
+	setFlag(P(), CF, value & CF);
+	adjustNZ(value >>= 1);
+	return value;
 }
 
 void EightBit::MOS6502::BIT(uint8_t data) {
@@ -492,15 +494,17 @@ void EightBit::MOS6502::BIT(uint8_t data) {
 	setFlag(P(), VF, data & VF);
 }
 
-void EightBit::MOS6502::ROL(uint8_t& output) {
-	const uint8_t result = (output << 1) | (P() & CF);
-	setFlag(P(), CF, output & Bit7);
-	adjustNZ(output = result);
+uint8_t EightBit::MOS6502::ROL(uint8_t value) {
+	const uint8_t result = (value << 1) | (P() & CF);
+	setFlag(P(), CF, value & Bit7);
+	adjustNZ(result);
+	return result;
 }
 
-void EightBit::MOS6502::ASL(uint8_t& output) {
-	setFlag(P(), CF, (output & Bit7) >> 7);
-	adjustNZ(output <<= 1);
+uint8_t EightBit::MOS6502::ASL(uint8_t value) {
+	setFlag(P(), CF, (value & Bit7) >> 7);
+	adjustNZ(value <<= 1);
+	return value;
 }
 
 uint8_t EightBit::MOS6502::SBC(const uint8_t operand, const uint8_t data) {

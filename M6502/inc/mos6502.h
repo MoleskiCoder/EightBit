@@ -372,7 +372,7 @@ namespace EightBit {
 			case 0b011:
 			case 0b101:
 			case 0b111:
-				setByte(MEMPTR(), value);
+				setByte(value);
 				break;
 			case 0b000:
 			case 0b100:
@@ -538,39 +538,33 @@ namespace EightBit {
 		// Operations
 
 		void ASL(int bbb) {
-			auto operand = AM_10(bbb);
-			ASL(operand);
-			AM_10(bbb, operand);
+			const auto result = ASL(AM_10(bbb));
+			AM_10(bbb, result);
 		}
 
 		void ROL(int bbb) {
-			auto operand = AM_10(bbb);
-			ROL(operand);
-			AM_10(bbb, operand);
+			const auto result = ROL(AM_10(bbb));
+			AM_10(bbb, result);
 		}
 
 		void LSR(int bbb) {
-			auto operand = AM_10(bbb);
-			LSR(operand);
-			AM_10(bbb, operand);
+			const auto result = LSR(AM_10(bbb));
+			AM_10(bbb, result);
 		}
 
 		void ROR(int bbb) {
-			auto operand = AM_10(bbb);
-			ROR(operand);
-			AM_10(bbb, operand);
+			const auto result = ROR(AM_10(bbb));
+			AM_10(bbb, result);
 		}
 
 		void DEC(int bbb) {
-			auto operand = AM_10(bbb);
-			adjustNZ(--operand);
-			AM_10(bbb, operand);
+			const auto result = DEC(AM_10(bbb));
+			AM_10(bbb, result);
 		}
 
 		void INC(int bbb) {
-			auto operand = AM_10(bbb);
-			adjustNZ(++operand);
-			AM_10(bbb, operand);
+			const auto result = INC(AM_10(bbb));
+			AM_10(bbb, result);
 		}
 
 		void DCP(int bbb) {
@@ -585,15 +579,28 @@ namespace EightBit {
 			A() = SBC(A(), operand);
 		}
 
+		//
+
+		uint8_t DEC(uint8_t value) {
+			const auto result = --value;
+			adjustNZ(result);
+			return result;
+		}
+
+		uint8_t INC(uint8_t value) {
+			const auto result = ++value;
+			adjustNZ(result);
+			return result;
+		}
+
 		void ORA(uint8_t value) {
 			adjustNZ(A() |= value);
 		}
 
 		void SLO(int bbb) {
-			auto operand = AM_01(bbb);
-			ASL(operand);
-			setByte(operand);
-			ORA(operand);
+			const auto result = ASL(AM_01(bbb));
+			setByte(result);
+			ORA(result);
 		}
 
 		void ANDA(uint8_t value) {
@@ -601,10 +608,9 @@ namespace EightBit {
 		}
 
 		void RLA(int bbb) {
-			auto operand = AM_01(bbb);
-			ROL(operand);
-			setByte(operand);
-			ANDA(operand);
+			const auto result = ROL(AM_01(bbb));
+			setByte(result);
+			ANDA(result);
 		}
 
 		void EORA(uint8_t value) {
@@ -612,28 +618,26 @@ namespace EightBit {
 		}
 
 		void SRE(int bbb) {
-			auto operand = AM_01(bbb);
-			LSR(operand);
-			setByte(operand);
-			EORA(operand);
+			const auto result = LSR(AM_01(bbb));
+			setByte(result);
+			EORA(result);
 		}
 
 		void RRA(int bbb) {
-			auto operand = AM_01(bbb);
-			ROR(operand);
-			setByte(operand);
-			A() = ADC(A(), operand);
+			const auto result = ROR(AM_01(bbb));
+			setByte(result);
+			A() = ADC(A(), result);
 		}
 
-		void ROR(uint8_t& output);
+		uint8_t ROR(uint8_t value);
 
-		void LSR(uint8_t& output);
+		uint8_t LSR(uint8_t value);
 
 		void BIT(uint8_t data);
 
-		void ROL(uint8_t& output);
+		uint8_t ROL(uint8_t value);
 
-		void ASL(uint8_t& output);
+		uint8_t ASL(uint8_t value);
 
 		void CMP(uint8_t first, uint8_t second);
 
