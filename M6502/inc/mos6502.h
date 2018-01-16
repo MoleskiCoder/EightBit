@@ -13,21 +13,6 @@
 namespace EightBit {
 	class MOS6502 : public Processor {
 	public:
-		struct opcode_decoded_t {
-
-			int aaa = 0;
-			int bbb = 0;
-			int cc = 0;
-
-			opcode_decoded_t() {}
-
-			opcode_decoded_t(uint8_t opcode) {
-				aaa = (opcode & 0b11100000) >> 5;	// 0 - 7
-				bbb = (opcode & 0b00011100) >> 2;	// 0 - 7
-				cc = (opcode & 0b00000011);			// 0 - 3
-			}
-		};
-
 		enum StatusBits {
 			NF = Bit7,	// Negative
 			VF = Bit6,  // Overflow
@@ -196,10 +181,6 @@ namespace EightBit {
 
 		// Addressing modes, write
 
-		void AM_A(uint8_t value) {
-			A() = value;
-		}
-
 		void AM_Absolute(uint8_t value) {
 			Address_Absolute();
 			setByte(MEMPTR(), value);
@@ -240,343 +221,44 @@ namespace EightBit {
 			setByte(MEMPTR(), value);
 		}
 
-		// 6502 addressing mode switching
-
-		uint8_t AM_00(int bbb) {
-			switch (bbb) {
-			case 0b000:
-				return AM_Immediate();
-			case 0b001:
-				return AM_ZeroPage();
-			case 0b011:
-				return AM_Absolute();
-			case 0b101:
-				return AM_ZeroPageX();
-			case 0b111:
-				return AM_AbsoluteX();
-			case 0b010:
-			case 0b100:
-			case 0b110:
-				throw std::domain_error("Illegal addressing mode");
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		void AM_00(int bbb, uint8_t value) {
-			switch (bbb) {
-			case 0b001:
-				AM_ZeroPage(value);
-				break;
-			case 0b011:
-				AM_Absolute(value);
-				break;
-			case 0b101:
-				AM_ZeroPageX(value);
-				break;
-			case 0b111:
-				AM_AbsoluteX(value);
-				break;
-			case 0b000:
-			case 0b010:
-			case 0b100:
-			case 0b110:
-				throw std::domain_error("Illegal addressing mode");
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		uint8_t AM_01(int bbb) {
-			switch (bbb) {
-			case 0b000:
-				return AM_IndexedIndirectX();
-			case 0b001:
-				return AM_ZeroPage();
-			case 0b010:
-				return AM_Immediate();
-			case 0b011:
-				return AM_Absolute();
-			case 0b100:
-				return AM_IndirectIndexedY();
-			case 0b101:
-				return AM_ZeroPageX();
-			case 0b110:
-				return AM_AbsoluteY();
-			case 0b111:
-				return AM_AbsoluteX();
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		void AM_01(int bbb, uint8_t value) {
-			switch (bbb) {
-			case 0b000:
-				AM_IndexedIndirectX(value);
-				break;
-			case 0b001:
-				AM_ZeroPage(value);
-				break;
-			case 0b010:
-				throw std::domain_error("Illegal addressing mode");
-			case 0b011:
-				AM_Absolute(value);
-				break;
-			case 0b100:
-				AM_IndirectIndexedY(value);
-				break;
-			case 0b101:
-				AM_ZeroPageX(value);
-				break;
-			case 0b110:
-				AM_AbsoluteY(value);
-				break;
-			case 0b111:
-				AM_AbsoluteX(value);
-				break;
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		uint8_t AM_10(int bbb) {
-			switch (bbb) {
-			case 0b000:
-				return AM_Immediate();
-			case 0b001:
-				return AM_ZeroPage();
-			case 0b010:
-				return AM_A();
-			case 0b011:
-				return AM_Absolute();
-			case 0b101:
-				return AM_ZeroPageX();
-			case 0b111:
-				return AM_AbsoluteX();
-			case 0b100:
-			case 0b110:
-				throw std::domain_error("Illegal addressing mode");
-			default:
-				UNREACHABLE;
-			}
-			return 0xff;
-		}
-
-		void AM_10(int bbb, uint8_t value) {
-			switch (bbb) {
-			case 0b010:
-				AM_A(value);
-				break;
-			case 0b001:
-			case 0b011:
-			case 0b101:
-			case 0b111:
-				setByte(value);
-				break;
-			case 0b000:
-			case 0b100:
-			case 0b110:
-				throw std::domain_error("Illegal addressing mode");
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		uint8_t AM_10_x(int bbb) {
-			switch (bbb) {
-			case 0b000:
-				return AM_Immediate();
-			case 0b001:
-				return AM_ZeroPage();
-			case 0b010:
-				return AM_A();
-			case 0b011:
-				return AM_Absolute();
-			case 0b101:
-				return AM_ZeroPageY();
-			case 0b111:
-				return AM_AbsoluteY();
-			case 0b100:
-			case 0b110:
-				throw std::domain_error("Illegal addressing mode");
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		void AM_10_x(int bbb, uint8_t value) {
-			switch (bbb) {
-			case 0b001:
-				AM_ZeroPage(value);
-				break;
-			case 0b010:
-				AM_A(value);
-				break;
-			case 0b011:
-				AM_Absolute(value);
-				break;
-			case 0b101:
-				AM_ZeroPageY(value);
-				break;
-			case 0b111:
-				AM_AbsoluteY(value);
-				break;
-			case 0b000:
-			case 0b100:
-			case 0b110:
-				throw std::domain_error("Illegal addressing mode");
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		uint8_t AM_11(int bbb) {
-			switch (bbb) {
-			case 0b000:
-				return AM_IndexedIndirectX();
-			case 0b001:
-				return AM_ZeroPage();
-			case 0b010:
-				return AM_Immediate();
-			case 0b011:
-				return AM_Absolute();
-			case 0b100:
-				return AM_IndirectIndexedY();
-			case 0b101:
-				return AM_ZeroPageY();
-			case 0b110:
-				throw std::domain_error("Illegal addressing mode");
-			case 0b111:
-				return AM_AbsoluteY();
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		void AM_11(int bbb, uint8_t value) {
-			switch (bbb) {
-			case 0b000:
-				AM_IndexedIndirectX(value);
-				break;
-			case 0b001:
-				AM_ZeroPage(value);
-				break;
-			case 0b011:
-				AM_Absolute(value);
-				break;
-			case 0b100:
-				AM_IndirectIndexedY(value);
-				break;
-			case 0b101:
-				AM_ZeroPageY(value);
-				break;
-			case 0b111:
-				AM_AbsoluteY(value);
-				break;
-			case 0b010:
-			case 0b110:
-				throw std::domain_error("Illegal addressing mode");
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		uint8_t AM_11_x(int bbb) {
-			switch (bbb) {
-			case 0b000:
-				return AM_IndexedIndirectX();
-			case 0b001:
-				return AM_ZeroPage();
-			case 0b010:
-				return AM_Immediate();
-			case 0b011:
-				return AM_Absolute();
-			case 0b100:
-				return AM_IndirectIndexedY();
-			case 0b101:
-				return AM_ZeroPageX();
-			case 0b110:
-				return AM_AbsoluteY();
-			case 0b111:
-				return AM_AbsoluteX();
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		void AM_11_x(int bbb, uint8_t value) {
-			switch (bbb) {
-			case 0b000:
-				AM_IndexedIndirectX(value);
-				break;
-			case 0b001:
-				AM_ZeroPage(value);
-				break;
-			case 0b011:
-				AM_Absolute(value);
-				break;
-			case 0b100:
-				AM_IndirectIndexedY(value);
-				break;
-			case 0b101:
-				AM_ZeroPageX(value);
-				break;
-			case 0b110:
-				AM_AbsoluteY(value);
-				break;
-			case 0b111:
-				AM_AbsoluteX(value);
-				break;
-			case 0b010:
-				throw std::domain_error("Illegal addressing mode");
-			default:
-				UNREACHABLE;
-			}
-		}
-
 		// Operations
 
-		void ASL(int bbb) {
-			const auto result = ASL(AM_10(bbb));
-			AM_10(bbb, result);
+		void DCP(uint8_t value) {
+			setByte(--value);
+			CMP(A(), value);
 		}
 
-		void ROL(int bbb) {
-			const auto result = ROL(AM_10(bbb));
-			AM_10(bbb, result);
+		void ISB(uint8_t value) {
+			setByte(++value);
+			A() = SBC(A(), value);
 		}
 
-		void LSR(int bbb) {
-			const auto result = LSR(AM_10(bbb));
-			AM_10(bbb, result);
+		void SLO(uint8_t value) {
+			const auto result = ASL(value);
+			setByte(result);
+			ORA(result);
 		}
 
-		void ROR(int bbb) {
-			const auto result = ROR(AM_10(bbb));
-			AM_10(bbb, result);
+		void SRE(uint8_t value) {
+			const auto result = LSR(value);
+			setByte(result);
+			EORA(result);
 		}
 
-		void DEC(int bbb) {
-			const auto result = DEC(AM_10(bbb));
-			AM_10(bbb, result);
+		void RLA(uint8_t value) {
+			const auto result = ROL(value);
+			setByte(result);
+			ANDA(result);
 		}
 
-		void INC(int bbb) {
-			const auto result = INC(AM_10(bbb));
-			AM_10(bbb, result);
+		void RRA(uint8_t value) {
+			const auto result = ROR(value);
+			setByte(result);
+			A() = ADC(A(), result);
 		}
 
-		void DCP(int bbb) {
-			auto operand = AM_11_x(bbb);
-			setByte(--operand);
-			CMP(A(), operand);
-		}
-
-		void ISB(int bbb) {
-			auto operand = AM_01(bbb);
-			setByte(++operand);
-			A() = SBC(A(), operand);
+		void LAX(uint8_t value) {
+			adjustNZ(X() = A() = value);
 		}
 
 		//
@@ -597,36 +279,12 @@ namespace EightBit {
 			adjustNZ(A() |= value);
 		}
 
-		void SLO(int bbb) {
-			const auto result = ASL(AM_01(bbb));
-			setByte(result);
-			ORA(result);
-		}
-
 		void ANDA(uint8_t value) {
 			adjustNZ(A() &= value);
 		}
 
-		void RLA(int bbb) {
-			const auto result = ROL(AM_01(bbb));
-			setByte(result);
-			ANDA(result);
-		}
-
 		void EORA(uint8_t value) {
 			adjustNZ(A() ^= value);
-		}
-
-		void SRE(int bbb) {
-			const auto result = LSR(AM_01(bbb));
-			setByte(result);
-			EORA(result);
-		}
-
-		void RRA(int bbb) {
-			const auto result = ROR(AM_01(bbb));
-			setByte(result);
-			A() = ADC(A(), result);
 		}
 
 		uint8_t ROR(uint8_t value);
@@ -668,8 +326,13 @@ namespace EightBit {
 		uint8_t s;		// stack pointer
 		uint8_t p;		// processor status
 
-		std::array<int, 0x100> m_timings;
-		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
+		typedef std::function<void(void)> delegate_t;
+		struct operation_t {
+			int timing = 0;
+			delegate_t method;
+		};
+
+		std::vector<operation_t> m_operations;
 
 		PinLevel m_soLine = Low;
 	};

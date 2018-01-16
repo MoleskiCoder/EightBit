@@ -3,29 +3,281 @@
 
 EightBit::MOS6502::MOS6502(Bus& bus)
 : Processor(bus) {
-	m_timings = {
-		////	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-		/* 0 */	7, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 0, 4, 4, 6, 6,
-		/* 1 */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
-		/* 2 */	6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 0, 4, 4, 6, 6,
-		/* 3 */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
-		/* 4 */	6, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 0, 3, 4, 6, 6,
-		/* 5 */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
-		/* 6 */	6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 0, 5, 4, 6, 6,
-		/* 7 */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
-		/* 8 */	2, 6, 0, 6, 3, 3, 3, 3, 2, 0, 2, 0, 4, 4, 4, 4,
-		/* 9 */	2, 6, 0, 0, 4, 4, 4, 4, 2, 5, 2, 0, 0, 5, 0, 0,
-		/* A */	2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 0, 4, 4, 4, 4,
-		/* B */	2, 5, 0, 5, 4, 4, 4, 4, 2, 4, 2, 0, 4, 4, 4, 4,
-		/* C */	2, 6, 0, 8, 3, 3, 5, 5, 2, 2, 2, 0, 4, 4, 6, 6,
-		/* D */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
-		/* E */	2, 6, 0, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
-		/* F */	2, 5, 0, 7, 4, 4, 6, 6, 2, 4, 2, 6, 4, 4, 7, 6,
-	};
 
-
-	for (int i = 0; i < 0x100; ++i)
-		m_decodedOpcodes[i] = i;
+	m_operations = {
+		/* 0 */
+			/* 0 */ { 7, [this]()	{ BRK();								} },
+			/* 1 */ { 6, [this]()	{ ORA(AM_IndexedIndirectX());			} },
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 8, [this]()	{ SLO(AM_IndexedIndirectX());			} },	// *SLO
+			/* 4 */ { 3, [this]()	{ AM_ZeroPage();						} },	// *DOP
+			/* 5 */ { 3, [this]()	{ ORA(AM_ZeroPage());					} },
+			/* 6 */ { 5, [this]()	{ setByte(ASL(AM_ZeroPage()));			} },
+			/* 7 */ { 5, [this]()	{ SLO(AM_ZeroPage());					} },	// *SLO
+			/* 8 */ { 3, [this]()	{ PHP();								} },
+			/* 9 */ { 2, [this]()	{ ORA(AM_Immediate());					} },
+			/* a */ { 2, [this]()	{ A() = ASL(A());						} },
+			/* b */ { 0, []()		{										} },
+			/* c */ { 4, [this]()	{ AM_Absolute();						} },	// *TOP
+			/* d */ { 4, [this]()	{ ORA(AM_Absolute());					} },
+			/* e */ { 6, [this]()	{ setByte(ASL(AM_Absolute()));			} },
+			/* f */ { 6, [this]()	{ SLO(AM_Absolute());					} },	// *SLO
+		/* 1 */
+			/* 0 */ { 2, [this]()	{ Branch(!(P() & NF));					} },
+			/* 1 */ { 5, [this]()	{ ORA(AM_IndirectIndexedY());			} },
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 7, [this]()	{ SLO(AM_IndirectIndexedY());			} },	// *SLO
+			/* 4 */ { 4, [this]()	{ AM_ZeroPageX();						} },	// *DOP
+			/* 5 */ { 4, [this]()	{ ORA(AM_ZeroPageX());					} },
+			/* 6 */ { 6, [this]()	{ setByte(ASL(AM_ZeroPageX()));			} },
+			/* 7 */ { 6, [this]()	{ SLO(AM_ZeroPageX());					} },	// *SLO
+			/* 8 */ { 2, [this]()	{ clearFlag(P(), CF);					} },
+			/* 9 */ { 4, [this]()	{ ORA(AM_AbsoluteY());					} },
+			/* a */ { 2, []()		{										} },	// *NOP
+			/* b */ { 6, [this]()	{ SLO(AM_AbsoluteY());					} },	// *SLO
+			/* c */ { 4, [this]()	{ AM_AbsoluteX();						} },	// *TOP
+			/* d */ { 4, [this]()	{ ORA(AM_AbsoluteX());					} },
+			/* e */ { 7, [this]()	{ setByte(ASL(AM_AbsoluteX()));			} },
+			/* f */ { 6, [this]()	{ SLO(AM_AbsoluteX());					} },	// *SLO
+		/* 2 */
+			/* 0 */ { 6, [this]()	{ JSR_abs();							} },
+			/* 1 */ { 6, [this]()	{ ANDA(AM_IndexedIndirectX());			} },
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 8, [this]()	{ RLA(AM_IndexedIndirectX());			} },	// *RLA
+			/* 4 */ { 3, [this]()	{ BIT(AM_ZeroPage());					} },
+			/* 5 */ { 3, [this]()	{ ANDA(AM_ZeroPage());					} },
+			/* 6 */ { 5, [this]()	{ setByte(ROL(AM_ZeroPage()));			} },
+			/* 7 */ { 5, [this]()	{ RLA(AM_ZeroPage());					} },	// *RLA
+			/* 8 */ { 4, [this]()	{ PLP();								} },
+			/* 9 */ { 2, [this]()	{ ANDA(AM_Immediate());					} },
+			/* a */ { 2, [this]()	{ A() = ROL(A());						} },
+			/* b */ { 0, []()		{										} },
+			/* c */ { 4, [this]()	{ BIT(AM_Absolute());					} },
+			/* d */ { 4, [this]()	{ ANDA(AM_Absolute());					} },
+			/* e */ { 6, [this]()	{ setByte(ROL(AM_Absolute()));			} },
+			/* f */ { 6, [this]()	{ RLA(AM_Absolute());					} },	// *RLA
+		/* 3 */
+			/* 0 */ { 2, [this]()	{ Branch(!!(P() & NF));					} },
+			/* 1 */ { 5, [this]()	{ ANDA(AM_IndirectIndexedY());			} },
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 7, [this]()	{ RLA(AM_IndirectIndexedY());			} },	// *RLA
+			/* 4 */ { 4, [this]()	{ AM_ZeroPageX();						} },	// *DOP
+			/* 5 */ { 4, [this]()	{ ANDA(AM_ZeroPageX());					} },
+			/* 6 */ { 6, [this]()	{ setByte(ROL(AM_ZeroPageX()));			} },
+			/* 7 */ { 6, [this]()	{ RLA(AM_ZeroPageX());					} },	// *RLA
+			/* 8 */ { 2, [this]()	{ setFlag(P(), CF);						} },
+			/* 9 */ { 4, [this]()	{ ANDA(AM_AbsoluteY());					} },
+			/* a */ { 2, []()		{										} },	// *NOP
+			/* b */ { 6, [this]()	{ RLA(AM_AbsoluteY());					} },	// *RLA
+			/* c */ { 4, [this]()	{ AM_AbsoluteX();						} },	// *TOP
+			/* d */ { 4, [this]()	{ ANDA(AM_AbsoluteX());					} },
+			/* e */ { 7, [this]()	{ setByte(ROL(AM_AbsoluteX()));			} },
+			/* f */ { 6, [this]()	{ RLA(AM_AbsoluteX());					} },	// *RLA
+		/* 4 */
+			/* 0 */ { 6, [this]()	{ RTI();								} },
+			/* 1 */ { 6, [this]()	{ EORA(AM_IndexedIndirectX());			} },
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 8, [this]()	{ SRE(AM_IndexedIndirectX());			} },	// *SRE
+			/* 4 */ { 3, [this]()	{ AM_ZeroPage();						} },	// *DOP
+			/* 5 */ { 3, [this]()	{ EORA(AM_ZeroPage());					} },
+			/* 6 */ { 5, [this]()	{ setByte(LSR(AM_ZeroPage()));			} },
+			/* 7 */ { 5, [this]()	{ SRE(AM_ZeroPage());					} },	// *SRE
+			/* 8 */ { 3, [this]()	{ push(A());							} },
+			/* 9 */ { 2, [this]()	{ EORA(AM_Immediate());					} },
+			/* a */ { 2, [this]()	{ A() = LSR(A());						} },
+			/* b */ { 0, []()		{										} },
+			/* c */ { 3, [this]()	{ JMP_abs();							} },
+			/* d */ { 4, [this]()	{ EORA(AM_Absolute());					} },
+			/* e */ { 6, [this]()	{ setByte(LSR(AM_Absolute()));			} },
+			/* f */ { 6, [this]()	{ SRE(AM_Absolute());					} },	// *SRE
+		/* 5 */
+			/* 0 */ { 2, [this]()	{ Branch(!(P() & VF));					} },	// *SRE
+			/* 1 */ { 5, [this]()	{ EORA(AM_IndirectIndexedY());			} },
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 7, [this]()	{ SRE(AM_IndirectIndexedY());			} },	// *SRE
+			/* 4 */ { 4, [this]()	{ AM_ZeroPage();						} },	// *DOP
+			/* 5 */ { 4, [this]()	{ EORA(AM_ZeroPageX());					} },
+			/* 6 */ { 6, [this]()	{ setByte(LSR(AM_ZeroPageX()));			} },
+			/* 7 */ { 6, [this]()	{ SRE(AM_ZeroPageX());					} },	// *SRE
+			/* 8 */ { 2, [this]()	{ clearFlag(P(), IF);					} },
+			/* 9 */ { 4, [this]()	{ EORA(AM_AbsoluteY());					} },
+			/* a */ { 2, []()		{										} },	// *NOP
+			/* b */ { 6, [this]()	{ SRE(AM_AbsoluteY());					} },	// *SRE
+			/* c */ { 4, [this]()	{ AM_AbsoluteX();						} },	// *TOP
+			/* d */ { 4, [this]()	{ EORA(AM_AbsoluteX());					} },
+			/* e */ { 7, [this]()	{ setByte(LSR(AM_AbsoluteX()));			} },
+			/* f */ { 6, [this]()	{ SRE(AM_AbsoluteX());					} },	// *SRE
+		/* 6 */
+			/* 0 */ { 6, [this]()	{ RTS();								} },
+			/* 1 */ { 6, [this]()	{ A() = ADC(A(), AM_IndexedIndirectX());} },
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 8, [this]()	{ RRA(AM_IndexedIndirectX());			} },	// *RRA
+			/* 4 */ { 3, [this]()	{ AM_ZeroPage();						} },	// *DOP
+			/* 5 */ { 3, [this]()	{ A() = ADC(A(), AM_ZeroPage());		} },
+			/* 6 */ { 5, [this]()	{ setByte(ROR(AM_ZeroPage()));			} },
+			/* 7 */ { 5, [this]()	{ RRA(AM_ZeroPage());					} },	// *RRA
+			/* 8 */ { 4, [this]()	{ adjustNZ(A() = pop());				} },
+			/* 9 */ { 2, [this]()	{ A() = ADC(A(), AM_Immediate());		} },	// ADC #
+			/* a */ { 2, [this]()	{ A() = ROR(A());						} },	// ROR A
+			/* b */ { 0, []()		{										} },
+			/* c */ { 5, [this]()	{ JMP_ind();							} },	// JMP ind
+			/* d */ { 4, [this]()	{ A() = ADC(A(), AM_Absolute());		} },	// ADC abs
+			/* e */ { 6, [this]()	{ setByte(ROR(AM_Absolute()));			} },	// ROR abs
+			/* f */ { 6, [this]()	{ RRA(AM_Absolute());					} },	// *RRA
+		/* 7 */
+			/* 0 */ { 2, [this]()	{ Branch(!!(P() & VF));					} },
+			/* 1 */ { 5, [this]()	{ A() = ADC(A(), AM_IndirectIndexedY());} },	// ADC ind,Y
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 7, [this]()	{ RRA(AM_IndirectIndexedY());			} },	// *RRA
+			/* 4 */ { 4, [this]()	{ AM_ZeroPageX();						} },	// *DOP
+			/* 5 */ { 4, [this]()	{ A() = ADC(A(), AM_ZeroPageX());		} },
+			/* 6 */ { 6, [this]()	{ setByte(ROR(AM_ZeroPageX()));			} },
+			/* 7 */ { 6, [this]()	{ RRA(AM_ZeroPageX());					} },	// *RRA
+			/* 8 */ { 2, [this]()	{ setFlag(P(), IF);						} },
+			/* 9 */ { 4, [this]()	{ A() = ADC(A(), AM_AbsoluteY());		} },	// ADC abs,Y
+			/* a */ { 2, [this]()	{										} },	// *NOP
+			/* b */ { 6, [this]()	{ RRA(AM_AbsoluteY());					} },	// *RRA
+			/* c */ { 4, [this]()	{ AM_AbsoluteX();						} },	// *TOP
+			/* d */ { 4, [this]()	{ A() = ADC(A(), AM_AbsoluteX());		} },	// ADC abs,X
+			/* e */ { 7, [this]()	{ setByte(ROR(AM_AbsoluteX()));			} },	// ROR abs,X
+			/* f */ { 6, [this]()	{ RRA(AM_AbsoluteX());					} },	// *RRA
+		/* 8 */
+			/* 0 */ { 2, [this]()	{ AM_Immediate();						} },	// *DOP
+			/* 1 */ { 6, [this]()	{ AM_IndexedIndirectX(A());				} },
+			/* 2 */ { 2, [this]()	{ AM_Immediate();						} },	// *DOP
+			/* 3 */ { 6, [this]()	{ AM_IndexedIndirectX(A() & X());		} },	// *SAX 
+			/* 4 */ { 3, [this]()	{ AM_ZeroPage(Y());						} },	// STY zpg
+			/* 5 */ { 3, [this]()	{ AM_ZeroPage(A());						} },
+			/* 6 */ { 3, [this]()	{ AM_ZeroPage(X());						} },
+			/* 7 */ { 3, [this]()	{ AM_ZeroPage(A() & X());				} },	// *SAX
+			/* 8 */ { 2, [this]()	{ adjustNZ(--Y());						} },
+			/* 9 */ { 2, [this]()	{ AM_Immediate();						} },	// *DOP
+			/* a */ { 2, [this]()	{ adjustNZ(A() = X());					} },	// TXA impl
+			/* b */ { 0, []()		{										} },
+			/* c */ { 4, [this]()	{ AM_Absolute(Y());						} },	// STY abs
+			/* d */ { 4, [this]()	{ AM_Absolute(A());						} },
+			/* e */ { 4, [this]()	{ AM_Absolute(X());						} },	// STX abs
+			/* f */ { 4, [this]()	{ AM_Absolute(A() & X());				} },	// *SAX
+		/* 9 */
+			/* 0 */ { 2, [this]()	{ Branch(!(P() & CF));					} },
+			/* 1 */ { 6, [this]()	{ AM_IndirectIndexedY(A());				} },	// STA ind,Y
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 0, []()		{										} },
+			/* 4 */ { 4, [this]()	{ AM_ZeroPageX(Y());					} },	// STY zpg,X
+			/* 5 */ { 4, [this]()	{ AM_ZeroPageX(A());					} },
+			/* 6 */ { 4, [this]()	{ AM_ZeroPageY(X());					} },
+			/* 7 */ { 4, [this]()	{ AM_ZeroPageY(A() & X());				} },	// *SAX
+			/* 8 */ { 2, [this]()	{ adjustNZ(A() = Y());					} },
+			/* 9 */ { 5, [this]()	{ AM_AbsoluteY(A());					} },	// STA abs,Y
+			/* a */ { 2, [this]()	{ S() = X();							} },
+			/* b */ { 0, []()		{										} },
+			/* c */ { 0, []()		{										} },
+			/* d */ { 5, [this]()	{ AM_AbsoluteX(A());					} },	// STA abs,X
+			/* e */ { 0, []()		{										} },
+			/* f */ { 0, []()		{										} },
+		/* A */
+			/* 0 */ { 2, [this]()	{ adjustNZ(Y() = AM_Immediate());		} },
+			/* 1 */ { 6, [this]()	{ adjustNZ(A() = AM_IndexedIndirectX());} },
+			/* 2 */ { 2, [this]()	{ adjustNZ(X() = AM_Immediate());		} },
+			/* 3 */ { 6, [this]()	{ LAX(AM_IndexedIndirectX());			} },	// *LAX
+			/* 4 */ { 3, [this]()	{ adjustNZ(Y() = AM_ZeroPage());		} },	// LDY zpg
+			/* 5 */ { 3, [this]()	{ adjustNZ(A() = AM_ZeroPage());		} },
+			/* 6 */ { 3, [this]()	{ adjustNZ(X() = AM_ZeroPage());		} },
+			/* 7 */ { 3, [this]()	{ LAX(AM_ZeroPage());					} },	// *LAX
+			/* 8 */ { 2, [this]()	{ adjustNZ(Y() = A());					} },
+			/* 9 */ { 2, [this]()	{ adjustNZ(A() = AM_Immediate());		} },
+			/* a */ { 2, [this]()	{ adjustNZ(X() = A());					} },	// TAX imp
+			/* b */ { 0, []()		{										} },
+			/* c */ { 4, [this]()	{ adjustNZ(Y() = AM_Absolute());		} },	// LDY abs
+			/* d */ { 4, [this]()	{ adjustNZ(A() = AM_Absolute());		} },	// LDA abs
+			/* e */ { 4, [this]()	{ adjustNZ(X() = AM_Absolute());		} },	// LDX abs
+			/* f */ { 4, [this]()	{ LAX(AM_Absolute());					} },	// *LAX
+		/* B */
+			/* 0 */ { 2, [this]()	{ Branch(!!(P() & CF));					} },
+			/* 1 */ { 5, [this]()	{ adjustNZ(A() = AM_IndirectIndexedY());} },	// LDA ind,Y
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 5, [this]()	{ LAX(AM_IndirectIndexedY());			} },	// *LAX
+			/* 4 */ { 4, [this]()	{ adjustNZ(Y() = AM_ZeroPageX());		} },	// LDY zpg,X
+			/* 5 */ { 4, [this]()	{ adjustNZ(A() = AM_ZeroPageX());		} },
+			/* 6 */ { 4, [this]()	{ adjustNZ(X() = AM_ZeroPageY());		} },
+			/* 7 */ { 4, [this]()	{ LAX(AM_ZeroPageY());					} },	// *LAX
+			/* 8 */ { 2, [this]()	{ clearFlag(P(), VF);					} },
+			/* 9 */ { 4, [this]()	{ adjustNZ(A() = AM_AbsoluteY());		} },	// LDA abs,Y
+			/* a */ { 2, [this]()	{ adjustNZ(X() = S());					} },	// TSX impl
+			/* b */ { 0, []()		{										} },
+			/* c */ { 4, [this]()	{ adjustNZ(Y() = AM_AbsoluteX());		} },	// LDY abs,X
+			/* d */ { 4, [this]()	{ adjustNZ(A() = AM_AbsoluteX());		} },	// LDA abs,X
+			/* e */ { 4, [this]()	{ adjustNZ(X() = AM_AbsoluteY());		} },	// LDX abs,Y
+			/* f */ { 4, [this]()	{ LAX(AM_AbsoluteY());					} },	// *LAX
+		/* C */
+			/* 0 */ { 2, [this]()	{ CMP(Y(), AM_Immediate());				} },
+			/* 1 */ { 6, [this]()	{ CMP(A(), AM_IndexedIndirectX());		} },
+			/* 2 */ { 2, [this]()	{ AM_Immediate();						} },	// *DOP
+			/* 3 */ { 8, [this]()	{ DCP(AM_IndexedIndirectX());			} },	// *DCP
+			/* 4 */ { 3, [this]()	{ CMP(Y(), AM_ZeroPage());				} },	// CPY zpg
+			/* 5 */ { 3, [this]()	{ CMP(A(), AM_ZeroPage());				} },
+			/* 6 */ { 5, [this]()	{ setByte(DEC(AM_ZeroPage()));			} },
+			/* 7 */ { 5, [this]()	{ DCP(AM_ZeroPage());					} },	// *DCP
+			/* 8 */ { 2, [this]()	{ adjustNZ(++Y());						} },
+			/* 9 */ { 2, [this]()	{ CMP(A(), AM_Immediate());				} },	// CMP #
+			/* a */ { 2, [this]()	{ adjustNZ(--X());						} },
+			/* b */ { 0, []()		{										} },
+			/* c */ { 4, [this]()	{ CMP(Y(), AM_Absolute());				} },	// CPY abs
+			/* d */ { 4, [this]()	{ CMP(A(), AM_Absolute());				} },	// CMP abs
+			/* e */ { 6, [this]()	{ setByte(DEC(AM_Absolute()));			} },	// DEC abs
+			/* f */ { 6, [this]()	{ DCP(AM_Absolute());					} },	// *DCP
+		/* D */
+			/* 0 */ { 2, [this]()	{ Branch(!(P() & ZF));					} },
+			/* 1 */ { 5, [this]()	{ CMP(A(), AM_IndirectIndexedY());		} },	// CMP ind,Y
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 7, [this]()	{ DCP(AM_IndirectIndexedY());			} },	// *DCP
+			/* 4 */ { 4, [this]()	{ AM_ZeroPageX();						} },	// *DOP
+			/* 5 */ { 4, [this]()	{ CMP(A(), AM_ZeroPageX());				} },
+			/* 6 */ { 6, [this]()	{ setByte(DEC(AM_ZeroPageX()));			} },
+			/* 7 */ { 6, [this]()	{ DCP(AM_ZeroPageX());					} },	// *DCP
+			/* 8 */ { 2, [this]()	{ clearFlag(P(), DF);					} },
+			/* 9 */ { 4, [this]()	{ CMP(A(), AM_AbsoluteY());				} },	// CMP abs,Y
+			/* a */ { 2, [this]()	{										} },	// *NOP
+			/* b */ { 6, [this]()	{ DCP(AM_AbsoluteY());					} },	// *DCP
+			/* c */ { 4, [this]()	{ AM_AbsoluteX();						} },	// *TOP
+			/* d */ { 4, [this]()	{ CMP(A(), AM_AbsoluteX());				} },	// CMP abs,X
+			/* e */ { 7, [this]()	{ setByte(DEC(AM_AbsoluteX()));			} },
+			/* f */ { 6, [this]()	{ DCP(AM_AbsoluteX());					} },	// *DCP
+		/* E */
+			/* 0 */ { 2, [this]()	{ CMP(X(), AM_Immediate());				} },
+			/* 1 */ { 6, [this]()	{ A() = SBC(A(), AM_IndexedIndirectX());} },
+			/* 2 */ { 2, [this]()	{ AM_Immediate();						} },	// *DOP
+			/* 3 */ { 8, [this]()	{ ISB(AM_IndexedIndirectX());			} },	// *ISB
+			/* 4 */ { 3, [this]()	{ CMP(X(), AM_ZeroPage());				} },	// CPX zpg
+			/* 5 */ { 3, [this]()	{ A() = SBC(A(), AM_ZeroPage());		} },
+			/* 6 */ { 5, [this]()	{ setByte(INC(AM_ZeroPage()));			} },
+			/* 7 */ { 5, [this]()	{ ISB(AM_ZeroPage());					} },	// *ISB
+			/* 8 */ { 2, [this]()	{ adjustNZ(++X());						} },
+			/* 9 */ { 2, [this]()	{ A() = SBC(A(), AM_Immediate());		} },	// SBC #
+			/* a */ { 2, [this]()	{										} },	// NOP
+			/* b */ { 2, [this]()	{ A() = SBC(A(), AM_Immediate());		} },	// *SBC
+			/* c */ { 4, [this]()	{ CMP(X(), AM_Absolute());				} },	// CPX abs
+			/* d */ { 4, [this]()	{ A() = SBC(A(), AM_Absolute());		} },	// SBC abs
+			/* e */ { 6, [this]()	{ setByte(INC(AM_Absolute()));			} },	// INC abs
+			/* f */ { 6, [this]()	{ ISB(AM_Absolute());					} },	// *ISB
+		/* F */
+			/* 0 */ { 2, [this]()	{ Branch(!!(P() & ZF));					} },
+			/* 1 */ { 5, [this]()	{ A() = SBC(A(), AM_IndirectIndexedY());} },	// SBC ind,Y
+			/* 2 */ { 0, []()		{										} },
+			/* 3 */ { 7, [this]()	{ ISB(AM_IndirectIndexedY());			} },	// *ISB
+			/* 4 */ { 4, [this]()	{ AM_ZeroPageX();						} },	// *DOP
+			/* 5 */ { 4, [this]()	{ A() = SBC(A(), AM_ZeroPageX());		} },
+			/* 6 */ { 6, [this]()	{ setByte(INC(AM_ZeroPageX()));			} },
+			/* 7 */ { 6, [this]()	{ ISB(AM_ZeroPageX());					} },	// *ISB
+			/* 8 */ { 2, [this]()	{ setFlag(P(), DF);						} },
+			/* 9 */ { 4, [this]()	{ A() = SBC(A(), AM_AbsoluteY());		} },	// SBC abs,Y
+			/* a */ { 2, [this]()	{										} },	// *NOP
+			/* b */ { 6, [this]()	{ ISB(AM_AbsoluteY());					} },	// *ISB
+			/* c */ { 4, [this]()	{ AM_AbsoluteX();						} },	// *TOP
+			/* d */ { 4, [this]()	{ A() = SBC(A(), AM_AbsoluteX());		} },	// SBC abs,X
+			/* e */ { 7, [this]()	{ setByte(INC(AM_AbsoluteX()));			} },	// INC abs,X
+			/* f */ { 6, [this]()	{ ISB(AM_AbsoluteX());					} }		// *ISB
+	} ;
 
 	X() = Bit7;
 	Y() = 0;
@@ -87,374 +339,10 @@ void EightBit::MOS6502::interrupt(uint8_t vector) {
 
 int EightBit::MOS6502::execute(uint8_t cell) {
 
-	addCycles(m_timings[cell]);
+	const operation_t& operation = m_operations[cell];
 
-	// http://www.llx.com/~nparker/a2/opcodes.html
-
-	// Most instructions that explicitly reference memory
-	// locations have bit patterns of the form aaabbbcc.
-	// The aaa and cc bits determine the opcode, and the bbb
-	// bits determine the addressing mode.
-
-	const auto& decoded = m_decodedOpcodes[cell];
-
-	switch (decoded.cc) {
-	case 0b00:
-		switch (decoded.aaa) {
-		case 0b000:
-			switch (decoded.bbb) {
-			case 0b000:	// BRK
-				BRK();
-				break;
-			case 0b001:	// DOP/NOP (0x04)
-				AM_ZeroPage();
-				break;
-			case 0b010:	// PHP
-				PHP();
-				break;
-			case 0b011:	// TOP/NOP (0b00001100, 0x0c)
-				AM_Absolute();
-				break;
-			case 0b100:	// BPL
-				Branch(!(P() & NF));
-				break;
-			case 0b101:	// DOP/NOP (0x14)
-				AM_ZeroPageX();
-				break;
-			case 0b110:	// CLC
-				clearFlag(P(), CF);
-				break;
-			case 0b111:	// TOP/NOP (0b‭00011100‬, 0x1c)
-				AM_AbsoluteX();
-				break;
-			default:
-				throw std::domain_error("Illegal instruction");
-			}
-			break;
-		case 0b001:
-			switch (decoded.bbb) {
-			case 0b000:	// JSR
-				JSR_abs();
-				break;
-			case 0b010:	// PLP
-				PLP();
-				break;
-			case 0b100:	// BMI
-				Branch((P() & NF) != 0);
-				break;
-			case 0b101:	// DOP/NOP (0x34)
-				AM_ZeroPageX();
-				break;
-			case 0b110:	// SEC
-				setFlag(P(), CF);
-				break;
-			case 0b111:	// TOP/NOP (0b‭00111100‬, 0x3c)
-				AM_AbsoluteX();
-				break;
-			default:	// BIT
-				BIT(AM_00(decoded.bbb));
-				break;
-			}
-			break;
-		case 0b010:
-			switch (decoded.bbb) {
-			case 0b000:	// RTI
-				RTI();
-				break;
-			case 0b001:	// DOP/NOP (0x44)
-				AM_ZeroPage();
-				break;
-			case 0b010:	// PHA
-				push(A());
-				break;
-			case 0b011:	// JMP
-				JMP_abs();
-				break;
-			case 0b100:	// BVC
-				Branch(!(P() & VF));
-				break;
-			case 0b101:	// DOP/NOP (0x54)
-				AM_ZeroPageX();
-				break;
-			case 0b110:	// CLI
-				clearFlag(P(), IF);
-				break;
-			case 0b111:	// TOP/NOP (0b‭01011100‬, 0x5c)
-				AM_AbsoluteX();
-				break;
-			default:
-				throw std::domain_error("Illegal addressing mode");
-			}
-			break;
-		case 0b011:
-			switch (decoded.bbb) {
-			case 0b000:	// RTS
-				RTS();
-				break;
-			case 0b001:	// DOP/NOP (0x64)
-				AM_ZeroPage();
-				break;
-			case 0b010:	// PLA
-				adjustNZ(A() = pop());
-				break;
-			case 0b011:	// JMP (abs)
-				JMP_ind();
-				break;
-			case 0b100:	// BVS
-				Branch((P() & VF) != 0);
-				break;
-			case 0b101:	// DOP/NOP (0x74)
-				AM_ZeroPageX();
-				break;
-			case 0b110:	// SEI
-				setFlag(P(), IF);
-				break;
-			case 0b111:	// TOP/NOP (0b‭01111100‬, 0x7c)
-				AM_AbsoluteX();
-				break;
-			default:
-				throw std::domain_error("Illegal addressing mode");
-			}
-			break;
-		case 0b100:
-			switch (decoded.bbb) {
-			case 0b000:	// DOP/NOP (0x80)
-				AM_Immediate();
-				break;
-			case 0b010:	// DEY
-				adjustNZ(--Y());
-				break;
-			case 0b100:	// BCC
-				Branch(!(P() & CF));
-				break;
-			case 0b110:	// TYA
-				adjustNZ(A() = Y());
-				break;
-			default:	// STY
-				AM_00(decoded.bbb, Y());
-				break;
-			}
-			break;
-		case 0b101:
-			switch (decoded.bbb) {
-			case 0b010:	// TAY
-				adjustNZ(Y() = A());
-				break;
-			case 0b100:	// BCS
-				Branch((P() & CF) != 0);
-				break;
-			case 0b110:	// CLV
-				clearFlag(P(), VF);
-				break;
-			default:	// LDY
-				adjustNZ(Y() = AM_00(decoded.bbb));
-				break;
-			}
-			break;
-		case 0b110:
-			switch (decoded.bbb) {
-			case 0b010:	// INY
-				adjustNZ(++Y());
-				break;
-			case 0b100:	// BNE
-				Branch(!(P() & ZF));
-				break;
-			case 0b101:	// DOP/NOP (0xd4)
-				AM_ZeroPageX();
-				break;
-			case 0b110:	// CLD
-				clearFlag(P(), DF);
-				break;
-			case 0b111:	// TOP/NOP (0b‭11011100‬, 0xdc)
-				AM_AbsoluteX();
-				break;
-			default:	// CPY
-				CMP(Y(), AM_00(decoded.bbb));
-				break;
-			}
-			break;
-		case 0b111:
-			switch (decoded.bbb) {
-			case 0b010:	// INX
-				adjustNZ(++X());
-				break;
-			case 0b100:	// BEQ
-				Branch((P() & ZF) != 0);
-				break;
-			case 0b101:	// DOP/NOP (0xf4)
-				AM_ZeroPageX();
-				break;
-			case 0b110:	// SED
-				setFlag(P(), DF);
-				break;
-			case 0b111:	// TOP/NOP (0b‭11111100‬, 0xfc)
-				AM_AbsoluteX();
-				break;
-			default:	// CPX
-				CMP(X(), AM_00(decoded.bbb));
-				break;
-			}
-			break;
-		}
-		break;
-	case 0b01:
-		switch (decoded.aaa) {
-		case 0b000:		// ORA
-			ORA(AM_01(decoded.bbb));
-			break;
-		case 0b001:		// AND
-			ANDA(AM_01(decoded.bbb));
-			break;
-		case 0b010:		// EOR
-			EORA(AM_01(decoded.bbb));
-			break;
-		case 0b011:		// ADC
-			A() = ADC(A(), AM_01(decoded.bbb));
-			break;
-		case 0b100:		// STA
-			AM_01(decoded.bbb, A());
-			break;
-		case 0b101:		// LDA
-			adjustNZ(A() = AM_01(decoded.bbb));
-			break;
-		case 0b110:		// CMP
-			CMP(A(), AM_01(decoded.bbb));
-			break;
-		case 0b111:		// SBC
-			A() = SBC(A(), AM_01(decoded.bbb));
-			break;
-		default:
-			UNREACHABLE;
-		}
-		break;
-	case 0b10:
-		switch (decoded.aaa) {
-		case 0b000:		// ASL
-			switch (decoded.bbb) {
-			case 0b110:
-				break;	// *NOP (0x1a)
-			default:
-				ASL(decoded.bbb);
-				break;
-			}
-			break;
-		case 0b001:		// ROL
-			switch (decoded.bbb) {
-			case 0b110:
-				break;	// *NOP (0x3a)
-			default:
-				ROL(decoded.bbb);
-				break;
-			}
-			break;
-		case 0b010:		// LSR
-			switch (decoded.bbb) {
-			case 0b110:
-				break;	// *NOP (0x5a)
-			default:
-				LSR(decoded.bbb);
-				break;
-			}
-			break;
-		case 0b011:		// ROR (0x7a)
-			switch (decoded.bbb) {
-			case 0b110:
-				break;	// *NOP
-			default:
-				ROR(decoded.bbb);
-				break;
-			}
-			break;
-		case 0b100:
-			switch (decoded.bbb) {
-			case 0b010:	// TXA
-				adjustNZ(A() = X());
-				break;
-			case 0b110:	// TXS
-				S() = X();
-				break;
-			default:	// STX
-				AM_10_x(decoded.bbb, X());
-				break;
-			}
-			break;
-		case 0b101:
-			switch (decoded.bbb) {
-			case 0b110:	// TSX
-				adjustNZ(X() = S());
-				break;
-			default:	// LDX
-				adjustNZ(X() = AM_10_x(decoded.bbb));
-				break;
-			}
-			break;
-		case 0b110:
-			switch (decoded.bbb) {
-			case 0b010:	// DEX
-				adjustNZ(--X());
-				break;
-			case 0b110:	// *NOP (0xda)
-				break;
-			default:	// DEC
-				DEC(decoded.bbb);
-				break;
-			}
-			break;
-		case 0b111:
-			switch (decoded.bbb) {
-			case 0b010:	// NOP
-				break;
-			case 0b110:	// *NOP (0xfa)
-				break;
-			default:	// INC
-				INC(decoded.bbb);
-				break;
-			}
-			break;
-		default:
-			UNREACHABLE;
-		}
-		break;
-	case 0b11:
-		switch (decoded.aaa) {
-		case 0b000:	// *SLO
-			SLO(decoded.bbb);
-			break;
-		case 0b001:	// *RLA
-			RLA(decoded.bbb);
-			break;
-		case 0b010:	// *SRE
-			SRE(decoded.bbb);
-			break;
-		case 0b011:	// *RRA
-			RRA(decoded.bbb);
-			break;
-		case 0b100: // *SAX
-			AM_11(decoded.bbb, A() & X());
-			break;
-		case 0b101:	// *LAX
-			adjustNZ(X() = A() = AM_11(decoded.bbb));
-			break;
-		case 0b110:	// *DCP
-			DCP(decoded.bbb);
-			break;
-		case 0b111:	// *SBC
-			switch (decoded.bbb) {
-			case 0b010:
-				A() = SBC(A(), AM_11(decoded.bbb));
-				break;
-			default:	// *ISB
-				ISB(decoded.bbb);
-				break;
-			}
-			break;
-		default:
-			throw std::domain_error("Illegal instruction group");
-		}
-		break;
-	default:
-		UNREACHABLE;
-	}
+	addCycles(operation.timing);
+	(operation.method)();
 
 	if (UNLIKELY(cycles() == 0))
 		throw std::logic_error("Unhandled opcode");
