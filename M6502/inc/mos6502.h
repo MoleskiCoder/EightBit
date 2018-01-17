@@ -128,10 +128,6 @@ namespace EightBit {
 
 		// Addressing modes, read
 
-		uint8_t AM_A() {
-			return A();
-		}
-
 		uint8_t AM_Immediate() {
 			return fetchByte();
 		}
@@ -325,14 +321,6 @@ namespace EightBit {
 		uint8_t a;		// accumulator
 		uint8_t s;		// stack pointer
 		uint8_t p;		// processor status
-
-		typedef std::function<void(void)> delegate_t;
-		struct operation_t {
-			int timing = 0;
-			delegate_t method;
-		};
-
-		std::vector<operation_t> m_operations;
 
 		PinLevel m_soLine = Low;
 	};
