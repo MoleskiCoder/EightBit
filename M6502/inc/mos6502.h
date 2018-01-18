@@ -65,7 +65,9 @@ namespace EightBit {
 			adjustNegative(datum);
 		}
 
-		void getWord(uint8_t page, uint8_t offset, register16_t& output);
+		void getWordPaged(uint8_t page, uint8_t offset, register16_t& output);
+		uint8_t getBytePaged(uint8_t page, uint8_t offset);
+		void setBytePaged(uint8_t page, uint8_t offset, uint8_t value);
 
 		virtual void push(uint8_t value) final;
 		virtual uint8_t pop() final;
@@ -83,12 +85,12 @@ namespace EightBit {
 
 		void Address_ZeroPageIndirect() {
 			Address_ZeroPage();
-			getWord(0, MEMPTR().low, MEMPTR());
+			getWordPaged(0, MEMPTR().low, MEMPTR());
 		}
 
 		void Address_Indirect() {
 			Address_Absolute();
-			getWord(MEMPTR().high, MEMPTR().low, MEMPTR());
+			getWordPaged(MEMPTR().high, MEMPTR().low, MEMPTR());
 		}
 
 		void Address_ZeroPageX() {
@@ -117,7 +119,7 @@ namespace EightBit {
 
 		void Address_IndexedIndirectX() {
 			Address_ZeroPageX();
-			getWord(0, MEMPTR().low, MEMPTR());
+			getWordPaged(0, MEMPTR().low, MEMPTR());
 		}
 
 		bool Address_IndirectIndexedY() {
@@ -309,8 +311,6 @@ namespace EightBit {
 		void JMP_abs();
 		void JMP_ind();
 		void BRK();
-
-		const uint16_t PageOne = 0x100;
 
 		// All interrupt vectors are on the 0xFF page
 		const uint8_t IRQvector = 0xfe;
