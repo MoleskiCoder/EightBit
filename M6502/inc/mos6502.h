@@ -31,6 +31,7 @@ namespace EightBit {
 
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
+		virtual void powerOn() override;
 
 		uint8_t& X() { return x; }
 		uint8_t& Y() { return y; }
@@ -316,11 +317,11 @@ namespace EightBit {
 		const uint8_t RSTvector = 0xfc;
 		const uint8_t NMIvector = 0xfa;
 
-		uint8_t x;		// index register X
-		uint8_t y;		// index register Y
-		uint8_t a;		// accumulator
-		uint8_t s;		// stack pointer
-		uint8_t p;		// processor status
+		uint8_t x = 0;		// index register X
+		uint8_t y = 0;		// index register Y
+		uint8_t a = 0;		// accumulator
+		uint8_t s = 0;		// stack pointer
+		uint8_t p = 0;		// processor status
 
 		PinLevel m_soLine = Low;
 	};

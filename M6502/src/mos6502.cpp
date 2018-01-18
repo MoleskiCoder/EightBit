@@ -2,7 +2,9 @@
 #include "mos6502.h"
 
 EightBit::MOS6502::MOS6502(Bus& bus)
-: Processor(bus) {
+: Processor(bus) {}
+
+void EightBit::MOS6502::powerOn() {
 
 	X() = Bit7;
 	Y() = 0;
@@ -11,6 +13,8 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 	S() = Mask8;
 
 	raise(SO());
+
+	Processor::powerOn();
 }
 
 int EightBit::MOS6502::step() {

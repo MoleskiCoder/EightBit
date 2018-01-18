@@ -76,7 +76,7 @@ namespace EightBit {
 		PinLevel& POWER() { return m_powerLine; }	// In
 
 		bool powered() { return raised(POWER()); }
-		void powerOn() { raise(POWER()); raise(HALT()); reset(); }
+		virtual void powerOn() { raise(POWER()); raise(HALT()); reset(); }
 		void powerOff() { lower(POWER()); }
 
 		int run(int limit);
