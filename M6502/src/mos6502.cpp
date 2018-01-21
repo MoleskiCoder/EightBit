@@ -91,7 +91,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x08:	addCycles(3);	PHP();									break;
 	case 0x09:	addCycles(2);	ORA(AM_Immediate());					break;
 	case 0x0a:	addCycles(2);	A() = ASL(A());							break;
-	case 0x0b:	addCycles(0);											break;
+	case 0x0b:	addCycles(2);	AAC(AM_Immediate());					break;
 	case 0x0c:	addCycles(4);	AM_Absolute();							break;
 	case 0x0d:	addCycles(4);	ORA(AM_Absolute());						break;
 	case 0x0e:	addCycles(6);	setByte(ASL(AM_Absolute()));			break;
@@ -125,7 +125,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x28:	addCycles(4);	PLP();									break;
 	case 0x29:	addCycles(2);	ANDA(AM_Immediate());					break;
 	case 0x2a:	addCycles(2);	A() = ROL(A());							break;
-	case 0x2b:	addCycles(0);											break;
+	case 0x2b:	addCycles(2);	AAC(AM_Immediate());					break;
 	case 0x2c:	addCycles(4);	BIT(AM_Absolute());						break;
 	case 0x2d:	addCycles(4);	ANDA(AM_Absolute());					break;
 	case 0x2e:	addCycles(6);	setByte(ROL(AM_Absolute()));			break;
@@ -159,7 +159,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x48:	addCycles(3);	push(A());								break;
 	case 0x49:	addCycles(2);	EORA(AM_Immediate());					break;
 	case 0x4a:	addCycles(2);	A() = LSR(A());							break;
-	case 0x4b:	addCycles(0);											break;
+	case 0x4b:	addCycles(2);	ASR(AM_Immediate());					break;
 	case 0x4c:	addCycles(3);	JMP_abs();								break;
 	case 0x4d:	addCycles(4);	EORA(AM_Absolute());					break;
 	case 0x4e:	addCycles(6);	setByte(LSR(AM_Absolute()));			break;
@@ -193,7 +193,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x68:	addCycles(4);	adjustNZ(A() = pop());					break;
 	case 0x69:	addCycles(2);	A() = ADC(A(), AM_Immediate());			break;
 	case 0x6a:	addCycles(2);	A() = ROR(A());							break;
-	case 0x6b:	addCycles(0);											break;
+	case 0x6b:	addCycles(2);	ARR(AM_Immediate());					break;
 	case 0x6c:	addCycles(5);	JMP_ind();								break;
 	case 0x6d:	addCycles(4);	A() = ADC(A(), AM_Absolute());			break;
 	case 0x6e:	addCycles(6);	setByte(ROR(AM_Absolute()));			break;
@@ -261,7 +261,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0xa8:	addCycles(2);	adjustNZ(Y() = A());					break;
 	case 0xa9:	addCycles(2);	adjustNZ(A() = AM_Immediate());			break;
 	case 0xaa:	addCycles(2);	adjustNZ(X() = A());					break;
-	case 0xab:	addCycles(0);											break;
+	case 0xab:	addCycles(2);	ATX(AM_Immediate());					break;
 	case 0xac:	addCycles(4);	adjustNZ(Y() = AM_Absolute());			break;
 	case 0xad:	addCycles(4);	adjustNZ(A() = AM_Absolute());			break;
 	case 0xae:	addCycles(4);	adjustNZ(X() = AM_Absolute());			break;
@@ -295,7 +295,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0xc8:	addCycles(2);	adjustNZ(++Y());						break;
 	case 0xc9:	addCycles(2);	CMP(A(), AM_Immediate());				break;
 	case 0xca:	addCycles(2);	adjustNZ(--X());						break;
-	case 0xcb:	addCycles(0);											break;
+	case 0xcb:	addCycles(2);	AXS(AM_Immediate());					break;
 	case 0xcc:	addCycles(4);	CMP(Y(), AM_Absolute());				break;
 	case 0xcd:	addCycles(4);	CMP(A(), AM_Absolute());				break;
 	case 0xce:	addCycles(6);	setByte(DEC(AM_Absolute()));			break;

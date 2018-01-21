@@ -39,6 +39,10 @@ namespace EightBit {
 			return AM_Immediate_dump() + "\t" + instruction + " $" + dump_WordValue(address);
 		}
 
+		std::string disassemble_Immediate(const std::string& instruction) const {
+			return AM_Immediate_dump() + "\t" + instruction + " " + AM_Immediate();
+		}
+
 		std::string disassemble_AM_00(int bbb, const std::string& instruction) const {
 			return AM_00_dump(bbb) + "\t" + instruction + " " + AM_00(bbb);
 		}

@@ -390,10 +390,25 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 	case 0b11:
 		switch (aaa) {
 		case 0b000:
-			output << disassemble_AM_01(bbb, "*SLO");
+			switch (bbb) {
+			case 0b010:
+				output << disassemble_Immediate("*AAC");
+				break;
+			default:
+				output << disassemble_AM_01(bbb, "*SLO");
+				break;
+			}
 			break;
 		case 0b001:
-			output << disassemble_AM_01(bbb, "*RLA");
+
+			switch (bbb) {
+			case 0b010:
+				output << disassemble_Immediate("*AAC");
+				break;
+			default:
+				output << disassemble_AM_01(bbb, "*RLA");
+				break;
+			}
 			break;
 		case 0b010:
 			output << disassemble_AM_01(bbb, "*SRE");

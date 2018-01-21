@@ -260,6 +260,26 @@ namespace EightBit {
 			adjustNZ(X() = A() = value);
 		}
 
+		void AAC(uint8_t value) {
+			ANDA(value);
+			setFlag(P(), CF, A() & Bit7);
+		}
+
+		void ASR(uint8_t value) {
+			A() = LSR(A() & value);
+		}
+
+		void ARR(uint8_t value) {
+		}
+
+		void ATX(uint8_t value) {
+			ANDA(value);
+			X() = A();
+		}
+
+		void AXS(uint8_t value) {
+		}
+
 		//
 
 		uint8_t DEC(uint8_t value) {
