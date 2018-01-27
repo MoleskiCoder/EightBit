@@ -11,11 +11,11 @@ namespace EightBit {
 	public:
 		Disassembly(MOS6502& processor, const Symbols& symbols);
 
-		std::string dump_Flags(uint8_t value) const;
-		std::string dump_ByteValue(uint8_t value) const;
-		std::string dump_WordValue(uint16_t value) const;
-
 		std::string disassemble(uint16_t current) const;
+
+		static std::string dump_Flags(uint8_t value);
+		static std::string dump_ByteValue(uint8_t value);
+		static std::string dump_WordValue(uint16_t value);
 
 	private:
 		MOS6502& processor;

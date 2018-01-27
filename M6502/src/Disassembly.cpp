@@ -12,7 +12,7 @@ EightBit::Disassembly::Disassembly(MOS6502& targetProcessor, const Symbols& targ
 	symbols(targetSymbols) {
 }
 
-std::string EightBit::Disassembly::dump_Flags(uint8_t value) const {
+std::string EightBit::Disassembly::dump_Flags(uint8_t value) {
 	std::string returned;
 	returned += (value & MOS6502::NF) ? "N" : "-";
 	returned += (value & MOS6502::VF) ? "O" : "-";
@@ -29,13 +29,13 @@ void EightBit::Disassembly::dump(std::ostream& out, int value, int width) {
 	out << std::hex << std::uppercase << std::setw(width) << std::setfill('0') << value;
 }
 
-std::string EightBit::Disassembly::dump_ByteValue(uint8_t value) const {
+std::string EightBit::Disassembly::dump_ByteValue(uint8_t value) {
 	std::ostringstream output;
 	dump(output, value, 2);
 	return output.str();
 }
 
-std::string EightBit::Disassembly::dump_WordValue(uint16_t value) const {
+std::string EightBit::Disassembly::dump_WordValue(uint16_t value) {
 	std::ostringstream output;
 	dump(output, value, 4);
 	return output.str();
