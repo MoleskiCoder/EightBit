@@ -41,7 +41,9 @@ uint16_t EightBit::Bus::peekWord(uint16_t address) {
 
 uint8_t EightBit::Bus::read() {
 	ReadingByte.fire(ADDRESS().word);
-	return reference();
+	const auto returned = reference();
+	ReadByte.fire(ADDRESS().word);
+	return returned;
 }
 
 uint8_t EightBit::Bus::read(uint16_t offset) {
@@ -55,6 +57,7 @@ uint8_t EightBit::Bus::read(register16_t address) {
 }
 
 void EightBit::Bus::write(uint8_t value) {
+	WritingByte.fire(ADDRESS().word);
 	reference() = value;
 	WrittenByte.fire(ADDRESS().word);
 }

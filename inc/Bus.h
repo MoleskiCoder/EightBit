@@ -10,8 +10,11 @@ namespace EightBit {
 	public:
 		virtual ~Bus() = default;
 
+		Signal<uint16_t> WritingByte;
 		Signal<uint16_t> WrittenByte;
+
 		Signal<uint16_t> ReadingByte;
+		Signal<uint16_t> ReadByte;
 
 		register16_t& ADDRESS();
 		uint8_t& DATA();
