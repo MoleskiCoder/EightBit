@@ -110,13 +110,11 @@ namespace EightBit {
 			return getByte(PC().word++);
 		}
 
-		void fetchWord(register16_t& output) {
-			output.low = fetchByte();
-			output.high = fetchByte();
-		}
-
-		void fetchWord() {
-			fetchWord(MEMPTR());
+		register16_t fetchWord() {
+			register16_t returned;
+			returned.low = fetchByte();
+			returned.high = fetchByte();
+			return returned;
 		}
 
 		uint8_t getByte() { return BUS().read(); }
@@ -133,9 +131,11 @@ namespace EightBit {
 			push(value.low);
 		}
 
-		void popWord(register16_t& output) {
-			output.low = pop();
-			output.high = pop();
+		register16_t popWord() {
+			register16_t returned;
+			returned.low = pop();
+			returned.high = pop();
+			return returned;
 		}
 
 		void jump() {
@@ -148,7 +148,7 @@ namespace EightBit {
 		}
 
 		void ret() {
-			popWord(MEMPTR());
+			MEMPTR() = popWord();
 			jump();
 		}
 

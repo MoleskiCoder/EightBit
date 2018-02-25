@@ -120,7 +120,7 @@ namespace EightBit {
 
 		//
 
-		void getWord(register16_t& value);
+		register16_t getWord();
 		void setWord(register16_t value);
 
 		//
@@ -132,14 +132,14 @@ namespace EightBit {
 		}
 
 		bool callConditional(int condition) {
-			fetchWord();
+			MEMPTR() = fetchWord();
 			if (condition)
 				call();
 			return condition != 0;
 		}
 
 		bool jumpConditional(int conditional) {
-			fetchWord();
+			MEMPTR() = fetchWord();
 			if (conditional)
 				jump();
 			return conditional != 0;

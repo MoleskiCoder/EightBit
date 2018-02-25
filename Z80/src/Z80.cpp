@@ -870,12 +870,12 @@ void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, 
 		case 3:	// Retrieve/store register pair from/to immediate address
 			switch (q) {
 			case 0:	// LD (nn), rp[p]
-				fetchWord();
+				MEMPTR() = fetchWord();
 				setWord(RP(p));
 				break;
 			case 1:	// LD rp[p], (nn)
-				fetchWord();
-				getWord(RP(p));
+				MEMPTR() = fetchWord();
+				RP(p) = getWord();
 				break;
 			default:
 				UNREACHABLE;
@@ -1097,7 +1097,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0: // LD rp,nn
-				fetchWord(RP(p));
+				RP(p) = fetchWord();
 				addCycles(10);
 				break;
 			case 1:	// ADD HL,rp
@@ -1125,12 +1125,12 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 					addCycles(7);
 					break;
 				case 2:	// LD (nn),HL
-					fetchWord();
+					MEMPTR() = fetchWord();
 					setWord(HL2());
 					addCycles(16);
 					break;
 				case 3: // LD (nn),A
-					fetchWord();
+					MEMPTR() = fetchWord();
 					setByte(MEMPTR().word++, a);
 					MEMPTR().high = a;
 					addCycles(13);
@@ -1152,12 +1152,12 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 					addCycles(7);
 					break;
 				case 2:	// LD HL,(nn)
-					fetchWord();
-					getWord(HL2());
+					MEMPTR() = fetchWord();
+					HL2() = getWord();
 					addCycles(16);
 					break;
 				case 3:	// LD A,(nn)
-					fetchWord();
+					MEMPTR() = fetchWord();
 					a = getByte(MEMPTR().word++);
 					addCycles(13);
 					break;
@@ -1328,7 +1328,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 		case 1:	// POP & various ops
 			switch (q) {
 			case 0:	// POP rp2[p]
-				popWord(RP2(p));
+				RP2(p) = popWord();
 				addCycles(10);
 				break;
 			case 1:
@@ -1364,7 +1364,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0:	// JP nn
-				fetchWord();
+				MEMPTR() = fetchWord();
 				jump();
 				addCycles(10);
 				break;
@@ -1417,7 +1417,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
-					fetchWord();
+					MEMPTR() = fetchWord();
 					call();
 					addCycles(17);
 					break;

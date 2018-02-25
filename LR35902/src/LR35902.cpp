@@ -424,7 +424,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 				addCycle();
 				break;
 			case 1:	// GB: LD (nn),SP
-				fetchWord();
+				MEMPTR() = fetchWord();
 				setWord(SP());
 				addCycles(5);
 				break;
@@ -451,7 +451,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0: // LD rp,nn
-				fetchWord(RP(p));
+				RP(p) = fetchWord();
 				addCycles(3);
 				break;
 			case 1:	// ADD HL,rp
@@ -674,7 +674,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 		case 1:	// POP & various ops
 			switch (q) {
 			case 0:	// POP rp2[p]
-				popWord(RP2(p));
+				RP2(p) = popWord();
 				addCycles(3);
 				break;
 			case 1:
@@ -717,7 +717,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 				addCycles(2);
 				break;
 			case 5:	// GB: LD (nn),A
-				fetchWord();
+				MEMPTR() = fetchWord();
 				setByte(MEMPTR(), a);
 				addCycles(4);
 				break;
@@ -726,7 +726,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 				addCycles(2);
 				break;
 			case 7:	// GB: LD A,(nn)
-				fetchWord();
+				MEMPTR() = fetchWord();
 				a = getByte(MEMPTR());
 				addCycles(4);
 				break;
@@ -737,7 +737,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0:	// JP nn
-				fetchWord();
+				MEMPTR() = fetchWord();
 				jump();
 				addCycles(4);
 				break;
@@ -769,7 +769,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
-					fetchWord();
+					MEMPTR() = fetchWord();
 					call();
 					addCycles(6);
 					break;

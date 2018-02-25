@@ -75,7 +75,7 @@ namespace EightBit {
 		// Address resolution
 
 		void Address_Absolute() {
-			fetchWord();
+			MEMPTR() = fetchWord();
 		}
 
 		void Address_ZeroPage() {
