@@ -73,7 +73,7 @@ void EightBit::Z80::decrement(uint8_t& f, uint8_t& operand) {
 	setFlag(f, VF, operand == Mask7);
 }
 
-bool EightBit::Z80::jrConditionalFlag(uint8_t& f, const int flag) {
+bool EightBit::Z80::jrConditionalFlag(uint8_t f, const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jrConditional(!(f & ZF));
@@ -89,7 +89,7 @@ bool EightBit::Z80::jrConditionalFlag(uint8_t& f, const int flag) {
 	throw std::logic_error("Unhandled JR conditional");
 }
 
-bool EightBit::Z80::jumpConditionalFlag(uint8_t& f, const int flag) {
+bool EightBit::Z80::jumpConditionalFlag(uint8_t f, const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jumpConditional(!(f & ZF));
@@ -122,7 +122,7 @@ void EightBit::Z80::reti() {
 	retn();
 }
 
-bool EightBit::Z80::returnConditionalFlag(uint8_t& f, const int flag) {
+bool EightBit::Z80::returnConditionalFlag(uint8_t f, const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return returnConditional(!(f & ZF));
@@ -146,7 +146,7 @@ bool EightBit::Z80::returnConditionalFlag(uint8_t& f, const int flag) {
 	throw std::logic_error("Unhandled RET conditional");
 }
 
-bool EightBit::Z80::callConditionalFlag(uint8_t& f, const int flag) {
+bool EightBit::Z80::callConditionalFlag(uint8_t f, const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return callConditional(!(f & ZF));

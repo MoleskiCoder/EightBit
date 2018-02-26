@@ -47,13 +47,15 @@ int EightBit::MOS6502::step() {
 
 void EightBit::MOS6502::reset() {
 	Processor::reset();
-	getWordPaged(0xff, RSTvector, PC());
+	PC() = getWordPaged(0xff, RSTvector);
 }
 
-void EightBit::MOS6502::getWordPaged(uint8_t page, uint8_t offset, register16_t& output) {
-	output.low = getBytePaged(page, offset);
+EightBit::register16_t EightBit::MOS6502::getWordPaged(uint8_t page, uint8_t offset) {
+	EightBit::register16_t returned;
+	returned.low = getBytePaged(page, offset);
 	BUS().ADDRESS().low++;
-	output.high = getByte();
+	returned.high = getByte();
+	return returned;
 }
 
 uint8_t EightBit::MOS6502::getBytePaged(uint8_t page, uint8_t offset) {
@@ -73,7 +75,7 @@ void EightBit::MOS6502::interrupt(uint8_t vector) {
 	pushWord(PC());
 	push(P());
 	setFlag(P(), IF);
-	getWordPaged(0xff, vector, PC());
+	PC() = getWordPaged(0xff, vector);
 }
 
 int EightBit::MOS6502::execute(uint8_t cell) {
@@ -545,5 +547,5 @@ void EightBit::MOS6502::BRK() {
 	pushWord(PC());
 	PHP();
 	setFlag(P(), IF);
-	getWordPaged(0xff, IRQvector, PC());
+	PC() = getWordPaged(0xff, IRQvector);
 }

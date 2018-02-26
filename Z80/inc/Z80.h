@@ -315,10 +315,10 @@ namespace EightBit {
 		void retn();
 		void reti();
 
-		bool jrConditionalFlag(uint8_t& f, int flag);
-		bool returnConditionalFlag(uint8_t& f, int flag);
-		bool jumpConditionalFlag(uint8_t& f, int flag);
-		bool callConditionalFlag(uint8_t& f, int flag);
+		bool jrConditionalFlag(uint8_t f, int flag);
+		bool returnConditionalFlag(uint8_t f, int flag);
+		bool jumpConditionalFlag(uint8_t f, int flag);
+		bool callConditionalFlag(uint8_t f, int flag);
 
 		void sbc(uint8_t& f, register16_t& operand, register16_t value);
 		void adc(uint8_t& f, register16_t& operand, register16_t value);
