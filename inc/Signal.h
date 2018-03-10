@@ -17,9 +17,8 @@ namespace EightBit {
 		}
 
 		void fire(const T& e) const {
-			if (!m_delegates.empty())
-				for (auto& delegate : m_delegates)
-					delegate(e);
+			for (auto& delegate : m_delegates)
+				delegate(e);
 		}
 	};
 }

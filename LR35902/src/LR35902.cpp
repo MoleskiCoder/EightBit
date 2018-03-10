@@ -467,19 +467,19 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					setByte(BC(), a);
+					BUS().write(BC(), a);
 					addCycles(2);
 					break;
 				case 1:	// LD (DE),A
-					setByte(DE(), a);
+					BUS().write(DE(), a);
 					addCycles(2);
 					break;
 				case 2:	// GB: LDI (HL),A
-					setByte(HL().word++, a);
+					BUS().write(HL().word++, a);
 					addCycles(2);
 					break;
 				case 3: // GB: LDD (HL),A
-					setByte(HL().word--, a);
+					BUS().write(HL().word--, a);
 					addCycles(2);
 					break;
 				default:
@@ -489,19 +489,19 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					a = getByte(BC());
+					a = BUS().read(BC());
 					addCycles(2);
 					break;
 				case 1:	// LD A,(DE)
-					a = getByte(DE());
+					a = BUS().read(DE());
 					addCycles(2);
 					break;
 				case 2:	// GB: LDI A,(HL)
-					a = getByte(HL().word++);
+					a = BUS().read(HL().word++);
 					addCycles(2);
 					break;
 				case 3:	// GB: LDD A,(HL)
-					a = getByte(HL().word--);
+					a = BUS().read(HL().word--);
 					addCycles(2);
 					break;
 				default:
@@ -718,7 +718,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 				break;
 			case 5:	// GB: LD (nn),A
 				MEMPTR() = fetchWord();
-				setByte(MEMPTR(), a);
+				BUS().write(MEMPTR(), a);
 				addCycles(4);
 				break;
 			case 6:	// GB: LD A,(FF00 + C)
@@ -727,7 +727,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 				break;
 			case 7:	// GB: LD A,(nn)
 				MEMPTR() = fetchWord();
-				a = getByte(MEMPTR());
+				a = BUS().read(MEMPTR());
 				addCycles(4);
 				break;
 			default:

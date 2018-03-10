@@ -62,7 +62,7 @@ namespace EightBit {
 			case 0b101:
 				return L();
 			case 0b110:
-				return getByte(HL());
+				return BUS().read(HL());
 			case 0b111:
 				return a;
 			default:
@@ -92,7 +92,7 @@ namespace EightBit {
 				L() = value;
 				break;
 			case 0b110:
-				setByte(HL(), value);
+				BUS().write(HL(), value);
 				break;
 			case 0b111:
 				a = value;

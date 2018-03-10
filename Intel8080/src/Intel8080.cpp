@@ -231,22 +231,20 @@ void EightBit::Intel8080::cmc(uint8_t& a, uint8_t& f) {
 }
 
 void EightBit::Intel8080::xhtl(register16_t& operand) {
-	MEMPTR().low = getByte(SP());
-	setByte(operand.low);
+	MEMPTR().low = BUS().read(SP());
+	BUS().write(operand.low);
 	operand.low = MEMPTR().low;
 	BUS().ADDRESS().word++;
-	MEMPTR().high = getByte();
-	setByte(operand.high);
+	MEMPTR().high = BUS().read();
+	BUS().write(operand.high);
 	operand.high = MEMPTR().high;
 }
 
 void EightBit::Intel8080::writePort(uint8_t port, uint8_t data) {
 	BUS().ADDRESS().low = port;
 	BUS().ADDRESS().high = data;
-	MEMPTR() = BUS().ADDRESS();
 	BUS().placeDATA(data);
 	writePort();
-	MEMPTR().low++;
 }
 
 void EightBit::Intel8080::writePort() {
@@ -256,10 +254,8 @@ void EightBit::Intel8080::writePort() {
 void EightBit::Intel8080::readPort(uint8_t port, uint8_t& a) {
 	BUS().ADDRESS().low = port;
 	BUS().ADDRESS().high = a;
-	MEMPTR() = BUS().ADDRESS();
 	readPort();
 	a = BUS().DATA();
-	MEMPTR().low++;
 }
 
 void EightBit::Intel8080::readPort() {
@@ -302,9 +298,7 @@ int EightBit::Intel8080::execute(uint8_t opcode) {
 
 	execute(a, f, x, y, z, p, q);
 
-	if (UNLIKELY(cycles() == 0))
-		throw std::logic_error("Unhandled opcode");
-
+	ASSUME(cycles() > 0);
 	return cycles();
 }
 
@@ -338,11 +332,11 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					setByte(BC(), a);
+					BUS().write(BC(), a);
 					addCycles(7);
 					break;
 				case 1:	// LD (DE),A
-					setByte(DE(), a);
+					BUS().write(DE(), a);
 					addCycles(7);
 					break;
 				case 2:	// LD (nn),HL
@@ -351,8 +345,8 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 					addCycles(16);
 					break;
 				case 3: // LD (nn),A
-					MEMPTR() = fetchWord();
-					setByte(MEMPTR(), a);
+					BUS().ADDRESS() = fetchWord();
+					BUS().write(a);
 					addCycles(13);
 					break;
 				default:
@@ -362,11 +356,11 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					a = getByte(BC());
+					a = BUS().read(BC());
 					addCycles(7);
 					break;
 				case 1:	// LD A,(DE)
-					a = getByte(DE());
+					a = BUS().read(DE());
 					addCycles(7);
 					break;
 				case 2:	// LD HL,(nn)
@@ -375,8 +369,8 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 					addCycles(16);
 					break;
 				case 3:	// LD A,(nn)
-					MEMPTR() = fetchWord();
-					a = getByte(MEMPTR());
+					BUS().ADDRESS() = fetchWord();
+					a = BUS().read();
 					addCycles(13);
 					break;
 				default:

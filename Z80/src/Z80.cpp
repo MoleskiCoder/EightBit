@@ -74,6 +74,8 @@ void EightBit::Z80::decrement(uint8_t& f, uint8_t& operand) {
 }
 
 bool EightBit::Z80::jrConditionalFlag(uint8_t f, const int flag) {
+	ASSUME(flag >= 0);
+	ASSUME(flag <= 3);
 	switch (flag) {
 	case 0:	// NZ
 		return jrConditional(!(f & ZF));
@@ -86,10 +88,12 @@ bool EightBit::Z80::jrConditionalFlag(uint8_t f, const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled JR conditional");
+	UNREACHABLE;
 }
 
 bool EightBit::Z80::jumpConditionalFlag(uint8_t f, const int flag) {
+	ASSUME(flag >= 0);
+	ASSUME(flag <= 7);
 	switch (flag) {
 	case 0:	// NZ
 		return jumpConditional(!(f & ZF));
@@ -110,7 +114,7 @@ bool EightBit::Z80::jumpConditionalFlag(uint8_t f, const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled JP conditional");
+	UNREACHABLE;
 }
 
 void EightBit::Z80::retn() {
@@ -123,6 +127,8 @@ void EightBit::Z80::reti() {
 }
 
 bool EightBit::Z80::returnConditionalFlag(uint8_t f, const int flag) {
+	ASSUME(flag >= 0);
+	ASSUME(flag <= 7);
 	switch (flag) {
 	case 0:	// NZ
 		return returnConditional(!(f & ZF));
@@ -143,10 +149,12 @@ bool EightBit::Z80::returnConditionalFlag(uint8_t f, const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled RET conditional");
+	UNREACHABLE;
 }
 
 bool EightBit::Z80::callConditionalFlag(uint8_t f, const int flag) {
+	ASSUME(flag >= 0);
+	ASSUME(flag <= 7);
 	switch (flag) {
 	case 0:	// NZ
 		return callConditional(!(f & ZF));
@@ -167,7 +175,7 @@ bool EightBit::Z80::callConditionalFlag(uint8_t f, const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled CALL conditional");
+	UNREACHABLE;
 }
 
 void EightBit::Z80::sbc(uint8_t& f, register16_t& operand, const register16_t value) {
@@ -190,7 +198,7 @@ void EightBit::Z80::sbc(uint8_t& f, register16_t& operand, const register16_t va
 	setFlag(f, CF, result & Bit16);
 	adjustXY<Z80>(f, operand.high);
 
-	MEMPTR().word++;
+	++MEMPTR().word;
 }
 
 void EightBit::Z80::adc(uint8_t& f, register16_t& operand, const register16_t value) {
@@ -213,7 +221,7 @@ void EightBit::Z80::adc(uint8_t& f, register16_t& operand, const register16_t va
 	setFlag(f, CF, result & Bit16);
 	adjustXY<Z80>(f, operand.high);
 
-	MEMPTR().word++;
+	++MEMPTR().word;
 }
 
 void EightBit::Z80::add(uint8_t& f, register16_t& operand, const register16_t value) {
@@ -229,7 +237,7 @@ void EightBit::Z80::add(uint8_t& f, register16_t& operand, const register16_t va
 	adjustHalfCarryAdd(f, MEMPTR().high, value.high, operand.high);
 	adjustXY<Z80>(f, operand.high);
 
-	MEMPTR().word++;
+	++MEMPTR().word;
 }
 
 void EightBit::Z80::add(uint8_t& f, uint8_t& operand, const uint8_t value, const int carry) {
@@ -368,6 +376,8 @@ uint8_t EightBit::Z80::srl(uint8_t& f, uint8_t operand) {
 }
 
 uint8_t EightBit::Z80::bit(uint8_t& f, int n, uint8_t operand) {
+	ASSUME(n >= 0);
+	ASSUME(n <= 7);
 	setFlag(f, HC);
 	clearFlag(f, NF);
 	const auto discarded = operand & (1 << n);
@@ -377,10 +387,14 @@ uint8_t EightBit::Z80::bit(uint8_t& f, int n, uint8_t operand) {
 }
 
 uint8_t EightBit::Z80::res(int n, const uint8_t operand) {
+	ASSUME(n >= 0);
+	ASSUME(n <= 7);
 	return operand & ~(1 << n);
 }
 
 uint8_t EightBit::Z80::set(int n, const uint8_t operand) {
+	ASSUME(n >= 0);
+	ASSUME(n <= 7);
 	return operand | (1 << n);
 }
 
@@ -445,18 +459,18 @@ void EightBit::Z80::ccf(const uint8_t a, uint8_t& f) {
 }
 
 void EightBit::Z80::xhtl(register16_t& operand) {
-	MEMPTR().low = getByte(SP());
-	setByte(operand.low);
+	MEMPTR().low = BUS().read(SP());
+	BUS().write(operand.low);
 	operand.low = MEMPTR().low;
-	BUS().ADDRESS().word++;
-	MEMPTR().high = getByte();
-	setByte(operand.high);
+	++BUS().ADDRESS().word;
+	MEMPTR().high = BUS().read();
+	BUS().write(operand.high);
 	operand.high = MEMPTR().high;
 }
 
 void EightBit::Z80::blockCompare(const uint8_t a, uint8_t& f) {
 
-	const auto value = getByte(HL());
+	const auto value = BUS().read(HL());
 	uint8_t result = a - value;
 
 	setFlag(f, PF, --BC().word);
@@ -473,14 +487,14 @@ void EightBit::Z80::blockCompare(const uint8_t a, uint8_t& f) {
 
 void EightBit::Z80::cpi(const uint8_t a, uint8_t& f) {
 	blockCompare(a, f);
-	HL().word++;
-	MEMPTR().word++;
+	++HL().word;
+	++MEMPTR().word;
 }
 
 void EightBit::Z80::cpd(const uint8_t a, uint8_t& f) {
 	blockCompare(a, f);
-	HL().word--;
-	MEMPTR().word--;
+	--HL().word;
+	--MEMPTR().word;
 }
 
 bool EightBit::Z80::cpir(const uint8_t a, uint8_t& f) {
@@ -488,7 +502,7 @@ bool EightBit::Z80::cpir(const uint8_t a, uint8_t& f) {
 	MEMPTR() = PC();
 	const auto again = (f & PF) && !(f & ZF);	// See CPI
 	if (LIKELY(again))
-		MEMPTR().word--;
+		--MEMPTR().word;
 	return again;
 }
 
@@ -497,13 +511,13 @@ bool EightBit::Z80::cpdr(const uint8_t a, uint8_t& f) {
 	MEMPTR().word = PC().word - 1;
 	const auto again = (f & PF) && !(f & ZF);	// See CPD
 	if (UNLIKELY(!again))
-		MEMPTR().word--;
+		--MEMPTR().word;
 	return again;
 }
 
 void EightBit::Z80::blockLoad(const uint8_t a, uint8_t& f, const register16_t source, const register16_t destination) {
-	const auto value = getByte(source);
-	setByte(destination, value);
+	const auto value = BUS().read(source);
+	BUS().write(destination, value);
 	const auto xy = a + value;
 	setFlag(f, XF, xy & 8);
 	setFlag(f, YF, xy & 2);
@@ -513,14 +527,14 @@ void EightBit::Z80::blockLoad(const uint8_t a, uint8_t& f, const register16_t so
 
 void EightBit::Z80::ldd(const uint8_t a, uint8_t& f) {
 	blockLoad(a, f, HL(), DE());
-	HL().word--;
-	DE().word--;
+	--HL().word;
+	--DE().word;
 }
 
 void EightBit::Z80::ldi(const uint8_t a, uint8_t& f) {
 	blockLoad(a, f, HL(), DE());
-	HL().word++;
-	DE().word++;
+	++HL().word;
+	++DE().word;
 }
 
 bool EightBit::Z80::ldir(const uint8_t a, uint8_t& f) {
@@ -541,20 +555,20 @@ bool EightBit::Z80::lddr(const uint8_t a, uint8_t& f) {
 
 void EightBit::Z80::ini(uint8_t& f) {
 	MEMPTR() = BUS().ADDRESS() = BC();
-	MEMPTR().word++;
+	++MEMPTR().word;
 	readPort();
-	auto value = BUS().DATA();
-	setByte(HL().word++, value);
+	const auto value = BUS().DATA();
+	BUS().write(HL().word++, value);
 	decrement(f, B());
 	setFlag(f, NF);
 }
 
 void EightBit::Z80::ind(uint8_t& f) {
 	MEMPTR() = BUS().ADDRESS() = BC();
-	MEMPTR().word--;
+	--MEMPTR().word;
 	readPort();
-	auto value = BUS().DATA();
-	setByte(HL().word--, value);
+	const auto value = BUS().DATA();
+	BUS().write(HL().word--, value);
 	decrement(f, B());
 	setFlag(f, NF);
 }
@@ -570,7 +584,7 @@ bool EightBit::Z80::indr(uint8_t& f) {
 }
 
 void EightBit::Z80::blockOut(uint8_t& f) {
-	const auto value = getByte();
+	const auto value = BUS().read();
 	BUS().ADDRESS() = BC();
 	writePort();
 	decrement(f, B());
@@ -602,20 +616,20 @@ bool EightBit::Z80::otdr(uint8_t& f) {
 }
 
 void EightBit::Z80::rrd(uint8_t& a, uint8_t& f) {
-	BUS().ADDRESS() = MEMPTR() = HL();
-	const auto memory = getByte();
-	MEMPTR().word++;
-	setByte(promoteNibble(a) | highNibble(memory));
+	MEMPTR() = BUS().ADDRESS() = HL();
+	++MEMPTR().word;
+	const auto memory = BUS().read();
+	BUS().write(promoteNibble(a) | highNibble(memory));
 	a = (a & 0xf0) | lowNibble(memory);
 	adjustSZPXY<Z80>(f, a);
 	clearFlag(f, NF | HC);
 }
 
 void EightBit::Z80::rld(uint8_t& a, uint8_t& f) {
-	BUS().ADDRESS() = MEMPTR() = HL();
-	const auto memory = getByte();
-	MEMPTR().word++;
-	setByte(promoteNibble(memory) | lowNibble(a));
+	MEMPTR() = BUS().ADDRESS() = HL();
+	++MEMPTR().word;
+	const auto memory = BUS().read();
+	BUS().write(promoteNibble(memory) | lowNibble(a));
 	a = (a & 0xf0) | highNibble(memory);
 	adjustSZPXY<Z80>(f, a);
 	clearFlag(f, NF | HC);
@@ -627,7 +641,7 @@ void EightBit::Z80::writePort(const uint8_t port, const uint8_t data) {
 	MEMPTR() = BUS().ADDRESS();
 	BUS().placeDATA(data);
 	writePort();
-	MEMPTR().low++;
+	++MEMPTR().low;
 }
 
 void EightBit::Z80::writePort() {
@@ -640,7 +654,7 @@ void EightBit::Z80::readPort(const uint8_t port, uint8_t& a) {
 	MEMPTR() = BUS().ADDRESS();
 	readPort();
 	a = BUS().DATA();
-	MEMPTR().low++;
+	++MEMPTR().low;
 }
 
 void EightBit::Z80::readPort() {
@@ -693,8 +707,7 @@ int EightBit::Z80::step() {
 
 int EightBit::Z80::execute(const uint8_t opcode) {
 
-	if (UNLIKELY(raised(M1())))
-		throw std::logic_error("M1 cannot be high");
+	ASSUME(lowered(M1()));
 
 	if (LIKELY(!(m_prefixCB && m_displaced))) {
 		++REFRESH();
@@ -726,16 +739,20 @@ int EightBit::Z80::execute(const uint8_t opcode) {
 			UNREACHABLE;
 	}
 
-	if (UNLIKELY(cycles() == 0))
-		throw std::logic_error("Unhandled opcode");
-
+	ASSUME(cycles() > 0);
 	return cycles();
 }
 
 void EightBit::Z80::executeCB(uint8_t& a, uint8_t& f, const int x, const int y, const int z) {
+	ASSUME(x >= 0);
+	ASSUME(x <= 3);
+	ASSUME(y >= 0);
+	ASSUME(y <= 7);
+	ASSUME(z >= 0);
+	ASSUME(z <= 7);
 	switch (x) {
 	case 0:	{ // rot[y] r[z]
-		auto operand = LIKELY(!m_displaced) ? R(z, a) : getByte(displacedAddress());
+		auto operand = LIKELY(!m_displaced) ? R(z, a) : BUS().read(displacedAddress());
 		switch (y) {
 		case 0:
 			operand = rlc(f, operand);
@@ -772,7 +789,7 @@ void EightBit::Z80::executeCB(uint8_t& a, uint8_t& f, const int x, const int y, 
 		} else {
 			if (LIKELY(z != 6))
 				R2(z, a, operand);
-			setByte(operand);
+			BUS().write(operand);
 			addCycles(15);
 		}
 		addCycles(8);
@@ -788,7 +805,7 @@ void EightBit::Z80::executeCB(uint8_t& a, uint8_t& f, const int x, const int y, 
 				adjustXY<Z80>(f, operand);
 			}
 		} else {
-			bit(f, y, getByte(displacedAddress()));
+			bit(f, y, BUS().read(displacedAddress()));
 			adjustXY<Z80>(f, MEMPTR().high);
 			addCycles(12);
 		}
@@ -800,9 +817,9 @@ void EightBit::Z80::executeCB(uint8_t& a, uint8_t& f, const int x, const int y, 
 			if (UNLIKELY(z == 6))
 				addCycles(7);
 		} else {
-			auto operand = getByte(displacedAddress());
+			auto operand = BUS().read(displacedAddress());
 			operand = res(y, operand);
-			setByte(operand);
+			BUS().write(operand);
 			R2(z, a, operand);
 			addCycles(15);
 		}
@@ -814,9 +831,9 @@ void EightBit::Z80::executeCB(uint8_t& a, uint8_t& f, const int x, const int y, 
 			if (UNLIKELY(z == 6))
 				addCycles(7);
 		} else {
-			auto operand = getByte(displacedAddress());
+			auto operand = BUS().read(displacedAddress());
 			operand = set(y, operand);
-			setByte(operand);
+			BUS().write(operand);
 			R2(z, a, operand);
 			addCycles(15);
 		}
@@ -827,6 +844,16 @@ void EightBit::Z80::executeCB(uint8_t& a, uint8_t& f, const int x, const int y, 
 }
 
 void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, const int z, const int p, const int q) {
+	ASSUME(x >= 0);
+	ASSUME(x <= 3);
+	ASSUME(y >= 0);
+	ASSUME(y <= 7);
+	ASSUME(z >= 0);
+	ASSUME(z <= 7);
+	ASSUME(p >= 0);
+	ASSUME(p <= 3);
+	ASSUME(q >= 0);
+	ASSUME(q <= 1);
 	switch (x) {
 	case 0:
 	case 3:	// Invalid instruction, equivalent to NONI followed by NOP
@@ -836,7 +863,7 @@ void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, 
 		switch (z) {
 		case 0: // Input from port with 16-bit address
 			MEMPTR() = BUS().ADDRESS() = BC();
-			MEMPTR().word++;
+			++MEMPTR().word;
 			readPort();
 			if (LIKELY(y != 6))	// IN r[y],(C)
 				R(y, a, BUS().DATA());
@@ -846,7 +873,7 @@ void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, 
 			break;
 		case 1:	// Output to port with 16-bit address
 			MEMPTR() = BUS().ADDRESS() = BC();
-			MEMPTR().word++;
+			++MEMPTR().word;
 			if (UNLIKELY(y == 6))	// OUT (C),0
 				BUS().placeDATA(0);
 			else		// OUT (C),r[y]
@@ -1061,6 +1088,16 @@ void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, 
 }
 
 void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int y, const int z, const int p, const int q) {
+	ASSUME(x >= 0);
+	ASSUME(x <= 3);
+	ASSUME(y >= 0);
+	ASSUME(y <= 7);
+	ASSUME(z >= 0);
+	ASSUME(z <= 7);
+	ASSUME(p >= 0);
+	ASSUME(p <= 3);
+	ASSUME(q >= 0);
+	ASSUME(q <= 1);
 	switch (x) {
 	case 0:
 		switch (z) {
@@ -1113,14 +1150,16 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					MEMPTR() = BC();
-					setByte(MEMPTR().word++, a);
+					MEMPTR() = BUS().ADDRESS() = BC();
+					++MEMPTR().word;
+					BUS().write(a);
 					MEMPTR().high = a;
 					addCycles(7);
 					break;
 				case 1:	// LD (DE),A
-					MEMPTR() = DE();
-					setByte(MEMPTR().word++, a);
+					MEMPTR() = BUS().ADDRESS() = DE();
+					++MEMPTR().word;
+					BUS().write(a);
 					MEMPTR().high = a;
 					addCycles(7);
 					break;
@@ -1130,8 +1169,9 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 					addCycles(16);
 					break;
 				case 3: // LD (nn),A
-					MEMPTR() = fetchWord();
-					setByte(MEMPTR().word++, a);
+					MEMPTR() = BUS().ADDRESS() = fetchWord();
+					++MEMPTR().word;
+					BUS().write(a);
 					MEMPTR().high = a;
 					addCycles(13);
 					break;
@@ -1142,13 +1182,15 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					MEMPTR() = BC();
-					a = getByte(MEMPTR().word++);
+					MEMPTR() = BUS().ADDRESS() = BC();
+					++MEMPTR().word;
+					a = BUS().read();
 					addCycles(7);
 					break;
 				case 1:	// LD A,(DE)
-					MEMPTR() = DE();
-					a = getByte(MEMPTR().word++);
+					MEMPTR() = BUS().ADDRESS() = DE();
+					++MEMPTR().word;
+					a = BUS().read();
 					addCycles(7);
 					break;
 				case 2:	// LD HL,(nn)
@@ -1157,8 +1199,9 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 					addCycles(16);
 					break;
 				case 3:	// LD A,(nn)
-					MEMPTR() = fetchWord();
-					a = getByte(MEMPTR().word++);
+					MEMPTR() = BUS().ADDRESS() = fetchWord();
+					++MEMPTR().word;
+					a = BUS().read();
 					addCycles(13);
 					break;
 				default:

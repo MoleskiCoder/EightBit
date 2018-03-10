@@ -12,6 +12,7 @@ namespace EightBit {
 	int countBits(uint8_t value);
 	bool oddParity(uint8_t value);
 	int findFirstSet(int value);
+	void assume(int expression);
 }
 
 /*
@@ -47,6 +48,19 @@ inline int EightBit::findFirstSet(int value) {
 #endif
 }
 
+inline void EightBit::assume(int expression) {
+#ifdef _MSC_VER
+	__assume(expression);
+#elif defined(__GNUG__)
+	if (!expression)
+		__builtin_unreachable();
+#else
+	assert(expression);
+#endif
+}
+
+#define ASSUME(x)	EightBit::assume(x)
+
 #ifdef _MSC_VER
 
 #	define LIKELY(x)	(x)
@@ -54,7 +68,7 @@ inline int EightBit::findFirstSet(int value) {
 
 #	define PARITY(x)	(__popcnt(x) % 2)
 
-#	define UNREACHABLE __assume(0)
+#	define UNREACHABLE	ASSUME(0)
 
 #elif defined(__GNUG__)
 
@@ -63,7 +77,7 @@ inline int EightBit::findFirstSet(int value) {
 
 #	define PARITY(x)	__builtin_parity(x)
 
-#	define UNREACHABLE __builtin_unreachable();
+#	define UNREACHABLE	__builtin_unreachable();
 
 #else
 
@@ -72,6 +86,6 @@ inline int EightBit::findFirstSet(int value) {
 
 #	define PARITY(x)	EightBit::oddParity(x)
 
-#	define UNREACHABLE
+#	define UNREACHABLE	ASSUME(0)
 
 #endif

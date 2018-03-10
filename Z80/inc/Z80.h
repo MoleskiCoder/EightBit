@@ -126,6 +126,8 @@ namespace EightBit {
 		}
 
 		uint8_t R(int r, uint8_t a) {
+			ASSUME(r >= 0);
+			ASSUME(r <= 7);
 			switch (r) {
 			case 0:
 				return B();
@@ -140,16 +142,18 @@ namespace EightBit {
 			case 5:
 				return HL2().low;
 			case 6:
-				return getByte(LIKELY(!m_displaced) ?  HL().word : displacedAddress());
+				return BUS().read(LIKELY(!m_displaced) ? HL().word : displacedAddress());
 			case 7:
 				return a;
 			default:
 				UNREACHABLE;
 			}
-			throw std::logic_error("Unhandled registry mechanism");
+			UNREACHABLE;
 		}
 
 		void R(int r, uint8_t& a, uint8_t value) {
+			ASSUME(r >= 0);
+			ASSUME(r <= 7);
 			switch (r) {
 			case 0:
 				B() = value;
@@ -170,7 +174,7 @@ namespace EightBit {
 				HL2().low = value;
 				break;
 			case 6:
-				setByte(LIKELY(!m_displaced) ? HL().word : displacedAddress(), value);
+				BUS().write(LIKELY(!m_displaced) ? HL().word : displacedAddress(), value);
 				break;
 			case 7:
 				a = value;
@@ -178,9 +182,12 @@ namespace EightBit {
 			default:
 				UNREACHABLE;
 			}
+			UNREACHABLE;
 		}
 
 		uint8_t R2(int r, const uint8_t& a) {
+			ASSUME(r >= 0);
+			ASSUME(r <= 7);
 			switch (r) {
 			case 0:
 				return B();
@@ -195,16 +202,18 @@ namespace EightBit {
 			case 5:
 				return L();
 			case 6:
-				return getByte(HL());
+				return BUS().read(HL());
 			case 7:
 				return a;
 			default:
 				UNREACHABLE;
 			}
-			throw std::logic_error("Unhandled registry mechanism");
+			UNREACHABLE;
 		}
 
 		void R2(int r, uint8_t& a, uint8_t value) {
+			ASSUME(r >= 0);
+			ASSUME(r <= 7);
 			switch (r) {
 			case 0:
 				B() = value;
@@ -225,7 +234,7 @@ namespace EightBit {
 				L() = value;
 				break;
 			case 6:
-				setByte(HL(), value);
+				BUS().write(HL(), value);
 				break;
 			case 7:
 				a = value;
@@ -233,9 +242,12 @@ namespace EightBit {
 			default:
 				UNREACHABLE;
 			}
+			UNREACHABLE;
 		}
 
 		register16_t& RP(int rp) {
+			ASSUME(rp >= 0);
+			ASSUME(rp <= 3);
 			switch (rp) {
 			case 0:
 				return BC();
@@ -248,6 +260,7 @@ namespace EightBit {
 			default:
 				UNREACHABLE;
 			}
+			UNREACHABLE;
 		}
 
 		register16_t& HL2() {
@@ -260,6 +273,8 @@ namespace EightBit {
 		}
 
 		register16_t& RP2(int rp) {
+			ASSUME(rp >= 0);
+			ASSUME(rp <= 3);
 			switch (rp) {
 			case 0:
 				return BC();
@@ -272,6 +287,7 @@ namespace EightBit {
 			default:
 				UNREACHABLE;
 			}
+			UNREACHABLE;
 		}
 
 		static void adjustHalfCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {

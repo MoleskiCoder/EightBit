@@ -54,20 +54,20 @@ EightBit::register16_t EightBit::MOS6502::getWordPaged(uint8_t page, uint8_t off
 	EightBit::register16_t returned;
 	returned.low = getBytePaged(page, offset);
 	BUS().ADDRESS().low++;
-	returned.high = getByte();
+	returned.high = BUS().read();
 	return returned;
 }
 
 uint8_t EightBit::MOS6502::getBytePaged(uint8_t page, uint8_t offset) {
 	BUS().ADDRESS().low = offset;
 	BUS().ADDRESS().high = page;
-	return getByte();
+	return BUS().read();
 }
 
 void EightBit::MOS6502::setBytePaged(uint8_t page, uint8_t offset, uint8_t value) {
 	BUS().ADDRESS().low = offset;
 	BUS().ADDRESS().high = page;
-	setByte(value);
+	BUS().write(value);
 }
 
 void EightBit::MOS6502::interrupt(uint8_t vector) {
@@ -88,7 +88,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x03:	addCycles(8);	SLO(AM_IndexedIndirectX());				break;
 	case 0x04:	addCycles(3);	AM_ZeroPage();							break;
 	case 0x05:	addCycles(3);	ORA(AM_ZeroPage());						break;
-	case 0x06:	addCycles(5);	setByte(ASL(AM_ZeroPage()));			break;
+	case 0x06:	addCycles(5);	BUS().write(ASL(AM_ZeroPage()));		break;
 	case 0x07:	addCycles(5);	SLO(AM_ZeroPage());						break;
 	case 0x08:	addCycles(3);	PHP();									break;
 	case 0x09:	addCycles(2);	ORA(AM_Immediate());					break;
@@ -96,7 +96,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x0b:	addCycles(2);	AAC(AM_Immediate());					break;
 	case 0x0c:	addCycles(4);	AM_Absolute();							break;
 	case 0x0d:	addCycles(4);	ORA(AM_Absolute());						break;
-	case 0x0e:	addCycles(6);	setByte(ASL(AM_Absolute()));			break;
+	case 0x0e:	addCycles(6);	BUS().write(ASL(AM_Absolute()));		break;
 	case 0x0f:	addCycles(6);	SLO(AM_Absolute());						break;
 
 	case 0x10:	addCycles(2);	Branch(!(P() & NF));					break;
@@ -105,7 +105,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x13:	addCycles(7);	SLO(AM_IndirectIndexedY());				break;
 	case 0x14:	addCycles(4);	AM_ZeroPageX();							break;
 	case 0x15:	addCycles(4);	ORA(AM_ZeroPageX());					break;
-	case 0x16:	addCycles(6);	setByte(ASL(AM_ZeroPageX()));			break;
+	case 0x16:	addCycles(6);	BUS().write(ASL(AM_ZeroPageX()));		break;
 	case 0x17:	addCycles(6);	SLO(AM_ZeroPageX());					break;
 	case 0x18:	addCycles(2);	clearFlag(P(), CF);						break;
 	case 0x19:	addCycles(4);	ORA(AM_AbsoluteY());					break;
@@ -113,7 +113,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x1b:	addCycles(6);	SLO(AM_AbsoluteY());					break;
 	case 0x1c:	addCycles(4);	AM_AbsoluteX();							break;
 	case 0x1d:	addCycles(4);	ORA(AM_AbsoluteX());					break;
-	case 0x1e:	addCycles(7);	setByte(ASL(AM_AbsoluteX()));			break;
+	case 0x1e:	addCycles(7);	BUS().write(ASL(AM_AbsoluteX()));		break;
 	case 0x1f:	addCycles(6);	SLO(AM_AbsoluteX());					break;
 
 	case 0x20:	addCycles(6);	JSR_abs();								break;
@@ -122,7 +122,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x23:	addCycles(8);	RLA(AM_IndexedIndirectX());				break;
 	case 0x24:	addCycles(3);	BIT(AM_ZeroPage());						break;
 	case 0x25:	addCycles(3);	ANDA(AM_ZeroPage());					break;
-	case 0x26:	addCycles(5);	setByte(ROL(AM_ZeroPage()));			break;
+	case 0x26:	addCycles(5);	BUS().write(ROL(AM_ZeroPage()));		break;
 	case 0x27:	addCycles(5);	RLA(AM_ZeroPage());						break;
 	case 0x28:	addCycles(4);	PLP();									break;
 	case 0x29:	addCycles(2);	ANDA(AM_Immediate());					break;
@@ -130,7 +130,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x2b:	addCycles(2);	AAC(AM_Immediate());					break;
 	case 0x2c:	addCycles(4);	BIT(AM_Absolute());						break;
 	case 0x2d:	addCycles(4);	ANDA(AM_Absolute());					break;
-	case 0x2e:	addCycles(6);	setByte(ROL(AM_Absolute()));			break;
+	case 0x2e:	addCycles(6);	BUS().write(ROL(AM_Absolute()));		break;
 	case 0x2f:	addCycles(6);	RLA(AM_Absolute());						break;
 
 	case 0x30:	addCycles(2);	Branch(!!(P() & NF));					break;
@@ -139,7 +139,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x33:	addCycles(7);	RLA(AM_IndirectIndexedY());				break;
 	case 0x34:	addCycles(4);	AM_ZeroPageX();							break;
 	case 0x35:	addCycles(4);	ANDA(AM_ZeroPageX());					break;
-	case 0x36:	addCycles(6);	setByte(ROL(AM_ZeroPageX()));			break;
+	case 0x36:	addCycles(6);	BUS().write(ROL(AM_ZeroPageX()));		break;
 	case 0x37:	addCycles(6);	RLA(AM_ZeroPageX());					break;
 	case 0x38:	addCycles(2);	setFlag(P(), CF);						break;
 	case 0x39:	addCycles(4);	ANDA(AM_AbsoluteY());					break;
@@ -147,7 +147,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x3b:	addCycles(6);	RLA(AM_AbsoluteY());					break;
 	case 0x3c:	addCycles(4);	AM_AbsoluteX();							break;
 	case 0x3d:	addCycles(4);	ANDA(AM_AbsoluteX());					break;
-	case 0x3e:	addCycles(7);	setByte(ROL(AM_AbsoluteX()));			break;
+	case 0x3e:	addCycles(7);	BUS().write(ROL(AM_AbsoluteX()));		break;
 	case 0x3f:	addCycles(6);	RLA(AM_AbsoluteX());					break;
 
 	case 0x40:	addCycles(6);	RTI();									break;
@@ -156,7 +156,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x43:	addCycles(8);	SRE(AM_IndexedIndirectX());				break;
 	case 0x44:	addCycles(3);	AM_ZeroPage();							break;
 	case 0x45:	addCycles(3);	EORA(AM_ZeroPage());					break;
-	case 0x46:	addCycles(5);	setByte(LSR(AM_ZeroPage()));			break;
+	case 0x46:	addCycles(5);	BUS().write(LSR(AM_ZeroPage()));		break;
 	case 0x47:	addCycles(5);	SRE(AM_ZeroPage());						break;
 	case 0x48:	addCycles(3);	push(A());								break;
 	case 0x49:	addCycles(2);	EORA(AM_Immediate());					break;
@@ -164,7 +164,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x4b:	addCycles(2);	ASR(AM_Immediate());					break;
 	case 0x4c:	addCycles(3);	JMP_abs();								break;
 	case 0x4d:	addCycles(4);	EORA(AM_Absolute());					break;
-	case 0x4e:	addCycles(6);	setByte(LSR(AM_Absolute()));			break;
+	case 0x4e:	addCycles(6);	BUS().write(LSR(AM_Absolute()));		break;
 	case 0x4f:	addCycles(6);	SRE(AM_Absolute());						break;
 
 	case 0x50:	addCycles(2);	Branch(!(P() & VF));					break;
@@ -173,7 +173,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x53:	addCycles(7);	SRE(AM_IndirectIndexedY());				break;
 	case 0x54:	addCycles(4);	AM_ZeroPage();							break;
 	case 0x55:	addCycles(4);	EORA(AM_ZeroPageX());					break;
-	case 0x56:	addCycles(6);	setByte(LSR(AM_ZeroPageX()));			break;
+	case 0x56:	addCycles(6);	BUS().write(LSR(AM_ZeroPageX()));		break;
 	case 0x57:	addCycles(6);	SRE(AM_ZeroPageX());					break;
 	case 0x58:	addCycles(2);	clearFlag(P(), IF);						break;
 	case 0x59:	addCycles(4);	EORA(AM_AbsoluteY());					break;
@@ -181,7 +181,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x5b:	addCycles(6);	SRE(AM_AbsoluteY());					break;
 	case 0x5c:	addCycles(4);	AM_AbsoluteX();							break;
 	case 0x5d:	addCycles(4);	EORA(AM_AbsoluteX());					break;
-	case 0x5e:	addCycles(7);	setByte(LSR(AM_AbsoluteX()));			break;
+	case 0x5e:	addCycles(7);	BUS().write(LSR(AM_AbsoluteX()));		break;
 	case 0x5f:	addCycles(6);	SRE(AM_AbsoluteX());					break;
 
 	case 0x60:	addCycles(6);	RTS();									break;
@@ -190,7 +190,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x63:	addCycles(8);	RRA(AM_IndexedIndirectX());				break;
 	case 0x64:	addCycles(3);	AM_ZeroPage();							break;
 	case 0x65:	addCycles(3);	A() = ADC(A(), AM_ZeroPage());			break;
-	case 0x66:	addCycles(5);	setByte(ROR(AM_ZeroPage()));			break;
+	case 0x66:	addCycles(5);	BUS().write(ROR(AM_ZeroPage()));		break;
 	case 0x67:	addCycles(5);	RRA(AM_ZeroPage());						break;
 	case 0x68:	addCycles(4);	adjustNZ(A() = pop());					break;
 	case 0x69:	addCycles(2);	A() = ADC(A(), AM_Immediate());			break;
@@ -198,7 +198,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x6b:	addCycles(2);	ARR(AM_Immediate());					break;
 	case 0x6c:	addCycles(5);	JMP_ind();								break;
 	case 0x6d:	addCycles(4);	A() = ADC(A(), AM_Absolute());			break;
-	case 0x6e:	addCycles(6);	setByte(ROR(AM_Absolute()));			break;
+	case 0x6e:	addCycles(6);	BUS().write(ROR(AM_Absolute()));		break;
 	case 0x6f:	addCycles(6);	RRA(AM_Absolute());						break;
 
 	case 0x70:	addCycles(2);	Branch(!!(P() & VF));					break;
@@ -207,7 +207,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x73:	addCycles(7);	RRA(AM_IndirectIndexedY());				break;
 	case 0x74:	addCycles(4);	AM_ZeroPageX();							break;
 	case 0x75:	addCycles(4);	A() = ADC(A(), AM_ZeroPageX());			break;
-	case 0x76:	addCycles(6);	setByte(ROR(AM_ZeroPageX()));			break;
+	case 0x76:	addCycles(6);	BUS().write(ROR(AM_ZeroPageX()));		break;
 	case 0x77:	addCycles(6);	RRA(AM_ZeroPageX());					break;
 	case 0x78:	addCycles(2);	setFlag(P(), IF);						break;
 	case 0x79:	addCycles(4);	A() = ADC(A(), AM_AbsoluteY());			break;
@@ -215,7 +215,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0x7b:	addCycles(6);	RRA(AM_AbsoluteY());					break;
 	case 0x7c:	addCycles(4);	AM_AbsoluteX();							break;
 	case 0x7d:	addCycles(4);	A() = ADC(A(), AM_AbsoluteX());			break;
-	case 0x7e:	addCycles(7);	setByte(ROR(AM_AbsoluteX()));			break;
+	case 0x7e:	addCycles(7);	BUS().write(ROR(AM_AbsoluteX()));		break;
 	case 0x7f:	addCycles(6);	RRA(AM_AbsoluteX());					break;
 
 	case 0x80:	addCycles(2);	AM_Immediate();							break;
@@ -292,7 +292,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0xc3:	addCycles(8);	DCP(AM_IndexedIndirectX());				break;
 	case 0xc4:	addCycles(3);	CMP(Y(), AM_ZeroPage());				break;
 	case 0xc5:	addCycles(3);	CMP(A(), AM_ZeroPage());				break;
-	case 0xc6:	addCycles(5);	setByte(DEC(AM_ZeroPage()));			break;
+	case 0xc6:	addCycles(5);	BUS().write(DEC(AM_ZeroPage()));		break;
 	case 0xc7:	addCycles(5);	DCP(AM_ZeroPage());						break;
 	case 0xc8:	addCycles(2);	adjustNZ(++Y());						break;
 	case 0xc9:	addCycles(2);	CMP(A(), AM_Immediate());				break;
@@ -300,7 +300,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0xcb:	addCycles(2);	AXS(AM_Immediate());					break;
 	case 0xcc:	addCycles(4);	CMP(Y(), AM_Absolute());				break;
 	case 0xcd:	addCycles(4);	CMP(A(), AM_Absolute());				break;
-	case 0xce:	addCycles(6);	setByte(DEC(AM_Absolute()));			break;
+	case 0xce:	addCycles(6);	BUS().write(DEC(AM_Absolute()));		break;
 	case 0xcf:	addCycles(6);	DCP(AM_Absolute());						break;
 
 	case 0xd0:	addCycles(2);	Branch(!(P() & ZF));					break;
@@ -309,7 +309,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0xd3:	addCycles(7);	DCP(AM_IndirectIndexedY());				break;
 	case 0xd4:	addCycles(4);	AM_ZeroPageX();							break;
 	case 0xd5:	addCycles(4);	CMP(A(), AM_ZeroPageX());				break;
-	case 0xd6:	addCycles(6);	setByte(DEC(AM_ZeroPageX()));			break;
+	case 0xd6:	addCycles(6);	BUS().write(DEC(AM_ZeroPageX()));		break;
 	case 0xd7:	addCycles(6);	DCP(AM_ZeroPageX());					break;
 	case 0xd8:	addCycles(2);	clearFlag(P(), DF);						break;
 	case 0xd9:	addCycles(4);	CMP(A(), AM_AbsoluteY());				break;
@@ -317,7 +317,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0xdb:	addCycles(6);	DCP(AM_AbsoluteY());					break;
 	case 0xdc:	addCycles(4);	AM_AbsoluteX();							break;
 	case 0xdd:	addCycles(4);	CMP(A(), AM_AbsoluteX());				break;
-	case 0xde:	addCycles(7);	setByte(DEC(AM_AbsoluteX()));			break;
+	case 0xde:	addCycles(7);	BUS().write(DEC(AM_AbsoluteX()));		break;
 	case 0xdf:	addCycles(6);	DCP(AM_AbsoluteX());					break;
 
 	case 0xe0:	addCycles(2);	CMP(X(), AM_Immediate());				break;
@@ -326,7 +326,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0xe3:	addCycles(8);	ISB(AM_IndexedIndirectX());				break;
 	case 0xe4:	addCycles(3);	CMP(X(), AM_ZeroPage());				break;
 	case 0xe5:	addCycles(3);	A() = SBC(A(), AM_ZeroPage());			break;
-	case 0xe6:	addCycles(5);	setByte(INC(AM_ZeroPage()));			break;
+	case 0xe6:	addCycles(5);	BUS().write(INC(AM_ZeroPage()));		break;
 	case 0xe7:	addCycles(5);	ISB(AM_ZeroPage());						break;
 	case 0xe8:	addCycles(2);	adjustNZ(++X());						break;
 	case 0xe9:	addCycles(2);	A() = SBC(A(), AM_Immediate());			break;
@@ -334,7 +334,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0xeb:	addCycles(2);	A() = SBC(A(), AM_Immediate());			break;
 	case 0xec:	addCycles(4);	CMP(X(), AM_Absolute());				break;
 	case 0xed:	addCycles(4);	A() = SBC(A(), AM_Absolute());			break;
-	case 0xee:	addCycles(6);	setByte(INC(AM_Absolute()));			break;
+	case 0xee:	addCycles(6);	BUS().write(INC(AM_Absolute()));		break;
 	case 0xef:	addCycles(6);	ISB(AM_Absolute());						break;
 
 	case 0xf0:	addCycles(2);	Branch(!!(P() & ZF));					break;
@@ -343,7 +343,7 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0xf3:	addCycles(7);	ISB(AM_IndirectIndexedY());				break;
 	case 0xf4:	addCycles(4);	AM_ZeroPageX();							break;
 	case 0xf5:	addCycles(4);	A() = SBC(A(), AM_ZeroPageX());			break;
-	case 0xf6:	addCycles(6);	setByte(INC(AM_ZeroPageX()));			break;
+	case 0xf6:	addCycles(6);	BUS().write(INC(AM_ZeroPageX()));		break;
 	case 0xf7:	addCycles(6);	ISB(AM_ZeroPageX());					break;
 	case 0xf8:	addCycles(2);	setFlag(P(), DF);						break;
 	case 0xf9:	addCycles(4);	A() = SBC(A(), AM_AbsoluteY());			break;
@@ -351,13 +351,11 @@ int EightBit::MOS6502::execute(uint8_t cell) {
 	case 0xfb:	addCycles(6);	ISB(AM_AbsoluteY());					break;
 	case 0xfc:	addCycles(4);	AM_AbsoluteX();							break;
 	case 0xfd:	addCycles(4);	A() = SBC(A(), AM_AbsoluteX());			break;
-	case 0xfe:	addCycles(7);	setByte(INC(AM_AbsoluteX()));			break;
+	case 0xfe:	addCycles(7);	BUS().write(INC(AM_AbsoluteX()));		break;
 	case 0xff:	addCycles(6);	ISB(AM_AbsoluteX());					break;
 	}
 
-	if (UNLIKELY(cycles() == 0))
-		throw std::logic_error("Unhandled opcode");
-
+	ASSUME(cycles() > 0);
 	return cycles();
 }
 

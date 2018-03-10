@@ -107,7 +107,7 @@ namespace EightBit {
 		void proceed() { ++PC().word; raise(HALT()); }
 
 		uint8_t fetchByte() {
-			return getByte(PC().word++);
+			return BUS().read(PC().word++);
 		}
 
 		register16_t fetchWord() {
@@ -116,12 +116,6 @@ namespace EightBit {
 			returned.high = fetchByte();
 			return returned;
 		}
-
-		uint8_t getByte() { return BUS().read(); }
-		template<class T> uint8_t getByte(T offset) { return BUS().read(offset); }
-
-		void setByte(uint8_t value) { BUS().write(value); }
-		template<class T> void setByte(T offset, uint8_t value) { BUS().write(offset, value); }
 
 		virtual void push(uint8_t value) = 0;
 		virtual uint8_t pop() = 0;

@@ -137,122 +137,122 @@ namespace EightBit {
 
 		uint8_t AM_Absolute() {
 			Address_Absolute();
-			return getByte(MEMPTR());
+			return BUS().read(MEMPTR());
 		}
 
 		uint8_t AM_ZeroPage() {
 			Address_ZeroPage();
-			return getByte(MEMPTR());
+			return BUS().read(MEMPTR());
 		}
 
 		uint8_t AM_AbsoluteX() {
 			if (UNLIKELY(Address_AbsoluteX()))
 				addCycle();
-			return getByte(MEMPTR());
+			return BUS().read(MEMPTR());
 		}
 
 		uint8_t AM_AbsoluteY() {
 			if (UNLIKELY(Address_AbsoluteY()))
 				addCycle();
-			return getByte(MEMPTR());
+			return BUS().read(MEMPTR());
 		}
 
 		uint8_t AM_ZeroPageX() {
 			Address_ZeroPageX();
-			return getByte(MEMPTR());
+			return BUS().read(MEMPTR());
 		}
 
 		uint8_t AM_ZeroPageY() {
 			Address_ZeroPageY();
-			return getByte(MEMPTR());
+			return BUS().read(MEMPTR());
 		}
 
 		uint8_t AM_IndexedIndirectX() {
 			Address_IndexedIndirectX();
-			return getByte(MEMPTR());
+			return BUS().read(MEMPTR());
 		}
 
 		uint8_t AM_IndirectIndexedY() {
 			if (UNLIKELY(Address_IndirectIndexedY()))
 				addCycle();
-			return getByte(MEMPTR());
+			return BUS().read(MEMPTR());
 		}
 
 		// Addressing modes, write
 
 		void AM_Absolute(uint8_t value) {
 			Address_Absolute();
-			setByte(MEMPTR(), value);
+			BUS().write(MEMPTR(), value);
 		}
 
 		void AM_ZeroPage(uint8_t value) {
 			Address_ZeroPage();
-			setByte(MEMPTR(), value);
+			BUS().write(MEMPTR(), value);
 		}
 
 		void AM_AbsoluteX(uint8_t value) {
 			Address_AbsoluteX();
-			setByte(MEMPTR(), value);
+			BUS().write(MEMPTR(), value);
 		}
 
 		void AM_AbsoluteY(uint8_t value) {
 			Address_AbsoluteY();
-			setByte(MEMPTR(), value);
+			BUS().write(MEMPTR(), value);
 		}
 
 		void AM_ZeroPageX(uint8_t value) {
 			Address_ZeroPageX();
-			setByte(MEMPTR(), value);
+			BUS().write(MEMPTR(), value);
 		}
 
 		void AM_ZeroPageY(uint8_t value) {
 			Address_ZeroPageY();
-			setByte(MEMPTR(), value);
+			BUS().write(MEMPTR(), value);
 		}
 
 		void AM_IndexedIndirectX(uint8_t value) {
 			Address_IndexedIndirectX();
-			setByte(MEMPTR(), value);
+			BUS().write(MEMPTR(), value);
 		}
 
 		void AM_IndirectIndexedY(uint8_t value) {
 			Address_IndirectIndexedY();
-			setByte(MEMPTR(), value);
+			BUS().write(MEMPTR(), value);
 		}
 
 		// Operations
 
 		void DCP(uint8_t value) {
-			setByte(--value);
+			BUS().write(--value);
 			CMP(A(), value);
 		}
 
 		void ISB(uint8_t value) {
-			setByte(++value);
+			BUS().write(++value);
 			A() = SBC(A(), value);
 		}
 
 		void SLO(uint8_t value) {
 			const auto result = ASL(value);
-			setByte(result);
+			BUS().write(result);
 			ORA(result);
 		}
 
 		void SRE(uint8_t value) {
 			const auto result = LSR(value);
-			setByte(result);
+			BUS().write(result);
 			EORA(result);
 		}
 
 		void RLA(uint8_t value) {
 			const auto result = ROL(value);
-			setByte(result);
+			BUS().write(result);
 			ANDA(result);
 		}
 
 		void RRA(uint8_t value) {
 			const auto result = ROR(value);
-			setByte(result);
+			BUS().write(result);
 			A() = ADC(A(), result);
 		}
 
