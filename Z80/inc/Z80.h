@@ -185,7 +185,7 @@ namespace EightBit {
 			UNREACHABLE;
 		}
 
-		uint8_t R2(int r, const uint8_t& a) {
+		uint8_t R2(int r, uint8_t a) {
 			ASSUME(r >= 0);
 			ASSUME(r <= 7);
 			switch (r) {
