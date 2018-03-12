@@ -53,7 +53,7 @@ void EightBit::MOS6502::reset() {
 EightBit::register16_t EightBit::MOS6502::getWordPaged(uint8_t page, uint8_t offset) {
 	EightBit::register16_t returned;
 	returned.low = getBytePaged(page, offset);
-	BUS().ADDRESS().low++;
+	++BUS().ADDRESS().low;
 	returned.high = BUS().read();
 	return returned;
 }
@@ -78,7 +78,7 @@ void EightBit::MOS6502::interrupt(uint8_t vector) {
 	PC() = getWordPaged(0xff, vector);
 }
 
-int EightBit::MOS6502::execute(uint8_t cell) {
+int EightBit::MOS6502::execute(uint8_t cell) { 
 
 	switch (cell) {
 
@@ -498,7 +498,7 @@ void EightBit::MOS6502::Branch(int8_t displacement) {
 
 void EightBit::MOS6502::Branch(bool flag) {
 	const int8_t displacement = AM_Immediate();
-	if (flag)
+	if (UNLIKELY(flag))
 		Branch(displacement);
 }
 
@@ -516,7 +516,7 @@ void EightBit::MOS6502::PLP() {
 
 void EightBit::MOS6502::JSR_abs() {
 	Address_Absolute();
-	PC().word--;
+	--PC().word;
 	call();
 }
 
@@ -527,7 +527,7 @@ void EightBit::MOS6502::RTI() {
 
 void EightBit::MOS6502::RTS() {
 	ret();
-	PC().word++;
+	++PC().word;
 }
 
 void EightBit::MOS6502::JMP_abs() {
@@ -541,7 +541,7 @@ void EightBit::MOS6502::JMP_ind() {
 }
 
 void EightBit::MOS6502::BRK() {
-	PC().word++;
+	++PC().word;
 	pushWord(PC());
 	PHP();
 	setFlag(P(), IF);

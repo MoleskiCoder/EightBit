@@ -68,7 +68,7 @@ bool EightBit::Intel8080::jumpConditionalFlag(uint8_t& f, int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled JP conditional");
+	UNREACHABLE;
 }
 
 bool EightBit::Intel8080::returnConditionalFlag(uint8_t& f, int flag) {
@@ -92,7 +92,7 @@ bool EightBit::Intel8080::returnConditionalFlag(uint8_t& f, int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled RET conditional");
+	UNREACHABLE;
 }
 
 bool EightBit::Intel8080::callConditionalFlag(uint8_t& f, int flag) {
@@ -116,7 +116,7 @@ bool EightBit::Intel8080::callConditionalFlag(uint8_t& f, int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled CALL conditional");
+	UNREACHABLE;
 }
 
 void EightBit::Intel8080::add(uint8_t& f, register16_t& operand, register16_t value) {
@@ -234,7 +234,7 @@ void EightBit::Intel8080::xhtl(register16_t& operand) {
 	MEMPTR().low = BUS().read(SP());
 	BUS().write(operand.low);
 	operand.low = MEMPTR().low;
-	BUS().ADDRESS().word++;
+	++BUS().ADDRESS().word;
 	MEMPTR().high = BUS().read();
 	BUS().write(operand.high);
 	operand.high = MEMPTR().high;

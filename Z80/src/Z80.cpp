@@ -434,9 +434,8 @@ void EightBit::Z80::daa(uint8_t& a, uint8_t& f) {
 	}
 
 	f = (f & (CF | NF)) | (a > 0x99 ? CF : 0) | ((a ^ updated) & HC);
-	a = updated;
 
-	adjustSZPXY<Z80>(f, a);
+	adjustSZPXY<Z80>(f, a = updated);
 }
 
 void EightBit::Z80::cpl(uint8_t& a, uint8_t& f) {
@@ -1123,7 +1122,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 			case 5:
 			case 6:
 			case 7:
-				if (jrConditionalFlag(f, y - 4))
+				if (UNLIKELY(jrConditionalFlag(f, y - 4)))
 					addCycles(5);
 				addCycles(5);
 				break;
@@ -1364,7 +1363,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 	case 3:
 		switch (z) {
 		case 0:	// Conditional return
-			if (returnConditionalFlag(f, y))
+			if (UNLIKELY(returnConditionalFlag(f, y)))
 				addCycles(6);
 			addCycles(5);
 			break;
@@ -1447,7 +1446,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
-			if (callConditionalFlag(f, y))
+			if (UNLIKELY(callConditionalFlag(f, y)))
 				addCycles(7);
 			addCycles(10);
 			break;

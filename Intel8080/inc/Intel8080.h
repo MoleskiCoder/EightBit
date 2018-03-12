@@ -68,7 +68,7 @@ namespace EightBit {
 			default:
 				UNREACHABLE;
 			}
-			throw std::logic_error("Unhandled registry mechanism");
+			UNREACHABLE;
 		}
 
 		void R(int r, uint8_t& a, uint8_t value) {
@@ -100,6 +100,7 @@ namespace EightBit {
 			default:
 				UNREACHABLE;
 			}
+			UNREACHABLE;
 		}
 
 		register16_t& RP(int rp) {
@@ -115,6 +116,7 @@ namespace EightBit {
 			default:
 				UNREACHABLE;
 			}
+			UNREACHABLE;
 		}
 
 		register16_t& RP2(int rp) {
@@ -130,6 +132,7 @@ namespace EightBit {
 			default:
 				UNREACHABLE;
 			}
+			UNREACHABLE;
 		}
 
 		static void adjustAuxiliaryCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
