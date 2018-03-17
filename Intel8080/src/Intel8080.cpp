@@ -68,7 +68,6 @@ bool EightBit::Intel8080::jumpConditionalFlag(uint8_t& f, int flag) {
 	default:
 		UNREACHABLE;
 	}
-	UNREACHABLE;
 }
 
 bool EightBit::Intel8080::returnConditionalFlag(uint8_t& f, int flag) {
@@ -92,7 +91,6 @@ bool EightBit::Intel8080::returnConditionalFlag(uint8_t& f, int flag) {
 	default:
 		UNREACHABLE;
 	}
-	UNREACHABLE;
 }
 
 bool EightBit::Intel8080::callConditionalFlag(uint8_t& f, int flag) {
@@ -116,7 +114,6 @@ bool EightBit::Intel8080::callConditionalFlag(uint8_t& f, int flag) {
 	default:
 		UNREACHABLE;
 	}
-	UNREACHABLE;
 }
 
 void EightBit::Intel8080::add(uint8_t& f, register16_t& operand, register16_t value) {

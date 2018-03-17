@@ -88,7 +88,6 @@ bool EightBit::Z80::jrConditionalFlag(uint8_t f, const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	UNREACHABLE;
 }
 
 bool EightBit::Z80::jumpConditionalFlag(uint8_t f, const int flag) {
@@ -114,7 +113,6 @@ bool EightBit::Z80::jumpConditionalFlag(uint8_t f, const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	UNREACHABLE;
 }
 
 void EightBit::Z80::retn() {
@@ -149,7 +147,6 @@ bool EightBit::Z80::returnConditionalFlag(uint8_t f, const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	UNREACHABLE;
 }
 
 bool EightBit::Z80::callConditionalFlag(uint8_t f, const int flag) {
@@ -175,7 +172,6 @@ bool EightBit::Z80::callConditionalFlag(uint8_t f, const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	UNREACHABLE;
 }
 
 void EightBit::Z80::sbc(uint8_t& f, register16_t& operand, const register16_t value) {
