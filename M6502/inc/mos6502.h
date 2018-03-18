@@ -74,59 +74,54 @@ namespace EightBit {
 
 		// Address resolution
 
-		void Address_Absolute() {
-			MEMPTR() = fetchWord();
+		register16_t Address_Absolute() {
+			return fetchWord();
 		}
 
-		void Address_ZeroPage() {
-			MEMPTR().low = fetchByte();
-			MEMPTR().high = 0;
+		uint8_t Address_ZeroPage() {
+			return fetchByte();
 		}
 
-		void Address_ZeroPageIndirect() {
-			Address_ZeroPage();
-			MEMPTR() = getWordPaged(0, MEMPTR().low);
+		register16_t Address_ZeroPageIndirect() {
+			return getWordPaged(0, Address_ZeroPage());
 		}
 
-		void Address_Indirect() {
-			Address_Absolute();
-			MEMPTR() = getWordPaged(MEMPTR().high, MEMPTR().low);
+		register16_t Address_Indirect() {
+			const auto address = Address_Absolute();
+			return getWordPaged(address.high, address.low);
 		}
 
-		void Address_ZeroPageX() {
-			Address_ZeroPage();
-			MEMPTR().low += X();
+		uint8_t Address_ZeroPageX() {
+			return Address_ZeroPage() + X();
 		}
 
-		void Address_ZeroPageY() {
-			Address_ZeroPage();
-			MEMPTR().low += Y();
+		uint8_t Address_ZeroPageY() {
+			return Address_ZeroPage() + Y();
 		}
 
-		bool Address_AbsoluteX() {
-			Address_Absolute();
-			const auto page = MEMPTR().high;
-			MEMPTR().word += X();
-			return MEMPTR().high != page;
+		std::tuple<register16_t, bool> Address_AbsoluteX() {
+			auto address = Address_Absolute();
+			const auto page = address.high;
+			address.word += X();
+			return std::tuple<register16_t, bool>(address, address.high != page);
 		}
 
-		bool Address_AbsoluteY() {
-			Address_Absolute();
-			const auto page = MEMPTR().high;
-			MEMPTR().word += Y();
-			return MEMPTR().high != page;
+		std::tuple<register16_t, bool> Address_AbsoluteY() {
+			auto address = Address_Absolute();
+			const auto page = address.high;
+			address.word += Y();
+			return std::tuple<register16_t, bool>(address, address.high != page);
 		}
 
-		void Address_IndexedIndirectX() {
-			Address_ZeroPageX();
-			MEMPTR() = getWordPaged(0, MEMPTR().low);
+		register16_t Address_IndexedIndirectX() {
+			return getWordPaged(0, Address_ZeroPageX());
 		}
 
-		bool Address_IndirectIndexedY() {
-			Address_ZeroPageIndirect();
-			const auto page = MEMPTR().high;
-			MEMPTR().word += Y();
-			return MEMPTR().high != page;
+		std::tuple<register16_t, bool> Address_IndirectIndexedY() {
+			auto address = Address_ZeroPageIndirect();
+			const auto page = address.high;
+			address.word += Y();
+			return std::tuple<register16_t, bool>(address, address.high != page);
 		}
 
 		// Addressing modes, read
@@ -136,88 +131,78 @@ namespace EightBit {
 		}
 
 		uint8_t AM_Absolute() {
-			Address_Absolute();
-			return BUS().read(MEMPTR());
+			return BUS().read(Address_Absolute());
 		}
 
 		uint8_t AM_ZeroPage() {
-			Address_ZeroPage();
-			return BUS().read(MEMPTR());
+			return BUS().read(Address_ZeroPage());
 		}
 
 		uint8_t AM_AbsoluteX() {
-			if (UNLIKELY(Address_AbsoluteX()))
+			const auto ap = Address_AbsoluteX();
+			if (UNLIKELY(std::get<1>(ap)))
 				addCycle();
-			return BUS().read(MEMPTR());
+			return BUS().read(std::get<0>(ap));
 		}
 
 		uint8_t AM_AbsoluteY() {
-			if (UNLIKELY(Address_AbsoluteY()))
+			const auto ap = Address_AbsoluteY();
+			if (UNLIKELY(std::get<1>(ap)))
 				addCycle();
-			return BUS().read(MEMPTR());
+			return BUS().read(std::get<0>(ap));
 		}
 
 		uint8_t AM_ZeroPageX() {
-			Address_ZeroPageX();
-			return BUS().read(MEMPTR());
+			return BUS().read(Address_ZeroPageX());
 		}
 
 		uint8_t AM_ZeroPageY() {
-			Address_ZeroPageY();
-			return BUS().read(MEMPTR());
+			return BUS().read(Address_ZeroPageY());
 		}
 
 		uint8_t AM_IndexedIndirectX() {
-			Address_IndexedIndirectX();
-			return BUS().read(MEMPTR());
+			return BUS().read(Address_IndexedIndirectX());
 		}
 
 		uint8_t AM_IndirectIndexedY() {
-			if (UNLIKELY(Address_IndirectIndexedY()))
+			const auto ap = Address_IndirectIndexedY();
+			if (UNLIKELY(std::get<1>(ap)))
 				addCycle();
-			return BUS().read(MEMPTR());
+			return BUS().read(std::get<0>(ap));
 		}
 
 		// Addressing modes, write
 
 		void AM_Absolute(uint8_t value) {
-			Address_Absolute();
-			BUS().write(MEMPTR(), value);
+			BUS().write(Address_Absolute(), value);
 		}
 
 		void AM_ZeroPage(uint8_t value) {
-			Address_ZeroPage();
-			BUS().write(MEMPTR(), value);
+			BUS().write(Address_ZeroPage(), value);
 		}
 
 		void AM_AbsoluteX(uint8_t value) {
-			Address_AbsoluteX();
-			BUS().write(MEMPTR(), value);
+			BUS().write(std::get<0>(Address_AbsoluteX()), value);
 		}
 
 		void AM_AbsoluteY(uint8_t value) {
-			Address_AbsoluteY();
-			BUS().write(MEMPTR(), value);
+			BUS().write(std::get<0>(Address_AbsoluteY()), value);
 		}
 
 		void AM_ZeroPageX(uint8_t value) {
-			Address_ZeroPageX();
-			BUS().write(MEMPTR(), value);
+			BUS().write(Address_ZeroPageX(), value);
 		}
 
 		void AM_ZeroPageY(uint8_t value) {
-			Address_ZeroPageY();
-			BUS().write(MEMPTR(), value);
+			BUS().write(Address_ZeroPageY(), value);
 		}
 
 		void AM_IndexedIndirectX(uint8_t value) {
-			Address_IndexedIndirectX();
-			BUS().write(MEMPTR(), value);
+			BUS().write(Address_IndexedIndirectX(), value);
 		}
 
 		void AM_IndirectIndexedY(uint8_t value) {
-			Address_IndirectIndexedY();
-			BUS().write(MEMPTR(), value);
+			BUS().write(std::get<0>(Address_IndirectIndexedY()), value);
 		}
 
 		// Operations
@@ -344,5 +329,7 @@ namespace EightBit {
 		uint8_t p = 0;		// processor status
 
 		PinLevel m_soLine = Low;
+
+		register16_t m_intermediate = { { 0, 0 } };;
 	};
 }

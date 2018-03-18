@@ -528,9 +528,8 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			break;
 		case 3:	// Assorted operations
 			switch (y) {
-			case 0:	// JP nn
-				MEMPTR() = fetchWord();
-				jump();
+			case 0: // JP nn
+				jump(MEMPTR() = fetchWord());
 				addCycles(10);
 				break;
 			case 2:	// OUT (n),A
@@ -573,8 +572,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
-					MEMPTR() = fetchWord();
-					call();
+					call(MEMPTR() = fetchWord());
 					addCycles(17);
 					break;
 				}

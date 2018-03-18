@@ -117,6 +117,7 @@ bool EightBit::Z80::jumpConditionalFlag(uint8_t f, const int flag) {
 
 void EightBit::Z80::retn() {
 	ret();
+	MEMPTR() = PC();
 	IFF1() = IFF2();
 }
 
@@ -685,7 +686,7 @@ int EightBit::Z80::step() {
 				case 2:
 					MEMPTR().low = BUS().DATA();
 					MEMPTR().high = IV();
-					call();
+					call(MEMPTR());
 					addCycles(19);
 					return cycles();
 				default:
@@ -891,7 +892,7 @@ void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, 
 			break;
 		case 3:	// Retrieve/store register pair from/to immediate address
 			switch (q) {
-			case 0:	// LD (nn), rp[p]
+			case 0: // LD (nn), rp[p]
 				MEMPTR() = fetchWord();
 				setWord(RP(p));
 				break;
@@ -1373,6 +1374,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 				switch (p) {
 				case 0:	// RET
 					ret();
+					MEMPTR() = PC();
 					addCycles(10);
 					break;
 				case 1:	// EXX
@@ -1402,8 +1404,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0:	// JP nn
-				MEMPTR() = fetchWord();
-				jump();
+				jump(MEMPTR() = fetchWord());
 				addCycles(10);
 				break;
 			case 1:	// CB prefix
@@ -1455,8 +1456,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
-					MEMPTR() = fetchWord();
-					call();
+					call(MEMPTR() = fetchWord());
 					addCycles(17);
 					break;
 				case 1:	// DD prefix

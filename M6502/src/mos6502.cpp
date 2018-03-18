@@ -408,7 +408,7 @@ uint8_t EightBit::MOS6502::SBC(const uint8_t operand, const uint8_t data) {
 
 	const auto returned = SUB(operand, data, ~P() & CF);
 
-	const register16_t& difference = MEMPTR();
+	const register16_t& difference = m_intermediate;
 	adjustNZ(difference.low);
 	setFlag(P(), VF, (operand ^ data) & (operand ^ difference.low) & NF);
 	clearFlag(P(), CF, difference.high);
@@ -421,12 +421,12 @@ uint8_t EightBit::MOS6502::SUB(const uint8_t operand, const uint8_t data, const 
 }
 
 uint8_t EightBit::MOS6502::SUB_b(const uint8_t operand, const uint8_t data, const int borrow) {
-	MEMPTR().word = operand - data - borrow;
-	return MEMPTR().low;
+	m_intermediate.word = operand - data - borrow;
+	return m_intermediate.low;
 }
 
 uint8_t EightBit::MOS6502::SUB_d(const uint8_t operand, const uint8_t data, const int borrow) {
-	MEMPTR().word = operand - data - borrow;
+	m_intermediate.word = operand - data - borrow;
 
 	uint8_t low = lowNibble(operand) - lowNibble(data) - borrow;
 	const auto lowNegative = low & NF;
@@ -450,7 +450,7 @@ void EightBit::MOS6502::CMP(uint8_t first, uint8_t second) {
 
 uint8_t EightBit::MOS6502::ADC(const uint8_t operand, const uint8_t data) {
 	const auto returned = ADD(operand, data, P() & CF);
-	adjustNZ(MEMPTR().low);
+	adjustNZ(m_intermediate.low);
 	return returned;
 }
 
@@ -459,17 +459,17 @@ uint8_t EightBit::MOS6502::ADD(uint8_t operand, uint8_t data, int carry) {
 }
 
 uint8_t EightBit::MOS6502::ADD_b(uint8_t operand, uint8_t data, int carry) {
-	MEMPTR().word = operand + data + carry;
+	m_intermediate.word = operand + data + carry;
 
-	setFlag(P(), VF, ~(operand ^ data) & (operand ^ MEMPTR().low) & NF);
-	setFlag(P(), CF, MEMPTR().high & CF);
+	setFlag(P(), VF, ~(operand ^ data) & (operand ^ m_intermediate.low) & NF);
+	setFlag(P(), CF, m_intermediate.high & CF);
 
-	return MEMPTR().low;
+	return m_intermediate.low;
 }
 
 uint8_t EightBit::MOS6502::ADD_d(uint8_t operand, uint8_t data, int carry) {
 
-	MEMPTR().word = operand + data + carry;
+	m_intermediate.word = operand + data + carry;
 
 	uint8_t low = lowNibble(operand) + lowNibble(data) + carry;
 	if (low > 9)
@@ -515,9 +515,9 @@ void EightBit::MOS6502::PLP() {
 //
 
 void EightBit::MOS6502::JSR_abs() {
-	Address_Absolute();
+	const auto address = Address_Absolute();
 	--PC().word;
-	call();
+	call(address);
 }
 
 void EightBit::MOS6502::RTI() {
@@ -531,13 +531,11 @@ void EightBit::MOS6502::RTS() {
 }
 
 void EightBit::MOS6502::JMP_abs() {
-	Address_Absolute();
-	jump();
+	jump(Address_Absolute());
 }
 
 void EightBit::MOS6502::JMP_ind() {
-	Address_Indirect();
-	jump();
+	jump(Address_Indirect());
 }
 
 void EightBit::MOS6502::BRK() {

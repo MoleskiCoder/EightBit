@@ -36,6 +36,8 @@ namespace EightBit {
 			return m_decodedOpcodes[i];
 		}
 
+		register16_t& MEMPTR() { return m_memptr; }
+
 		register16_t& SP() { return m_sp; }
 
 		virtual register16_t& AF() = 0;
@@ -128,32 +130,34 @@ namespace EightBit {
 		void restart(uint8_t address) {
 			MEMPTR().low = address;
 			MEMPTR().high = 0;
-			call();
+			call(MEMPTR());
 		}
 
 		bool callConditional(int condition) {
 			MEMPTR() = fetchWord();
 			if (condition)
-				call();
+				call(MEMPTR());
 			return condition != 0;
 		}
 
 		bool jumpConditional(int conditional) {
 			MEMPTR() = fetchWord();
 			if (conditional)
-				jump();
+				jump(MEMPTR());
 			return conditional != 0;
 		}
 
 		bool returnConditional(int condition) {
-			if (condition)
+			if (condition) {
 				ret();
+				MEMPTR() = PC();
+			}
 			return condition != 0;
 		}
 
 		void jr(int8_t offset) {
 			MEMPTR().word = PC().word + offset;
-			jump();
+			jump(MEMPTR());
 		}
 
 		bool jrConditional(int conditional) {
@@ -166,5 +170,6 @@ namespace EightBit {
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
 		register16_t m_sp = { { 0xff, 0xff } };
+		register16_t m_memptr = { { 0, 0 } };
 	};
 }

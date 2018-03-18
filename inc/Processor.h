@@ -67,7 +67,6 @@ namespace EightBit {
 		Bus& BUS() { return m_bus; }
 
 		register16_t& PC() { return m_pc; }
-		register16_t& MEMPTR() { return m_memptr; }
 
 		PinLevel& RESET() { return m_resetLine; }	// In
 		PinLevel& HALT() { return m_haltLine; }		// Out
@@ -132,18 +131,17 @@ namespace EightBit {
 			return returned;
 		}
 
-		void jump() {
-			PC() = MEMPTR();
+		void jump(register16_t destination) {
+			PC() = destination;
 		}
 
-		void call() {
+		void call(register16_t destination) {
 			pushWord(PC());
-			jump();
+			jump(destination);
 		}
 
 		void ret() {
-			MEMPTR() = popWord();
-			jump();
+			jump(popWord());
 		}
 
 		int cycles() const { return m_cycles; }
@@ -155,7 +153,6 @@ namespace EightBit {
 		Bus& m_bus;
 		int m_cycles = 0;
 		register16_t m_pc = { { 0, 0 } };
-		register16_t m_memptr = { { 0, 0 } };
 
 		PinLevel m_intLine = Low;
 		PinLevel m_nmiLine = Low;

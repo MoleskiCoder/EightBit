@@ -11,7 +11,7 @@ void EightBit::Processor::reset() {
 	raise(INT());
 	raise(NMI());
 	raise(RESET());
-	PC().word = MEMPTR().word = 0;
+	PC().word = 0;
 }
 
 int EightBit::Processor::run(int limit) {
