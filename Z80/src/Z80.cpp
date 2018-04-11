@@ -495,20 +495,12 @@ void EightBit::Z80::cpd(const uint8_t a, uint8_t& f) {
 
 bool EightBit::Z80::cpir(const uint8_t a, uint8_t& f) {
 	cpi(a, f);
-	MEMPTR() = PC();
-	const auto again = (f & PF) && !(f & ZF);	// See CPI
-	if (LIKELY(again))
-		--MEMPTR().word;
-	return again;
+	return (f & PF) && !(f & ZF);	// See CPI
 }
 
 bool EightBit::Z80::cpdr(const uint8_t a, uint8_t& f) {
 	cpd(a, f);
-	MEMPTR().word = PC().word - 1;
-	const auto again = (f & PF) && !(f & ZF);	// See CPD
-	if (UNLIKELY(!again))
-		--MEMPTR().word;
-	return again;
+	return (f & PF) && !(f & ZF);	// See CPD
 }
 
 void EightBit::Z80::blockLoad(const uint8_t a, uint8_t& f, const register16_t source, const register16_t destination) {
@@ -535,18 +527,12 @@ void EightBit::Z80::ldi(const uint8_t a, uint8_t& f) {
 
 bool EightBit::Z80::ldir(const uint8_t a, uint8_t& f) {
 	ldi(a, f);
-	const auto again = (f & PF) != 0;
-	if (LIKELY(again))		// See LDI
-		MEMPTR().word = PC().word - 1;
-	return again;
+	return !!(f & PF);		// See LDI
 }
 
 bool EightBit::Z80::lddr(const uint8_t a, uint8_t& f) {
 	ldd(a, f);
-	const auto again = (f & PF) != 0;
-	if (LIKELY(again))		// See LDR
-		MEMPTR().word = PC().word - 1;
-	return again;
+	return !!(f & PF);		// See LDD
 }
 
 void EightBit::Z80::ini(uint8_t& f) {
@@ -999,13 +985,15 @@ void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, 
 				break;
 			case 6:	// LDIR
 				if (LIKELY(ldir(a, f))) {
-					PC().word -= 2;
+					MEMPTR().word = --PC().word;
+					--PC().word;
 					addCycles(5);
 				}
 				break;
 			case 7:	// LDDR
 				if (LIKELY(lddr(a, f))) {
-					PC().word -= 2;
+					MEMPTR().word = --PC().word;
+					--PC().word;
 					addCycles(5);
 				}
 				break;
@@ -1021,14 +1009,18 @@ void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, 
 				break;
 			case 6:	// CPIR
 				if (LIKELY(cpir(a, f))) {
-					PC().word -= 2;
+					MEMPTR().word = --PC().word;
+					--PC().word;
 					addCycles(5);
 				}
 				break;
 			case 7:	// CPDR
 				if (LIKELY(cpdr(a, f))) {
-					PC().word -= 2;
+					MEMPTR().word = --PC().word;
+					--PC().word;
 					addCycles(5);
+				} else {
+					MEMPTR().word = PC().word - 2;
 				}
 				break;
 			}
@@ -1382,7 +1374,7 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 					addCycles(4);
 					break;
 				case 2:	// JP HL
-					PC() = HL2();
+					jump(HL2());
 					addCycles(4);
 					break;
 				case 3:	// LD SP,HL

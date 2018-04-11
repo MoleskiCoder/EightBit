@@ -47,7 +47,7 @@ void EightBit::Intel8080::decrement(uint8_t& f, uint8_t& operand) {
 	setFlag(f, AC, lowNibble(operand) != Mask4);
 }
 
-bool EightBit::Intel8080::jumpConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::Intel8080::jumpConditionalFlag(const uint8_t f, const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jumpConditional(!(f & ZF));
@@ -70,7 +70,7 @@ bool EightBit::Intel8080::jumpConditionalFlag(uint8_t& f, int flag) {
 	}
 }
 
-bool EightBit::Intel8080::returnConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::Intel8080::returnConditionalFlag(const uint8_t f, const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return returnConditional(!(f & ZF));
@@ -93,7 +93,7 @@ bool EightBit::Intel8080::returnConditionalFlag(uint8_t& f, int flag) {
 	}
 }
 
-bool EightBit::Intel8080::callConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::Intel8080::callConditionalFlag(const uint8_t f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return callConditional(!(f & ZF));
@@ -215,15 +215,15 @@ void EightBit::Intel8080::daa(uint8_t& a, uint8_t& f) {
 	setFlag(f, CF, carry);
 }
 
-void EightBit::Intel8080::cma(uint8_t& a, uint8_t& f) {
+void EightBit::Intel8080::cma(uint8_t& a) {
 	a = ~a;
 }
 
-void EightBit::Intel8080::stc(uint8_t& a, uint8_t& f) {
+void EightBit::Intel8080::stc(uint8_t& f) {
 	setFlag(f, CF);
 }
 
-void EightBit::Intel8080::cmc(uint8_t& a, uint8_t& f) {
+void EightBit::Intel8080::cmc(uint8_t& f) {
 	clearFlag(f, CF, f & CF);
 }
 
@@ -429,13 +429,13 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 				daa(a, f);
 				break;
 			case 5:
-				cma(a, f);
+				cma(a);
 				break;
 			case 6:
-				stc(a, f);
+				stc(f);
 				break;
 			case 7:
-				cmc(a, f);
+				cmc(f);
 				break;
 			default:
 				UNREACHABLE;
@@ -509,7 +509,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 					addCycles(10);
 					break;
 				case 2:	// JP HL
-					PC() = HL();
+					jump(HL());
 					addCycles(4);
 					break;
 				case 3:	// LD SP,HL
@@ -529,7 +529,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0: // JP nn
-				jump(MEMPTR() = fetchWord());
+				jump(fetchWord());
 				addCycles(10);
 				break;
 			case 2:	// OUT (n),A
@@ -572,7 +572,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
-					call(MEMPTR() = fetchWord());
+					call(fetchWord());
 					addCycles(17);
 					break;
 				}

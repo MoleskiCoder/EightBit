@@ -688,7 +688,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 					addCycles(4);
 					break;
 				case 2:	// JP HL
-					PC() = HL();
+					jump(HL());
 					addCycle();
 					break;
 				case 3:	// LD SP,HL
@@ -738,7 +738,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 			switch (y) {
 			case 0:	// JP nn
 				MEMPTR() = fetchWord();
-				jump();
+				jump(MEMPTR());
 				addCycles(4);
 				break;
 			case 1:	// CB prefix
@@ -770,7 +770,7 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 				switch (p) {
 				case 0:	// CALL nn
 					MEMPTR() = fetchWord();
-					call();
+					call(MEMPTR());
 					addCycles(6);
 					break;
 				}
