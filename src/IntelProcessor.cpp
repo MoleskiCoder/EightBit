@@ -12,7 +12,7 @@ void EightBit::IntelProcessor::reset() {
 	SP().word = AF().word = BC().word = DE().word = HL().word = Mask16;
 }
 
-void EightBit::IntelProcessor::push(uint8_t value) {
+void EightBit::IntelProcessor::push(const uint8_t value) {
 	BUS().write(--SP().word, value);
 }
 
@@ -27,7 +27,7 @@ EightBit::register16_t EightBit::IntelProcessor::getWord() {
 	return returned;
 }
 
-void EightBit::IntelProcessor::setWord(register16_t value) {
+void EightBit::IntelProcessor::setWord(const register16_t value) {
 	BUS().write(MEMPTR().word++, value.low);
 	BUS().write(++BUS().ADDRESS().word, value.high);
 }

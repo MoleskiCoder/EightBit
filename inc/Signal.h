@@ -4,7 +4,7 @@
 #include <functional>
 
 namespace EightBit {
-	template<class T> class Signal {
+	template<class T> class Signal final {
 	private:
 		typedef std::function<void(const T&)> delegate_t;
 		typedef std::vector<delegate_t> delegates_t;
@@ -12,7 +12,7 @@ namespace EightBit {
 		delegates_t m_delegates;
 
 	public:
-		void connect(delegate_t functor) {
+		void connect(const delegate_t functor) {
 			m_delegates.push_back(functor);
 		}
 

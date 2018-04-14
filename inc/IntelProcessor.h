@@ -23,7 +23,7 @@ namespace EightBit {
 
 			opcode_decoded_t() {}
 
-			opcode_decoded_t(uint8_t opcode) {
+			opcode_decoded_t(const uint8_t opcode) {
 				x = (opcode & 0b11000000) >> 6;	// 0 - 3
 				y = (opcode & 0b00111000) >> 3;	// 0 - 7
 				z = (opcode & 0b00000111);		// 0 - 7
@@ -62,56 +62,56 @@ namespace EightBit {
 
 		virtual void reset() override;
 
-		template<class T> static void adjustSign(uint8_t& f, uint8_t value) {
+		template<class T> static void adjustSign(uint8_t& f, const uint8_t value) {
 			setFlag(f, T::SF, value & T::SF);
 		}
 
-		template<class T> static void adjustZero(uint8_t& f, uint8_t value) {
+		template<class T> static void adjustZero(uint8_t& f, const uint8_t value) {
 			clearFlag(f, T::ZF, value);
 		}
 
-		template<class T> static void adjustParity(uint8_t& f, uint8_t value) {
+		template<class T> static void adjustParity(uint8_t& f, const uint8_t value) {
 			clearFlag(f, T::PF, PARITY(value));
 		}
 
-		template<class T> static void adjustSZ(uint8_t& f, uint8_t value) {
+		template<class T> static void adjustSZ(uint8_t& f, const uint8_t value) {
 			adjustSign<T>(f, value);
 			adjustZero<T>(f, value);
 		}
 
-		template<class T> static void adjustSZP(uint8_t& f, uint8_t value) {
+		template<class T> static void adjustSZP(uint8_t& f, const uint8_t value) {
 			adjustSZ<T>(f, value);
 			adjustParity<T>(f, value);
 		}
 
-		template<class T> static void adjustXY(uint8_t& f, uint8_t value) {
+		template<class T> static void adjustXY(uint8_t& f, const uint8_t value) {
 			setFlag(f, T::XF, value & T::XF);
 			setFlag(f, T::YF, value & T::YF);
 		}
 
-		template<class T> static void adjustSZPXY(uint8_t& f, uint8_t value) {
+		template<class T> static void adjustSZPXY(uint8_t& f, const uint8_t value) {
 			adjustSZP<T>(f, value);
 			adjustXY<T>(f, value);
 		}
 
-		template<class T> static void adjustSZXY(uint8_t& f, uint8_t value) {
+		template<class T> static void adjustSZXY(uint8_t& f, const uint8_t value) {
 			adjustSZ<T>(f, value);
 			adjustXY<T>(f, value);
 		}
 
 		//
 
-		static int buildHalfCarryIndex(uint8_t before, uint8_t value, int calculation) {
+		static int buildHalfCarryIndex(const uint8_t before, const uint8_t value, const int calculation) {
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
-		static bool calculateHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
+		static bool calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) {
 			static std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableAdd[index & Mask3];
 		}
 
-		static bool calculateHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
+		static bool calculateHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) {
 			std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableSub[index & Mask3];
@@ -127,27 +127,27 @@ namespace EightBit {
 
 		//
 
-		void restart(uint8_t address) {
+		void restart(const uint8_t address) {
 			MEMPTR().low = address;
 			MEMPTR().high = 0;
 			call(MEMPTR());
 		}
 
-		bool callConditional(int condition) {
+		bool callConditional(const int condition) {
 			MEMPTR() = fetchWord();
 			if (condition)
 				call(MEMPTR());
 			return condition != 0;
 		}
 
-		bool jumpConditional(int conditional) {
+		bool jumpConditional(const int conditional) {
 			MEMPTR() = fetchWord();
 			if (conditional)
 				jump(MEMPTR());
 			return conditional != 0;
 		}
 
-		bool returnConditional(int condition) {
+		bool returnConditional(const int condition) {
 			if (condition) {
 				ret();
 				MEMPTR() = PC();
@@ -155,12 +155,12 @@ namespace EightBit {
 			return condition != 0;
 		}
 
-		void jr(int8_t offset) {
+		void jr(const int8_t offset) {
 			MEMPTR().word = PC().word + offset;
 			jump(MEMPTR());
 		}
 
-		bool jrConditional(int conditional) {
+		bool jrConditional(const int conditional) {
 			const auto offset = fetchByte();
 			if (conditional)
 				jr(offset);

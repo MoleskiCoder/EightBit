@@ -53,16 +53,16 @@ namespace EightBit {
 			Low, High
 		};
 
-		static bool raised(PinLevel line) { return line == High; }
+		static bool raised(const PinLevel line) { return line == High; }
 		static void raise(PinLevel& line) { line = High; }
-		static bool lowered(PinLevel line) { return line == Low; }
+		static bool lowered(const PinLevel line) { return line == Low; }
 		static void lower(PinLevel& line) { line = Low; }
 
-		static int highNibble(int value) { return value >> 4; }
-		static int lowNibble(int value) { return value & Mask4; }
+		static int highNibble(const int value) { return value >> 4; }
+		static int lowNibble(const int value) { return value & Mask4; }
 
-		static int promoteNibble(int value) { return value << 4; }
-		static int demoteNibble(int value) { return highNibble(value); }
+		static int promoteNibble(const int value) { return value << 4; }
+		static int demoteNibble(const int value) { return highNibble(value); }
 
 		Bus& BUS() { return m_bus; }
 
@@ -85,16 +85,16 @@ namespace EightBit {
 		virtual int execute(uint8_t opcode) = 0;
 
 	protected:
-		static void clearFlag(uint8_t& f, int flag) { f &= ~flag; }
-		static void setFlag(uint8_t& f, int flag) { f |= flag; }
+		static void clearFlag(uint8_t& f, const int flag) { f &= ~flag; }
+		static void setFlag(uint8_t& f, const int flag) { f |= flag; }
 
-		static void setFlag(uint8_t& f, int flag, int condition) { setFlag(f, flag, condition != 0); }
-		static void setFlag(uint8_t& f, int flag, uint32_t condition) { setFlag(f, flag, condition != 0); }
-		static void setFlag(uint8_t& f, int flag, bool condition) { condition ? setFlag(f, flag) : clearFlag(f, flag); }
+		static void setFlag(uint8_t& f, const int flag, const int condition) { setFlag(f, flag, condition != 0); }
+		static void setFlag(uint8_t& f, const int flag, const uint32_t condition) { setFlag(f, flag, condition != 0); }
+		static void setFlag(uint8_t& f, const int flag, const bool condition) { condition ? setFlag(f, flag) : clearFlag(f, flag); }
 
-		static void clearFlag(uint8_t& f, int flag, int condition) { clearFlag(f, flag, condition != 0); }
-		static void clearFlag(uint8_t& f, int flag, uint32_t condition) { clearFlag(f, flag, condition != 0); }
-		static void clearFlag(uint8_t& f, int flag, bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
+		static void clearFlag(uint8_t& f, const int flag, const int condition) { clearFlag(f, flag, condition != 0); }
+		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) { clearFlag(f, flag, condition != 0); }
+		static void clearFlag(uint8_t& f, const int flag, const bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
 
 		Processor(Bus& memory);
 		virtual ~Processor() = default;
@@ -119,7 +119,7 @@ namespace EightBit {
 		virtual void push(uint8_t value) = 0;
 		virtual uint8_t pop() = 0;
 
-		void pushWord(register16_t value) {
+		void pushWord(const register16_t value) {
 			push(value.high);
 			push(value.low);
 		}
@@ -131,11 +131,11 @@ namespace EightBit {
 			return returned;
 		}
 
-		void jump(register16_t destination) {
+		void jump(const register16_t destination) {
 			PC() = destination;
 		}
 
-		void call(register16_t destination) {
+		void call(const register16_t destination) {
 			pushWord(PC());
 			jump(destination);
 		}
@@ -146,7 +146,7 @@ namespace EightBit {
 
 		int cycles() const { return m_cycles; }
 		void resetCycles() { m_cycles = 0; }
-		void addCycles(int extra) { m_cycles += extra; }
+		void addCycles(const int extra) { m_cycles += extra; }
 		void addCycle() { ++m_cycles;  }
 
 	private:

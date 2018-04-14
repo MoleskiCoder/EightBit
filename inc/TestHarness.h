@@ -18,11 +18,7 @@ namespace EightBit {
 	template<class ConfigurationT, class BoardT> class TestHarness {
 	public:
 		TestHarness(const ConfigurationT& configuration)
-		: m_board(configuration),
-		  m_totalCycles(0),
-		  m_instructions(0),
-		  m_startHostCycles(0),
-		  m_finishHostCycles(0) {
+		: m_board(configuration) {
 		}
 
 		~TestHarness() {
@@ -81,12 +77,12 @@ namespace EightBit {
 
 	private:
 		BoardT m_board;
-		long long m_totalCycles;
-		long long m_instructions;
+		long long m_totalCycles = 0;
+		long long m_instructions = 0;
 		std::chrono::steady_clock::time_point m_startTime;
 		std::chrono::steady_clock::time_point m_finishTime;
-		uint64_t m_startHostCycles;
-		uint64_t m_finishHostCycles;
+		uint64_t m_startHostCycles = 0;
+		uint64_t m_finishHostCycles = 0;
 
 		static std::chrono::steady_clock::time_point now() {
 			return std::chrono::steady_clock::now();

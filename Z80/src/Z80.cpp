@@ -73,7 +73,7 @@ void EightBit::Z80::decrement(uint8_t& f, uint8_t& operand) {
 	setFlag(f, VF, operand == Mask7);
 }
 
-bool EightBit::Z80::jrConditionalFlag(uint8_t f, const int flag) {
+bool EightBit::Z80::jrConditionalFlag(const uint8_t f, const int flag) {
 	ASSUME(flag >= 0);
 	ASSUME(flag <= 3);
 	switch (flag) {
@@ -90,7 +90,7 @@ bool EightBit::Z80::jrConditionalFlag(uint8_t f, const int flag) {
 	}
 }
 
-bool EightBit::Z80::jumpConditionalFlag(uint8_t f, const int flag) {
+bool EightBit::Z80::jumpConditionalFlag(const uint8_t f, const int flag) {
 	ASSUME(flag >= 0);
 	ASSUME(flag <= 7);
 	switch (flag) {
@@ -125,7 +125,7 @@ void EightBit::Z80::reti() {
 	retn();
 }
 
-bool EightBit::Z80::returnConditionalFlag(uint8_t f, const int flag) {
+bool EightBit::Z80::returnConditionalFlag(const uint8_t f, const int flag) {
 	ASSUME(flag >= 0);
 	ASSUME(flag <= 7);
 	switch (flag) {
@@ -150,7 +150,7 @@ bool EightBit::Z80::returnConditionalFlag(uint8_t f, const int flag) {
 	}
 }
 
-bool EightBit::Z80::callConditionalFlag(uint8_t f, const int flag) {
+bool EightBit::Z80::callConditionalFlag(const uint8_t f, const int flag) {
 	ASSUME(flag >= 0);
 	ASSUME(flag <= 7);
 	switch (flag) {
@@ -372,7 +372,7 @@ uint8_t EightBit::Z80::srl(uint8_t& f, uint8_t operand) {
 	return operand;
 }
 
-uint8_t EightBit::Z80::bit(uint8_t& f, int n, uint8_t operand) {
+uint8_t EightBit::Z80::bit(uint8_t& f, const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
 	setFlag(f, HC);
@@ -383,13 +383,13 @@ uint8_t EightBit::Z80::bit(uint8_t& f, int n, uint8_t operand) {
 	return operand;
 }
 
-uint8_t EightBit::Z80::res(int n, const uint8_t operand) {
+uint8_t EightBit::Z80::res(const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
 	return operand & ~(1 << n);
 }
 
-uint8_t EightBit::Z80::set(int n, const uint8_t operand) {
+uint8_t EightBit::Z80::set(const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
 	return operand | (1 << n);
@@ -710,15 +710,15 @@ int EightBit::Z80::execute(const uint8_t opcode) {
 	auto& f = af.low;
 
 	auto prefixed = m_prefixCB || m_prefixED;
-	if (LIKELY(!prefixed)) {
-		executeOther(a, f, x, y, z, p, q);
-	} else {
+	if (UNLIKELY(prefixed)) {
 		if (m_prefixCB)
 			executeCB(a, f, x, y, z);
 		else if (m_prefixED)
 			executeED(a, f, x, y, z, p, q);
 		else
 			UNREACHABLE;
+	} else {
+		executeOther(a, f, x, y, z, p, q);
 	}
 
 	ASSUME(cycles() > 0);
@@ -764,21 +764,25 @@ void EightBit::Z80::executeCB(uint8_t& a, uint8_t& f, const int x, const int y, 
 			UNREACHABLE;
 		}
 		adjustSZP<Z80>(f, operand);
-		if (LIKELY(!m_displaced)) {
-			R(z, a, operand);
-			if (UNLIKELY(z == 6))
-				addCycles(7);
-		} else {
+		if (UNLIKELY(m_displaced)) {
 			if (LIKELY(z != 6))
 				R2(z, a, operand);
 			BUS().write(operand);
 			addCycles(15);
+		} else {
+			R(z, a, operand);
+			if (UNLIKELY(z == 6))
+				addCycles(7);
 		}
 		addCycles(8);
 		break;
 	} case 1:	// BIT y, r[z]
 		addCycles(8);
-		if (LIKELY(!m_displaced)) {
+		if (UNLIKELY(m_displaced)) {
+			bit(f, y, BUS().read(displacedAddress()));
+			adjustXY<Z80>(f, MEMPTR().high);
+			addCycles(12);
+		} else {
 			const auto operand = bit(f, y, R(z, a));
 			if (UNLIKELY(z == 6)) {
 				adjustXY<Z80>(f, MEMPTR().high);
@@ -786,38 +790,34 @@ void EightBit::Z80::executeCB(uint8_t& a, uint8_t& f, const int x, const int y, 
 			} else {
 				adjustXY<Z80>(f, operand);
 			}
-		} else {
-			bit(f, y, BUS().read(displacedAddress()));
-			adjustXY<Z80>(f, MEMPTR().high);
-			addCycles(12);
 		}
 		break;
 	case 2:	// RES y, r[z]
 		addCycles(8);
-		if (LIKELY(!m_displaced)) {
-			R(z, a, res(y, R(z, a)));
-			if (UNLIKELY(z == 6))
-				addCycles(7);
-		} else {
+		if (UNLIKELY(m_displaced)) {
 			auto operand = BUS().read(displacedAddress());
 			operand = res(y, operand);
 			BUS().write(operand);
 			R2(z, a, operand);
 			addCycles(15);
+		} else {
+			R(z, a, res(y, R(z, a)));
+			if (UNLIKELY(z == 6))
+				addCycles(7);
 		}
 		break;
 	case 3:	// SET y, r[z]
 		addCycles(8);
-		if (LIKELY(!m_displaced)) {
-			R(z, a, set(y, R(z, a)));
-			if (UNLIKELY(z == 6))
-				addCycles(7);
-		} else {
+		if (UNLIKELY(m_displaced)) {
 			auto operand = BUS().read(displacedAddress());
 			operand = set(y, operand);
 			BUS().write(operand);
 			R2(z, a, operand);
 			addCycles(15);
+		} else {
+			R(z, a, set(y, R(z, a)));
+			if (UNLIKELY(z == 6))
+				addCycles(7);
 		}
 		break;
 	default:
@@ -1222,22 +1222,24 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 			addCycles(4);
 			break;
 		} case 5: {	// 8-bit DEC
-			if (UNLIKELY(m_displaced && (y == 6)))
-				fetchDisplacement();
+			if (UNLIKELY(y == 6)) {
+				addCycles(7);
+				if (UNLIKELY(m_displaced))
+					fetchDisplacement();
+			}
 			auto operand = R(y, a);
 			decrement(f, operand);
 			R(y, a, operand);
 			addCycles(4);
-			if (UNLIKELY(y == 6))
-				addCycles(7);
 			break;
 		} case 6:	// 8-bit load immediate
-			if (UNLIKELY(m_displaced && (y == 6)))
-				fetchDisplacement();
+			if (UNLIKELY(y == 6)) {
+				addCycles(3);
+				if (UNLIKELY(m_displaced))
+					fetchDisplacement();
+			}
 			R(y, a, fetchByte());	// LD r,n
 			addCycles(7);
-			if (UNLIKELY(y == 6))
-				addCycles(3);
 			break;
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
@@ -1315,8 +1317,11 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 		addCycles(4);
 		break;
 	case 2:	// Operate on accumulator and register/memory location
-		if (UNLIKELY(m_displaced && (z == 6)))
-			fetchDisplacement();
+		if (UNLIKELY(z == 6)) {
+			addCycles(3);
+			if (UNLIKELY(m_displaced))
+				fetchDisplacement();
+		}
 		switch (y) {
 		case 0:	// ADD A,r
 			add(f, a, R(z, a));
@@ -1346,8 +1351,6 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 			UNREACHABLE;
 		}
 		addCycles(4);
-		if (UNLIKELY(z == 6))
-			addCycles(3);
 		break;
 	case 3:
 		switch (z) {

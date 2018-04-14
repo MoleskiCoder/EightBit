@@ -6,17 +6,17 @@
 #include "Signal.h"
 
 namespace EightBit {
-	class InputOutput {
+	class InputOutput final {
 	public:
 		InputOutput() = default;
 
-		uint8_t read(uint8_t port) { return readInputPort(port); }
-		void write(uint8_t port, uint8_t value) { return writeOutputPort(port, value); }
+		uint8_t read(const uint8_t port) { return readInputPort(port); }
+		void write(const uint8_t port, const uint8_t value) { return writeOutputPort(port, value); }
 
 		uint8_t readInputPort(uint8_t port);
-		void writeInputPort(uint8_t port, uint8_t value) { m_input[port] = value; }
+		void writeInputPort(const uint8_t port, const uint8_t value) { m_input[port] = value; }
 
-		uint8_t readOutputPort(uint8_t port) { return m_output[port]; }
+		uint8_t readOutputPort(const uint8_t port) { return m_output[port]; }
 		void writeOutputPort(uint8_t port, uint8_t value);
 
 		Signal<uint8_t> ReadingPort;

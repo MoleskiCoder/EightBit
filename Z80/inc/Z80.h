@@ -19,7 +19,7 @@ namespace EightBit {
 			bool high : 1;
 			uint8_t variable : 7;
 
-			refresh_t(uint8_t value)
+			refresh_t(const uint8_t value)
 			: high((value & Bit7) != 0),
 			  variable(value & Mask7)
 			{ }
@@ -125,7 +125,7 @@ namespace EightBit {
 			m_displacement = fetchByte();
 		}
 
-		uint8_t R(int r, uint8_t a) {
+		uint8_t R(const int r, const uint8_t a) {
 			ASSUME(r >= 0);
 			ASSUME(r <= 7);
 			switch (r) {
@@ -142,7 +142,7 @@ namespace EightBit {
 			case 5:
 				return HL2().low;
 			case 6:
-				return BUS().read(LIKELY(!m_displaced) ? HL().word : displacedAddress());
+				return BUS().read(UNLIKELY(m_displaced) ?  displacedAddress() : HL().word);
 			case 7:
 				return a;
 			default:
@@ -150,7 +150,7 @@ namespace EightBit {
 			}
 		}
 
-		void R(int r, uint8_t& a, uint8_t value) {
+		void R(const int r, uint8_t& a, const uint8_t value) {
 			ASSUME(r >= 0);
 			ASSUME(r <= 7);
 			switch (r) {
@@ -173,7 +173,7 @@ namespace EightBit {
 				HL2().low = value;
 				break;
 			case 6:
-				BUS().write(LIKELY(!m_displaced) ? HL().word : displacedAddress(), value);
+				BUS().write(UNLIKELY(m_displaced) ? displacedAddress() : HL().word, value);
 				break;
 			case 7:
 				a = value;
@@ -183,7 +183,7 @@ namespace EightBit {
 			}
 		}
 
-		uint8_t R2(int r, uint8_t a) {
+		uint8_t R2(const int r, const uint8_t a) {
 			ASSUME(r >= 0);
 			ASSUME(r <= 7);
 			switch (r) {
@@ -208,7 +208,7 @@ namespace EightBit {
 			}
 		}
 
-		void R2(int r, uint8_t& a, uint8_t value) {
+		void R2(const int r, uint8_t& a, const uint8_t value) {
 			ASSUME(r >= 0);
 			ASSUME(r <= 7);
 			switch (r) {
@@ -241,7 +241,7 @@ namespace EightBit {
 			}
 		}
 
-		register16_t& RP(int rp) {
+		register16_t& RP(const int rp) {
 			ASSUME(rp >= 0);
 			ASSUME(rp <= 3);
 			switch (rp) {
@@ -267,7 +267,7 @@ namespace EightBit {
 			return IY();
 		}
 
-		register16_t& RP2(int rp) {
+		register16_t& RP2(const int rp) {
 			ASSUME(rp >= 0);
 			ASSUME(rp <= 3);
 			switch (rp) {
@@ -284,28 +284,28 @@ namespace EightBit {
 			}
 		}
 
-		static void adjustHalfCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
+		static void adjustHalfCarryAdd(uint8_t& f, const uint8_t before, const uint8_t value, const int calculation) {
 			setFlag(f, HC, calculateHalfCarryAdd(before, value, calculation));
 		}
 
-		static void adjustHalfCarrySub(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
+		static void adjustHalfCarrySub(uint8_t& f, const uint8_t before, const uint8_t value, const int calculation) {
 			setFlag(f, HC, calculateHalfCarrySub(before, value, calculation));
 		}
 
-		static void adjustOverflowAdd(uint8_t& f, uint8_t before, uint8_t value, uint8_t calculation) {
+		static void adjustOverflowAdd(uint8_t& f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
 			adjustOverflowAdd(f, before & SF, value & SF, calculation & SF);
 		}
 
-		static void adjustOverflowAdd(uint8_t& f, int beforeNegative, int valueNegative, int afterNegative) {
+		static void adjustOverflowAdd(uint8_t& f, const int beforeNegative, const int valueNegative, const int afterNegative) {
 			auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
 			setFlag(f, VF, overflow);
 		}
 
-		static void adjustOverflowSub(uint8_t& f, uint8_t before, uint8_t value, uint8_t calculation) {
+		static void adjustOverflowSub(uint8_t& f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
 			adjustOverflowSub(f, before & SF, value & SF, calculation & SF);
 		}
 
-		static void adjustOverflowSub(uint8_t& f, int beforeNegative, int valueNegative, int afterNegative) {
+		static void adjustOverflowSub(uint8_t& f, const int beforeNegative, const int valueNegative, const int afterNegative) {
 			auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
 			setFlag(f, VF, overflow);
 		}

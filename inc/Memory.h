@@ -11,23 +11,23 @@ namespace EightBit {
 		static int load(std::ifstream& file, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
 		static int load(const std::string& path, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
 
-		Memory(size_t size = 0)
+		Memory(const size_t size = 0)
 		: m_bytes(size) {
 		}
 
 		size_t size() const { return m_bytes.size();  }
 
-		int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) {
+		int load(std::ifstream& file, const int writeOffset = 0, const int readOffset = 0, const int limit = -1) {
 			const auto maximumSize = (int)m_bytes.size() - writeOffset;
 			return load(file, m_bytes, writeOffset, readOffset, limit, maximumSize);
 		}
 
-		int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) {
+		int load(const std::string& path, const int writeOffset = 0, const int readOffset = 0, const int limit = -1) {
 			const auto maximumSize = (int)m_bytes.size() - writeOffset;
 			return load(path, m_bytes, writeOffset, readOffset, limit, maximumSize);
 		}
 
-		int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) {
+		int load(const std::vector<uint8_t>& bytes, const int writeOffset = 0, const int readOffset = 0, int limit = -1) {
 			if (limit < 0)
 				limit = (int)bytes.size() - readOffset;
 			std::copy(bytes.cbegin() + readOffset, bytes.cbegin() + limit, m_bytes.begin() + writeOffset);
@@ -37,11 +37,11 @@ namespace EightBit {
 	protected:
 		std::vector<uint8_t>& BYTES() { return m_bytes; }
 
-		uint8_t read(uint16_t address) const {
+		uint8_t read(const uint16_t address) const {
 			return m_bytes[address];
 		}
 
-		void write(uint16_t address, uint8_t value) {
+		void write(const uint16_t address, const uint8_t value) {
 			m_bytes[address] = value;
 		}
 

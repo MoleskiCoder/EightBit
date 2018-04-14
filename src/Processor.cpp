@@ -14,7 +14,7 @@ void EightBit::Processor::reset() {
 	PC().word = 0;
 }
 
-int EightBit::Processor::run(int limit) {
+int EightBit::Processor::run(const int limit) {
 	int current = 0;
 	while (LIKELY(powered()) && current < limit) {
 		current += singleStep();
