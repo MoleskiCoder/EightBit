@@ -3,8 +3,8 @@
 
 #include <Ram.h>
 
-EightBit::GameBoy::CharacterDefinition::CharacterDefinition(Ram* ram, uint16_t address)
-: m_ram(ram),
+EightBit::GameBoy::CharacterDefinition::CharacterDefinition(const Ram& vram, const uint16_t address)
+: m_vram(vram),
   m_address(address) {
 }
 
@@ -14,8 +14,8 @@ std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) const {
 
 	const auto planeAddress = m_address + row * 2;
 	
-	const auto planeLow = m_ram->peek(planeAddress);
-	const auto planeHigh = m_ram->peek(planeAddress + 1);
+	const auto planeLow = m_vram.peek(planeAddress);
+	const auto planeHigh = m_vram.peek(planeAddress + 1);
 	
 	for (int bit = 0; bit < 8; ++bit) {
 	

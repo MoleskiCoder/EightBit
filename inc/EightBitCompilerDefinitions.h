@@ -15,20 +15,24 @@ namespace EightBit {
 	void assume(int expression);
 }
 
-/*
-Published in 1988, the C Programming Language 2nd Ed.
-(by Brian W.Kernighan and Dennis M.Ritchie) mentions
-this in exercise 2 - 9. On April 19, 2006 Don Knuth pointed
-out to me that this method "was first published by Peter
-Wegner in CACM 3 (1960), 322.
-(Also discovered independently by Derrick Lehmer and published
-in 1964 in a book edited by Beckenbach.)"
-*/
 inline int EightBit::countBits(uint8_t value) {
+#ifdef _MSC_VER
+	return __popcnt(value);
+#else
+	/*
+	Published in 1988, the C Programming Language 2nd Ed.
+	(by Brian W.Kernighan and Dennis M.Ritchie) mentions
+	this in exercise 2 - 9. On April 19, 2006 Don Knuth pointed
+	out to me that this method "was first published by Peter
+	Wegner in CACM 3 (1960), 322.
+	(Also discovered independently by Derrick Lehmer and published
+	in 1964 in a book edited by Beckenbach.)"
+	*/
 	int count; // c accumulates the total bits set in value
 	for (count = 0; value; ++count)
 		value &= value - 1; // clear the least significant bit set
 	return count;
+#endif
 }
 
 inline bool EightBit::oddParity(uint8_t value) {
@@ -66,7 +70,7 @@ inline void EightBit::assume(int expression) {
 #	define LIKELY(x)	(x)
 #	define UNLIKELY(x)	(x)
 
-#	define PARITY(x)	(__popcnt(x) % 2)
+#	define PARITY(x)	EightBit::oddParity(x);
 
 #	define UNREACHABLE	ASSUME(0)
 

@@ -36,7 +36,7 @@ void EightBit::GameBoy::LR35902::decrement(uint8_t& f, uint8_t& operand) {
 	adjustZero<LR35902>(f, --operand);
 }
 
-bool EightBit::GameBoy::LR35902::jrConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::GameBoy::LR35902::jrConditionalFlag(uint8_t f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jrConditional(!(f & ZF));
@@ -52,7 +52,7 @@ bool EightBit::GameBoy::LR35902::jrConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled JR conditional");
 }
 
-bool EightBit::GameBoy::LR35902::jumpConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::GameBoy::LR35902::jumpConditionalFlag(uint8_t f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jumpConditional(!(f & ZF));
@@ -73,7 +73,7 @@ void EightBit::GameBoy::LR35902::reti() {
 	ei();
 }
 
-bool EightBit::GameBoy::LR35902::returnConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::GameBoy::LR35902::returnConditionalFlag(uint8_t f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return returnConditional(!(f & ZF));
@@ -89,7 +89,7 @@ bool EightBit::GameBoy::LR35902::returnConditionalFlag(uint8_t& f, int flag) {
 	throw std::logic_error("Unhandled RET conditional");
 }
 
-bool EightBit::GameBoy::LR35902::callConditionalFlag(uint8_t& f, int flag) {
+bool EightBit::GameBoy::LR35902::callConditionalFlag(uint8_t f, int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return callConditional(!(f & ZF));
@@ -269,12 +269,12 @@ void EightBit::GameBoy::LR35902::cpl(uint8_t& a, uint8_t& f) {
 	a = ~a;
 }
 
-void EightBit::GameBoy::LR35902::scf(uint8_t& a, uint8_t& f) {
+void EightBit::GameBoy::LR35902::scf(uint8_t& f) {
 	setFlag(f, CF);
 	clearFlag(f, HC | NF);
 }
 
-void EightBit::GameBoy::LR35902::ccf(uint8_t& a, uint8_t& f) {
+void EightBit::GameBoy::LR35902::ccf(uint8_t& f) {
 	clearFlag(f, NF | HC);
 	clearFlag(f, CF, f & CF);
 }
@@ -566,10 +566,10 @@ void EightBit::GameBoy::LR35902::executeOther(uint8_t& a, uint8_t& f, int x, int
 				cpl(a, f);
 				break;
 			case 6:
-				scf(a, f);
+				scf(f);
 				break;
 			case 7:
-				ccf(a, f);
+				ccf(f);
 				break;
 			default:
 				UNREACHABLE;

@@ -175,10 +175,10 @@ namespace EightBit {
 
 			void reti();
 
-			bool jrConditionalFlag(uint8_t& f, int flag);
-			bool returnConditionalFlag(uint8_t& f, int flag);
-			bool jumpConditionalFlag(uint8_t& f, int flag);
-			bool callConditionalFlag(uint8_t& f, int flag);
+			bool jrConditionalFlag(uint8_t f, int flag);
+			bool returnConditionalFlag(uint8_t f, int flag);
+			bool jumpConditionalFlag(uint8_t f, int flag);
+			bool callConditionalFlag(uint8_t f, int flag);
 
 			void add(uint8_t& f, register16_t& operand, register16_t value);
 
@@ -204,8 +204,8 @@ namespace EightBit {
 
 			static void daa(uint8_t& a, uint8_t& f);
 
-			static void scf(uint8_t& a, uint8_t& f);
-			static void ccf(uint8_t& a, uint8_t& f);
+			static void scf(uint8_t& f);
+			static void ccf(uint8_t& f);
 			static void cpl(uint8_t& a, uint8_t& f);
 
 			static uint8_t swap(uint8_t& f, uint8_t operand);

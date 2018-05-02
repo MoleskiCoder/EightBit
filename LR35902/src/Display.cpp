@@ -38,11 +38,12 @@ void EightBit::GameBoy::Display::render() {
 
 std::array<int, 4> EightBit::GameBoy::Display::createPalette(const int address) {
 	const auto raw = m_bus.IO().peek(address);
-	std::array<int, 4> palette;
-	palette[0] = raw & 0b11;
-	palette[1] = (raw & 0b1100) >> 2;
-	palette[2] = (raw & 0b110000) >> 4;
-	palette[3] = (raw & 0b11000000) >> 6;
+	const std::array<int, 4> palette = {
+		raw & 0b11,
+		(raw & 0b1100) >> 2,
+		(raw & 0b110000) >> 4,
+		(raw & 0b11000000) >> 6,
+	};
 	return palette;
 }
 
@@ -55,9 +56,10 @@ void EightBit::GameBoy::Display::renderObjects() {
 	
 	const auto objBlockHeight = (m_control & IoRegisters::ObjectBlockCompositionSelection) ? 16 : 8;
 
-	std::vector<std::array<int, 4>> palettes(2);
-	palettes[0] = createPalette(IoRegisters::OBP0);
-	palettes[1] = createPalette(IoRegisters::OBP1);
+	const std::array<std::array<int, 4>, 2> palettes = {
+		createPalette(IoRegisters::OBP0),
+		createPalette(IoRegisters::OBP1)
+	};
 
 	for (int i = 0; i < 40; ++i) {
 
@@ -72,7 +74,7 @@ void EightBit::GameBoy::Display::renderObjects() {
 			const auto drawX = spriteX - 8;
 
 			const auto sprite = current.pattern();
-			const auto definition = CharacterDefinition(&m_vram, (objBlockHeight == 8 ? 16 : 8) * sprite);
+			const auto definition = CharacterDefinition(m_vram, (objBlockHeight == 8 ? 16 : 8) * sprite);
 			const auto& palette = palettes[current.palette()];
 			const auto flipX = current.flipX();
 			const auto flipY = current.flipY();
@@ -119,7 +121,7 @@ void EightBit::GameBoy::Display::renderBackground(
 
 		const auto character = m_vram.peek(address++);
 
-		const auto definition = CharacterDefinition(&m_vram, bgCharacters + 16 * character);
+		const auto definition = CharacterDefinition(m_vram, bgCharacters + 16 * character);
 		renderTile(
 			8,
 			column * 8 + offsetX, row * 8 + offsetY,

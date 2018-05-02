@@ -9,7 +9,7 @@ namespace EightBit {
 	class Ram;
 
 	namespace GameBoy {
-		class ObjectAttribute {
+		class ObjectAttribute final {
 		public:
 			ObjectAttribute() = default;
 			ObjectAttribute(Ram& ram, uint16_t address);

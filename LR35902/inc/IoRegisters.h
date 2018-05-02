@@ -12,7 +12,7 @@ namespace EightBit {
 
 		class Bus;
 
-		class IoRegisters : public EightBit::Ram {
+		class IoRegisters final : public EightBit::Ram {
 		public:
 
 			enum {

@@ -16,7 +16,7 @@ namespace EightBit {
 		class CharacterDefinition;
 		class Bus;
 
-		class Display {
+		class Display final {
 		public:
 			enum {
 				BufferWidth = 256,
