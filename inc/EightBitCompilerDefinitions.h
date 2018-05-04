@@ -70,7 +70,7 @@ inline void EightBit::assume(int expression) {
 #	define LIKELY(x)	(x)
 #	define UNLIKELY(x)	(x)
 
-#	define PARITY(x)	EightBit::oddParity(x);
+#	define PARITY(x)	EightBit::oddParity(x)
 
 #	define UNREACHABLE	ASSUME(0)
 
