@@ -4,8 +4,6 @@
 
 EightBit::GameBoy::Bus::Bus()
 : m_cpu(*this),
-  m_gameRomBanks(1),
-  m_ramBanks(0),
   m_ioPorts(*this) {
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
 }
