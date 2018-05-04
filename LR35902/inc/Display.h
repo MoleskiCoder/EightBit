@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <array>
 #include <cstdint>
 
@@ -25,18 +24,18 @@ namespace EightBit {
 				BufferCharacterHeight = BufferHeight / 8,
 				RasterWidth = 160,
 				RasterHeight = 144,
+				PixelCount = RasterWidth * RasterHeight,
 			};
 
 			Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram);
 
-			const std::vector<uint32_t>& pixels() const;
+			const std::array<uint32_t, PixelCount>& pixels() const;
 
-			void initialise();
 			void render();
 			void loadObjectAttributes();
 
 		private:
-			std::vector<uint32_t> m_pixels;
+			std::array<uint32_t, PixelCount> m_pixels;
 			Bus& m_bus;
 			Ram& m_oam;
 			Ram& m_vram;

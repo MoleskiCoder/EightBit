@@ -6,7 +6,6 @@
 #include "AbstractColourPalette.h"
 
 #include <Processor.h>
-#include <vector>
 
 EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram)
 : m_bus(bus),
@@ -15,12 +14,8 @@ EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& b
   m_colours(colours) {
 }
 
-const std::vector<uint32_t>& EightBit::GameBoy::Display::pixels() const {
+const std::array<uint32_t, EightBit::GameBoy::Display::PixelCount>& EightBit::GameBoy::Display::pixels() const {
 	return m_pixels;
-}
-
-void EightBit::GameBoy::Display::initialise() {
-	m_pixels.resize(RasterWidth * RasterHeight);
 }
 
 void EightBit::GameBoy::Display::render() {
@@ -61,6 +56,8 @@ void EightBit::GameBoy::Display::renderObjects() {
 		createPalette(IoRegisters::OBP1)
 	};
 
+	const auto characterAddressMultiplier = objBlockHeight == 8 ? 16 : 8;
+
 	for (int i = 0; i < 40; ++i) {
 
 		const auto& current = m_objectAttributes[i];
@@ -74,7 +71,7 @@ void EightBit::GameBoy::Display::renderObjects() {
 			const auto drawX = spriteX - 8;
 
 			const auto sprite = current.pattern();
-			const auto definition = CharacterDefinition(m_vram, (objBlockHeight == 8 ? 16 : 8) * sprite);
+			const auto definition = CharacterDefinition(m_vram, characterAddressMultiplier * sprite);
 			const auto& palette = palettes[current.palette()];
 			const auto flipX = current.flipX();
 			const auto flipY = current.flipY();
@@ -91,7 +88,7 @@ void EightBit::GameBoy::Display::renderObjects() {
 
 void EightBit::GameBoy::Display::renderBackground() {
 
-	auto palette = createPalette(IoRegisters::BGP);
+	const auto palette = createPalette(IoRegisters::BGP);
 
 	const auto window = (m_control & IoRegisters::WindowEnable) != 0;
 	const auto bgArea = (m_control & IoRegisters::BackgroundCodeAreaSelection) ? 0x1c00 : 0x1800;
