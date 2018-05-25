@@ -24,4 +24,3 @@
 #include <Processor.h>
 #include <Signal.h>
 #include <EventArgs.h>
-#include <Signal.h>
