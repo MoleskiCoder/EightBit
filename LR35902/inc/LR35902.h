@@ -31,7 +31,7 @@ namespace EightBit {
 			}
 
 			virtual register16_t& AF() final {
-				af.low &= 0xf0;
+				af.low = higherNibble(af.low);
 				return af;
 			}
 

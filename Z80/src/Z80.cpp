@@ -602,7 +602,7 @@ void EightBit::Z80::rrd(uint8_t& a, uint8_t& f) {
 	++MEMPTR().word;
 	const auto memory = BUS().read();
 	BUS().write(promoteNibble(a) | highNibble(memory));
-	a = (a & 0xf0) | lowNibble(memory);
+	a = higherNibble(a) | lowerNibble(memory);
 	adjustSZPXY<Z80>(f, a);
 	clearFlag(f, NF | HC);
 }
@@ -612,7 +612,7 @@ void EightBit::Z80::rld(uint8_t& a, uint8_t& f) {
 	++MEMPTR().word;
 	const auto memory = BUS().read();
 	BUS().write(promoteNibble(memory) | lowNibble(a));
-	a = (a & 0xf0) | highNibble(memory);
+	a = higherNibble(a) | highNibble(memory);
 	adjustSZPXY<Z80>(f, a);
 	clearFlag(f, NF | HC);
 }
@@ -709,16 +709,16 @@ int EightBit::Z80::execute(const uint8_t opcode) {
 	auto& a = af.high;
 	auto& f = af.low;
 
-	auto prefixed = m_prefixCB || m_prefixED;
-	if (UNLIKELY(prefixed)) {
+	const auto prefixed = m_prefixCB || m_prefixED;
+	if (LIKELY(!prefixed)) {
+		executeOther(a, f, x, y, z, p, q);
+	} else {
 		if (m_prefixCB)
 			executeCB(a, f, x, y, z);
 		else if (m_prefixED)
 			executeED(a, f, x, y, z, p, q);
 		else
 			UNREACHABLE;
-	} else {
-		executeOther(a, f, x, y, z, p, q);
 	}
 
 	ASSUME(cycles() > 0);

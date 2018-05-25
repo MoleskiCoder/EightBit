@@ -61,6 +61,9 @@ namespace EightBit {
 		static int highNibble(const int value) { return value >> 4; }
 		static int lowNibble(const int value) { return value & Mask4; }
 
+		static int higherNibble(const int value) { return value & 0xf0; }
+		static int lowerNibble(const int value) { return lowNibble(value); }
+
 		static int promoteNibble(const int value) { return value << 4; }
 		static int demoteNibble(const int value) { return highNibble(value); }
 
