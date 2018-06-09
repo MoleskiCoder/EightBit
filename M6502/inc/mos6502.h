@@ -33,12 +33,18 @@ namespace EightBit {
 		virtual int step() final;
 		virtual void powerOn() override;
 
+		uint8_t X() const { return x; }
 		uint8_t& X() { return x; }
+		uint8_t Y() const { return y; }
 		uint8_t& Y() { return y; }
+		uint8_t A() const { return a; }
 		uint8_t& A() { return a; }
+		uint8_t S() const { return s; }
 		uint8_t& S() { return s; }
+		uint8_t P() const { return p; }
 		uint8_t& P() { return p; }
 
+		PinLevel SO() const { return m_soLine;  }	// In
 		PinLevel& SO() { return m_soLine;  }	// In
 
 	protected:
@@ -330,6 +336,6 @@ namespace EightBit {
 
 		PinLevel m_soLine = Low;
 
-		register16_t m_intermediate = { { 0, 0 } };;
+		register16_t m_intermediate = { { 0, 0 } };
 	};
 }

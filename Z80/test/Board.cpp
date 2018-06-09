@@ -34,13 +34,12 @@ void Board::initialise() {
 	CPU().PC() = m_configuration.getStartAddress();
 }
 
-void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Z80&) {
-	if (UNLIKELY(EightBit::Processor::lowered(m_cpu.HALT())))
-		m_cpu.powerOff();
-	auto pc = m_cpu.PC();
-	switch (pc.word) {
+void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Z80& cpu) {
+	if (UNLIKELY(EightBit::Processor::lowered(cpu.HALT())))
+		CPU().powerOff();
+	switch (cpu.PC().word) {
 	case 0x0:	// CP/M warm start
-		m_cpu.powerOff();
+		CPU().powerOff();
 		if (m_configuration.isProfileMode()) {
 			m_profiler.dump();
 		}
@@ -53,16 +52,13 @@ void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Z80&) {
 	}
 }
 
-void Board::bdos() {
-	auto c = m_cpu.C();
-	switch (c) {
-	case 0x2: {
-		auto character = m_cpu.E();
-		std::cout << character;
+void Board::bdos() const {
+	switch (CPU().C()) {
+	case 0x2:
+		std::cout << CPU().E();
 		break;
-	}
 	case 0x9:
-		for (uint16_t i = m_cpu.DE().word; peek(i) != '$'; ++i) {
+		for (uint16_t i = CPU().DE().word; peek(i) != '$'; ++i) {
 			std::cout << peek(i);
 		}
 		break;
@@ -71,7 +67,7 @@ void Board::bdos() {
 
 void Board::Cpu_ExecutingInstruction_Profile(const EightBit::Z80& cpu) {
 
-	const auto pc = m_cpu.PC();
+	const auto pc = cpu.PC();
 
 	m_profiler.addAddress(pc.word);
 	m_profiler.addInstruction(peek(pc.word));
@@ -80,8 +76,8 @@ void Board::Cpu_ExecutingInstruction_Profile(const EightBit::Z80& cpu) {
 void Board::Cpu_ExecutingInstruction_Debug(const EightBit::Z80& cpu) {
 
 	std::cerr
-		<< EightBit::Disassembler::state(m_cpu)
+		<< EightBit::Disassembler::state(cpu)
 		<< "\t"
-		<< m_disassembler.disassemble(m_cpu)
+		<< m_disassembler.disassemble(cpu)
 		<< '\n';
 }

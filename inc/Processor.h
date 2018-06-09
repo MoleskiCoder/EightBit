@@ -68,16 +68,27 @@ namespace EightBit {
 		static int demoteNibble(const int value) { return highNibble(value); }
 
 		Bus& BUS() { return m_bus; }
+		const Bus& BUS() const { return m_bus; }
 
 		register16_t& PC() { return m_pc; }
+		register16_t PC() const { return m_pc; }
 
-		PinLevel& RESET() { return m_resetLine; }	// In
-		PinLevel& HALT() { return m_haltLine; }		// Out
-		PinLevel& INT() { return m_intLine; }		// In
-		PinLevel& NMI() { return m_nmiLine; }		// In
-		PinLevel& POWER() { return m_powerLine; }	// In
+		PinLevel& RESET() { return m_resetLine; }
+		PinLevel RESET() const { return m_resetLine; }	// In
 
-		bool powered() { return raised(POWER()); }
+		PinLevel& HALT() { return m_haltLine; }
+		PinLevel HALT() const { return m_haltLine; }		// Out
+
+		PinLevel& INT() { return m_intLine; }
+		PinLevel INT() const { return m_intLine; }		// In
+
+		PinLevel& NMI() { return m_nmiLine; }
+		PinLevel NMI() const { return m_nmiLine; }		// In
+
+		PinLevel& POWER() { return m_powerLine; }
+		PinLevel POWER() const { return m_powerLine; }	// In
+
+		bool powered() const { return raised(POWER()); }
 		virtual void powerOn() { raise(POWER()); raise(HALT()); reset(); }
 		void powerOff() { lower(POWER()); }
 
@@ -104,7 +115,7 @@ namespace EightBit {
 
 		virtual void reset();
 
-		bool halted() { return lowered(HALT()); }
+		bool halted() const { return lowered(HALT()); }
 		void halt() { --PC().word;  lower(HALT()); }
 		void proceed() { ++PC().word; raise(HALT()); }
 

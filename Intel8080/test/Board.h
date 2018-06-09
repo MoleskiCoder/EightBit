@@ -15,11 +15,17 @@ public:
 	Board(const Configuration& configuration);
 
 	EightBit::Intel8080& CPU() { return m_cpu; }
+	const EightBit::Intel8080& CPU() const { return m_cpu; }
 
 	void initialise();
 
 protected:
 	virtual uint8_t& reference(uint16_t address, bool& rom) {
+		rom = false;
+		return m_ram.reference(address);
+	}
+
+	virtual uint8_t reference(uint16_t address, bool& rom) const {
 		rom = false;
 		return m_ram.reference(address);
 	}
@@ -34,8 +40,8 @@ private:
 
 	void Cpu_ExecutingInstruction_Cpm(const EightBit::Intel8080& cpu);
 
-	void Cpu_ExecutingInstruction_Debug(const EightBit::Intel8080& cpuEvent);
-	void Cpu_ExecutingInstruction_Profile(const EightBit::Intel8080& cpuEvent);
+	void Cpu_ExecutingInstruction_Debug(const EightBit::Intel8080& cpu);
+	void Cpu_ExecutingInstruction_Profile(const EightBit::Intel8080& cpu);
 
-	void bdos();
+	void bdos() const;
 };

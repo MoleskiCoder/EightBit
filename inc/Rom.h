@@ -10,12 +10,8 @@ namespace EightBit {
 		: Memory(size) {
 		}
 
-		uint8_t peek(const uint16_t address) const {
-			return read(address);
-		}
-
-		uint8_t& reference(const uint16_t address) {
-			return BYTES()[address];
+		uint8_t reference(uint16_t address) const {
+			return peek(address);
 		}
 	};
 }

@@ -25,18 +25,23 @@ protected:
 		return m_ram.reference(address);
 	}
 
+	virtual uint8_t reference(uint16_t address, bool& rom) const {
+		rom = false;
+		return m_ram.reference(address);
+	}
+
 private:
 	const Configuration& m_configuration;
-	EightBit::Ram m_ram;
+	EightBit::Ram m_ram = 0x10000;
 	EightBit::MOS6502 m_cpu;
-	EightBit::Symbols m_symbols;
+	EightBit::Symbols m_symbols = "";
 	EightBit::Disassembly m_disassembler;
 	EightBit::Profiler m_profiler;
 
-	uint16_t m_oldPC;
-	bool m_stopped;
-	uint64_t m_pollCounter;
-	uint64_t m_pollInterval;
+	uint16_t m_oldPC = 0xffff;
+	bool m_stopped = false;
+	uint64_t m_pollCounter = 0UL;
+	uint64_t m_pollInterval = 0UL;
 
 	void pollKeyboard();
 

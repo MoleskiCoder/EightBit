@@ -10,16 +10,16 @@ namespace EightBit {
 		: Memory(size) {
 		}
 
-		uint8_t peek(const uint16_t address) const {
-			return read(address);
-		}
-
-		void poke(const uint16_t address, const uint8_t value) {
-			write(address, value);
-		}
-
 		uint8_t& reference(const uint16_t address) {
 			return BYTES()[address];
+		}
+
+		uint8_t reference(uint16_t address) const {
+			return peek(address);
+		}
+
+		void poke(uint16_t address, uint8_t value) {
+			Memory::poke(address, value);
 		}
 	};
 }

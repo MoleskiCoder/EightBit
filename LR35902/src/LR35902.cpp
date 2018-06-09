@@ -290,7 +290,7 @@ int EightBit::GameBoy::LR35902::singleStep() {
 			m_bus.IO().poke(IoRegisters::IF, 0);
 			lower(INT());
 			const int index = EightBit::findFirstSet(masked);
-			BUS().placeDATA(0x38 + (index << 3));
+			BUS().DATA() = 0x38 + (index << 3);
 		} else {
 			if (halted())
 				proceed();

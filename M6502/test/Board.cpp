@@ -9,14 +9,9 @@
 
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration),
-  m_ram(0x10000),
   m_cpu(EightBit::MOS6502(*this)),
-  m_symbols(""),
   m_disassembler(m_cpu, m_symbols),
-  m_profiler(m_cpu, m_disassembler, m_symbols),
-  m_oldPC(0xffff),
-  m_stopped(false) {
-}
+  m_profiler(m_cpu, m_disassembler, m_symbols) {}
 
 void Board::initialise() {
 
@@ -76,7 +71,7 @@ void Board::Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu) {
 
 void Board::Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu) {
 
-	auto pc = CPU().PC().word;
+	auto pc = cpu.PC().word;
 	if (m_oldPC == pc) {
 		CPU().powerOff();
 		auto test = peek(0x0200);
@@ -88,7 +83,7 @@ void Board::Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu) {
 
 void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 
-	auto address = CPU().PC().word;
+	auto address = cpu.PC().word;
 	auto cell = peek(address);
 
 	std::cout << std::hex;

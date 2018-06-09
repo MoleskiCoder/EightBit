@@ -41,6 +41,11 @@ namespace Fuse {
 			return m_ram.reference(address);
 		}
 
+		virtual uint8_t reference(uint16_t address, bool& rom) const {
+			rom = false;
+			return m_ram.reference(address);
+		}
+
 	public:
 		TestRunner(const Test& test, const ExpectedTestResult& expected);
 

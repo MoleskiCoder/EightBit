@@ -13,7 +13,7 @@ EightBit::Disassembler::Disassembler() {
 	m_formatter.exceptions(boost::io::all_error_bits ^ boost::io::too_many_args_bit);
 }
 
-std::string EightBit::Disassembler::state(Intel8080& cpu) {
+std::string EightBit::Disassembler::state(const Intel8080& cpu) {
 
 	auto pc = cpu.PC();
 	auto sp = cpu.SP();
@@ -160,13 +160,13 @@ std::string EightBit::Disassembler::alu2(int which) {
 	throw std::logic_error("Unhandled alu operation");
 }
 
-std::string EightBit::Disassembler::disassemble(Intel8080& cpu) {
+std::string EightBit::Disassembler::disassemble(const Intel8080& cpu) {
 	std::ostringstream output;
 	disassemble(output, cpu, cpu.PC().word);
 	return output.str();
 }
 
-void EightBit::Disassembler::disassemble(std::ostringstream& output, Intel8080& cpu, uint16_t pc) {
+void EightBit::Disassembler::disassemble(std::ostringstream& output, const Intel8080& cpu, uint16_t pc) {
 
 	auto& bus = cpu.BUS();
 	auto opcode = bus.peek(pc);

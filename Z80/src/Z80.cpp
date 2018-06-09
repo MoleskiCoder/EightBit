@@ -8,16 +8,32 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
   m_ports(ports) {
 }
 
+EightBit::register16_t EightBit::Z80::AF() const {
+	return m_accumulatorFlags[m_accumulatorFlagsSet];
+}
+
 EightBit::register16_t& EightBit::Z80::AF() {
 	return m_accumulatorFlags[m_accumulatorFlagsSet];
+}
+
+EightBit::register16_t EightBit::Z80::BC() const {
+	return m_registers[m_registerSet][BC_IDX];
 }
 
 EightBit::register16_t& EightBit::Z80::BC() {
 	return m_registers[m_registerSet][BC_IDX];
 }
 
+EightBit::register16_t EightBit::Z80::DE() const {
+	return m_registers[m_registerSet][DE_IDX];
+}
+
 EightBit::register16_t& EightBit::Z80::DE() {
 	return m_registers[m_registerSet][DE_IDX];
+}
+
+EightBit::register16_t EightBit::Z80::HL() const {
+	return m_registers[m_registerSet][HL_IDX];
 }
 
 EightBit::register16_t& EightBit::Z80::HL() {
@@ -621,7 +637,7 @@ void EightBit::Z80::writePort(const uint8_t port, const uint8_t data) {
 	BUS().ADDRESS().low = port;
 	BUS().ADDRESS().high = data;
 	MEMPTR() = BUS().ADDRESS();
-	BUS().placeDATA(data);
+	BUS().DATA() = data;
 	writePort();
 	++MEMPTR().low;
 }
@@ -640,7 +656,7 @@ void EightBit::Z80::readPort(const uint8_t port, uint8_t& a) {
 }
 
 void EightBit::Z80::readPort() {
-	BUS().placeDATA(m_ports.read(BUS().ADDRESS().low));
+	BUS().DATA() = m_ports.read(BUS().ADDRESS().low);
 }
 
 int EightBit::Z80::step() {
@@ -844,22 +860,22 @@ void EightBit::Z80::executeED(uint8_t& a, uint8_t& f, const int x, const int y, 
 	case 1:
 		switch (z) {
 		case 0: // Input from port with 16-bit address
-			MEMPTR() = BUS().ADDRESS() = BC();
-			++MEMPTR().word;
+				MEMPTR() = BUS().ADDRESS() = BC();
+				++MEMPTR().word;
 			readPort();
-			if (LIKELY(y != 6))	// IN r[y],(C)
+				if (LIKELY(y != 6))	// IN r[y],(C)
 				R(y, a, BUS().DATA());
 			adjustSZPXY<Z80>(f, BUS().DATA());
-			clearFlag(f, NF | HC);
-			addCycles(12);
+				clearFlag(f, NF | HC);
+				addCycles(12);
 			break;
 		case 1:	// Output to port with 16-bit address
 			MEMPTR() = BUS().ADDRESS() = BC();
 			++MEMPTR().word;
 			if (UNLIKELY(y == 6))	// OUT (C),0
-				BUS().placeDATA(0);
+				BUS().DATA() = 0;
 			else		// OUT (C),r[y]
-				BUS().placeDATA(R(y, a));
+				BUS().DATA() = R(y, a);
 			writePort();
 			addCycles(12);
 			break;
@@ -1140,7 +1156,8 @@ void EightBit::Z80::executeOther(uint8_t& a, uint8_t& f, const int x, const int 
 				case 0:	// LD (BC),A
 					MEMPTR() = BUS().ADDRESS() = BC();
 					++MEMPTR().word;
-					BUS().write(a);
+					BUS().DATA() = a;
+					BUS().write();
 					MEMPTR().high = a;
 					addCycles(7);
 					break;

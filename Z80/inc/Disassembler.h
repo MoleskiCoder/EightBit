@@ -11,8 +11,8 @@ namespace EightBit {
 	public:
 		Disassembler();
 
-		static std::string state(Z80& cpu);
-		std::string disassemble(Z80& cpu);
+		static std::string state(const Z80& cpu);
+		std::string disassemble(const Z80& cpu);
 
 		static std::string flag(uint8_t value, int flag, const std::string& represents);
 		static std::string flags(uint8_t value);
@@ -30,29 +30,29 @@ namespace EightBit {
 		bool m_prefixED;
 		bool m_prefixFD;
 
-		void disassemble(std::ostringstream& output, Z80& cpu, uint16_t pc);
+		void disassemble(std::ostringstream& output, const Z80& cpu, uint16_t pc);
 
 		void disassembleCB(
 			std::ostringstream& output,
-			Z80& cpu,
+			const Z80& cpu,
 			uint16_t pc,
 			std::string& specification,
 			int& dumpCount,
 			int x, int y, int z,
-			int p, int q);
+			int p, int q) const;
 
 		void disassembleED(
 			std::ostringstream& output,
-			Z80& cpu,
+			const Z80& cpu,
 			uint16_t pc,
 			std::string& specification,
 			int& dumpCount,
 			int x, int y, int z,
-			int p, int q);
+			int p, int q) const;
 
 		void disassembleOther(
 			std::ostringstream& output,
-			Z80& cpu,
+			const Z80& cpu,
 			uint16_t pc,
 			std::string& specification,
 			int& dumpCount,

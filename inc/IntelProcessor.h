@@ -37,24 +37,38 @@ namespace EightBit {
 		}
 
 		register16_t& MEMPTR() { return m_memptr; }
+		register16_t MEMPTR() const { return m_memptr; }
 
 		register16_t& SP() { return m_sp; }
+		register16_t SP() const { return m_sp; }
 
 		virtual register16_t& AF() = 0;
+		virtual register16_t AF() const = 0;
 		uint8_t& A() { return AF().high; }
+		uint8_t A() const { return AF().high; }
 		uint8_t& F() { return AF().low; }
+		uint8_t F() const { return AF().low; }
 
 		virtual register16_t& BC() = 0;
+		virtual register16_t BC() const = 0;
 		uint8_t& B() { return BC().high; }
+		uint8_t B() const { return BC().high; }
 		uint8_t& C() { return BC().low; }
+		uint8_t C() const { return BC().low; }
 
 		virtual register16_t& DE() = 0;
+		virtual register16_t DE() const = 0;
 		uint8_t& D() { return DE().high; }
+		uint8_t D() const { return DE().high; }
 		uint8_t& E() { return DE().low; }
+		uint8_t E() const { return DE().low; }
 
 		virtual register16_t& HL() = 0;
+		virtual register16_t HL() const = 0;
 		uint8_t& H() { return HL().high; }
+		uint8_t H() const { return HL().high; }
 		uint8_t& L() { return HL().low; }
+		uint8_t L() const { return HL().low; }
 
 	protected:
 		IntelProcessor(Bus& bus);

@@ -148,7 +148,7 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 	}
 }
 
-uint8_t& EightBit::GameBoy::Bus::reference(uint16_t address, bool& rom) {
+uint8_t EightBit::GameBoy::Bus::reference(uint16_t address, bool& rom) const {
 
 	rom = true;
 	if ((address < 0x100) && IO().bootRomEnabled())
@@ -162,7 +162,7 @@ uint8_t& EightBit::GameBoy::Bus::reference(uint16_t address, bool& rom) {
 	if (address < 0xa000)
 		return VRAM().reference(address - 0x8000);
 	if (address < 0xc000)
-		return m_ramBanks.size() == 0 ? rom = true, placeDATA(0xff) : m_ramBanks[m_ramBank].reference(address - 0xa000);
+		return m_ramBanks.size() == 0 ? rom = true, 0xff : m_ramBanks[m_ramBank].reference(address - 0xa000);
 	if (address < 0xe000)
 		return m_lowInternalRam.reference(address - 0xc000);
 	if (address < 0xfe00)
@@ -170,7 +170,35 @@ uint8_t& EightBit::GameBoy::Bus::reference(uint16_t address, bool& rom) {
 	if (address < 0xfea0)
 		return OAMRAM().reference(address - 0xfe00);
 	if (address < IoRegisters::BASE)
-		return rom = true, placeDATA(0xff);
+		return rom = true, 0xff;
+	if (address < 0xff80)
+		return IO().reference(address - IoRegisters::BASE);
+	return m_highInternalRam.reference(address - 0xff80);
+}
+
+uint8_t& EightBit::GameBoy::Bus::reference(uint16_t address, bool& rom) {
+
+	rom = true;
+	if ((address < 0x100) && IO().bootRomEnabled())
+		return DATA() = m_bootRom.reference(address);
+	if ((address < 0x4000) && gameRomEnabled())
+		return DATA() = m_gameRomBanks[0].reference(address);
+	if ((address < 0x8000) && gameRomEnabled())
+		return DATA() = m_gameRomBanks[m_romBank].reference(address - 0x4000);
+
+	rom = false;
+	if (address < 0xa000)
+		return VRAM().reference(address - 0x8000);
+	if (address < 0xc000)
+		return m_ramBanks.size() == 0 ? rom = true, DATA() = 0xff : m_ramBanks[m_ramBank].reference(address - 0xa000);
+	if (address < 0xe000)
+		return m_lowInternalRam.reference(address - 0xc000);
+	if (address < 0xfe00)
+		return m_lowInternalRam.reference(address - 0xe000);	// Low internal RAM mirror
+	if (address < 0xfea0)
+		return OAMRAM().reference(address - 0xfe00);
+	if (address < IoRegisters::BASE)
+		return rom = true, DATA() = 0xff;
 	if (address < 0xff80)
 		return IO().reference(address - IoRegisters::BASE);
 	return m_highInternalRam.reference(address - 0xff80);

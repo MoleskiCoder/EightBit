@@ -7,17 +7,35 @@ EightBit::Intel8080::Intel8080(Bus& bus, InputOutput& ports)
 }
 
 EightBit::register16_t& EightBit::Intel8080::AF() {
-	auto& f = af.low;
-	f = (f | Bit1) & ~(Bit5 | Bit3);
+	af.low = (af.low | Bit1) & ~(Bit5 | Bit3);
 	return af;
+}
+
+EightBit::register16_t EightBit::Intel8080::AF() const {
+	register16_t returned;
+	returned.low = (af.low | Bit1) & ~(Bit5 | Bit3);
+	returned.high = af.high;
+	return returned;
+}
+
+EightBit::register16_t EightBit::Intel8080::BC() const {
+	return bc;
 }
 
 EightBit::register16_t& EightBit::Intel8080::BC() {
 	return bc;
 }
 
+EightBit::register16_t EightBit::Intel8080::DE() const {
+	return de;
+}
+
 EightBit::register16_t& EightBit::Intel8080::DE() {
 	return de;
+}
+
+EightBit::register16_t EightBit::Intel8080::HL() const {
+	return hl;
 }
 
 EightBit::register16_t& EightBit::Intel8080::HL() {
@@ -240,7 +258,7 @@ void EightBit::Intel8080::xhtl(register16_t& operand) {
 void EightBit::Intel8080::writePort(uint8_t port, uint8_t data) {
 	BUS().ADDRESS().low = port;
 	BUS().ADDRESS().high = data;
-	BUS().placeDATA(data);
+	BUS().DATA() = data;
 	writePort();
 }
 
@@ -256,7 +274,7 @@ void EightBit::Intel8080::readPort(uint8_t port, uint8_t& a) {
 }
 
 void EightBit::Intel8080::readPort() {
-	BUS().placeDATA(m_ports.read(BUS().ADDRESS().low));
+	BUS().DATA() = m_ports.read(BUS().ADDRESS().low);
 }
 
 int EightBit::Intel8080::step() {
