@@ -23,7 +23,8 @@ void EightBit::GameBoy::IoRegisters::transferDma() {
 	}
 }
 
-void EightBit::GameBoy::IoRegisters::Bus_ReadingByte(const uint16_t address) {
+void EightBit::GameBoy::IoRegisters::Bus_ReadingByte(EightBit::EventArgs) {
+	const auto address = m_bus.ADDRESS().word;
 	const auto io = (address >= BASE) && (address < 0xff80);
 	if (io) {
 		auto port = address - BASE;
@@ -92,8 +93,9 @@ void EightBit::GameBoy::IoRegisters::Bus_ReadingByte(const uint16_t address) {
 	}
 }
 
-void EightBit::GameBoy::IoRegisters::Bus_WrittenByte(const uint16_t address) {
+void EightBit::GameBoy::IoRegisters::Bus_WrittenByte(EightBit::EventArgs) {
 
+	const auto address = m_bus.ADDRESS().word;
 	const auto value = m_bus.DATA();
 	const auto port = address - BASE;
 

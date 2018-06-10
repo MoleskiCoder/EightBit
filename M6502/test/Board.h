@@ -20,13 +20,11 @@ public:
 	void initialise();
 
 protected:
-	virtual uint8_t& reference(uint16_t address, bool& rom) {
-		rom = false;
+	virtual uint8_t& reference(uint16_t address) {
 		return m_ram.reference(address);
 	}
 
-	virtual uint8_t reference(uint16_t address, bool& rom) const {
-		rom = false;
+	virtual uint8_t reference(uint16_t address) const {
 		return m_ram.reference(address);
 	}
 
@@ -50,8 +48,8 @@ private:
 
 	void Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu);
 
-	void Memory_ReadingByte_Input(uint16_t address);
-	void Memory_WrittenByte_Output(uint16_t address);
+	void Memory_ReadingByte_Input(EightBit::EventArgs);
+	void Memory_WrittenByte_Output(EightBit::EventArgs);
 
 	void Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu);
 };

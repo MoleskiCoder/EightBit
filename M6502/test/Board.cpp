@@ -100,17 +100,15 @@ void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
 	std::cout << "\n";
 }
 
-void Board::Memory_ReadingByte_Input(const uint16_t address) {
-	if (address == m_configuration.getInputAddress()) {
-		if (DATA() != 0) {
-			assert(address == ADDRESS().word);
+void Board::Memory_ReadingByte_Input(EightBit::EventArgs) {
+	if (ADDRESS().word == m_configuration.getInputAddress()) {
+		if (DATA() != 0)
 			write(0);
-		}
 	}
 }
 
-void Board::Memory_WrittenByte_Output(const uint16_t address) {
-	if (address == m_configuration.getOutputAddress()) {
+void Board::Memory_WrittenByte_Output(EightBit::EventArgs) {
+	if (ADDRESS().word == m_configuration.getOutputAddress()) {
 #ifdef _MSC_VER
 		_putch(DATA());
 #endif

@@ -4,24 +4,27 @@
 
 #include "Signal.h"
 #include "Register.h"
+#include "EventArgs.h"
 
 namespace EightBit {
 	class Bus {
 	public:
 		virtual ~Bus() = default;
 
-		Signal<uint16_t> WritingByte;
-		Signal<uint16_t> WrittenByte;
+		Signal<EventArgs> WritingByte;
+		Signal<EventArgs> WrittenByte;
 
-		Signal<uint16_t> ReadingByte;
-		Signal<uint16_t> ReadByte;
+		Signal<EventArgs> ReadingByte;
+		Signal<EventArgs> ReadByte;
 
 		register16_t& ADDRESS() { return m_address; }
 		register16_t ADDRESS() const { return m_address; }
 		uint8_t& DATA() { return m_data; }
 		uint8_t DATA() const { return m_data; }
 
+		uint8_t peek() const;
 		uint8_t peek(uint16_t address) const;
+		void poke(uint8_t value);
 		void poke(uint16_t address, uint8_t value);
 
 		uint16_t peekWord(uint16_t address) const;
@@ -36,8 +39,8 @@ namespace EightBit {
 		void write(register16_t address, uint8_t value);
 
 	protected:
-		virtual uint8_t& reference(uint16_t address, bool& rom) = 0;
-		virtual uint8_t reference(uint16_t address, bool& rom) const = 0;
+		virtual uint8_t& reference(uint16_t address) = 0;
+		virtual uint8_t reference(uint16_t address) const = 0;
 
 		uint8_t& reference();
 		uint8_t reference() const;

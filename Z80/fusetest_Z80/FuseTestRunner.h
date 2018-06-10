@@ -36,13 +36,11 @@ namespace Fuse {
 			EightBit::register16_t actual, EightBit::register16_t expected) const;
 
 	protected:
-		virtual uint8_t& reference(uint16_t address, bool& rom) {
-			rom = false;
+		virtual uint8_t& reference(uint16_t address) {
 			return m_ram.reference(address);
 		}
 
-		virtual uint8_t reference(uint16_t address, bool& rom) const {
-			rom = false;
+		virtual uint8_t reference(uint16_t address) const {
 			return m_ram.reference(address);
 		}
 

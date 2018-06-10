@@ -195,8 +195,8 @@ namespace EightBit {
 				triggerInterrupt(Interrupts::KeypadPressed);
 			}
 
-			void Bus_WrittenByte(uint16_t address);
-			void Bus_ReadingByte(uint16_t address);
+			void Bus_WrittenByte(EightBit::EventArgs);
+			void Bus_ReadingByte(EightBit::EventArgs);
 		};
 	}
 }

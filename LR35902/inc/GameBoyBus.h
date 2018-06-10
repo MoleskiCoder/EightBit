@@ -91,7 +91,7 @@ namespace EightBit {
 
 			void validateCartridgeType();
 
-			void Bus_WrittenByte(uint16_t address);
+			void Bus_WrittenByte(EightBit::EventArgs);
 
 			int runRasterLines(int lines);
 			int runVerticalBlankLines(int lines);

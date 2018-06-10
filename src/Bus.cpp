@@ -1,16 +1,20 @@
 #include "stdafx.h"
 #include "Bus.h"
 
-#include "EightBitCompilerDefinitions.h"
+uint8_t EightBit::Bus::peek() const {
+	return reference();
+}
 
 uint8_t EightBit::Bus::peek(const uint16_t address) const {
-	bool rom;
-	return reference(address, rom);
+	return reference(address);
+}
+
+void EightBit::Bus::poke(const uint8_t value) {
+	reference() = value;
 }
 
 void EightBit::Bus::poke(const uint16_t address, const uint8_t value) {
-	bool rom;
-	reference(address, rom) = value;
+	reference(address) = value;
 }
 
 uint16_t EightBit::Bus::peekWord(const uint16_t address) const {
@@ -21,9 +25,9 @@ uint16_t EightBit::Bus::peekWord(const uint16_t address) const {
 }
 
 uint8_t EightBit::Bus::read() {
-	ReadingByte.fire(ADDRESS().word);
+	ReadingByte.fire(EventArgs::empty());
 	DATA() = reference();
-	ReadByte.fire(ADDRESS().word);
+	ReadByte.fire(EventArgs::empty());
 	return DATA();
 }
 
@@ -38,9 +42,9 @@ uint8_t EightBit::Bus::read(const register16_t address) {
 }
 
 void EightBit::Bus::write() {
-	WritingByte.fire(ADDRESS().word);
+	WritingByte.fire(EventArgs::empty());
 	reference() = DATA();
-	WrittenByte.fire(ADDRESS().word);
+	WrittenByte.fire(EventArgs::empty());
 }
 
 void EightBit::Bus::write(const uint8_t value) {
@@ -59,11 +63,9 @@ void EightBit::Bus::write(const register16_t address, const uint8_t value) {
 }
 
 uint8_t EightBit::Bus::reference() const {
-	bool rom;
-	return reference(ADDRESS().word, rom);
+	return reference(ADDRESS().word);
 }
 
 uint8_t& EightBit::Bus::reference() {
-	bool rom;
-	return reference(ADDRESS().word, rom);
+	return reference(ADDRESS().word);
 }
