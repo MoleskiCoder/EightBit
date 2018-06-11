@@ -389,9 +389,9 @@ namespace EightBit {
 		bool jumpConditionalFlag(int flag);
 		bool callConditionalFlag(int flag);
 
-		void sbc(register16_t& operand, register16_t value);
-		void adc(register16_t& operand, register16_t value);
-		void add(register16_t& operand, register16_t value);
+		void sbc(register16_t value);
+		void adc(register16_t value);
+		void add(register16_t value);
 
 		void add(uint8_t value, int carry = 0);
 		void adc(uint8_t value);

@@ -191,64 +191,64 @@ bool EightBit::Z80::callConditionalFlag(const int flag) {
 	}
 }
 
-void EightBit::Z80::sbc(register16_t& operand, const register16_t value) {
+void EightBit::Z80::sbc(const register16_t value) {
 
-	MEMPTR() = operand;
+	MEMPTR() = HL2();
 
 	const auto beforeNegative = MEMPTR().high & SF;
 	const auto valueNegative = value.high & SF;
 
 	const auto result = MEMPTR().word - value.word - (F() & CF);
-	operand.word = result;
+	HL2().word = result;
 
-	const auto afterNegative = operand.high & SF;
+	const auto afterNegative = HL2().high & SF;
 
 	setFlag(F(), SF, afterNegative);
-	clearFlag(F(), ZF, operand.word);
-	adjustHalfCarrySub(F(), MEMPTR().high, value.high, operand.high);
+	clearFlag(F(), ZF, HL2().word);
+	adjustHalfCarrySub(F(), MEMPTR().high, value.high, HL2().high);
 	adjustOverflowSub(F(), beforeNegative, valueNegative, afterNegative);
 	setFlag(F(), NF);
 	setFlag(F(), CF, result & Bit16);
-	adjustXY<Z80>(F(), operand.high);
+	adjustXY<Z80>(F(), HL2().high);
 
 	++MEMPTR().word;
 }
 
-void EightBit::Z80::adc(register16_t& operand, const register16_t value) {
+void EightBit::Z80::adc(const register16_t value) {
 
-	MEMPTR() = operand;
+	MEMPTR() = HL2();
 
 	const auto beforeNegative = MEMPTR().high & SF;
 	const auto valueNegative = value.high & SF;
 
 	const auto result = MEMPTR().word + value.word + (F() & CF);
-	operand.word = result;
+	HL2().word = result;
 
-	const auto afterNegative = operand.high & SF;
+	const auto afterNegative = HL2().high & SF;
 
 	setFlag(F(), SF, afterNegative);
-	clearFlag(F(), ZF, operand.word);
-	adjustHalfCarryAdd(F(), MEMPTR().high, value.high, operand.high);
+	clearFlag(F(), ZF, HL2().word);
+	adjustHalfCarryAdd(F(), MEMPTR().high, value.high, HL2().high);
 	adjustOverflowAdd(F(), beforeNegative, valueNegative, afterNegative);
 	clearFlag(F(), NF);
 	setFlag(F(), CF, result & Bit16);
-	adjustXY<Z80>(F(), operand.high);
+	adjustXY<Z80>(F(), HL2().high);
 
 	++MEMPTR().word;
 }
 
-void EightBit::Z80::add(register16_t& operand, const register16_t value) {
+void EightBit::Z80::add(const register16_t value) {
 
-	MEMPTR() = operand;
+	MEMPTR() = HL2();
 
 	const auto result = MEMPTR().word + value.word;
 
-	operand.word = result;
+	HL2().word = result;
 
 	clearFlag(F(), NF);
 	setFlag(F(), CF, result & Bit16);
-	adjustHalfCarryAdd(F(), MEMPTR().high, value.high, operand.high);
-	adjustXY<Z80>(F(), operand.high);
+	adjustHalfCarryAdd(F(), MEMPTR().high, value.high, HL2().high);
+	adjustXY<Z80>(F(), HL2().high);
 
 	++MEMPTR().word;
 }
@@ -868,10 +868,10 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 		case 2:	// 16-bit add/subtract with carry
 			switch (q) {
 			case 0:	// SBC HL, rp[p]
-				sbc(HL2(), RP(p));
+				sbc(RP(p));
 				break;
 			case 1:	// ADC HL, rp[p]
-				adc(HL2(), RP(p));
+				adc(RP(p));
 				break;
 			default:
 				UNREACHABLE;
@@ -1128,7 +1128,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				addCycles(10);
 				break;
 			case 1:	// ADD HL,rp
-				add(HL2(), RP(p));
+				add(RP(p));
 				addCycles(11);
 				break;
 			default:
