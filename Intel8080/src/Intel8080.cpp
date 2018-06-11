@@ -55,210 +55,211 @@ void EightBit::Intel8080::ei() {
 	m_interruptEnable = true;
 }
 
-void EightBit::Intel8080::increment(uint8_t& f, uint8_t& operand) {
-	adjustSZP<Intel8080>(f, ++operand);
-	clearFlag(f, AC, lowNibble(operand));
+void EightBit::Intel8080::increment(uint8_t& operand) {
+	adjustSZP<Intel8080>(F(), ++operand);
+	clearFlag(F(), AC, lowNibble(operand));
 }
 
-void EightBit::Intel8080::decrement(uint8_t& f, uint8_t& operand) {
-	adjustSZP<Intel8080>(f, --operand);
-	setFlag(f, AC, lowNibble(operand) != Mask4);
+void EightBit::Intel8080::decrement(uint8_t& operand) {
+	adjustSZP<Intel8080>(F(), --operand);
+	setFlag(F(), AC, lowNibble(operand) != Mask4);
 }
 
-bool EightBit::Intel8080::jumpConditionalFlag(const uint8_t f, const int flag) {
+bool EightBit::Intel8080::jumpConditionalFlag(const int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		return jumpConditional(!(f & ZF));
+		return jumpConditional(!(F() & ZF));
 	case 1:	// Z
-		return jumpConditional(f & ZF);
+		return jumpConditional(F() & ZF);
 	case 2:	// NC
-		return jumpConditional(!(f & CF));
+		return jumpConditional(!(F() & CF));
 	case 3:	// C
-		return jumpConditional(f & CF);
+		return jumpConditional(F() & CF);
 	case 4:	// PO
-		return jumpConditional(!(f & PF));
+		return jumpConditional(!(F() & PF));
 	case 5:	// PE
-		return jumpConditional(f & PF);
+		return jumpConditional(F() & PF);
 	case 6:	// P
-		return jumpConditional(!(f & SF));
+		return jumpConditional(!(F() & SF));
 	case 7:	// M
-		return jumpConditional(f & SF);
+		return jumpConditional(F() & SF);
 	default:
 		UNREACHABLE;
 	}
 }
 
-bool EightBit::Intel8080::returnConditionalFlag(const uint8_t f, const int flag) {
+bool EightBit::Intel8080::returnConditionalFlag(const int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		return returnConditional(!(f & ZF));
+		return returnConditional(!(F() & ZF));
 	case 1:	// Z
-		return returnConditional(f & ZF);
+		return returnConditional(F() & ZF);
 	case 2:	// NC
-		return returnConditional(!(f & CF));
+		return returnConditional(!(F() & CF));
 	case 3:	// C
-		return returnConditional(f & CF);
+		return returnConditional(F() & CF);
 	case 4:	// PO
-		return returnConditional(!(f & PF));
+		return returnConditional(!(F() & PF));
 	case 5:	// PE
-		return returnConditional(f & PF);
+		return returnConditional(F() & PF);
 	case 6:	// P
-		return returnConditional(!(f & SF));
+		return returnConditional(!(F() & SF));
 	case 7:	// M
-		return returnConditional(f & SF);
+		return returnConditional(F() & SF);
 	default:
 		UNREACHABLE;
 	}
 }
 
-bool EightBit::Intel8080::callConditionalFlag(const uint8_t f, int flag) {
+bool EightBit::Intel8080::callConditionalFlag(int flag) {
 	switch (flag) {
 	case 0:	// NZ
-		return callConditional(!(f & ZF));
+		return callConditional(!(F() & ZF));
 	case 1:	// Z
-		return callConditional(f & ZF);
+		return callConditional(F() & ZF);
 	case 2:	// NC
-		return callConditional(!(f & CF));
+		return callConditional(!(F() & CF));
 	case 3:	// C
-		return callConditional(f & CF);
+		return callConditional(F() & CF);
 	case 4:	// PO
-		return callConditional(!(f & PF));
+		return callConditional(!(F() & PF));
 	case 5:	// PE
-		return callConditional(f & PF);
+		return callConditional(F() & PF);
 	case 6:	// P
-		return callConditional(!(f & SF));
+		return callConditional(!(F() & SF));
 	case 7:	// M
-		return callConditional(f & SF);
+		return callConditional(F() & SF);
 	default:
 		UNREACHABLE;
 	}
 }
 
-void EightBit::Intel8080::add(uint8_t& f, register16_t& operand, register16_t value) {
-	const auto result = operand.word + value.word;
-	operand.word = result;
-	setFlag(f, CF, result & Bit16);
+void EightBit::Intel8080::add(register16_t value) {
+	const auto result = HL().word + value.word;
+	HL().word = result;
+	setFlag(F(), CF, result & Bit16);
 }
 
-void EightBit::Intel8080::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
+void EightBit::Intel8080::add(uint8_t value, int carry) {
 
 	register16_t result;
-	result.word = operand + value + carry;
+	result.word = A() + value + carry;
 
-	adjustAuxiliaryCarryAdd(f, operand, value, result.word);
+	adjustAuxiliaryCarryAdd(F(), A(), value, result.word);
 
-	operand = result.low;
+	A() = result.low;
 
-	setFlag(f, CF, result.word & Bit8);
-	adjustSZP<Intel8080>(f, operand);
+	setFlag(F(), CF, result.word & Bit8);
+	adjustSZP<Intel8080>(F(), A());
 }
 
-void EightBit::Intel8080::adc(uint8_t& f, uint8_t& operand, uint8_t value) {
-	add(f, operand, value, f & CF);
+void EightBit::Intel8080::adc(uint8_t value) {
+	add(value, F() & CF);
 }
 
-void EightBit::Intel8080::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
+void EightBit::Intel8080::subtract(uint8_t& operand, uint8_t value, int carry) {
 
 	register16_t result;
 	result.word = operand - value - carry;
 
-	adjustAuxiliaryCarrySub(f, operand, value, result.word);
+	adjustAuxiliaryCarrySub(F(), operand, value, result.word);
 
 	operand = result.low;
 
-	setFlag(f, CF, result.word & Bit8);
-	adjustSZP<Intel8080>(f, operand);
+	setFlag(F(), CF, result.word & Bit8);
+	adjustSZP<Intel8080>(F(), operand);
 }
 
-void EightBit::Intel8080::sbb(uint8_t& f, uint8_t& operand, uint8_t value) {
-	subtract(f, operand, value, f & CF);
+void EightBit::Intel8080::sbb(uint8_t value) {
+	subtract(A(), value, F() & CF);
 }
 
-void EightBit::Intel8080::andr(uint8_t& f, uint8_t& operand, uint8_t value) {
-	setFlag(f, AC, (operand | value) & Bit3);
-	clearFlag(f, CF);
-	adjustSZP<Intel8080>(f, operand &= value);
+void EightBit::Intel8080::andr(uint8_t value) {
+	setFlag(F(), AC, (A() | value) & Bit3);
+	clearFlag(F(), CF);
+	adjustSZP<Intel8080>(F(), A() &= value);
 }
 
-void EightBit::Intel8080::xorr(uint8_t& f, uint8_t& operand, uint8_t value) {
-	clearFlag(f, AC | CF);
-	adjustSZP<Intel8080>(f, operand ^= value);
+void EightBit::Intel8080::xorr(uint8_t value) {
+	clearFlag(F(), AC | CF);
+	adjustSZP<Intel8080>(F(), A() ^= value);
 }
 
-void EightBit::Intel8080::orr(uint8_t& f, uint8_t& operand, uint8_t value) {
-	clearFlag(f, AC | CF);
-	adjustSZP<Intel8080>(f, operand |= value);
+void EightBit::Intel8080::orr(uint8_t value) {
+	clearFlag(F(), AC | CF);
+	adjustSZP<Intel8080>(F(), A() |= value);
 }
 
-void EightBit::Intel8080::compare(uint8_t& f, uint8_t check, uint8_t value) {
-	subtract(f, check, value);
+void EightBit::Intel8080::compare(const uint8_t value) {
+	auto original = A();
+	subtract(original, value);
 }
 
-void EightBit::Intel8080::rlc(uint8_t& f, uint8_t& operand) {
-	auto carry = operand & Bit7;
-	operand = (operand << 1) | (carry >> 7);
-	setFlag(f, CF, carry);
+void EightBit::Intel8080::rlc() {
+	auto carry = A() & Bit7;
+	A() = (A() << 1) | (carry >> 7);
+	setFlag(F(), CF, carry);
 }
 
-void EightBit::Intel8080::rrc(uint8_t& f, uint8_t& operand) {
-	auto carry = operand & Bit0;
-	operand = (operand >> 1) | (carry << 7);
-	setFlag(f, CF, carry);
+void EightBit::Intel8080::rrc() {
+	auto carry = A() & Bit0;
+	A() = (A() >> 1) | (carry << 7);
+	setFlag(F(), CF, carry);
 }
 
-void EightBit::Intel8080::rl(uint8_t& f, uint8_t& operand) {
-	const auto carry = f & CF;
-	setFlag(f, CF, operand & Bit7);
-	operand = (operand << 1) | carry;
+void EightBit::Intel8080::rl() {
+	const auto carry = F() & CF;
+	setFlag(F(), CF, A() & Bit7);
+	A() = (A() << 1) | carry;
 }
 
-void EightBit::Intel8080::rr(uint8_t& f, uint8_t& operand) {
-	const auto carry = f & CF;
-	setFlag(f, CF, operand & Bit0);
-	operand = (operand >> 1) | (carry << 7);
+void EightBit::Intel8080::rr() {
+	const auto carry = F() & CF;
+	setFlag(F(), CF, A() & Bit0);
+	A() = (A() >> 1) | (carry << 7);
 }
 
-void EightBit::Intel8080::daa(uint8_t& a, uint8_t& f) {
-	const auto& before = a;
-	auto carry = f & CF;
+void EightBit::Intel8080::daa() {
+	const auto& before = A();
+	auto carry = F() & CF;
 	uint8_t addition = 0;
-	if ((f & AC) || lowNibble(before) > 9) {
+	if ((F() & AC) || lowNibble(before) > 9) {
 		addition = 0x6;
 	}
-	if ((f & CF) || highNibble(before) > 9 || (highNibble(before) >= 9 && lowNibble(before) > 9)) {
+	if ((F() & CF) || highNibble(before) > 9 || (highNibble(before) >= 9 && lowNibble(before) > 9)) {
 		addition |= 0x60;
 		carry = true;
 	}
-	add(f, a, addition);
-	setFlag(f, CF, carry);
+	add(addition);
+	setFlag(F(), CF, carry);
 }
 
-void EightBit::Intel8080::cma(uint8_t& a) {
-	a = ~a;
+void EightBit::Intel8080::cma() {
+	A() = ~A();
 }
 
-void EightBit::Intel8080::stc(uint8_t& f) {
-	setFlag(f, CF);
+void EightBit::Intel8080::stc() {
+	setFlag(F(), CF);
 }
 
-void EightBit::Intel8080::cmc(uint8_t& f) {
-	clearFlag(f, CF, f & CF);
+void EightBit::Intel8080::cmc() {
+	clearFlag(F(), CF, F() & CF);
 }
 
-void EightBit::Intel8080::xhtl(register16_t& operand) {
+void EightBit::Intel8080::xhtl() {
 	MEMPTR().low = BUS().read(SP());
-	BUS().write(operand.low);
-	operand.low = MEMPTR().low;
+	BUS().write(L());
+	L() = MEMPTR().low;
 	++BUS().ADDRESS().word;
 	MEMPTR().high = BUS().read();
-	BUS().write(operand.high);
-	operand.high = MEMPTR().high;
+	BUS().write(H());
+	H() = MEMPTR().high;
 }
 
-void EightBit::Intel8080::writePort(uint8_t port, uint8_t data) {
+void EightBit::Intel8080::writePort(uint8_t port) {
 	BUS().ADDRESS().low = port;
-	BUS().ADDRESS().high = data;
-	BUS().DATA() = data;
+	BUS().ADDRESS().high = A();
+	BUS().DATA() = A();
 	writePort();
 }
 
@@ -266,15 +267,14 @@ void EightBit::Intel8080::writePort() {
 	m_ports.write(BUS().ADDRESS().low, BUS().DATA());
 }
 
-void EightBit::Intel8080::readPort(uint8_t port, uint8_t& a) {
+uint8_t EightBit::Intel8080::readPort(uint8_t port) {
 	BUS().ADDRESS().low = port;
-	BUS().ADDRESS().high = a;
-	readPort();
-	a = BUS().DATA();
+	BUS().ADDRESS().high = A();
+	return readPort();
 }
 
-void EightBit::Intel8080::readPort() {
-	BUS().DATA() = m_ports.read(BUS().ADDRESS().low);
+uint8_t EightBit::Intel8080::readPort() {
+	return BUS().DATA() = m_ports.read(BUS().ADDRESS().low);
 }
 
 int EightBit::Intel8080::step() {
@@ -307,17 +307,13 @@ int EightBit::Intel8080::execute(uint8_t opcode) {
 	const auto p = decoded.p;
 	const auto q = decoded.q;
 
-	auto& af = AF();
-	auto& a = af.high;
-	auto& f = af.low;
-
-	execute(a, f, x, y, z, p, q);
+	execute(x, y, z, p, q);
 
 	ASSUME(cycles() > 0);
 	return cycles();
 }
 
-void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, int p, int q) {
+void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 	switch (x) {
 	case 0:
 		switch (z) {
@@ -335,7 +331,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 				addCycles(10);
 				break;
 			case 1:	// ADD HL,rp
-				add(f, HL(), RP(p));
+				add(RP(p));
 				addCycles(11);
 				break;
 			default:
@@ -347,11 +343,11 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					BUS().write(BC(), a);
+					BUS().write(BC(), A());
 					addCycles(7);
 					break;
 				case 1:	// LD (DE),A
-					BUS().write(DE(), a);
+					BUS().write(DE(), A());
 					addCycles(7);
 					break;
 				case 2:	// LD (nn),HL
@@ -361,7 +357,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 					break;
 				case 3: // LD (nn),A
 					BUS().ADDRESS() = fetchWord();
-					BUS().write(a);
+					BUS().write(A());
 					addCycles(13);
 					break;
 				default:
@@ -371,11 +367,11 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					a = BUS().read(BC());
+					A() = BUS().read(BC());
 					addCycles(7);
 					break;
 				case 1:	// LD A,(DE)
-					a = BUS().read(DE());
+					A() = BUS().read(DE());
 					addCycles(7);
 					break;
 				case 2:	// LD HL,(nn)
@@ -385,7 +381,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 					break;
 				case 3:	// LD A,(nn)
 					BUS().ADDRESS() = fetchWord();
-					a = BUS().read();
+					A() = BUS().read();
 					addCycles(13);
 					break;
 				default:
@@ -410,21 +406,21 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			addCycles(6);
 			break;
 		case 4: { // 8-bit INC
-			auto operand = R(y, a);
-			increment(f, operand);
-			R(y, a, operand);
+			auto operand = R(y);
+			increment(operand);
+			R(y, operand);
 			addCycles(4);
 			break;
 		} case 5: {	// 8-bit DEC
-			auto operand = R(y, a);
-			decrement(f, operand);
-			R(y, a, operand);
+			auto operand = R(y);
+			decrement(operand);
+			R(y, operand);
 			addCycles(4);
 			if (UNLIKELY(y == 6))
 				addCycles(7);
 			break;
 		} case 6:	// 8-bit load immediate
-			R(y, a, fetchByte());
+			R(y, fetchByte());
 			addCycles(7);
 			if (UNLIKELY(y == 6))
 				addCycles(3);
@@ -432,28 +428,28 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
 			case 0:
-				rlc(f, a);
+				rlc();
 				break;
 			case 1:
-				rrc(f, a);
+				rrc();
 				break;
 			case 2:
-				rl(f, a);
+				rl();
 				break;
 			case 3:
-				rr(f, a);
+				rr();
 				break;
 			case 4:
-				daa(a, f);
+				daa();
 				break;
 			case 5:
-				cma(a);
+				cma();
 				break;
 			case 6:
-				stc(f);
+				stc();
 				break;
 			case 7:
-				cmc(f);
+				cmc();
 				break;
 			default:
 				UNREACHABLE;
@@ -468,7 +464,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 		if (UNLIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
 			halt();
 		} else {
-			R(y, a, R(z, a));
+			R(y, R(z));
 			if (UNLIKELY((y == 6) || (z == 6)))	// M operations
 				addCycles(3);
 		}
@@ -477,28 +473,28 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 	case 2:	// Operate on accumulator and register/memory location
 		switch (y) {
 		case 0:	// ADD A,r
-			add(f, a, R(z, a));
+			add(R(z));
 			break;
 		case 1:	// ADC A,r
-			adc(f, a, R(z, a));
+			adc(R(z));
 			break;
 		case 2:	// SUB r
-			subtract(f, a, R(z, a));
+			subtract(A(), R(z));
 			break;
 		case 3:	// SBC A,r
-			sbb(f, a, R(z, a));
+			sbb(R(z));
 			break;
 		case 4:	// AND r
-			andr(f, a, R(z, a));
+			andr(R(z));
 			break;
 		case 5:	// XOR r
-			xorr(f, a, R(z, a));
+			xorr(R(z));
 			break;
 		case 6:	// OR r
-			orr(f, a, R(z, a));
+			orr(R(z));
 			break;
 		case 7:	// CP r
-			compare(f, a, R(z, a));
+			compare(R(z));
 			break;
 		default:
 			UNREACHABLE;
@@ -510,7 +506,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 	case 3:
 		switch (z) {
 		case 0:	// Conditional return
-			if (returnConditionalFlag(f, y))
+			if (returnConditionalFlag(y))
 				addCycles(6);
 			addCycles(5);
 			break;
@@ -541,7 +537,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			}
 			break;
 		case 2:	// Conditional jump
-			jumpConditionalFlag(f, y);
+			jumpConditionalFlag(y);
 			addCycles(10);
 			break;
 		case 3:	// Assorted operations
@@ -551,15 +547,15 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 				addCycles(10);
 				break;
 			case 2:	// OUT (n),A
-				writePort(fetchByte(), a);
+				writePort(fetchByte());
 				addCycles(11);
 				break;
 			case 3:	// IN A,(n)
-				readPort(fetchByte(), a);
+				A() = readPort(fetchByte());
 				addCycles(11);
 				break;
 			case 4:	// EX (SP),HL
-				xhtl(HL());
+				xhtl();
 				addCycles(19);
 				break;
 			case 5:	// EX DE,HL
@@ -577,7 +573,7 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
-			if (callConditionalFlag(f, y))
+			if (callConditionalFlag(y))
 				addCycles(7);
 			addCycles(10);
 			break;
@@ -602,28 +598,28 @@ void EightBit::Intel8080::execute(uint8_t& a, uint8_t& f, int x, int y, int z, i
 		case 6:	// Operate on accumulator and immediate operand: alu[y] n
 			switch (y) {
 			case 0:	// ADD A,n
-				add(f, a, fetchByte());
+				add(fetchByte());
 				break;
 			case 1:	// ADC A,n
-				adc(f, a, fetchByte());
+				adc(fetchByte());
 				break;
 			case 2:	// SUB n
-				subtract(f, a, fetchByte());
+				subtract(A(), fetchByte());
 				break;
 			case 3:	// SBC A,n
-				sbb(f, a, fetchByte());
+				sbb(fetchByte());
 				break;
 			case 4:	// AND n
-				andr(f, a, fetchByte());
+				andr(fetchByte());
 				break;
 			case 5:	// XOR n
-				xorr(f, a, fetchByte());
+				xorr(fetchByte());
 				break;
 			case 6:	// OR n
-				orr(f, a, fetchByte());
+				orr(fetchByte());
 				break;
 			case 7:	// CP n
-				compare(f, a, fetchByte());
+				compare(fetchByte());
 				break;
 			default:
 				UNREACHABLE;

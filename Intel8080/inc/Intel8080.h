@@ -51,7 +51,7 @@ namespace EightBit {
 		register16_t de = { { 0xff, 0xff } };
 		register16_t hl = { { 0xff, 0xff } };
 
-		uint8_t R(int r, uint8_t a) {
+		uint8_t R(int r) {
 			switch (r) {
 			case 0b000:
 				return B();
@@ -68,13 +68,13 @@ namespace EightBit {
 			case 0b110:
 				return BUS().read(HL());
 			case 0b111:
-				return a;
+				return A();
 			default:
 				UNREACHABLE;
 			}
 		}
 
-		void R(int r, uint8_t& a, uint8_t value) {
+		void R(int r, uint8_t value) {
 			switch (r) {
 			case 0b000:
 				B() = value;
@@ -98,7 +98,7 @@ namespace EightBit {
 				BUS().write(HL(), value);
 				break;
 			case 0b111:
-				a = value;
+				A() = value;
 				break;
 			default:
 				UNREACHABLE;
@@ -173,47 +173,47 @@ namespace EightBit {
 			clearFlag(f, AC, calculateHalfCarrySub(before, value, calculation));
 		}
 
-		static void subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
+		void subtract(uint8_t& operand, uint8_t value, int carry = 0);
 
-		void execute(uint8_t& a, uint8_t& f, int x, int y, int z, int p, int q);
+		void execute(int x, int y, int z, int p, int q);
 
-		static void increment(uint8_t& f, uint8_t& operand);
-		static void decrement(uint8_t& f, uint8_t& operand);
+		void increment(uint8_t& operand);
+		void decrement(uint8_t& operand);
 
 		void di();
 		void ei();
 
-		bool returnConditionalFlag(uint8_t f, int flag);
-		bool jumpConditionalFlag(uint8_t f, int flag);
-		bool callConditionalFlag(uint8_t f, int flag);
+		bool returnConditionalFlag(int flag);
+		bool jumpConditionalFlag(int flag);
+		bool callConditionalFlag(int flag);
 
-		static void add(uint8_t& f, register16_t& operand, register16_t value);
+		void add(register16_t value);
 
-		static void add(uint8_t& f, uint8_t& operand, uint8_t value, int carry = 0);
-		static void adc(uint8_t& f, uint8_t& operand, uint8_t value);
-		static void sbb(uint8_t& f, uint8_t& operand, uint8_t value);
-		static void andr(uint8_t& f, uint8_t& operand, uint8_t value);
-		static void xorr(uint8_t& f, uint8_t& operand, uint8_t value);
-		static void orr(uint8_t& f, uint8_t& operand, uint8_t value);
-		static void compare(uint8_t& f, uint8_t check, uint8_t value);
+		void add(uint8_t value, int carry = 0);
+		void adc(uint8_t value);
+		void sbb(uint8_t value);
+		void andr(uint8_t value);
+		void xorr(uint8_t value);
+		void orr(uint8_t value);
+		void compare(uint8_t value);
 
-		static void rlc(uint8_t& f, uint8_t& operand);
-		static void rrc(uint8_t& f, uint8_t& operand);
-		static void rl(uint8_t& f, uint8_t& operand);
-		static void rr(uint8_t& f, uint8_t& operand);
+		void rlc();
+		void rrc();
+		void rl();
+		void rr();
 
-		static void daa(uint8_t& a, uint8_t& f);
+		void daa();
 
-		static void cma(uint8_t& a);
-		static void stc(uint8_t& f);
-		static void cmc(uint8_t& f);
+		void cma();
+		void stc();
+		void cmc();
 
-		void xhtl(register16_t& operand);
+		void xhtl();
 
-		void writePort(uint8_t port, uint8_t a);
+		void writePort(uint8_t port);
 		void writePort();
 
-		void readPort(uint8_t port, uint8_t& a);
-		void readPort();
+		uint8_t readPort(uint8_t port);
+		uint8_t readPort();
 	};
 }
