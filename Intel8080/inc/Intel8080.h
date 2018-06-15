@@ -47,9 +47,9 @@ namespace EightBit {
 		InputOutput& m_ports;
 
 		register16_t af;
-		register16_t bc = { { 0xff, 0xff } };
-		register16_t de = { { 0xff, 0xff } };
-		register16_t hl = { { 0xff, 0xff } };
+		register16_t bc = 0xffff;
+		register16_t de = 0xffff;
+		register16_t hl = 0xffff;
 
 		uint8_t R(int r) {
 			switch (r) {

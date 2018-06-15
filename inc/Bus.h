@@ -30,13 +30,17 @@ namespace EightBit {
 		uint16_t peekWord(uint16_t address) const;
 
 		uint8_t read();
-		uint8_t read(uint16_t offset);
-		uint8_t read(register16_t address);
+		template<class T> uint8_t read(const T address) {
+			ADDRESS() = address;
+			return read();
+		}
 
 		void write();
 		void write(uint8_t value);
-		void write(uint16_t offset, uint8_t value);
-		void write(register16_t address, uint8_t value);
+		template<class T> void write(const T offset, const uint8_t value) {
+			ADDRESS() = offset;
+			write(value);
+		}
 
 	protected:
 		virtual uint8_t& reference(uint16_t address) = 0;
@@ -47,6 +51,6 @@ namespace EightBit {
 
 	private:
 		uint8_t m_data = 0xff;
-		register16_t m_address{ { 0xff, 0xff } };
+		register16_t m_address = 0xffff;
 	};
 }

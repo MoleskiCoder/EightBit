@@ -51,11 +51,10 @@ void EightBit::MOS6502::reset() {
 }
 
 EightBit::register16_t EightBit::MOS6502::getWordPaged(uint8_t page, uint8_t offset) {
-	EightBit::register16_t returned;
-	returned.low = getBytePaged(page, offset);
+	const auto low = getBytePaged(page, offset);
 	++BUS().ADDRESS().low;
-	returned.high = BUS().read();
-	return returned;
+	const auto high = BUS().read();
+	return register16_t(low, high);
 }
 
 uint8_t EightBit::MOS6502::getBytePaged(uint8_t page, uint8_t offset) {
@@ -442,8 +441,7 @@ uint8_t EightBit::MOS6502::SUB_d(const uint8_t operand, const uint8_t data, cons
 }
 
 void EightBit::MOS6502::CMP(uint8_t first, uint8_t second) {
-	register16_t result;
-	result.word = first - second;
+	const register16_t result = first - second;
 	adjustNZ(result.low);
 	clearFlag(P(), CF, result.high);
 }

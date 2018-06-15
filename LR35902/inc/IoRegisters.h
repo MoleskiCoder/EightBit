@@ -172,7 +172,7 @@ namespace EightBit {
 			int m_timerCounter = 0;
 			int m_timerRate = 0;
 
-			register16_t m_dmaAddress = { 0, 0 };
+			register16_t m_dmaAddress;
 			bool m_dmaTransferActive = false;
 
 			bool m_scanP15 = false;

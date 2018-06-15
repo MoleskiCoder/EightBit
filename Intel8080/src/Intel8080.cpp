@@ -12,10 +12,9 @@ EightBit::register16_t& EightBit::Intel8080::AF() {
 }
 
 EightBit::register16_t EightBit::Intel8080::AF() const {
-	register16_t returned;
-	returned.low = (af.low | Bit1) & ~(Bit5 | Bit3);
-	returned.high = af.high;
-	return returned;
+	const auto low = (af.low | Bit1) & ~(Bit5 | Bit3);
+	const auto high = af.high;
+	return register16_t(low, high);
 }
 
 EightBit::register16_t EightBit::Intel8080::BC() const {
@@ -142,8 +141,7 @@ void EightBit::Intel8080::add(register16_t value) {
 
 void EightBit::Intel8080::add(uint8_t value, int carry) {
 
-	register16_t result;
-	result.word = A() + value + carry;
+	const register16_t result = A() + value + carry;
 
 	adjustAuxiliaryCarryAdd(F(), A(), value, result.word);
 
@@ -159,8 +157,7 @@ void EightBit::Intel8080::adc(uint8_t value) {
 
 void EightBit::Intel8080::subtract(uint8_t& operand, uint8_t value, int carry) {
 
-	register16_t result;
-	result.word = operand - value - carry;
+	const register16_t result = operand - value - carry;
 
 	adjustAuxiliaryCarrySub(F(), operand, value, result.word);
 

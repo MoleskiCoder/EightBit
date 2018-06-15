@@ -18,7 +18,7 @@
 #endif
 
 namespace EightBit {
-	typedef union {
+	union register16_t {
 		struct {
 #ifdef HOST_LITTLE_ENDIAN
 			uint8_t low;
@@ -30,5 +30,8 @@ namespace EightBit {
 #endif
 		};
 		uint16_t word;
-	} register16_t;
+		register16_t() : word(0) {}
+		register16_t(uint16_t w) : word(w) {}
+		register16_t(uint8_t l, uint8_t h) : low(l),  high(h) {}
+	} ;
 }

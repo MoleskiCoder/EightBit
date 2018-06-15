@@ -336,6 +336,6 @@ namespace EightBit {
 
 		PinLevel m_soLine = Low;
 
-		register16_t m_intermediate = { { 0, 0 } };
+		register16_t m_intermediate;
 	};
 }

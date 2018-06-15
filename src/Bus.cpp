@@ -18,10 +18,9 @@ void EightBit::Bus::poke(const uint16_t address, const uint8_t value) {
 }
 
 uint16_t EightBit::Bus::peekWord(const uint16_t address) const {
-	register16_t returned;
-	returned.low = peek(address);
-	returned.high = peek(address + 1);
-	return returned.word;
+	const auto low = peek(address);
+	const auto high = peek(address + 1);
+	return register16_t(low, high).word;
 }
 
 uint8_t EightBit::Bus::read() {
@@ -29,16 +28,6 @@ uint8_t EightBit::Bus::read() {
 	DATA() = reference();
 	ReadByte.fire(EventArgs::empty());
 	return DATA();
-}
-
-uint8_t EightBit::Bus::read(const uint16_t offset) {
-	ADDRESS().word = offset;
-	return read();
-}
-
-uint8_t EightBit::Bus::read(const register16_t address) {
-	ADDRESS() = address;
-	return read();
 }
 
 void EightBit::Bus::write() {
@@ -50,16 +39,6 @@ void EightBit::Bus::write() {
 void EightBit::Bus::write(const uint8_t value) {
 	DATA() = value;
 	write();
-}
-
-void EightBit::Bus::write(const uint16_t offset, const uint8_t value) {
-	ADDRESS().word = offset;
-	write(value);
-}
-
-void EightBit::Bus::write(const register16_t address, const uint8_t value) {
-	ADDRESS() = address;
-	write(value);
 }
 
 uint8_t EightBit::Bus::reference() const {

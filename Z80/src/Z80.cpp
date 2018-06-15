@@ -255,8 +255,7 @@ void EightBit::Z80::add(const register16_t value) {
 
 void EightBit::Z80::add(const uint8_t value, const int carry) {
 
-	register16_t result;
-	result.word = A() + value + carry;
+	const register16_t result = A() + value + carry;
 
 	adjustHalfCarryAdd(F(), A(), value, result.low);
 	adjustOverflowAdd(F(), A(), value, result.low);
@@ -274,8 +273,7 @@ void EightBit::Z80::adc(const uint8_t value) {
 
 void EightBit::Z80::subtract(uint8_t& operand, const uint8_t value, const int carry) {
 
-	register16_t result;
-	result.word = operand - value - carry;
+	const register16_t result = operand - value - carry;
 
 	adjustHalfCarrySub(F(), operand, value, result.low);
 	adjustOverflowSub(F(), operand, value, result.low);
@@ -463,14 +461,14 @@ void EightBit::Z80::ccf() {
 	adjustXY<Z80>(F(), A());
 }
 
-void EightBit::Z80::xhtl(register16_t& operand) {
+void EightBit::Z80::xhtl() {
 	MEMPTR().low = BUS().read(SP());
-	BUS().write(operand.low);
-	operand.low = MEMPTR().low;
+	BUS().write(HL2().low);
+	HL2().low = MEMPTR().low;
 	++BUS().ADDRESS().word;
 	MEMPTR().high = BUS().read();
-	BUS().write(operand.high);
-	operand.high = MEMPTR().high;
+	BUS().write(HL2().high);
+	HL2().high = MEMPTR().high;
 }
 
 void EightBit::Z80::blockCompare() {
@@ -1420,7 +1418,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				addCycles(11);
 				break;
 			case 4:	// EX (SP),HL
-				xhtl(HL2());
+				xhtl();
 				addCycles(19);
 				break;
 			case 5:	// EX DE,HL

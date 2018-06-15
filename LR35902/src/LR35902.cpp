@@ -120,8 +120,7 @@ void EightBit::GameBoy::LR35902::add(uint8_t& f, register16_t& operand, register
 
 void EightBit::GameBoy::LR35902::add(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
 
-	register16_t result;
-	result.word = operand + value + carry;
+	const register16_t result = operand + value + carry;
 
 	adjustHalfCarryAdd(f, operand, value, result.low);
 
@@ -138,8 +137,7 @@ void EightBit::GameBoy::LR35902::adc(uint8_t& f, uint8_t& operand, uint8_t value
 
 void EightBit::GameBoy::LR35902::subtract(uint8_t& f, uint8_t& operand, uint8_t value, int carry) {
 
-	register16_t result;
-	result.word = operand - value - carry;
+	const register16_t result = operand - value - carry;
 
 	adjustHalfCarrySub(f, operand, value, result.low);
 

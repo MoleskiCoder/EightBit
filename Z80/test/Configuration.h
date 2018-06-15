@@ -29,9 +29,9 @@ public:
 	}
 
 	EightBit::register16_t getStartAddress() const {
-		EightBit::register16_t returned;
-		returned.word = 0x100;
-		return returned;
+		//EightBit::register16_t returned;
+		//returned.word = 0x100;
+		return 0x100;
 	}
 
 private:

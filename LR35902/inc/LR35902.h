@@ -36,10 +36,9 @@ namespace EightBit {
 			}
 
 			register16_t AF() const final {
-				register16_t returned;
-				returned.low = higherNibble(af.low);
-				returned.high = af.high;
-				return returned;
+				const auto low = higherNibble(af.low);
+				const auto high = af.high;
+				return register16_t(low, high);
 			}
 
 			virtual register16_t BC() const final { return bc; }
@@ -59,10 +58,10 @@ namespace EightBit {
 		private:
 			Bus& m_bus;
 
-			register16_t af = { { 0xff, 0xff } };
-			register16_t bc = { { 0xff, 0xff } };
-			register16_t de = { { 0xff, 0xff } };
-			register16_t hl = { { 0xff, 0xff } };
+			register16_t af = 0xffff;
+			register16_t bc = 0xffff;
+			register16_t de = 0xffff;
+			register16_t hl = 0xffff;
 
 			bool m_ime = false;
 			bool m_stopped = false;

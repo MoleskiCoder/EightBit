@@ -124,10 +124,9 @@ namespace EightBit {
 		}
 
 		register16_t fetchWord() {
-			register16_t returned;
-			returned.low = fetchByte();
-			returned.high = fetchByte();
-			return returned;
+			const auto low = fetchByte();
+			const auto high = fetchByte();
+			return register16_t(low, high);
 		}
 
 		virtual void push(uint8_t value) = 0;
@@ -139,10 +138,9 @@ namespace EightBit {
 		}
 
 		register16_t popWord() {
-			register16_t returned;
-			returned.low = pop();
-			returned.high = pop();
-			return returned;
+			const auto low = pop();
+			const auto high = pop();
+			return register16_t(low, high);
 		}
 
 		void jump(const register16_t destination) {
@@ -166,7 +164,7 @@ namespace EightBit {
 	private:
 		Bus& m_bus;
 		int m_cycles = 0;
-		register16_t m_pc = { { 0, 0 } };
+		register16_t m_pc;
 
 		PinLevel m_intLine = Low;
 		PinLevel m_nmiLine = Low;

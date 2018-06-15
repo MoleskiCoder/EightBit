@@ -114,8 +114,8 @@ namespace EightBit {
 		std::array<register16_t, 2> m_accumulatorFlags;
 		int m_accumulatorFlagsSet = 0;
 
-		register16_t m_ix = { { 0xff, 0xff } };
-		register16_t m_iy = { { 0xff, 0xff } };
+		register16_t m_ix = 0xffff;
+		register16_t m_iy = 0xffff;
 
 		refresh_t m_refresh = 0x7f;
 
@@ -421,7 +421,7 @@ namespace EightBit {
 		void ccf();
 		void cpl();
 
-		void xhtl(register16_t& operand);
+		void xhtl();
 
 		void blockCompare();
 
