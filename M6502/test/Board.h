@@ -32,7 +32,7 @@ private:
 	const Configuration& m_configuration;
 	EightBit::Ram m_ram = 0x10000;
 	EightBit::MOS6502 m_cpu;
-	EightBit::Symbols m_symbols = "";
+	EightBit::Symbols m_symbols;
 	EightBit::Disassembly m_disassembler;
 	EightBit::Profiler m_profiler;
 
