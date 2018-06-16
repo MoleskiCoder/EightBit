@@ -55,14 +55,14 @@ void EightBit::Z80::reset() {
 	exxAF();
 	exx();
 
-	AF().word = 0xffff;
+	AF() = 0xffff;
 
-	BC().word = 0xffff;
-	DE().word = 0xffff;
-	HL().word = 0xffff;
+	BC() = 0xffff;
+	DE() = 0xffff;
+	HL() = 0xffff;
 
-	IX().word = 0xffff;
-	IY().word = 0xffff;
+	IX() = 0xffff;
+	IY() = 0xffff;
 
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 }
@@ -260,11 +260,9 @@ void EightBit::Z80::add(const uint8_t value, const int carry) {
 	adjustHalfCarryAdd(F(), A(), value, result.low);
 	adjustOverflowAdd(F(), A(), value, result.low);
 
-	A() = result.low;
-
 	clearFlag(F(), NF);
 	setFlag(F(), CF, result.word & Bit8);
-	adjustSZXY<Z80>(F(), A());
+	adjustSZXY<Z80>(F(), A() = result.low);
 }
 
 void EightBit::Z80::adc(const uint8_t value) {
@@ -278,11 +276,9 @@ void EightBit::Z80::subtract(uint8_t& operand, const uint8_t value, const int ca
 	adjustHalfCarrySub(F(), operand, value, result.low);
 	adjustOverflowSub(F(), operand, value, result.low);
 
-	operand = result.low;
-
 	setFlag(F(), NF);
 	setFlag(F(), CF, result.word & Bit8);
-	adjustSZ<Z80>(F(), operand);
+	adjustSZ<Z80>(F(), operand = result.low);
 }
 
 void EightBit::Z80::sub(const uint8_t value, const int carry) {
@@ -319,33 +315,29 @@ void EightBit::Z80::compare(const uint8_t value) {
 void EightBit::Z80::rlc(uint8_t& operand) {
 	clearFlag(F(), NF | HC);
 	const auto carry = operand & Bit7;
-	operand = (operand << 1) | (carry >> 7);
 	setFlag(F(), CF, carry);
-	adjustXY<Z80>(F(), operand);
+	adjustXY<Z80>(F(), operand = (operand << 1) | (carry >> 7));
 }
 
 void EightBit::Z80::rrc(uint8_t& operand) {
 	clearFlag(F(), NF | HC);
 	const auto carry = operand & Bit0;
-	operand = (operand >> 1) | (carry << 7);
 	setFlag(F(), CF, carry);
-	adjustXY<Z80>(F(), operand);
+	adjustXY<Z80>(F(), operand = (operand >> 1) | (carry << 7));
 }
 
 void EightBit::Z80::rl(uint8_t& operand) {
 	clearFlag(F(), NF | HC);
 	const auto carry = F() & CF;
 	setFlag(F(), CF, operand & Bit7);
-	operand = (operand << 1) | carry;
-	adjustXY<Z80>(F(), operand);
+	adjustXY<Z80>(F(), operand = (operand << 1) | carry);
 }
 
 void EightBit::Z80::rr(uint8_t& operand) {
 	clearFlag(F(), NF | HC);
 	const auto carry = F() & CF;
 	setFlag(F(), CF, operand & Bit0);
-	operand = (operand >> 1) | (carry << 7);
-	adjustXY<Z80>(F(), operand);
+	adjustXY<Z80>(F(), operand = (operand >> 1) | (carry << 7));
 }
 
 //
@@ -353,22 +345,19 @@ void EightBit::Z80::rr(uint8_t& operand) {
 void EightBit::Z80::sla(uint8_t& operand) {
 	clearFlag(F(), NF | HC);
 	setFlag(F(), CF, operand & Bit7);
-	operand <<= 1;
-	adjustXY<Z80>(F(), operand);
+	adjustXY<Z80>(F(), operand <<= 1);
 }
 
 void EightBit::Z80::sra(uint8_t& operand) {
 	clearFlag(F(), NF | HC);
 	setFlag(F(), CF, operand & Bit0);
-	operand = (operand >> 1) | (operand & Bit7);
-	adjustXY<Z80>(F(), operand);
+	adjustXY<Z80>(F(), operand = (operand >> 1) | (operand & Bit7));
 }
 
 void EightBit::Z80::sll(uint8_t& operand) {
 	clearFlag(F(), NF | HC);
 	setFlag(F(), CF, operand & Bit7);
-	operand = (operand << 1) | Bit0;
-	adjustXY<Z80>(F(), operand);
+	adjustXY<Z80>(F(), operand = (operand << 1) | Bit0);
 }
 
 void EightBit::Z80::srl(uint8_t& operand) {
@@ -877,13 +866,12 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			addCycles(15);
 			break;
 		case 3:	// Retrieve/store register pair from/to immediate address
+			MEMPTR() = fetchWord();
 			switch (q) {
 			case 0: // LD (nn), rp[p]
-				MEMPTR() = fetchWord();
 				setWord(RP(p));
 				break;
 			case 1:	// LD rp[p], (nn)
-				MEMPTR() = fetchWord();
 				RP(p) = getWord();
 				break;
 			default:
@@ -940,15 +928,13 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				addCycles(9);
 				break;
 			case 2:	// LD A,I
-				A() = IV();
-				adjustSZXY<Z80>(F(), A());
+				adjustSZXY<Z80>(F(), A() = IV());
 				clearFlag(F(), NF | HC);
 				setFlag(F(), PF, IFF2());
 				addCycles(9);
 				break;
 			case 3:	// LD A,R
-				A() = REFRESH();
-				adjustSZXY<Z80>(F(), A());
+				adjustSZXY<Z80>(F(), A() = REFRESH());
 				clearFlag(F(), NF | HC);
 				setFlag(F(), PF, IFF2());
 				addCycles(9);
@@ -1316,42 +1302,44 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		}
 		addCycles(4);
 		break;
-	case 2:	// Operate on accumulator and register/memory location
+	case 2: { // Operate on accumulator and register/memory location
 		if (UNLIKELY(z == 6)) {
 			addCycles(3);
 			if (UNLIKELY(m_displaced))
 				fetchDisplacement();
 		}
+		const auto value = R(z);
 		switch (y) {
 		case 0:	// ADD A,r
-			add(R(z));
+			add(value);
 			break;
 		case 1:	// ADC A,r
-			adc(R(z));
+			adc(value);
 			break;
 		case 2:	// SUB r
-			sub(R(z));
+			sub(value);
 			break;
 		case 3:	// SBC A,r
-			sbc(R(z));
+			sbc(value);
 			break;
 		case 4:	// AND r
-			andr(R(z));
+			andr(value);
 			break;
 		case 5:	// XOR r
-			xorr(R(z));
+			xorr(value);
 			break;
 		case 6:	// OR r
-			orr(R(z));
+			orr(value);
 			break;
 		case 7:	// CP r
-			compare(R(z));
+			compare(value);
 			break;
 		default:
 			UNREACHABLE;
 		}
 		addCycles(4);
 		break;
+	}
 	case 3:
 		switch (z) {
 		case 0:	// Conditional return
@@ -1477,37 +1465,39 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				UNREACHABLE;
 			}
 			break;
-		case 6:	// Operate on accumulator and immediate operand: alu[y] n
+		case 6: { // Operate on accumulator and immediate operand: alu[y] n
+			const auto operand = fetchByte();
 			switch (y) {
 			case 0:	// ADD A,n
-				add(fetchByte());
+				add(operand);
 				break;
 			case 1:	// ADC A,n
-				adc(fetchByte());
+				adc(operand);
 				break;
 			case 2:	// SUB n
-				sub(fetchByte());
+				sub(operand);
 				break;
 			case 3:	// SBC A,n
-				sbc(fetchByte());
+				sbc(operand);
 				break;
 			case 4:	// AND n
-				andr(fetchByte());
+				andr(operand);
 				break;
 			case 5:	// XOR n
-				xorr(fetchByte());
+				xorr(operand);
 				break;
 			case 6:	// OR n
-				orr(fetchByte());
+				orr(operand);
 				break;
 			case 7:	// CP n
-				compare(fetchByte());
+				compare(operand);
 				break;
 			default:
 				UNREACHABLE;
 			}
 			addCycles(7);
 			break;
+		}
 		case 7:	// Restart: RST y * 8
 			restart(y << 3);
 			addCycles(11);
