@@ -59,8 +59,8 @@ namespace EightBit {
 			int runVerticalBlankLines();
 
 		protected:
-			virtual uint8_t& reference(uint16_t address, bool& rom);
-			virtual uint8_t reference(uint16_t address, bool& rom) const;
+			virtual uint8_t& reference(uint16_t address);
+			virtual uint8_t reference(uint16_t address) const;
 
 		private:
 			LR35902 m_cpu;
