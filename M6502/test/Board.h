@@ -24,10 +24,6 @@ protected:
 		return m_ram.reference(address);
 	}
 
-	virtual uint8_t reference(uint16_t address) const {
-		return m_ram.reference(address);
-	}
-
 private:
 	const Configuration& m_configuration;
 	EightBit::Ram m_ram = 0x10000;

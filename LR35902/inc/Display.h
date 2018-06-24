@@ -59,7 +59,7 @@ namespace EightBit {
 				int drawX, int drawY,
 				bool flipX, bool flipY, bool allowTransparencies,
 				const std::array<int, 4>& palette,
-				const CharacterDefinition& definition);
+				CharacterDefinition& definition);
 		};
 	}
 }

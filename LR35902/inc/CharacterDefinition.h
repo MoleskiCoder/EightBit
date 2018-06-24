@@ -10,12 +10,12 @@ namespace EightBit {
 	namespace GameBoy {
 		class CharacterDefinition final {
 		public:
-			CharacterDefinition(const Ram& vram, uint16_t address);
+			CharacterDefinition(Ram& vram, uint16_t address);
 
-			std::array<int, 8> get(int row) const;
+			std::array<int, 8> get(int row);
 
 		private:
-			const Ram& m_vram;
+			Ram& m_vram;
 			uint16_t m_address = ~0;
 		};
 	}

@@ -29,13 +29,9 @@ namespace EightBit {
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
 
-		virtual register16_t AF() const final;
 		virtual register16_t& AF() final;
-		virtual register16_t BC() const final;
 		virtual register16_t& BC() final;
-		virtual register16_t DE() const final;
 		virtual register16_t& DE() final;
-		virtual register16_t HL() const final;
 		virtual register16_t& HL() final;
 
 	protected:
@@ -105,21 +101,6 @@ namespace EightBit {
 			}
 		}
 
-		register16_t RP(int rp) const {
-			switch (rp) {
-			case 0b00:
-				return BC();
-			case 0b01:
-				return DE();
-			case 0b10:
-				return HL();
-			case 0b11:
-				return SP();
-			default:
-				UNREACHABLE;
-			}
-		}
-
 		register16_t& RP(int rp) {
 			switch (rp) {
 			case 0b00:
@@ -130,21 +111,6 @@ namespace EightBit {
 				return HL();
 			case 0b11:
 				return SP();
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		register16_t RP2(int rp) const {
-			switch (rp) {
-			case 0b00:
-				return BC();
-			case 0b01:
-				return DE();
-			case 0b10:
-				return HL();
-			case 0b11:
-				return AF();
 			default:
 				UNREACHABLE;
 			}

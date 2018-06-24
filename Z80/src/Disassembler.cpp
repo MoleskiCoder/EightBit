@@ -15,7 +15,7 @@ EightBit::Disassembler::Disassembler() {
 	m_formatter.exceptions(boost::io::all_error_bits ^ boost::io::too_many_args_bit);
 }
 
-std::string EightBit::Disassembler::state(const Z80& cpu) {
+std::string EightBit::Disassembler::state(Z80& cpu) {
 
 	auto pc = cpu.PC();
 	auto sp = cpu.SP();
@@ -171,14 +171,14 @@ std::string EightBit::Disassembler::alu(int which) {
 	throw std::logic_error("Unhandled alu operation");
 }
 
-std::string EightBit::Disassembler::disassemble(const Z80& cpu) {
+std::string EightBit::Disassembler::disassemble(Z80& cpu) {
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	std::ostringstream output;
 	disassemble(output, cpu, cpu.PC().word);
 	return output.str();
 }
 
-void EightBit::Disassembler::disassemble(std::ostringstream& output, const Z80& cpu, uint16_t pc) {
+void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, uint16_t pc) {
 
 	auto& bus = cpu.BUS();
 	auto opcode = bus.peek(pc);
@@ -423,7 +423,7 @@ void EightBit::Disassembler::disassembleED(
 
 void EightBit::Disassembler::disassembleOther(
 	std::ostringstream& output,
-	const Z80& cpu,
+	Z80& cpu,
 	uint16_t pc,
 	std::string& specification,
 	int& dumpCount,

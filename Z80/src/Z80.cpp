@@ -8,32 +8,16 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
   m_ports(ports) {
 }
 
-EightBit::register16_t EightBit::Z80::AF() const {
-	return m_accumulatorFlags[m_accumulatorFlagsSet];
-}
-
 EightBit::register16_t& EightBit::Z80::AF() {
 	return m_accumulatorFlags[m_accumulatorFlagsSet];
-}
-
-EightBit::register16_t EightBit::Z80::BC() const {
-	return m_registers[m_registerSet][BC_IDX];
 }
 
 EightBit::register16_t& EightBit::Z80::BC() {
 	return m_registers[m_registerSet][BC_IDX];
 }
 
-EightBit::register16_t EightBit::Z80::DE() const {
-	return m_registers[m_registerSet][DE_IDX];
-}
-
 EightBit::register16_t& EightBit::Z80::DE() {
 	return m_registers[m_registerSet][DE_IDX];
-}
-
-EightBit::register16_t EightBit::Z80::HL() const {
-	return m_registers[m_registerSet][HL_IDX];
 }
 
 EightBit::register16_t& EightBit::Z80::HL() {

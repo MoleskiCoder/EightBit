@@ -36,13 +36,9 @@ namespace EightBit {
 			Bus();
 
 			LR35902& CPU() { return m_cpu; }
-			const LR35902& CPU() const { return m_cpu; }
 			Ram& VRAM() { return m_videoRam; }
-			const Ram& VRAM() const { return m_videoRam; }
 			Ram& OAMRAM() { return m_oamRam; }
-			const Ram& OAMRAM() const { return m_oamRam; }
 			IoRegisters& IO() { return m_ioPorts; }
-			const IoRegisters& IO() const { return m_ioPorts; }
 
 			void reset();
 
@@ -59,8 +55,7 @@ namespace EightBit {
 			int runVerticalBlankLines();
 
 		protected:
-			virtual uint8_t& reference(uint16_t address, bool& rom);
-			virtual uint8_t reference(uint16_t address, bool& rom) const;
+			virtual uint8_t& reference(uint16_t address);
 
 		private:
 			LR35902 m_cpu;

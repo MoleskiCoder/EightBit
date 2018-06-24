@@ -24,10 +24,6 @@ protected:
 		return m_ram.reference(address);
 	}
 
-	virtual uint8_t reference(uint16_t address) const {
-		return m_ram.reference(address);
-	}
-
 private:
 	const Configuration& m_configuration;
 	EightBit::Ram m_ram = 0x10000;
@@ -41,5 +37,5 @@ private:
 	void Cpu_ExecutingInstruction_Debug(const EightBit::Intel8080& cpu);
 	void Cpu_ExecutingInstruction_Profile(const EightBit::Intel8080& cpu);
 
-	void bdos() const;
+	void bdos();
 };

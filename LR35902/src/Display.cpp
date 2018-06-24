@@ -71,7 +71,7 @@ void EightBit::GameBoy::Display::renderObjects() {
 			const auto drawX = spriteX - 8;
 
 			const auto sprite = current.pattern();
-			const auto definition = CharacterDefinition(m_vram, characterAddressMultiplier * sprite);
+			auto definition = CharacterDefinition(m_vram, characterAddressMultiplier * sprite);
 			const auto& palette = palettes[current.palette()];
 			const auto flipX = current.flipX();
 			const auto flipY = current.flipY();
@@ -118,7 +118,7 @@ void EightBit::GameBoy::Display::renderBackground(
 
 		const auto character = m_vram.peek(address++);
 
-		const auto definition = CharacterDefinition(m_vram, bgCharacters + 16 * character);
+		auto definition = CharacterDefinition(m_vram, bgCharacters + 16 * character);
 		renderTile(
 			8,
 			column * 8 + offsetX, row * 8 + offsetY,
@@ -133,7 +133,7 @@ void EightBit::GameBoy::Display::renderTile(
 		const int drawX, const int drawY,
 		const bool flipX, const bool flipY, const bool allowTransparencies,
 		const std::array<int, 4>& palette,
-		const CharacterDefinition& definition) {
+		CharacterDefinition& definition) {
 
 	const auto width = 8;
 

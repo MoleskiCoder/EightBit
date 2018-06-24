@@ -52,7 +52,7 @@ void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Z80& cpu) {
 	}
 }
 
-void Board::bdos() const {
+void Board::bdos() {
 	switch (CPU().C()) {
 	case 0x2:
 		std::cout << CPU().E();
@@ -73,7 +73,7 @@ void Board::Cpu_ExecutingInstruction_Profile(const EightBit::Z80& cpu) {
 	m_profiler.addInstruction(peek(pc.word));
 }
 
-void Board::Cpu_ExecutingInstruction_Debug(const EightBit::Z80& cpu) {
+void Board::Cpu_ExecutingInstruction_Debug(EightBit::Z80& cpu) {
 
 	std::cerr
 		<< EightBit::Disassembler::state(cpu)

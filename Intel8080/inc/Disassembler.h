@@ -12,8 +12,8 @@ namespace EightBit {
 	public:
 		Disassembler();
 
-		static std::string state(const Intel8080& cpu);
-		std::string disassemble(const Intel8080& cpu);
+		static std::string state(Intel8080& cpu);
+		std::string disassemble(Intel8080& cpu);
 
 		static std::string flag(uint8_t value, int flag, std::string represents, std::string off = "-");
 		static std::string flags(uint8_t value);
@@ -26,7 +26,7 @@ namespace EightBit {
 	private:
 		mutable boost::format m_formatter;
 
-		void disassemble(std::ostringstream& output, const Intel8080& cpu, uint16_t pc);
+		void disassemble(std::ostringstream& output, Intel8080& cpu, uint16_t pc);
 
 		void disassemble(
 			std::ostringstream& output,

@@ -9,9 +9,5 @@ namespace EightBit {
 		Rom(const size_t size = 0)
 		: Memory(size) {
 		}
-
-		uint8_t reference(uint16_t address) const {
-			return peek(address);
-		}
 	};
 }

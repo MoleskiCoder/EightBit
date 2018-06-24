@@ -22,11 +22,7 @@ public:
 	void initialise();
 
 protected:
-	virtual uint8_t& reference(uint16_t address) {
-		return m_ram.reference(address);
-	}
-
-	virtual uint8_t reference(uint16_t address) const {
+	virtual uint8_t& reference(uint16_t address) final {
 		return m_ram.reference(address);
 	}
 
@@ -40,8 +36,8 @@ private:
 
 	void Cpu_ExecutingInstruction_Cpm(const EightBit::Z80& cpu);
 
-	void Cpu_ExecutingInstruction_Debug(const EightBit::Z80& cpu);
+	void Cpu_ExecutingInstruction_Debug(EightBit::Z80& cpu);
 	void Cpu_ExecutingInstruction_Profile(const EightBit::Z80& cpu);
 
-	void bdos() const;
+	void bdos();
 };

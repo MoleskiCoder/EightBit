@@ -35,17 +35,8 @@ namespace EightBit {
 				return af;
 			}
 
-			register16_t AF() const final {
-				const auto low = higherNibble(af.low);
-				const auto high = af.high;
-				return register16_t(low, high);
-			}
-
-			virtual register16_t BC() const final { return bc; }
 			virtual register16_t& BC() final { return bc; }
-			virtual register16_t DE() const final { return de; }
 			virtual register16_t& DE() final { return de; }
-			virtual register16_t HL() const final { return hl; }
 			virtual register16_t& HL() final { return hl; }
 
 			int singleStep();

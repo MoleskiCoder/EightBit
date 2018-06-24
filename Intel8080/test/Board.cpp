@@ -49,7 +49,7 @@ void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Intel8080& cpu) {
 	}
 }
 
-void Board::bdos() const {
+void Board::bdos() {
 	switch (CPU().C()) {
 	case 0x2: {
 		const auto character = CPU().E();

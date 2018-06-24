@@ -34,13 +34,12 @@ namespace EightBit {
 			return limit;
 		}
 
-		uint8_t peek(const uint16_t address) const {
+		uint8_t peek(const uint16_t address) {
 			return BYTES()[address];
 		}
 
 	protected:
 		std::vector<uint8_t>& BYTES() { return m_bytes; }
-		const std::vector<uint8_t>& BYTES() const { return m_bytes; }
 
 		void poke(const uint16_t address, const uint8_t value) {
 			BYTES()[address] = value;

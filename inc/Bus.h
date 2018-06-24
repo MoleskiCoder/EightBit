@@ -22,12 +22,12 @@ namespace EightBit {
 		uint8_t& DATA() { return m_data; }
 		uint8_t DATA() const { return m_data; }
 
-		uint8_t peek() const;
-		uint8_t peek(uint16_t address) const;
+		uint8_t peek();
+		uint8_t peek(uint16_t address);
 		void poke(uint8_t value);
 		void poke(uint16_t address, uint8_t value);
 
-		uint16_t peekWord(uint16_t address) const;
+		uint16_t peekWord(uint16_t address);
 
 		uint8_t read();
 		template<class T> uint8_t read(const T address) {
@@ -44,10 +44,7 @@ namespace EightBit {
 
 	protected:
 		virtual uint8_t& reference(uint16_t address) = 0;
-		virtual uint8_t reference(uint16_t address) const = 0;
-
 		uint8_t& reference();
-		uint8_t reference() const;
 
 	private:
 		uint8_t m_data = 0xff;

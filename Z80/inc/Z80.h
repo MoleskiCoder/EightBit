@@ -51,44 +51,28 @@ namespace EightBit {
 		Signal<Z80> ExecutingInstruction;
 
 		PinLevel& M1() { return m_m1Line; }			// Out
-		PinLevel M1() const { return m_m1Line; }
 
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
 
 		virtual register16_t& AF() final;
-		virtual register16_t AF() const final;
 		virtual register16_t& BC() final;
-		virtual register16_t BC() const final;
 		virtual register16_t& DE() final;
-		virtual register16_t DE() const final;
 		virtual register16_t& HL() final;
-		virtual register16_t HL() const final;
 
 		register16_t& IX() { return m_ix; }
-		register16_t IX() const { return m_ix; }
 		uint8_t& IXH() { return IX().high; }
-		uint8_t IXH() const { return IX().high; }
 		uint8_t& IXL() { return IX().low; }
-		uint8_t IXL() const { return IX().low; }
 
 		register16_t& IY() { return m_iy; }
-		register16_t IY() const { return m_iy; }
 		uint8_t& IYH() { return IY().high; }
-		uint8_t IYH() const { return IY().high; }
 		uint8_t& IYL() { return IY().low; }
-		uint8_t IYL() const { return IY().low; }
 
 		refresh_t& REFRESH() { return m_refresh; }
-		refresh_t REFRESH() const { return m_refresh; }
 		uint8_t& IV() { return iv; }
-		uint8_t IV() const { return iv; }
 		int& IM() { return m_interruptMode; }
-		int IM() const { return m_interruptMode; }
 		bool& IFF1() { return m_iff1; }
-		bool IFF1() const { return m_iff1; }
 		bool& IFF2() { return m_iff2; }
-		bool IFF2() const { return m_iff2; }
 
 		void exx() {
 			m_registerSet ^= 1;
@@ -274,23 +258,6 @@ namespace EightBit {
 			}
 		}
 
-		register16_t RP(const int rp) const {
-			ASSUME(rp >= 0);
-			ASSUME(rp <= 3);
-			switch (rp) {
-			case 0:
-				return BC();
-			case 1:
-				return DE();
-			case 2:
-				return HL2();
-			case 3:
-				return SP();
-			default:
-				UNREACHABLE;
-			}
-		}
-
 		register16_t& HL2() {
 			if (LIKELY(!m_displaced))
 				return HL();
@@ -300,33 +267,7 @@ namespace EightBit {
 			return IY();
 		}
 
-		register16_t HL2() const {
-			if (LIKELY(!m_displaced))
-				return HL();
-			if (m_prefixDD)
-				return IX();
-			// Must be FD prefix
-			return IY();
-		}
-
 		register16_t& RP2(const int rp) {
-			ASSUME(rp >= 0);
-			ASSUME(rp <= 3);
-			switch (rp) {
-			case 0:
-				return BC();
-			case 1:
-				return DE();
-			case 2:
-				return HL2();
-			case 3:
-				return AF();
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		register16_t RP2(const int rp) const {
 			ASSUME(rp >= 0);
 			ASSUME(rp <= 3);
 			switch (rp) {

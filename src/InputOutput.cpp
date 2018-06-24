@@ -14,18 +14,18 @@ void EightBit::InputOutput::writeOutputPort(const uint8_t port, const uint8_t va
 	OnWrittenPort(port);
 }
 
-void EightBit::InputOutput::OnReadingPort(const uint8_t port) {
+void EightBit::InputOutput::OnReadingPort(uint8_t port) {
 	ReadingPort.fire(port);
 }
 
-void EightBit::InputOutput::OnReadPort(const uint8_t port) {
+void EightBit::InputOutput::OnReadPort(uint8_t port) {
 	ReadPort.fire(port);
 }
 
-void EightBit::InputOutput::OnWritingPort(const uint8_t port) {
+void EightBit::InputOutput::OnWritingPort(uint8_t port) {
 	WritingPort.fire(port);
 }
 
-void EightBit::InputOutput::OnWrittenPort(const uint8_t port) {
+void EightBit::InputOutput::OnWrittenPort(uint8_t port) {
 	WrittenPort.fire(port);
 }
