@@ -39,10 +39,10 @@ private:
 
 	void pollKeyboard();
 
-	void Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu);
+	void Cpu_ExecutingInstruction_Debug(EightBit::MOS6502& cpu);
 	void Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu);
 
-	void Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu);
+	void Cpu_ExecutedInstruction_StopLoop(EightBit::MOS6502& cpu);
 
 	void Memory_ReadingByte_Input(EightBit::EventArgs);
 	void Memory_WrittenByte_Output(EightBit::EventArgs);

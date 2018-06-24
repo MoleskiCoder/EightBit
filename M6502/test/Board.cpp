@@ -69,7 +69,7 @@ void Board::Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu) {
 	//m_profiler.addInstruction(m_memory.peek(pc.word));
 }
 
-void Board::Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu) {
+void Board::Cpu_ExecutedInstruction_StopLoop(EightBit::MOS6502& cpu) {
 
 	auto pc = cpu.PC().word;
 	if (m_oldPC == pc) {
@@ -81,7 +81,7 @@ void Board::Cpu_ExecutedInstruction_StopLoop(const EightBit::MOS6502& cpu) {
 	}
 }
 
-void Board::Cpu_ExecutingInstruction_Debug(const EightBit::MOS6502& cpu) {
+void Board::Cpu_ExecutingInstruction_Debug(EightBit::MOS6502& cpu) {
 
 	auto address = cpu.PC().word;
 	auto cell = peek(address);

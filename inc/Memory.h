@@ -48,4 +48,6 @@ namespace EightBit {
 	private:
 		std::vector<uint8_t> m_bytes;
 	};
+
+	typedef Memory Rom;
 }

@@ -41,9 +41,6 @@
     <ClInclude Include="..\inc\Ram.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\inc\Rom.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\inc\Register.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -34,7 +34,7 @@ void Board::initialise() {
 	CPU().PC() = m_configuration.getStartAddress();
 }
 
-void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Z80& cpu) {
+void Board::Cpu_ExecutingInstruction_Cpm(EightBit::Z80& cpu) {
 	if (UNLIKELY(EightBit::Processor::lowered(cpu.HALT())))
 		CPU().powerOff();
 	switch (cpu.PC().word) {
@@ -65,7 +65,7 @@ void Board::bdos() {
 	}
 }
 
-void Board::Cpu_ExecutingInstruction_Profile(const EightBit::Z80& cpu) {
+void Board::Cpu_ExecutingInstruction_Profile(EightBit::Z80& cpu) {
 
 	const auto pc = cpu.PC();
 

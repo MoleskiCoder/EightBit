@@ -18,14 +18,12 @@ namespace EightBit {
 		Signal<EventArgs> ReadByte;
 
 		register16_t& ADDRESS() { return m_address; }
-		register16_t ADDRESS() const { return m_address; }
 		uint8_t& DATA() { return m_data; }
-		uint8_t DATA() const { return m_data; }
 
-		uint8_t peek();
-		uint8_t peek(uint16_t address);
-		void poke(uint8_t value);
-		void poke(uint16_t address, uint8_t value);
+		uint8_t peek() { return reference(); }
+		uint8_t peek(uint16_t address) { return reference(address); }
+		void poke(uint8_t value) { reference() = value; }
+		void poke(uint16_t address, uint8_t value) { reference(address) = value; }
 
 		uint16_t peekWord(uint16_t address);
 
@@ -44,7 +42,7 @@ namespace EightBit {
 
 	protected:
 		virtual uint8_t& reference(uint16_t address) = 0;
-		uint8_t& reference();
+		uint8_t& reference() { return reference(ADDRESS().word); }
 
 	private:
 		uint8_t m_data = 0xff;

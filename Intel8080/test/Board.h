@@ -32,10 +32,10 @@ private:
 	EightBit::Disassembler m_disassembler;
 	EightBit::Profiler m_profiler;
 
-	void Cpu_ExecutingInstruction_Cpm(const EightBit::Intel8080& cpu);
+	void Cpu_ExecutingInstruction_Cpm(EightBit::Intel8080& cpu);
 
 	void Cpu_ExecutingInstruction_Debug(const EightBit::Intel8080& cpu);
-	void Cpu_ExecutingInstruction_Profile(const EightBit::Intel8080& cpu);
+	void Cpu_ExecutingInstruction_Profile(EightBit::Intel8080& cpu);
 
 	void bdos();
 };

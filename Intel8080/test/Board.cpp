@@ -33,7 +33,7 @@ void Board::initialise() {
 	CPU().PC() = m_configuration.getStartAddress();
 }
 
-void Board::Cpu_ExecutingInstruction_Cpm(const EightBit::Intel8080& cpu) {
+void Board::Cpu_ExecutingInstruction_Cpm(EightBit::Intel8080& cpu) {
 	switch (cpu.PC().word) {
 	case 0x0:	// CP/M warm start
 		CPU().powerOff();
@@ -64,7 +64,7 @@ void Board::bdos() {
 	}
 }
 
-void Board::Cpu_ExecutingInstruction_Profile(const EightBit::Intel8080& cpu) {
+void Board::Cpu_ExecutingInstruction_Profile(EightBit::Intel8080& cpu) {
 
 	const auto pc = cpu.PC();
 
