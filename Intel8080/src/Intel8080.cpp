@@ -11,30 +11,12 @@ EightBit::register16_t& EightBit::Intel8080::AF() {
 	return af;
 }
 
-EightBit::register16_t EightBit::Intel8080::AF() const {
-	const auto low = (af.low | Bit1) & ~(Bit5 | Bit3);
-	const auto high = af.high;
-	return register16_t(low, high);
-}
-
-EightBit::register16_t EightBit::Intel8080::BC() const {
-	return bc;
-}
-
 EightBit::register16_t& EightBit::Intel8080::BC() {
 	return bc;
 }
 
-EightBit::register16_t EightBit::Intel8080::DE() const {
-	return de;
-}
-
 EightBit::register16_t& EightBit::Intel8080::DE() {
 	return de;
-}
-
-EightBit::register16_t EightBit::Intel8080::HL() const {
-	return hl;
 }
 
 EightBit::register16_t& EightBit::Intel8080::HL() {
