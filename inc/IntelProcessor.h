@@ -21,7 +21,7 @@ namespace EightBit {
 			int p = 0;
 			int q = 0;
 
-			opcode_decoded_t() {}
+			opcode_decoded_t() noexcept {}
 
 			opcode_decoded_t(const uint8_t opcode) {
 				x = (opcode & 0b11000000) >> 6;	// 0 - 3

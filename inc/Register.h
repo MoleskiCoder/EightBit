@@ -30,8 +30,8 @@ namespace EightBit {
 #endif
 		};
 		uint16_t word;
-		register16_t() : word(0) {}
-		register16_t(uint16_t w) : word(w) {}
-		register16_t(uint8_t l, uint8_t h) : low(l),  high(h) {}
+		register16_t() noexcept : word(0) {}
+		register16_t(uint16_t w) noexcept : word(w) {}
+		register16_t(uint8_t l, uint8_t h) noexcept : low(l),  high(h) {}
 	} ;
 }

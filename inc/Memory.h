@@ -11,7 +11,7 @@ namespace EightBit {
 		static int load(std::ifstream& file, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
 		static int load(const std::string& path, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
 
-		Memory(const size_t size = 0)
+		Memory(const size_t size = 0) noexcept
 		: m_bytes(size) {
 		}
 
