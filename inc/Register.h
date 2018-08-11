@@ -32,6 +32,48 @@ namespace EightBit {
 		uint16_t word;
 		register16_t() noexcept : word(0) {}
 		register16_t(uint16_t w) noexcept : word(w) {}
-		register16_t(uint8_t l, uint8_t h) noexcept : low(l),  high(h) {}
-	} ;
+		register16_t(uint8_t l, uint8_t h) noexcept : low(l), high(h) {}
+
+		register16_t& operator++() noexcept {
+			++word;
+			return *this;
+		}
+
+		register16_t& operator--() noexcept {
+			--word;
+			return *this;
+		}
+
+		register16_t operator++(int) noexcept {
+			register16_t temporary(*this);
+			operator++();
+			return temporary;
+		}
+
+		register16_t operator--(int) noexcept {
+			register16_t temporary(*this);
+			operator--();
+			return temporary;
+		}
+
+		register16_t& operator+=(const register16_t rhs) noexcept {
+			this->word += rhs.word;
+			return *this;
+		}
+
+		register16_t& operator-=(const register16_t rhs) noexcept {
+			this->word -= rhs.word;
+			return *this;
+		}
+	};
+
+	inline register16_t operator+(register16_t lhs, const register16_t rhs) noexcept {
+		lhs += rhs;
+		return lhs;
+	}
+
+	inline register16_t operator-(register16_t lhs, const register16_t rhs) noexcept {
+		lhs -= rhs;
+		return lhs;
+	}
 }

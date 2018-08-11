@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-EightBit::Profiler::Profiler() {
+EightBit::Profiler::Profiler() noexcept {
 	m_instructions.fill(0);
 	m_addresses.fill(0);
 }

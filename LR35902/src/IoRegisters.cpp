@@ -12,7 +12,7 @@ EightBit::GameBoy::IoRegisters::IoRegisters(Bus& bus)
 void EightBit::GameBoy::IoRegisters::reset() {
 	poke(NR52, 0xf1);
 	poke(LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
-	m_divCounter.word = 0xabcc;
+	m_divCounter = 0xabcc;
 	m_timerCounter = 0;
 }
 
@@ -194,7 +194,7 @@ bool EightBit::GameBoy::IoRegisters::timerDisabled() {
 }
 
 void EightBit::GameBoy::IoRegisters::incrementDIV(int cycles) {
-	m_divCounter.word += cycles;
+	m_divCounter += cycles;
 	poke(DIV, m_divCounter.high);
 }
 

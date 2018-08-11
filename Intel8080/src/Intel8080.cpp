@@ -117,7 +117,7 @@ bool EightBit::Intel8080::callConditionalFlag(int flag) {
 
 void EightBit::Intel8080::add(register16_t value) {
 	const auto result = HL().word + value.word;
-	HL().word = result;
+	HL() = result;
 	setFlag(F(), CF, result & Bit16);
 }
 
@@ -229,7 +229,7 @@ void EightBit::Intel8080::xhtl() {
 	MEMPTR().low = BUS().read(SP());
 	BUS().write(L());
 	L() = MEMPTR().low;
-	++BUS().ADDRESS().word;
+	++BUS().ADDRESS();
 	MEMPTR().high = BUS().read();
 	BUS().write(H());
 	H() = MEMPTR().high;
@@ -374,10 +374,10 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 		case 3:	// 16-bit INC/DEC
 			switch (q) {
 			case 0:	// INC rp
-				++RP(p).word;
+				++RP(p);
 				break;
 			case 1:	// DEC rp
-				--RP(p).word;
+				--RP(p);
 				break;
 			default:
 				UNREACHABLE;

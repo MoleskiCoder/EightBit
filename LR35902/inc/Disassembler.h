@@ -13,7 +13,7 @@ namespace EightBit {
 
 		class Disassembler {
 		public:
-			Disassembler();
+			Disassembler() noexcept;
 
 			static std::string state(LR35902& cpu);
 			std::string disassemble(LR35902& cpu);
@@ -37,7 +37,7 @@ namespace EightBit {
 			};
 
 			mutable boost::format m_formatter;
-			bool m_prefixCB;
+			bool m_prefixCB = false;
 
 			void disassemble(std::ostringstream& output, LR35902& cpu, uint16_t pc);
 

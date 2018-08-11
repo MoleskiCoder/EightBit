@@ -11,14 +11,13 @@ void EightBit::Processor::reset() {
 	raise(INT());
 	raise(NMI());
 	raise(RESET());
-	PC().word = 0;
+	PC() = 0;
 }
 
 int EightBit::Processor::run(const int limit) {
 	int current = 0;
-	while (LIKELY(powered()) && current < limit) {
+	while (LIKELY(powered()) && current < limit)
 		current += singleStep();
-	}
 	return current;
 }
 

@@ -12,7 +12,7 @@ EightBit::GameBoy::LR35902::LR35902(Bus& memory)
 void EightBit::GameBoy::LR35902::reset() {
 	IntelProcessor::reset();
 	di();
-	SP().word = Mask16 - 1;
+	SP() = Mask16 - 1;
 	m_prefixCB = false;
 }
 
@@ -469,11 +469,11 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 					addCycles(2);
 					break;
 				case 2:	// GB: LDI (HL),A
-					BUS().write(HL().word++, A());
+					BUS().write(HL()++, A());
 					addCycles(2);
 					break;
 				case 3: // GB: LDD (HL),A
-					BUS().write(HL().word--, A());
+					BUS().write(HL()--, A());
 					addCycles(2);
 					break;
 				default:
@@ -491,11 +491,11 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 					addCycles(2);
 					break;
 				case 2:	// GB: LDI A,(HL)
-					A() = BUS().read(HL().word++);
+					A() = BUS().read(HL()++);
 					addCycles(2);
 					break;
 				case 3:	// GB: LDD A,(HL)
-					A() = BUS().read(HL().word--);
+					A() = BUS().read(HL()--);
 					addCycles(2);
 					break;
 				default:
@@ -509,10 +509,10 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 		case 3:	// 16-bit INC/DEC
 			switch (q) {
 			case 0:	// INC rp
-				++RP(p).word;
+				++RP(p);
 				break;
 			case 1:	// DEC rp
-				--RP(p).word;
+				--RP(p);
 				break;
 			default:
 				UNREACHABLE;
@@ -637,7 +637,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 					const auto before = SP().word;
 					const int8_t value = fetchByte();
 					const auto result = before + value;
-					SP().word = result;
+					SP() = result;
 					const auto carried = before ^ value ^ (result & Mask16);
 					clearFlag(F(), ZF | NF);
 					setFlag(F(), CF, carried & Bit8);
@@ -653,7 +653,7 @@ void EightBit::GameBoy::LR35902::executeOther(int x, int y, int z, int p, int q)
 					const auto before = SP().word;
 					const int8_t value = fetchByte();
 					const auto result = before + value;
-					HL().word = result;
+					HL() = result;
 					const auto carried = before ^ value ^ (result & Mask16);
 					clearFlag(F(), ZF | NF);
 					setFlag(F(), CF, carried & Bit8);

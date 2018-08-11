@@ -6,7 +6,7 @@
 namespace EightBit {
 	class Profiler {
 	public:
-		Profiler();
+		Profiler() noexcept;
 		~Profiler();
 
 		void addInstruction(uint8_t instruction);

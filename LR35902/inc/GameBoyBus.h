@@ -33,7 +33,7 @@ namespace EightBit {
 				RomPageSize = 0x4000
 			};
 
-			Bus();
+			Bus() noexcept;
 
 			LR35902& CPU() { return m_cpu; }
 			Ram& VRAM() { return m_videoRam; }

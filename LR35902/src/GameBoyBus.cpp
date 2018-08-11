@@ -2,7 +2,7 @@
 #include "GameBoyBus.h"
 #include "Display.h"
 
-EightBit::GameBoy::Bus::Bus()
+EightBit::GameBoy::Bus::Bus() noexcept
 : m_cpu(*this),
   m_ioPorts(*this) {
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));

@@ -10,7 +10,7 @@
 namespace EightBit {
 	class Disassembler {
 	public:
-		Disassembler();
+		Disassembler() noexcept;
 
 		static std::string state(Intel8080& cpu);
 		std::string disassemble(Intel8080& cpu);

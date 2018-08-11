@@ -9,7 +9,7 @@ namespace EightBit {
 
 	class Disassembler {
 	public:
-		Disassembler();
+		Disassembler() noexcept;
 
 		static std::string state(Z80& cpu);
 		std::string disassemble(Z80& cpu);
@@ -25,10 +25,10 @@ namespace EightBit {
 
 	private:
 		mutable boost::format m_formatter;
-		bool m_prefixCB;
-		bool m_prefixDD;
-		bool m_prefixED;
-		bool m_prefixFD;
+		bool m_prefixCB = false;
+		bool m_prefixDD = false;
+		bool m_prefixED = false;
+		bool m_prefixFD = false;
 
 		void disassemble(std::ostringstream& output, Z80& cpu, uint16_t pc);
 

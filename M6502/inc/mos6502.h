@@ -102,14 +102,14 @@ namespace EightBit {
 		std::tuple<register16_t, bool> Address_AbsoluteX() {
 			auto address = Address_Absolute();
 			const auto page = address.high;
-			address.word += X();
+			address += X();
 			return std::tuple<register16_t, bool>(address, address.high != page);
 		}
 
 		std::tuple<register16_t, bool> Address_AbsoluteY() {
 			auto address = Address_Absolute();
 			const auto page = address.high;
-			address.word += Y();
+			address += Y();
 			return std::tuple<register16_t, bool>(address, address.high != page);
 		}
 
@@ -120,7 +120,7 @@ namespace EightBit {
 		std::tuple<register16_t, bool> Address_IndirectIndexedY() {
 			auto address = Address_ZeroPageIndirect();
 			const auto page = address.high;
-			address.word += Y();
+			address += Y();
 			return std::tuple<register16_t, bool>(address, address.high != page);
 		}
 

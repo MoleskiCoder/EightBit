@@ -364,7 +364,7 @@ namespace EightBit {
 
 		void xhtl();
 
-		void blockCompare();
+		void blockCompare(register16_t source, register16_t& counter);
 
 		void cpi();
 		bool cpir();
@@ -372,7 +372,7 @@ namespace EightBit {
 		void cpd();
 		bool cpdr();
 
-		void blockLoad(register16_t source, register16_t destination);
+		void blockLoad(register16_t source, register16_t destination, register16_t& counter);
 
 		void ldi();
 		bool ldir();

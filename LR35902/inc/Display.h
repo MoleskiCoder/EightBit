@@ -35,12 +35,12 @@ namespace EightBit {
 			void loadObjectAttributes();
 
 		private:
-			std::array<uint32_t, PixelCount> m_pixels;
+			std::array<uint32_t, PixelCount> m_pixels = { 0 };
 			Bus& m_bus;
 			Ram& m_oam;
 			Ram& m_vram;
 			const AbstractColourPalette* m_colours;
-			std::array<ObjectAttribute, 40> m_objectAttributes;
+			std::array<ObjectAttribute, 40> m_objectAttributes = { ObjectAttribute() };
 			uint8_t m_control = 0;
 			uint8_t m_scanLine = 0;
 

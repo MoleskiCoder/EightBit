@@ -8,7 +8,7 @@
 namespace EightBit {
 	class Symbols {
 	public:
-		Symbols(std::string path = "");
+		Symbols(std::string path = "") noexcept;
 
 		const std::map<uint16_t, std::string>& getLabels() const { return labels; }
 		const std::map<uint16_t, std::string>& getConstants() const { return constants; }

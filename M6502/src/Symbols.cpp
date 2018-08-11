@@ -10,7 +10,7 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/regex.hpp>
 
-EightBit::Symbols::Symbols(std::string path) {
+EightBit::Symbols::Symbols(std::string path) noexcept {
 	if (!path.empty()) {
 		Parse(path);
 		AssignSymbols();

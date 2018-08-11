@@ -9,26 +9,26 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 
 void EightBit::IntelProcessor::reset() {
 	Processor::reset();
-	SP().word = AF().word = BC().word = DE().word = HL().word = Mask16;
+	SP() = AF() = BC() = DE() = HL() = Mask16;
 }
 
 void EightBit::IntelProcessor::push(const uint8_t value) {
-	BUS().write(--SP().word, value);
+	BUS().write(--SP(), value);
 }
 
 uint8_t EightBit::IntelProcessor::pop() {
-	return BUS().read(SP().word++);
+	return BUS().read(SP()++);
 }
 
 EightBit::register16_t EightBit::IntelProcessor::getWord() {
-	BUS().ADDRESS().word = MEMPTR().word++;
+	BUS().ADDRESS() = MEMPTR()++;
 	const auto low = BUS().read();
-	++BUS().ADDRESS().word;
+	++BUS().ADDRESS();
 	const auto high = BUS().read();
 	return register16_t(low, high);
 }
 
 void EightBit::IntelProcessor::setWord(const register16_t value) {
-	BUS().write(MEMPTR().word++, value.low);
-	BUS().write(++BUS().ADDRESS().word, value.high);
+	BUS().write(MEMPTR()++, value.low);
+	BUS().write(++BUS().ADDRESS(), value.high);
 }

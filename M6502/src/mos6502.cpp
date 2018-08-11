@@ -488,7 +488,7 @@ uint8_t EightBit::MOS6502::ADD_d(uint8_t operand, uint8_t data, int carry) {
 
 void EightBit::MOS6502::Branch(int8_t displacement) {
 	const auto page = PC().high;
-	PC().word += displacement;
+	PC() += displacement;
 	if (UNLIKELY(PC().high != page))
 		addCycle();
 	addCycle();
@@ -514,7 +514,7 @@ void EightBit::MOS6502::PLP() {
 
 void EightBit::MOS6502::JSR_abs() {
 	const auto address = Address_Absolute();
-	--PC().word;
+	--PC();
 	call(address);
 }
 
@@ -525,7 +525,7 @@ void EightBit::MOS6502::RTI() {
 
 void EightBit::MOS6502::RTS() {
 	ret();
-	++PC().word;
+	++PC();
 }
 
 void EightBit::MOS6502::JMP_abs() {
@@ -537,8 +537,7 @@ void EightBit::MOS6502::JMP_ind() {
 }
 
 void EightBit::MOS6502::BRK() {
-	++PC().word;
-	pushWord(PC());
+	pushWord(++PC());
 	PHP();
 	setFlag(P(), IF);
 	jump(getWordPaged(0xff, IRQvector));

@@ -33,7 +33,7 @@ namespace EightBit {
 		void OnWrittenPort(uint8_t port);
 
 	private:
-		std::array<uint8_t, 0x100> m_input;
-		std::array<uint8_t, 0x100> m_output;
+		std::array<uint8_t, 0x100> m_input = { 0 };
+		std::array<uint8_t, 0x100> m_output = { 0 };
 	};
 }

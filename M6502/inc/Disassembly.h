@@ -21,7 +21,7 @@ namespace EightBit {
 		MOS6502& processor;
 		const Symbols& symbols;
 
-		mutable uint16_t m_address;
+		mutable uint16_t m_address = 0xffff;
 
 		std::string disassemble_Implied(const std::string& instruction) const {
 			return "\t" + instruction;

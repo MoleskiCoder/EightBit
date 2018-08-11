@@ -156,7 +156,7 @@ namespace EightBit {
 		}
 
 		void jr(const int8_t offset) {
-			MEMPTR().word = PC().word + offset;
+			MEMPTR() = PC() + offset;
 			jump(MEMPTR());
 		}
 

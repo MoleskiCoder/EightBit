@@ -183,7 +183,7 @@ void EightBit::Z80::sbc(const register16_t value) {
 	const auto valueNegative = value.high & SF;
 
 	const auto result = MEMPTR().word - value.word - (F() & CF);
-	HL2().word = result;
+	HL2() = result;
 
 	const auto afterNegative = HL2().high & SF;
 
@@ -195,7 +195,7 @@ void EightBit::Z80::sbc(const register16_t value) {
 	setFlag(F(), CF, result & Bit16);
 	adjustXY<Z80>(F(), HL2().high);
 
-	++MEMPTR().word;
+	++MEMPTR();
 }
 
 void EightBit::Z80::adc(const register16_t value) {
@@ -206,7 +206,7 @@ void EightBit::Z80::adc(const register16_t value) {
 	const auto valueNegative = value.high & SF;
 
 	const auto result = MEMPTR().word + value.word + (F() & CF);
-	HL2().word = result;
+	HL2() = result;
 
 	const auto afterNegative = HL2().high & SF;
 
@@ -218,7 +218,7 @@ void EightBit::Z80::adc(const register16_t value) {
 	setFlag(F(), CF, result & Bit16);
 	adjustXY<Z80>(F(), HL2().high);
 
-	++MEMPTR().word;
+	++MEMPTR();
 }
 
 void EightBit::Z80::add(const register16_t value) {
@@ -227,14 +227,14 @@ void EightBit::Z80::add(const register16_t value) {
 
 	const auto result = MEMPTR().word + value.word;
 
-	HL2().word = result;
+	HL2() = result;
 
 	clearFlag(F(), NF);
 	setFlag(F(), CF, result & Bit16);
 	adjustHalfCarryAdd(F(), MEMPTR().high, value.high, HL2().high);
 	adjustXY<Z80>(F(), HL2().high);
 
-	++MEMPTR().word;
+	++MEMPTR();
 }
 
 void EightBit::Z80::add(const uint8_t value, const int carry) {
@@ -438,18 +438,18 @@ void EightBit::Z80::xhtl() {
 	MEMPTR().low = BUS().read(SP());
 	BUS().write(HL2().low);
 	HL2().low = MEMPTR().low;
-	++BUS().ADDRESS().word;
+	++BUS().ADDRESS();
 	MEMPTR().high = BUS().read();
 	BUS().write(HL2().high);
 	HL2().high = MEMPTR().high;
 }
 
-void EightBit::Z80::blockCompare() {
+void EightBit::Z80::blockCompare(register16_t source, register16_t& counter) {
 
-	const auto value = BUS().read(HL());
+	const auto value = BUS().read(source);
 	uint8_t result = A() - value;
 
-	setFlag(F(), PF, --BC().word);
+	setFlag(F(), PF, --counter.word);
 
 	adjustSZ<Z80>(F(), result);
 	adjustHalfCarrySub(F(), A(), value, result);
@@ -462,15 +462,13 @@ void EightBit::Z80::blockCompare() {
 }
 
 void EightBit::Z80::cpi() {
-	blockCompare();
-	++HL().word;
-	++MEMPTR().word;
+	blockCompare(HL()++, BC());
+	++MEMPTR();
 }
 
 void EightBit::Z80::cpd() {
-	blockCompare();
-	--HL().word;
-	--MEMPTR().word;
+	blockCompare(HL()--, BC());
+	--MEMPTR();
 }
 
 bool EightBit::Z80::cpir() {
@@ -483,26 +481,22 @@ bool EightBit::Z80::cpdr() {
 	return (F() & PF) && !(F() & ZF);	// See CPD
 }
 
-void EightBit::Z80::blockLoad(const register16_t source, const register16_t destination) {
+void EightBit::Z80::blockLoad(const register16_t source, const register16_t destination, register16_t& counter) {
 	const auto value = BUS().read(source);
 	BUS().write(destination, value);
 	const auto xy = A() + value;
 	setFlag(F(), XF, xy & 8);
 	setFlag(F(), YF, xy & 2);
 	clearFlag(F(), NF | HC);
-	setFlag(F(), PF, --BC().word);
+	setFlag(F(), PF, --counter.word);
 }
 
 void EightBit::Z80::ldd() {
-	blockLoad(HL(), DE());
-	--HL().word;
-	--DE().word;
+	blockLoad(HL()--, DE()--, BC());
 }
 
 void EightBit::Z80::ldi() {
-	blockLoad(HL(), DE());
-	++HL().word;
-	++DE().word;
+	blockLoad(HL()++, DE()++, BC());
 }
 
 bool EightBit::Z80::ldir() {
@@ -517,18 +511,18 @@ bool EightBit::Z80::lddr() {
 
 void EightBit::Z80::ini() {
 	MEMPTR() = BUS().ADDRESS() = BC();
-	++MEMPTR().word;
+	++MEMPTR();
 	const auto value = readPort();
-	BUS().write(HL().word++, value);
+	BUS().write(HL()++, value);
 	decrement(B());
 	setFlag(F(), NF);
 }
 
 void EightBit::Z80::ind() {
 	MEMPTR() = BUS().ADDRESS() = BC();
-	--MEMPTR().word;
+	--MEMPTR();
 	const auto value = readPort();
-	BUS().write(HL().word--, value);
+	BUS().write(HL()--, value);
 	decrement(B());
 	setFlag(F(), NF);
 }
@@ -554,15 +548,15 @@ void EightBit::Z80::blockOut() {
 }
 
 void EightBit::Z80::outi() {
-	BUS().ADDRESS().word = HL().word++;
+	BUS().ADDRESS() = HL()++;
 	blockOut();
-	MEMPTR().word = BC().word + 1;
+	MEMPTR() = BC().word + 1;
 }
 
 void EightBit::Z80::outd() {
-	BUS().ADDRESS().word = HL().word--;
+	BUS().ADDRESS() = HL()--;
 	blockOut();
-	MEMPTR().word = BC().word - 1;
+	MEMPTR() = BC().word - 1;
 }
 
 bool EightBit::Z80::otir() {
@@ -577,7 +571,7 @@ bool EightBit::Z80::otdr() {
 
 void EightBit::Z80::rrd() {
 	MEMPTR() = BUS().ADDRESS() = HL();
-	++MEMPTR().word;
+	++MEMPTR();
 	const auto memory = BUS().read();
 	BUS().write(promoteNibble(A()) | highNibble(memory));
 	A() = higherNibble(A()) | lowerNibble(memory);
@@ -587,7 +581,7 @@ void EightBit::Z80::rrd() {
 
 void EightBit::Z80::rld() {
 	MEMPTR() = BUS().ADDRESS() = HL();
-	++MEMPTR().word;
+	++MEMPTR();
 	const auto memory = BUS().read();
 	BUS().write(promoteNibble(memory) | lowNibble(A()));
 	A() = higherNibble(A()) | highNibble(memory);
@@ -818,7 +812,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 		switch (z) {
 		case 0: // Input from port with 16-bit address
 			MEMPTR() = BUS().ADDRESS() = BC();
-			++MEMPTR().word;
+			++MEMPTR();
 			readPort();
 			if (LIKELY(y != 6))	// IN r[y],(C)
 				R(y, BUS().DATA());
@@ -828,7 +822,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			break;
 		case 1:	// Output to port with 16-bit address
 			MEMPTR() = BUS().ADDRESS() = BC();
-			++MEMPTR().word;
+			++MEMPTR();
 			if (UNLIKELY(y == 6))	// OUT (C),0
 				BUS().DATA() = 0;
 			else		// OUT (C),r[y]
@@ -955,15 +949,15 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				break;
 			case 6:	// LDIR
 				if (LIKELY(ldir())) {
-					MEMPTR().word = --PC().word;
-					--PC().word;
+					MEMPTR() = --PC();
+					--PC();
 					addCycles(5);
 				}
 				break;
 			case 7:	// LDDR
 				if (LIKELY(lddr())) {
-					MEMPTR().word = --PC().word;
-					--PC().word;
+					MEMPTR()= --PC();
+					--PC();
 					addCycles(5);
 				}
 				break;
@@ -979,18 +973,18 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				break;
 			case 6:	// CPIR
 				if (LIKELY(cpir())) {
-					MEMPTR().word = --PC().word;
-					--PC().word;
+					MEMPTR()= --PC();
+					--PC();
 					addCycles(5);
 				}
 				break;
 			case 7:	// CPDR
 				if (LIKELY(cpdr())) {
-					MEMPTR().word = --PC().word;
-					--PC().word;
+					MEMPTR()= --PC();
+					--PC();
 					addCycles(5);
 				} else {
-					MEMPTR().word = PC().word - 2;
+					MEMPTR() = PC() - 2;
 				}
 				break;
 			}
@@ -1005,13 +999,13 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				break;
 			case 6:	// INIR
 				if (LIKELY(inir())) {
-					PC().word -= 2;
+					PC() -= 2;
 					addCycles(5);
 				}
 				break;
 			case 7:	// INDR
 				if (LIKELY(indr())) {
-					PC().word -= 2;
+					PC() -= 2;
 					addCycles(5);
 				}
 				break;
@@ -1027,13 +1021,13 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				break;
 			case 6:	// OTIR
 				if (LIKELY(otir())) {
-					PC().word -= 2;
+					PC() -= 2;
 					addCycles(5);
 				}
 				break;
 			case 7:	// OTDR
 				if (LIKELY(otdr())) {
-					PC().word -= 2;
+					PC() -= 2;
 					addCycles(5);
 				}
 				break;
@@ -1109,14 +1103,14 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				switch (p) {
 				case 0:	// LD (BC),A
 					MEMPTR() = BUS().ADDRESS() = BC();
-					++MEMPTR().word;
+					++MEMPTR();
 					MEMPTR().high = BUS().DATA() = A();
 					BUS().write();
 					addCycles(7);
 					break;
 				case 1:	// LD (DE),A
 					MEMPTR() = BUS().ADDRESS() = DE();
-					++MEMPTR().word;
+					++MEMPTR();
 					MEMPTR().high = BUS().DATA() = A();
 					BUS().write();
 					addCycles(7);
@@ -1128,7 +1122,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					break;
 				case 3: // LD (nn),A
 					MEMPTR() = BUS().ADDRESS() = fetchWord();
-					++MEMPTR().word;
+					++MEMPTR();
 					MEMPTR().high = BUS().DATA() = A();
 					BUS().write();
 					addCycles(13);
@@ -1141,13 +1135,13 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				switch (p) {
 				case 0:	// LD A,(BC)
 					MEMPTR() = BUS().ADDRESS() = BC();
-					++MEMPTR().word;
+					++MEMPTR();
 					A() = BUS().read();
 					addCycles(7);
 					break;
 				case 1:	// LD A,(DE)
 					MEMPTR() = BUS().ADDRESS() = DE();
-					++MEMPTR().word;
+					++MEMPTR();
 					A() = BUS().read();
 					addCycles(7);
 					break;
@@ -1158,7 +1152,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					break;
 				case 3:	// LD A,(nn)
 					MEMPTR() = BUS().ADDRESS() = fetchWord();
-					++MEMPTR().word;
+					++MEMPTR();
 					A() = BUS().read();
 					addCycles(13);
 					break;
@@ -1173,10 +1167,10 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 3:	// 16-bit INC/DEC
 			switch (q) {
 			case 0:	// INC rp
-				++RP(p).word;
+				++RP(p);
 				break;
 			case 1:	// DEC rp
-				--RP(p).word;
+				--RP(p);
 				break;
 			default:
 				UNREACHABLE;

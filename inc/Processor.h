@@ -105,11 +105,11 @@ namespace EightBit {
 		virtual void reset();
 
 		bool halted() { return lowered(HALT()); }
-		void halt() { --PC().word;  lower(HALT()); }
-		void proceed() { ++PC().word; raise(HALT()); }
+		void halt() { --PC();  lower(HALT()); }
+		void proceed() { ++PC(); raise(HALT()); }
 
 		uint8_t fetchByte() {
-			return BUS().read(PC().word++);
+			return BUS().read(PC()++);
 		}
 
 		register16_t fetchWord() {

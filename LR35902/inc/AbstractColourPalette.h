@@ -14,7 +14,7 @@ namespace EightBit {
 				Dark
 			};
 
-			AbstractColourPalette()
+			AbstractColourPalette() noexcept
 			: m_colours(4) {
 			}
 
