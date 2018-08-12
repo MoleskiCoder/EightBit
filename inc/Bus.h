@@ -17,7 +17,10 @@ namespace EightBit {
 		Signal<EventArgs> ReadingByte;
 		Signal<EventArgs> ReadByte;
 
+		register16_t ADDRESS() const { return m_address; }
 		register16_t& ADDRESS() { return m_address; }
+
+		uint8_t DATA() const { return m_data; }
 		uint8_t& DATA() { return m_data; }
 
 		uint8_t peek() { return reference(); }
