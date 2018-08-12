@@ -509,22 +509,22 @@ bool EightBit::Z80::lddr() {
 	return !!(F() & PF);		// See LDD
 }
 
-void EightBit::Z80::ini() {
-	MEMPTR() = BUS().ADDRESS() = BC();
-	++MEMPTR();
+void EightBit::Z80::blockIn(register16_t& source, register16_t destination) {
+	MEMPTR() = BUS().ADDRESS() = source;
 	const auto value = readPort();
-	BUS().write(HL()++, value);
-	decrement(B());
+	BUS().write(destination, value);
+	decrement(source.high);
 	setFlag(F(), NF);
 }
 
+void EightBit::Z80::ini() {
+	blockIn(BC(), HL()++);
+	++MEMPTR();
+}
+
 void EightBit::Z80::ind() {
-	MEMPTR() = BUS().ADDRESS() = BC();
+	blockIn(BC(), HL()--);
 	--MEMPTR();
-	const auto value = readPort();
-	BUS().write(HL()--, value);
-	decrement(B());
-	setFlag(F(), NF);
 }
 
 bool EightBit::Z80::inir() {
@@ -537,26 +537,25 @@ bool EightBit::Z80::indr() {
 	return !(F() & ZF);	// See IND
 }
 
-void EightBit::Z80::blockOut() {
-	const auto value = BUS().read();
-	BUS().ADDRESS() = BC();
+void EightBit::Z80::blockOut(const register16_t source, register16_t& destination) {
+	const auto value = BUS().read(source);
+	BUS().ADDRESS() = destination;
 	writePort();
-	decrement(B());
+	decrement(destination.high);
+	MEMPTR() = destination;
 	setFlag(F(), NF, value & Bit7);
 	setFlag(F(), HC | CF, (L() + value) > 0xff);
 	adjustParity<Z80>(F(), ((value + L()) & 7) ^ B());
 }
 
 void EightBit::Z80::outi() {
-	BUS().ADDRESS() = HL()++;
-	blockOut();
-	MEMPTR() = BC().word + 1;
+	blockOut(HL()++, BC());
+	++MEMPTR();
 }
 
 void EightBit::Z80::outd() {
-	BUS().ADDRESS() = HL()--;
-	blockOut();
-	MEMPTR() = BC().word - 1;
+	blockOut(HL()--, BC());
+	--MEMPTR();
 }
 
 bool EightBit::Z80::otir() {

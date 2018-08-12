@@ -380,13 +380,15 @@ namespace EightBit {
 		void ldd();
 		bool lddr();
 
+		void blockIn(register16_t& source, register16_t destination);
+
 		void ini();
 		bool inir();
 
 		void ind();
 		bool indr();
 
-		void blockOut();
+		void blockOut(const register16_t source, register16_t& destination);
 
 		void outi();
 		bool otir();
