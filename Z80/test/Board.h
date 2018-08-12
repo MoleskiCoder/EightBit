@@ -17,7 +17,6 @@ public:
 	Board(const Configuration& configuration);
 
 	EightBit::Z80& CPU() { return m_cpu; }
-	const EightBit::Z80& CPU() const { return m_cpu; }
 
 	void initialise();
 

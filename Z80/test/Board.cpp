@@ -17,7 +17,6 @@ void Board::initialise() {
 	//m_ram.load(romDirectory + "/zexdoc.com", 0x100);	// Cringle/Bartholomew
 	m_ram.load(romDirectory + "/zexall.com", 0x100);	// Cringle/Bartholomew
 	//m_ram.load(romDirectory + "/CPUTEST.COM", 0x100);	// SuperSoft diagnostics
-	//m_ram.load(romDirectory + "/TEST.COM", 0x100);		// Microcosm
 
 	poke(5, 0xc9);	// ret
 	m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Cpm, this, std::placeholders::_1));
@@ -79,5 +78,5 @@ void Board::Cpu_ExecutingInstruction_Debug(EightBit::Z80& cpu) {
 		<< EightBit::Disassembler::state(cpu)
 		<< "\t"
 		<< m_disassembler.disassemble(cpu)
-		<< '\n';
+		<< std::endl;
 }
