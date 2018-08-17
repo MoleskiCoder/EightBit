@@ -136,11 +136,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\inc\BigEndianProcessor.h" />
     <ClInclude Include="..\inc\Bus.h" />
     <ClInclude Include="..\inc\EightBitCompilerDefinitions.h" />
     <ClInclude Include="..\inc\EventArgs.h" />
     <ClInclude Include="..\inc\InputOutput.h" />
     <ClInclude Include="..\inc\IntelProcessor.h" />
+    <ClInclude Include="..\inc\LittleEndianProcessor.h" />
     <ClInclude Include="..\inc\Memory.h" />
     <ClInclude Include="..\inc\Processor.h" />
     <ClInclude Include="..\inc\Ram.h" />

@@ -7,11 +7,11 @@
 #include <cassert>
 
 #include <Bus.h>
-#include <Processor.h>
+#include <LittleEndianProcessor.h>
 #include <Signal.h>
 
 namespace EightBit {
-	class MOS6502 : public Processor {
+	class MOS6502 : public LittleEndianProcessor {
 	public:
 		enum StatusBits {
 			NF = Bit7,	// Negative
@@ -64,10 +64,6 @@ namespace EightBit {
 			adjustZero(datum);
 			adjustNegative(datum);
 		}
-
-		register16_t getWordPaged(uint8_t page, uint8_t offset);
-		uint8_t getBytePaged(uint8_t page, uint8_t offset);
-		void setBytePaged(uint8_t page, uint8_t offset, uint8_t value);
 
 		virtual void push(uint8_t value) final;
 		virtual uint8_t pop() final;

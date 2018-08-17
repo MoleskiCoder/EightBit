@@ -2,7 +2,7 @@
 #include "mos6502.h"
 
 EightBit::MOS6502::MOS6502(Bus& bus)
-: Processor(bus) {}
+: LittleEndianProcessor(bus) {}
 
 void EightBit::MOS6502::powerOn() {
 
@@ -48,21 +48,6 @@ int EightBit::MOS6502::step() {
 void EightBit::MOS6502::reset() {
 	Processor::reset();
 	jump(getWordPaged(0xff, RSTvector));
-}
-
-EightBit::register16_t EightBit::MOS6502::getWordPaged(uint8_t page, uint8_t offset) {
-	const auto low = getBytePaged(page, offset);
-	++BUS().ADDRESS().low;
-	const auto high = BUS().read();
-	return register16_t(low, high);
-}
-
-uint8_t EightBit::MOS6502::getBytePaged(uint8_t page, uint8_t offset) {
-	return BUS().read(register16_t(offset, page));
-}
-
-void EightBit::MOS6502::setBytePaged(uint8_t page, uint8_t offset, uint8_t value) {
-	BUS().write(register16_t(offset, page), value);
 }
 
 void EightBit::MOS6502::interrupt(uint8_t vector) {

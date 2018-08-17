@@ -97,7 +97,7 @@ namespace EightBit {
 
 		static void clearFlag(uint8_t& f, const int flag, const int condition) { clearFlag(f, flag, !!condition); }
 		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) { clearFlag(f, flag, !!condition); }
-		static void clearFlag(uint8_t& f, const int flag, const bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
+		static void clearFlag(uint8_t& f, const int flag, const bool condition) { setFlag(f, flag, !condition); }
 
 		Processor(Bus& memory);
 		virtual ~Processor() = default;
@@ -108,29 +108,31 @@ namespace EightBit {
 		void halt() { --PC();  lower(HALT()); }
 		void proceed() { ++PC(); raise(HALT()); }
 
+		uint8_t getBytePaged(uint8_t page, uint8_t offset) {
+			return BUS().read(register16_t(offset, page));
+		}
+
+		void setBytePaged(uint8_t page, uint8_t offset, uint8_t value) {
+			BUS().write(register16_t(offset, page), value);
+		}
+
 		uint8_t fetchByte() {
 			return BUS().read(PC()++);
 		}
 
-		register16_t fetchWord() {
-			const auto low = fetchByte();
-			const auto high = fetchByte();
-			return register16_t(low, high);
-		}
+		virtual register16_t getWord() = 0;
+		virtual void setWord(register16_t value) = 0;
+
+		virtual register16_t getWordPaged(uint8_t page, uint8_t offset) = 0;
+		virtual void setWordPaged(uint8_t page, uint8_t offset, register16_t value) = 0;
+
+		virtual register16_t fetchWord() = 0;
 
 		virtual void push(uint8_t value) = 0;
 		virtual uint8_t pop() = 0;
 
-		void pushWord(const register16_t value) {
-			push(value.high);
-			push(value.low);
-		}
-
-		register16_t popWord() {
-			const auto low = pop();
-			const auto high = pop();
-			return register16_t(low, high);
-		}
+		virtual void pushWord(const register16_t value) = 0;
+		virtual register16_t popWord() = 0;
 
 		void jump(const register16_t destination) {
 			PC() = destination;

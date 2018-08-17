@@ -4,13 +4,13 @@
 #include <array>
 
 #include "Bus.h"
-#include "Processor.h"
+#include "LittleEndianProcessor.h"
 #include "Register.h"
 
 #include "EightBitCompilerDefinitions.h"
 
 namespace EightBit {
-	class IntelProcessor : public Processor
+	class IntelProcessor : public LittleEndianProcessor
 	{
 	public:
 		struct opcode_decoded_t {
@@ -122,8 +122,8 @@ namespace EightBit {
 
 		//
 
-		register16_t getWord();
-		void setWord(register16_t value);
+		virtual register16_t getWord() final;
+		virtual void setWord(register16_t value) final;
 
 		//
 
