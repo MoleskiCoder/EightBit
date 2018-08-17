@@ -91,12 +91,12 @@ namespace EightBit {
 		static void clearFlag(uint8_t& f, const int flag) { f &= ~flag; }
 		static void setFlag(uint8_t& f, const int flag) { f |= flag; }
 
-		static void setFlag(uint8_t& f, const int flag, const int condition) { setFlag(f, flag, condition != 0); }
-		static void setFlag(uint8_t& f, const int flag, const uint32_t condition) { setFlag(f, flag, condition != 0); }
+		static void setFlag(uint8_t& f, const int flag, const int condition) { setFlag(f, flag, !!condition); }
+		static void setFlag(uint8_t& f, const int flag, const uint32_t condition) { setFlag(f, flag, !!condition); }
 		static void setFlag(uint8_t& f, const int flag, const bool condition) { condition ? setFlag(f, flag) : clearFlag(f, flag); }
 
-		static void clearFlag(uint8_t& f, const int flag, const int condition) { clearFlag(f, flag, condition != 0); }
-		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) { clearFlag(f, flag, condition != 0); }
+		static void clearFlag(uint8_t& f, const int flag, const int condition) { clearFlag(f, flag, !!condition); }
+		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) { clearFlag(f, flag, !!condition); }
 		static void clearFlag(uint8_t& f, const int flag, const bool condition) { condition ? clearFlag(f, flag) : setFlag(f, flag); }
 
 		Processor(Bus& memory);
@@ -141,7 +141,7 @@ namespace EightBit {
 			jump(destination);
 		}
 
-		void ret() {
+		virtual void ret() {
 			jump(popWord());
 		}
 

@@ -20,7 +20,7 @@ namespace EightBit {
 			uint8_t variable : 7;
 
 			refresh_t(const uint8_t value)
-			: high((value & Bit7) != 0),
+			: high(!!(value & Bit7)),
 			  variable(value & Mask7)
 			{ }
 

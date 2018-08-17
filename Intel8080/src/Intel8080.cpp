@@ -236,8 +236,7 @@ void EightBit::Intel8080::xhtl() {
 }
 
 void EightBit::Intel8080::writePort(uint8_t port) {
-	BUS().ADDRESS().low = port;
-	BUS().ADDRESS().high = A();
+	BUS().ADDRESS() = register16_t(port, A());
 	BUS().DATA() = A();
 	writePort();
 }
@@ -247,8 +246,7 @@ void EightBit::Intel8080::writePort() {
 }
 
 uint8_t EightBit::Intel8080::readPort(uint8_t port) {
-	BUS().ADDRESS().low = port;
-	BUS().ADDRESS().high = A();
+	BUS().ADDRESS() = register16_t(port, A());
 	return readPort();
 }
 
@@ -330,7 +328,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 					addCycles(7);
 					break;
 				case 2:	// LD (nn),HL
-					MEMPTR() = fetchWord();
+					BUS().ADDRESS() = fetchWord();
 					setWord(HL());
 					addCycles(16);
 					break;
@@ -354,7 +352,7 @@ void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
 					addCycles(7);
 					break;
 				case 2:	// LD HL,(nn)
-					MEMPTR() = fetchWord();
+					BUS().ADDRESS() = fetchWord();
 					HL() = getWord();
 					addCycles(16);
 					break;

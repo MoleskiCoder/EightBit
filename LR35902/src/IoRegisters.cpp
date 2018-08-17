@@ -130,8 +130,7 @@ void EightBit::GameBoy::IoRegisters::Bus_WrittenByte(EightBit::EventArgs) {
 	case SCX:
 		break;
 	case DMA:
-		m_dmaAddress.high = value;
-		m_dmaAddress.low = 0;
+		m_dmaAddress = register16_t(0, value);
 		m_dmaTransferActive = true;
 		break;
 	case LY:		// R/O
@@ -145,7 +144,7 @@ void EightBit::GameBoy::IoRegisters::Bus_WrittenByte(EightBit::EventArgs) {
 		break;
 
 	case BOOT_DISABLE:
-		m_disableBootRom = value != 0;
+		m_disableBootRom = !!value;
 		break;
 	}
 }

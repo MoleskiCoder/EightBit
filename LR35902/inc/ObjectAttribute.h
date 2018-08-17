@@ -21,10 +21,10 @@ namespace EightBit {
 
 			uint8_t priority() const { return flags() & Processor::Bit7; }
 
-			bool highPriority() const { return priority() != 0; }
-			bool lowPriority() const { return priority() == 0; }
-			bool flipY() const { return (flags() & Processor::Bit6) != 0; }
-			bool flipX() const { return (flags() & Processor::Bit5) != 0; }
+			bool highPriority() const { return !!priority(); }
+			bool lowPriority() const { return !priority(); }
+			bool flipY() const { return !!(flags() & Processor::Bit6); }
+			bool flipX() const { return !!(flags() & Processor::Bit5); }
 			int palette() const { return (flags() & Processor::Bit4) >> 3; }
 
 		private:

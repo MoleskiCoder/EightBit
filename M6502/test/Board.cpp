@@ -102,7 +102,7 @@ void Board::Cpu_ExecutingInstruction_Debug(EightBit::MOS6502& cpu) {
 
 void Board::Memory_ReadingByte_Input(EightBit::EventArgs) {
 	if (ADDRESS().word == m_configuration.getInputAddress()) {
-		if (DATA() != 0)
+		if (!!DATA())
 			write(0);
 	}
 }

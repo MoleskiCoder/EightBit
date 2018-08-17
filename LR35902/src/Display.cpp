@@ -90,7 +90,7 @@ void EightBit::GameBoy::Display::renderBackground() {
 
 	const auto palette = createPalette(IoRegisters::BGP);
 
-	const auto window = (m_control & IoRegisters::WindowEnable) != 0;
+	const auto window = !!(m_control & IoRegisters::WindowEnable);
 	const auto bgArea = (m_control & IoRegisters::BackgroundCodeAreaSelection) ? 0x1c00 : 0x1800;
 	const auto bgCharacters = (m_control & IoRegisters::BackgroundCharacterDataSelection) ? 0 : 0x800;
 

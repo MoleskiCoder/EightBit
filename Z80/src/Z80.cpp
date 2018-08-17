@@ -117,7 +117,6 @@ bool EightBit::Z80::jumpConditionalFlag(const int flag) {
 
 void EightBit::Z80::retn() {
 	ret();
-	MEMPTR() = PC();
 	IFF1() = IFF2();
 }
 
@@ -589,9 +588,7 @@ void EightBit::Z80::rld() {
 }
 
 void EightBit::Z80::writePort(const uint8_t port) {
-	BUS().ADDRESS().low = port;
-	BUS().ADDRESS().high = A();
-	MEMPTR() = BUS().ADDRESS();
+	MEMPTR() = BUS().ADDRESS() = register16_t(port, A());
 	BUS().DATA() = A();
 	writePort();
 	++MEMPTR().low;
@@ -602,9 +599,7 @@ void EightBit::Z80::writePort() {
 }
 
 uint8_t EightBit::Z80::readPort(const uint8_t port) {
-	BUS().ADDRESS().low = port;
-	BUS().ADDRESS().high = A();
-	MEMPTR() = BUS().ADDRESS();
+	MEMPTR() = BUS().ADDRESS() = register16_t(port, A());
 	++MEMPTR().low;
 	return readPort();
 }
@@ -640,9 +635,7 @@ int EightBit::Z80::step() {
 					addCycles(13);
 					return cycles();
 				case 2:
-					MEMPTR().low = BUS().DATA();
-					MEMPTR().high = IV();
-					call(MEMPTR());
+					call(MEMPTR() = register16_t(BUS().DATA(), IV()));
 					addCycles(19);
 					return cycles();
 				default:
@@ -843,7 +836,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			addCycles(15);
 			break;
 		case 3:	// Retrieve/store register pair from/to immediate address
-			MEMPTR() = fetchWord();
+			BUS().ADDRESS() = fetchWord();
 			switch (q) {
 			case 0: // LD (nn), rp[p]
 				setWord(RP(p));
@@ -955,7 +948,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				break;
 			case 7:	// LDDR
 				if (LIKELY(lddr())) {
-					MEMPTR()= --PC();
+					MEMPTR() = --PC();
 					--PC();
 					addCycles(5);
 				}
@@ -972,14 +965,14 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				break;
 			case 6:	// CPIR
 				if (LIKELY(cpir())) {
-					MEMPTR()= --PC();
+					MEMPTR() = --PC();
 					--PC();
 					addCycles(5);
 				}
 				break;
 			case 7:	// CPDR
 				if (LIKELY(cpdr())) {
-					MEMPTR()= --PC();
+					MEMPTR() = --PC();
 					--PC();
 					addCycles(5);
 				} else {
@@ -1115,7 +1108,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					addCycles(7);
 					break;
 				case 2:	// LD (nn),HL
-					MEMPTR() = fetchWord();
+					BUS().ADDRESS() = fetchWord();
 					setWord(HL2());
 					addCycles(16);
 					break;
@@ -1145,7 +1138,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					addCycles(7);
 					break;
 				case 2:	// LD HL,(nn)
-					MEMPTR() = fetchWord();
+					BUS().ADDRESS() = fetchWord();
 					HL2() = getWord();
 					addCycles(16);
 					break;
@@ -1334,7 +1327,6 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				switch (p) {
 				case 0:	// RET
 					ret();
-					MEMPTR() = PC();
 					addCycles(10);
 					break;
 				case 1:	// EXX

@@ -58,15 +58,11 @@ EightBit::register16_t EightBit::MOS6502::getWordPaged(uint8_t page, uint8_t off
 }
 
 uint8_t EightBit::MOS6502::getBytePaged(uint8_t page, uint8_t offset) {
-	BUS().ADDRESS().low = offset;
-	BUS().ADDRESS().high = page;
-	return BUS().read();
+	return BUS().read(register16_t(offset, page));
 }
 
 void EightBit::MOS6502::setBytePaged(uint8_t page, uint8_t offset, uint8_t value) {
-	BUS().ADDRESS().low = offset;
-	BUS().ADDRESS().high = page;
-	BUS().write(value);
+	BUS().write(register16_t(offset, page), value);
 }
 
 void EightBit::MOS6502::interrupt(uint8_t vector) {

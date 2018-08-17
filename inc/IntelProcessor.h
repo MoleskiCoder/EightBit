@@ -128,43 +128,43 @@ namespace EightBit {
 		//
 
 		void restart(const uint8_t address) {
-			MEMPTR().low = address;
-			MEMPTR().high = 0;
-			call(MEMPTR());
+			call(MEMPTR() = register16_t(address, 0));
 		}
 
 		bool callConditional(const int condition) {
 			MEMPTR() = fetchWord();
 			if (condition)
 				call(MEMPTR());
-			return condition != 0;
+			return !!condition;
 		}
 
-		bool jumpConditional(const int conditional) {
+		bool jumpConditional(const int condition) {
 			MEMPTR() = fetchWord();
-			if (conditional)
+			if (condition)
 				jump(MEMPTR());
-			return conditional != 0;
+			return !!condition;
 		}
 
 		bool returnConditional(const int condition) {
-			if (condition) {
+			if (condition)
 				ret();
-				MEMPTR() = PC();
-			}
-			return condition != 0;
+			return !!condition;
 		}
 
 		void jr(const int8_t offset) {
-			MEMPTR() = PC() + offset;
-			jump(MEMPTR());
+			jump(MEMPTR() = PC() + offset);
 		}
 
-		bool jrConditional(const int conditional) {
+		bool jrConditional(const int condition) {
 			const auto offset = fetchByte();
-			if (conditional)
+			if (condition)
 				jr(offset);
-			return conditional != 0;
+			return !!condition;
+		}
+
+		virtual void ret() final {
+			Processor::ret();
+			MEMPTR() = PC();
 		}
 
 	private:

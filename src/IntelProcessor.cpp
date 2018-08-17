@@ -21,14 +21,14 @@ uint8_t EightBit::IntelProcessor::pop() {
 }
 
 EightBit::register16_t EightBit::IntelProcessor::getWord() {
-	BUS().ADDRESS() = MEMPTR()++;
 	const auto low = BUS().read();
-	++BUS().ADDRESS();
+	MEMPTR() = ++BUS().ADDRESS();
 	const auto high = BUS().read();
 	return register16_t(low, high);
 }
 
 void EightBit::IntelProcessor::setWord(const register16_t value) {
-	BUS().write(MEMPTR()++, value.low);
-	BUS().write(++BUS().ADDRESS(), value.high);
+	BUS().write(value.low);
+	MEMPTR() = ++BUS().ADDRESS();
+	BUS().write(value.high);
 }
