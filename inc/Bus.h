@@ -43,7 +43,6 @@ namespace EightBit {
 			write(value);
 		}
 
-	protected:
 		virtual uint8_t& reference(uint16_t address) = 0;
 		uint8_t& reference() { return reference(ADDRESS().word); }
 
