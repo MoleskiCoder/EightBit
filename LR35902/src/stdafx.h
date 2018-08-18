@@ -30,7 +30,6 @@
 #include <IntelProcessor.h>
 #include <Register.h>
 #include <Signal.h>
-#include <Rom.h>
 #include <Ram.h>
 #include <Bus.h>
 

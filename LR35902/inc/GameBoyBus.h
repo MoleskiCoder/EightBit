@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 
-#include <Rom.h>
 #include <Ram.h>
 #include <Bus.h>
 #include <Register.h>

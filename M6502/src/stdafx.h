@@ -21,6 +21,6 @@
 #include <boost/regex.hpp>
 
 #include <Bus.h>
-#include <Processor.h>
+#include <LittleEndianProcessor.h>
 #include <Signal.h>
 #include <EventArgs.h>
