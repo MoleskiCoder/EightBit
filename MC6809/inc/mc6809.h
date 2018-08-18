@@ -71,9 +71,10 @@ namespace EightBit {
 		const uint8_t SWI3vector = 0xf2;
 		const uint8_t RESERVEDvector = 0xf0;
 
-		uint8_t& AM_direct() {
+		//
+
+		void Address_direct() {
 			BUS().ADDRESS() = register16_t(fetchByte(), DP());
-			return BUS().reference();
 		}
 
 		register16_t& RR(int which) {
@@ -93,7 +94,7 @@ namespace EightBit {
 			}
 		}
 
-		uint8_t& AM_indexed() {
+		void Address_indexed() {
 			const auto type = fetchByte();
 			auto& rr = RR(type & (Bit6 | Bit5));
 			switch (type & Bit7) {
@@ -167,16 +168,33 @@ namespace EightBit {
 			default:
 				UNREACHABLE;
 			}
-			return BUS().reference();
 		}
 
-		uint8_t& AM_extended() {
+		void Address_extended() {
 			BUS().ADDRESS() = fetchWord();
-			return BUS().reference();
 		}
+
+		//
+
+		uint8_t AM_direct() {
+			Address_direct();
+			return BUS().read();
+		}
+
+		uint8_t AM_indexed() {
+			Address_indexed();
+			return BUS().read();
+		}
+
+		uint8_t AM_extended() {
+			AM_extended();
+			return BUS().read();
+		}
+
+		//
 
 		void abx();
-		void neg(uint8_t& operand);
+		uint8_t neg(uint8_t operand);
 
 		register16_t m_d;
 		register16_t m_x;
