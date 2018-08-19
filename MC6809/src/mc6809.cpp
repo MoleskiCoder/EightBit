@@ -60,6 +60,19 @@ int EightBit::mc6809::execute(uint8_t cell) {
 	case 0xe3: addCycles(6);	D() = add(D(), AM_indexed_word());		break;		// ADD (ADDD, indexed)
 	case 0xf3: addCycles(7);	D() = add(D(), AM_extended_word());		break;		// ADD (ADDD, extended)
 
+	// AND
+	case 0x84:	addCycles(2);	A() = andr(A(), AM_immediate_byte());	break;		// AND (ANDA, immediate)
+	case 0x94:	addCycles(4);	A() = andr(A(), AM_direct_byte());		break;		// AND (ANDA, direct)
+	case 0xa4:	addCycles(4);	A() = andr(A(), AM_indexed_byte());		break;		// AND (ANDA, indexed)
+	case 0xb4:	addCycles(5);	A() = andr(A(), AM_extended_byte());	break;		// AND (ANDA, extended)
+
+	case 0xc4:	addCycles(2);	B() = andr(B(), AM_immediate_byte());	break;		// AND (ANDB, immediate)
+	case 0xd4:	addCycles(4);	B() = andr(B(), AM_direct_byte());		break;		// AND (ANDB, direct)
+	case 0xe4:	addCycles(4);	B() = andr(B(), AM_indexed_byte());		break;		// AND (ANDB, indexed)
+	case 0xf4:	addCycles(5);	B() = andr(B(), AM_extended_byte());	break;		// AND (ANDB, extended)
+
+	case 0x1c:	addCycles(3);	CC() = andr(CC(), AM_immediate_byte());	break;		// AND (ANDCC, immediate)
+
 	// NEG
 	case 0x00:	addCycles(6);	BUS().write(neg(AM_direct_byte()));		break;		// NEG (direct)
 	case 0x40:	addCycles(2);	A() = neg(A());							break;		// NEG (NEGA, inherent)
@@ -250,5 +263,13 @@ EightBit::register16_t EightBit::mc6809::add(register16_t operand, register16_t 
 	setFlag(CC(), NF, result.high & Bit7);
 	setFlag(CC(), ZF, result.word == 0);
 	setFlag(CC(), CF, addition & Bit16);
+	return result;
+}
+
+uint8_t EightBit::mc6809::andr(uint8_t operand, uint8_t data) {
+	const auto result = operand & data;
+	clearFlag(CC(), VF);
+	setFlag(CC(), NF, result & Bit7);
+	setFlag(CC(), ZF, result == 0);
 	return result;
 }
