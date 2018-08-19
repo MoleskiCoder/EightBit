@@ -121,6 +121,7 @@ namespace EightBit {
 		uint8_t andr(uint8_t operand, uint8_t data);
 		uint8_t asl(uint8_t operand);
 		uint8_t asr(uint8_t operand);
+		uint8_t clr();
 		uint8_t neg(uint8_t operand);
 
 		register16_t m_d;

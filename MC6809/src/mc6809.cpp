@@ -98,6 +98,13 @@ int EightBit::mc6809::execute(uint8_t cell) {
 	case 0xe5:	addCycles(4);	andr(B(), AM_indexed_byte());			break;		// BIT (BITB, indexed)
 	case 0xf5:	addCycles(5);	andr(B(), AM_extended_byte());			break;		// BIT (BITB, extended)
 
+	// CLR
+	case 0x0f:	addCycles(6);	Address_direct(); BUS().write(clr());	break;		// CLR (CLR, direct)
+	case 0x4f:	addCycles(2);	A() = clr();							break;		// CLR (CLRA, implied)
+	case 0x5f:	addCycles(2);	B() = clr();							break;		// CLR (CLRB, implied)
+	case 0x6f:	addCycles(6);	Address_indexed(); BUS().write(clr());	break;		// CLR (CLR, indexed)
+	case 0x7f:	addCycles(7);	Address_extended(); BUS().write(clr());	break;		// CLR (CLR, extended)
+
 	// NEG
 	case 0x00:	addCycles(6);	BUS().write(neg(AM_direct_byte()));		break;		// NEG (direct)
 	case 0x40:	addCycles(2);	A() = neg(A());							break;		// NEG (NEGA, inherent)
@@ -310,4 +317,10 @@ uint8_t EightBit::mc6809::asr(uint8_t operand) {
 	operand >>= 1;
 	adjustNZ(operand);
 	return operand;
+}
+
+uint8_t EightBit::mc6809::clr() {
+	clearFlag(CC(), HF | ZF | VF | CF);
+	setFlag(CC(), ZF);
+	return 0;
 }
