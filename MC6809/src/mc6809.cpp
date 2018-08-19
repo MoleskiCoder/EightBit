@@ -87,6 +87,17 @@ int EightBit::mc6809::execute(uint8_t cell) {
 	case 0x67:	addCycles(6);	BUS().write(asr(AM_indexed_byte()));	break;		// ASR (ASR, indexed)
 	case 0x77:	addCycles(7);	BUS().write(asr(AM_extended_byte()));	break;		// ASR (ASR, extended)
 
+	// BIT
+	case 0x85:	addCycles(2);	andr(A(), AM_immediate_byte());			break;		// BIT (BITA, immediate)
+	case 0x95:	addCycles(4);	andr(A(), AM_direct_byte());			break;		// BIT (BITA, direct)
+	case 0xA5:	addCycles(4);	andr(A(), AM_indexed_byte());			break;		// BIT (BITA, indexed)
+	case 0xB5:	addCycles(5);	andr(A(), AM_extended_byte());			break;		// BIT (BITA, extended)
+
+	case 0xc5:	addCycles(2);	andr(B(), AM_immediate_byte());			break;		// BIT (BITB, immediate)
+	case 0xd5:	addCycles(4);	andr(B(), AM_direct_byte());			break;		// BIT (BITB, direct)
+	case 0xe5:	addCycles(4);	andr(B(), AM_indexed_byte());			break;		// BIT (BITB, indexed)
+	case 0xf5:	addCycles(5);	andr(B(), AM_extended_byte());			break;		// BIT (BITB, extended)
+
 	// NEG
 	case 0x00:	addCycles(6);	BUS().write(neg(AM_direct_byte()));		break;		// NEG (direct)
 	case 0x40:	addCycles(2);	A() = neg(A());							break;		// NEG (NEGA, inherent)
