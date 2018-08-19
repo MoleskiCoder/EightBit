@@ -176,6 +176,10 @@ namespace EightBit {
 
 		//
 
+		uint8_t AM_immediate() {
+			return fetchByte();
+		}
+
 		uint8_t AM_direct() {
 			Address_direct();
 			return BUS().read();
@@ -187,13 +191,15 @@ namespace EightBit {
 		}
 
 		uint8_t AM_extended() {
-			AM_extended();
+			Address_extended();
 			return BUS().read();
 		}
 
 		//
 
 		void abx();
+		uint8_t adc(uint8_t operand, uint8_t data);
+		uint8_t add(uint8_t operand, uint8_t data, int carry = 0);
 		uint8_t neg(uint8_t operand);
 
 		register16_t m_d;
