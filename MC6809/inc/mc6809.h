@@ -96,14 +96,20 @@ namespace EightBit {
 		void Address_extended();
 
 		// Addressing mode readers
-		uint8_t AM_immediate();
-		uint8_t AM_direct();
-		uint8_t AM_indexed();
-		uint8_t AM_extended();
+		uint8_t AM_immediate_byte();
+		uint8_t AM_direct_byte();
+		uint8_t AM_indexed_byte();
+		uint8_t AM_extended_byte();
+
+		register16_t AM_immediate_word();
+		register16_t AM_direct_word();
+		register16_t AM_indexed_word();
+		register16_t AM_extended_word();
 
 		void abx();
 		uint8_t adc(uint8_t operand, uint8_t data);
 		uint8_t add(uint8_t operand, uint8_t data, int carry = 0);
+		register16_t add(register16_t operand, register16_t data);
 		uint8_t neg(uint8_t operand);
 
 		register16_t m_d;

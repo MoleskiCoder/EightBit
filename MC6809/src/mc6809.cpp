@@ -31,24 +31,41 @@ int EightBit::mc6809::execute(uint8_t cell) {
 	switch (cell) {
 
 	// ABX
-	case 0x3a:	addCycles(3);	abx();								break;		// ABX (inherent)
+	case 0x3a:	addCycles(3);	abx();									break;		// ABX (inherent)
 
 	// ADC
-	case 0x89:	addCycles(2);	A() = adc(A(), AM_immediate());		break;		// ADC (ADCA, immediate)
-	case 0x99:	addCycles(4);	A() = adc(A(), AM_direct());		break;		// ADC (ADCA, direct)
-	case 0xA9:	addCycles(4);	A() = adc(A(), AM_indexed());		break;		// ADC (ADCA, indexed)
-	case 0xB9:	addCycles(4);	A() = adc(A(), AM_extended());		break;		// ADC (ADCA, extended)
-	case 0xC9:	addCycles(2);	B() = adc(B(), AM_immediate());		break;		// ADC (ADCB, immediate)
-	case 0xD9:	addCycles(4);	B() = adc(B(), AM_direct());		break;		// ADC (ADCB, direct)
-	case 0xE9:	addCycles(4);	B() = adc(B(), AM_indexed());		break;		// ADC (ADCB, indexed)
-	case 0xF9:	addCycles(4);	B() = adc(B(), AM_extended());		break;		// ADC (ADCB, extended)
+	case 0x89:	addCycles(2);	A() = adc(A(), AM_immediate_byte());	break;		// ADC (ADCA, immediate)
+	case 0x99:	addCycles(4);	A() = adc(A(), AM_direct_byte());		break;		// ADC (ADCA, direct)
+	case 0xA9:	addCycles(4);	A() = adc(A(), AM_indexed_byte());		break;		// ADC (ADCA, indexed)
+	case 0xB9:	addCycles(4);	A() = adc(A(), AM_extended_byte());		break;		// ADC (ADCA, extended)
+
+	case 0xC9:	addCycles(2);	B() = adc(B(), AM_immediate_byte());	break;		// ADC (ADCB, immediate)
+	case 0xD9:	addCycles(4);	B() = adc(B(), AM_direct_byte());		break;		// ADC (ADCB, direct)
+	case 0xE9:	addCycles(4);	B() = adc(B(), AM_indexed_byte());		break;		// ADC (ADCB, indexed)
+	case 0xF9:	addCycles(4);	B() = adc(B(), AM_extended_byte());		break;		// ADC (ADCB, extended)
+
+	// ADD
+	case 0x8b: addCycles(2);	A() = add(A(), AM_immediate_byte());	break;		// ADD (ADDA, immediate)
+	case 0x9b: addCycles(4);	A() = add(A(), AM_direct_byte());		break;		// ADD (ADDA, direct)
+	case 0xab: addCycles(4);	A() = add(A(), AM_indexed_byte());		break;		// ADD (ADDA, indexed)
+	case 0xbb: addCycles(5);	A() = add(A(), AM_extended_byte());		break;		// ADD (ADDA, extended)
+
+	case 0xcb: addCycles(2);	B() = add(B(), AM_immediate_byte());	break;		// ADD (ADDB, immediate)
+	case 0xdb: addCycles(4);	B() = add(B(), AM_direct_byte());		break;		// ADD (ADDB, direct)
+	case 0xeb: addCycles(4);	B() = add(B(), AM_indexed_byte());		break;		// ADD (ADDB, indexed)
+	case 0xfb: addCycles(5);	B() = add(B(), AM_extended_byte());		break;		// ADD (ADDB, extended)
+
+	case 0xc3: addCycles(4);	D() = add(D(), AM_immediate_word());	break;		// ADD (ADDD, immediate)
+	case 0xd3: addCycles(6);	D() = add(D(), AM_direct_word());		break;		// ADD (ADDD, direct)
+	case 0xe3: addCycles(6);	D() = add(D(), AM_indexed_word());		break;		// ADD (ADDD, indexed)
+	case 0xf3: addCycles(7);	D() = add(D(), AM_extended_word());		break;		// ADD (ADDD, extended)
 
 	// NEG
-	case 0x00:	addCycles(6);	BUS().write(neg(AM_direct()));		break;		// NEG (direct)
-	case 0x40:	addCycles(2);	A() = neg(A());						break;		// NEG (NEGA, inherent)
-	case 0x50:	addCycles(2);	B() = neg(B());						break;		// NEG (NEGB, inherent)
-	case 0x60:	addCycles(6);	BUS().write(neg(AM_indexed()));		break;		// NEG (indexed)
-	case 0x70:	addCycles(7);	BUS().write(neg(AM_extended()));	break;		// NEG (extended)
+	case 0x00:	addCycles(6);	BUS().write(neg(AM_direct_byte()));		break;		// NEG (direct)
+	case 0x40:	addCycles(2);	A() = neg(A());							break;		// NEG (NEGA, inherent)
+	case 0x50:	addCycles(2);	B() = neg(B());							break;		// NEG (NEGB, inherent)
+	case 0x60:	addCycles(6);	BUS().write(neg(AM_indexed_byte()));	break;		// NEG (indexed)
+	case 0x70:	addCycles(7);	BUS().write(neg(AM_extended_byte()));	break;		// NEG (extended)
 
 	default:
 		UNREACHABLE;
@@ -159,23 +176,44 @@ void EightBit::mc6809::Address_extended() {
 
 //
 
-uint8_t EightBit::mc6809::AM_immediate() {
+uint8_t EightBit::mc6809::AM_immediate_byte() {
 	return fetchByte();
 }
 
-uint8_t EightBit::mc6809::AM_direct() {
+uint8_t EightBit::mc6809::AM_direct_byte() {
 	Address_direct();
 	return BUS().read();
 }
 
-uint8_t EightBit::mc6809::AM_indexed() {
+uint8_t EightBit::mc6809::AM_indexed_byte() {
 	Address_indexed();
 	return BUS().read();
 }
 
-uint8_t EightBit::mc6809::AM_extended() {
+uint8_t EightBit::mc6809::AM_extended_byte() {
 	Address_extended();
 	return BUS().read();
+}
+
+//
+
+EightBit::register16_t EightBit::mc6809::AM_immediate_word() {
+	return fetchWord();
+}
+
+EightBit::register16_t EightBit::mc6809::AM_direct_word() {
+	Address_direct();
+	return getWord();
+}
+
+EightBit::register16_t EightBit::mc6809::AM_indexed_word() {
+	Address_indexed();
+	return getWord();
+}
+
+EightBit::register16_t EightBit::mc6809::AM_extended_word() {
+	Address_extended();
+	return getWord();
 }
 
 //
@@ -204,4 +242,13 @@ uint8_t EightBit::mc6809::add(uint8_t operand, uint8_t data, int carry) {
 	setFlag(CC(), ZF, result.low == 0);
 	setFlag(CC(), CF, result.word & Bit8);
 	return result.low;
+}
+
+EightBit::register16_t EightBit::mc6809::add(register16_t operand, register16_t data) {
+	const uint32_t addition = operand.word + data.word;
+	const register16_t result = addition;
+	setFlag(CC(), NF, result.high & Bit7);
+	setFlag(CC(), ZF, result.word == 0);
+	setFlag(CC(), CF, addition & Bit16);
+	return result;
 }
