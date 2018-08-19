@@ -106,11 +106,21 @@ namespace EightBit {
 		register16_t AM_indexed_word();
 		register16_t AM_extended_word();
 
+		void adjustZero(uint8_t datum) { clearFlag(CC(), ZF, datum); }
+		void adjustNegative(uint8_t datum) { setFlag(CC(), NF, datum & NF); }
+		
+		void adjustNZ(uint8_t datum) {
+			adjustZero(datum);
+			adjustNegative(datum);
+		}
+
 		void abx();
 		uint8_t adc(uint8_t operand, uint8_t data);
 		uint8_t add(uint8_t operand, uint8_t data, int carry = 0);
 		register16_t add(register16_t operand, register16_t data);
 		uint8_t andr(uint8_t operand, uint8_t data);
+		uint8_t asl(uint8_t operand);
+		uint8_t asr(uint8_t operand);
 		uint8_t neg(uint8_t operand);
 
 		register16_t m_d;

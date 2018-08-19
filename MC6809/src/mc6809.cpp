@@ -73,6 +73,20 @@ int EightBit::mc6809::execute(uint8_t cell) {
 
 	case 0x1c:	addCycles(3);	CC() = andr(CC(), AM_immediate_byte());	break;		// AND (ANDCC, immediate)
 
+	// ASL
+	case 0x08:	addCycles(6);	BUS().write(asl(AM_direct_byte()));		break;		// ASL (ASL, direct)
+	case 0x48:	addCycles(2);	A() = asl(A());							break;		// ASL (ASLA, inherent)
+	case 0x58:	addCycles(2);	B() = asl(B());							break;		// ASL (ASLB, inherent)
+	case 0x68:	addCycles(6);	BUS().write(asl(AM_indexed_byte()));	break;		// ASL (ASL, indexed)
+	case 0x78:	addCycles(7);	BUS().write(asl(AM_extended_byte()));	break;		// ASL (ASL, extended)
+
+	// ASR
+	case 0x07:	addCycles(6);	BUS().write(asr(AM_direct_byte()));		break;		// ASR (ASR, direct)
+	case 0x47:	addCycles(2);	A() = asr(A());							break;		// ASR (ASRA, inherent)
+	case 0x57:	addCycles(2);	B() = asr(B());							break;		// ASR (ASRB, inherent)
+	case 0x67:	addCycles(6);	BUS().write(asr(AM_indexed_byte()));	break;		// ASR (ASR, indexed)
+	case 0x77:	addCycles(7);	BUS().write(asr(AM_extended_byte()));	break;		// ASR (ASR, extended)
+
 	// NEG
 	case 0x00:	addCycles(6);	BUS().write(neg(AM_direct_byte()));		break;		// NEG (direct)
 	case 0x40:	addCycles(2);	A() = neg(A());							break;		// NEG (NEGA, inherent)
@@ -239,8 +253,7 @@ uint8_t EightBit::mc6809::neg(uint8_t operand) {
 	setFlag(CC(), VF, operand == Bit7);
 	const register16_t result = 0 - operand;
 	operand = result.low;
-	setFlag(CC(), NF, operand & Bit7);
-	setFlag(CC(), ZF, operand == 0);
+	adjustNZ(operand);
 	setFlag(CC(), CF, result.word & Bit8);
 	return operand;
 }
@@ -251,8 +264,7 @@ uint8_t EightBit::mc6809::adc(uint8_t operand, uint8_t data) {
 
 uint8_t EightBit::mc6809::add(uint8_t operand, uint8_t data, int carry) {
 	const register16_t result = operand + data + carry;
-	setFlag(CC(), NF, result.low & Bit7);
-	setFlag(CC(), ZF, result.low == 0);
+	adjustNZ(result.low);
 	setFlag(CC(), CF, result.word & Bit8);
 	return result.low;
 }
@@ -269,7 +281,22 @@ EightBit::register16_t EightBit::mc6809::add(register16_t operand, register16_t 
 uint8_t EightBit::mc6809::andr(uint8_t operand, uint8_t data) {
 	const auto result = operand & data;
 	clearFlag(CC(), VF);
-	setFlag(CC(), NF, result & Bit7);
-	setFlag(CC(), ZF, result == 0);
+	adjustNZ(result);
 	return result;
+}
+
+uint8_t EightBit::mc6809::asl(uint8_t operand) {
+	setFlag(CC(), CF, operand & Bit7);
+	operand <<= 1;
+	adjustNZ(operand);
+	const auto overflow = (CC() & CF) ^ ((CC() & NF) >> 3);
+	setFlag(CC(), overflow);
+	return operand;
+}
+
+uint8_t EightBit::mc6809::asr(uint8_t operand) {
+	setFlag(CC(), CF, operand & Bit7);
+	operand >>= 1;
+	adjustNZ(operand);
+	return operand;
 }
