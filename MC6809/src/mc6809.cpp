@@ -51,11 +51,131 @@ int EightBit::mc6809::execute(uint8_t cell) {
 	case 0x70:	addCycles(7);	BUS().write(neg(AM_extended()));	break;		// NEG (extended)
 
 	default:
-		ASSUME(false);
+		UNREACHABLE;
 	}
 
 	ASSUME(cycles() > 0);
 	return cycles();
+}
+
+//
+
+EightBit::register16_t& EightBit::mc6809::RR(int which) {
+	ASSUME(which >= 0);
+	ASSUME(which <= 3);
+	switch (which) {
+	case 0b00:
+		return X();
+	case 0b01:
+		return Y();
+	case 0b10:
+		return U();
+	case 0b11:
+		return S();
+	default:
+		UNREACHABLE;
+	}
+}
+
+void EightBit::mc6809::Address_direct() {
+	BUS().ADDRESS() = register16_t(fetchByte(), DP());
+}
+
+void EightBit::mc6809::Address_indexed() {
+	const auto type = fetchByte();
+	auto& r = RR((type & (Bit6 | Bit5)) >> 5);
+
+	if (type & Bit7) {
+		const auto indirect = type & Bit4;
+		switch (type & Mask4) {
+		case 0b0000:	// ,R+
+			ASSUME(!indirect);
+			addCycles(2);
+			BUS().ADDRESS() = r++;
+			break;
+		case 0b0001:	// ,R++
+			addCycles(3);
+			BUS().ADDRESS() = r;
+			r += 2;
+			break;
+		case 0b0010:	// ,-R
+			ASSUME(!indirect);
+			addCycles(2);
+			BUS().ADDRESS() = --r;
+			break;
+		case 0b0011:	// ,--R
+			addCycles(3);
+			r -= 2;
+			BUS().ADDRESS() = r;
+			break;
+		case 0b0100:	// ,R
+			BUS().ADDRESS() = r;
+			break;
+		case 0b0101:	// B,R
+			addCycles(1);
+			BUS().ADDRESS() = r + (int8_t)B();
+			break;
+		case 0b0110:	// A,R
+			addCycles(1);
+			BUS().ADDRESS() = r + (int8_t)A();
+			break;
+		case 0b1000:	// n,R (eight-bit)
+			addCycles(1);
+			BUS().ADDRESS() = r + (int8_t)fetchByte();
+			break;
+		case 0b1001:	// n,R (sixteen-bit)
+			addCycles(4);
+			BUS().ADDRESS() = r + (int16_t)fetchWord().word;
+			break;
+		case 0b1011:	// D,R
+			addCycles(4);
+			BUS().ADDRESS() = r + D();
+			break;
+		case 0b1100:	// n,PCR (eight-bit)
+			addCycles(1);
+			BUS().ADDRESS() = PC() + (int8_t)fetchByte();
+			break;
+		case 0b1101:	// n,PCR (sixteen-bit)
+			addCycles(1);
+			BUS().ADDRESS() = PC() + (int16_t)fetchWord().word;
+			break;
+		default:
+			UNREACHABLE;
+		}
+		if (indirect) {
+			addCycles(3);
+			BUS().ADDRESS() = fetchWord();
+		}
+	} else {
+		// EA = ,R + 5-bit offset
+		addCycle();
+		BUS().ADDRESS() = r + (type & Mask5);
+	}
+}
+
+void EightBit::mc6809::Address_extended() {
+	BUS().ADDRESS() = fetchWord();
+}
+
+//
+
+uint8_t EightBit::mc6809::AM_immediate() {
+	return fetchByte();
+}
+
+uint8_t EightBit::mc6809::AM_direct() {
+	Address_direct();
+	return BUS().read();
+}
+
+uint8_t EightBit::mc6809::AM_indexed() {
+	Address_indexed();
+	return BUS().read();
+}
+
+uint8_t EightBit::mc6809::AM_extended() {
+	Address_extended();
+	return BUS().read();
 }
 
 //
