@@ -152,7 +152,7 @@ namespace EightBit {
 
 		void adjustAddition(uint16_t before, uint16_t data, uint32_t after) {
 			const register16_t result = after & Mask16;
-			adjustNZ(result);
+			adjustNZ(result.word);
 			adjustCarry(after);
 			adjustOverflow(before, data, result.word);
 		}
@@ -166,7 +166,7 @@ namespace EightBit {
 
 		void adjustSubtraction(uint16_t before, uint16_t data, uint32_t after) {
 			const register16_t result = after & Mask16;
-			adjustNZ(result);
+			adjustNZ(result.word);
 			adjustBorrow(after);
 			adjustOverflow(before, data, result.word);
 		}
