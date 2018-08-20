@@ -143,6 +143,34 @@ namespace EightBit {
 			setFlag(CC(), VF, (before ^ data) & (before ^ after) & Bit15);
 		}
 
+		void adjustAddition(uint8_t before, uint8_t data, register16_t after) {
+			const auto result = after.low;
+			adjustNZ(result);
+			adjustCarry(after.word);
+			adjustOverflow(before, data, result);
+		}
+
+		void adjustAddition(uint16_t before, uint16_t data, uint32_t after) {
+			const register16_t result = after & Mask16;
+			adjustNZ(result);
+			adjustCarry(after);
+			adjustOverflow(before, data, result.word);
+		}
+
+		void adjustSubtraction(uint8_t before, uint8_t data, register16_t after) {
+			const auto result = after.low;
+			adjustNZ(result);
+			adjustBorrow(after.word);
+			adjustOverflow(before, data, result);
+		}
+
+		void adjustSubtraction(uint16_t before, uint16_t data, uint32_t after) {
+			const register16_t result = after & Mask16;
+			adjustNZ(result);
+			adjustBorrow(after);
+			adjustOverflow(before, data, result.word);
+		}
+
 		// Instruction implementations
 
 		void abx();

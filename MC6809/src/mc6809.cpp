@@ -386,20 +386,14 @@ uint8_t EightBit::mc6809::adc(uint8_t operand, uint8_t data) {
 
 uint8_t EightBit::mc6809::add(uint8_t operand, uint8_t data, int carry) {
 	const register16_t addition = operand + data + carry;
-	const auto result = addition.low;
-	adjustNZ(result);
-	adjustCarry(addition.word);
-	adjustOverflow(operand, data, result);
-	return result;
+	adjustAddition(operand, data, addition);
+	return addition.low;
 }
 
 EightBit::register16_t EightBit::mc6809::add(register16_t operand, register16_t data) {
 	const uint32_t addition = operand.word + data.word;
-	const register16_t result = addition & Mask16;
-	adjustNZ(result.word);
-	adjustCarry(addition);
-	adjustOverflow(operand.word, data.word, result.word);
-	return result;
+	adjustAddition(operand.word, data.word, addition);
+	return addition & Mask16;
 }
 
 uint8_t EightBit::mc6809::andr(uint8_t operand, uint8_t data) {
@@ -433,16 +427,10 @@ uint8_t EightBit::mc6809::clr() {
 
 void EightBit::mc6809::cmp(const uint8_t operand, const uint8_t data) {
 	const register16_t difference = operand - data;
-	const auto result = difference.low;
-	adjustNZ(result);
-	adjustBorrow(difference.word);
-	adjustOverflow(operand, data, result);
+	adjustSubtraction(operand, data, difference);
 }
 
 void EightBit::mc6809::cmp(register16_t operand, register16_t data) {
 	const uint32_t difference = operand.word - data.word;
-	const register16_t result = difference & Mask16;
-	adjustNZ(result.word);
-	adjustBorrow(difference);
-	adjustOverflow(operand.word, data.word, result.word);
+	adjustSubtraction(operand.word, data.word, difference);
 }
