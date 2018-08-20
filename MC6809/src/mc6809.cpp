@@ -376,7 +376,7 @@ uint8_t EightBit::mc6809::neg(uint8_t operand) {
 	const register16_t result = 0 - operand;
 	operand = result.low;
 	adjustNZ(operand);
-	setFlag(CC(), CF, result.word & Bit8);
+	adjustCarry(result.word);
 	return operand;
 }
 
