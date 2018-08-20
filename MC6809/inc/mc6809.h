@@ -78,41 +78,72 @@ namespace EightBit {
 		virtual void reset() final;
 
 	private:
-		const uint8_t RESETvector = 0xfe;
-		const uint8_t NMIvector = 0xfc;
-		const uint8_t SWIvector = 0xfa;
-		const uint8_t IRQvector = 0xf8;
-		const uint8_t FIRQvector = 0xf6;
-		const uint8_t SWI2vector = 0xf4;
-		const uint8_t SWI3vector = 0xf2;
-		const uint8_t RESERVEDvector = 0xf0;
+		const uint8_t RESETvector = 0xfe;		// RESET vector
+		const uint8_t NMIvector = 0xfc;			// NMI vector
+		const uint8_t SWIvector = 0xfa;			// SWI vector
+		const uint8_t IRQvector = 0xf8;			// IRQ vector
+		const uint8_t FIRQvector = 0xf6;		// FIRQ vector
+		const uint8_t SWI2vector = 0xf4;		// SWI2 vector
+		const uint8_t SWI3vector = 0xf2;		// SWI3 vector
+		const uint8_t RESERVEDvector = 0xf0;	// RESERVED vector
+
+		// Execution helpers
+
+		int executeUnprefixed(uint8_t opcode);
+		int execute10(uint8_t opcode);
+		int execute11(uint8_t opcode);
 
 		// Register selection for "indexed"
 		register16_t& RR(int which);
 
 		// Addressing modes
-		void Address_direct();
-		void Address_indexed();
-		void Address_extended();
+
+		void Address_direct();		// DP + fetched offset
+		void Address_indexed();		// Indexed address, complicated!
+		void Address_extended();	// Fetched address
 
 		// Addressing mode readers
+
+		// Single byte readers
+
 		uint8_t AM_immediate_byte();
 		uint8_t AM_direct_byte();
 		uint8_t AM_indexed_byte();
 		uint8_t AM_extended_byte();
+
+		// Word readers
 
 		register16_t AM_immediate_word();
 		register16_t AM_direct_word();
 		register16_t AM_indexed_word();
 		register16_t AM_extended_word();
 
-		void adjustZero(uint8_t datum) { clearFlag(CC(), ZF, datum); }
-		void adjustNegative(uint8_t datum) { setFlag(CC(), NF, datum & NF); }
-		
-		void adjustNZ(uint8_t datum) {
+		// Flag adjustment
+
+		template<class T> void adjustZero(T datum) { clearFlag(CC(), ZF, datum); }
+		void adjustNegative(uint8_t datum) { setFlag(CC(), NF, datum & Bit7); }
+		void adjustNegative(uint16_t datum) { setFlag(CC(), NF, datum & Bit15); }
+
+		template<class T> void adjustNZ(T datum) {
 			adjustZero(datum);
 			adjustNegative(datum);
 		}
+
+		void adjustCarry(uint16_t datum) { setFlag(CC(), CF, datum & Bit8); }		// 8-bit addition
+		void adjustCarry(uint32_t datum) { setFlag(CC(), CF, datum & Bit16); }		// 16-bit addition
+
+		void adjustBorrow(uint16_t datum) { clearFlag(CC(), CF, datum & Bit8); }	// 8-bit subtraction
+		void adjustBorrow(uint32_t datum) { clearFlag(CC(), CF, datum & Bit16); }	// 16-bit subtraction
+
+		void adjustOverflow(uint8_t before, uint8_t data, uint8_t after) {
+			setFlag(CC(), VF, (before ^ data) & (before ^ after) & Bit7);
+		}
+
+		void adjustOverflow(uint16_t before, uint16_t data, uint16_t after) {
+			setFlag(CC(), VF, (before ^ data) & (before ^ after) & Bit15);
+		}
+
+		// Instruction implementations
 
 		void abx();
 		uint8_t adc(uint8_t operand, uint8_t data);
@@ -122,6 +153,8 @@ namespace EightBit {
 		uint8_t asl(uint8_t operand);
 		uint8_t asr(uint8_t operand);
 		uint8_t clr();
+		void cmp(uint8_t operand, uint8_t data);
+		void cmp(register16_t operand, register16_t data);
 		uint8_t neg(uint8_t operand);
 
 		register16_t m_d;
@@ -134,5 +167,8 @@ namespace EightBit {
 		uint8_t m_cc;
 
 		PinLevel m_firq;
+
+		bool m_prefix10 = false;
+		bool m_prefix11 = false;
 	};
 }

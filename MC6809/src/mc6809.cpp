@@ -23,12 +23,28 @@ void EightBit::mc6809::reset() {
 	Processor::reset();
 	DP() = 0;	// Reestablish zero page
 	CC() |= (IF & FF);	// Disable interrupts
+	m_prefix10 = m_prefix11 = false;
 	jump(getWordPaged(0xff, RESETvector));
 }
 
-int EightBit::mc6809::execute(uint8_t cell) {
+int EightBit::mc6809::execute(uint8_t opcode) {
+	if (m_prefix10)
+		return execute10(opcode);
+	else if (m_prefix11)
+		return execute11(opcode);
+	return executeUnprefixed(opcode);
+}
 
-	switch (cell) {
+int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
+
+	ASSUME(!m_prefix10);
+	ASSUME(!m_prefix11);
+	ASSUME(cycles() == 0);
+
+	switch (opcode) {
+
+	case 0x10:	m_prefix10 = true;	break;
+	case 0x11:	m_prefix11 = true;	break;
 
 	// ABX
 	case 0x3a:	addCycles(3);	abx();									break;		// ABX (inherent)
@@ -36,13 +52,13 @@ int EightBit::mc6809::execute(uint8_t cell) {
 	// ADC
 	case 0x89:	addCycles(2);	A() = adc(A(), AM_immediate_byte());	break;		// ADC (ADCA, immediate)
 	case 0x99:	addCycles(4);	A() = adc(A(), AM_direct_byte());		break;		// ADC (ADCA, direct)
-	case 0xA9:	addCycles(4);	A() = adc(A(), AM_indexed_byte());		break;		// ADC (ADCA, indexed)
-	case 0xB9:	addCycles(4);	A() = adc(A(), AM_extended_byte());		break;		// ADC (ADCA, extended)
+	case 0xa9:	addCycles(4);	A() = adc(A(), AM_indexed_byte());		break;		// ADC (ADCA, indexed)
+	case 0xb9:	addCycles(4);	A() = adc(A(), AM_extended_byte());		break;		// ADC (ADCA, extended)
 
-	case 0xC9:	addCycles(2);	B() = adc(B(), AM_immediate_byte());	break;		// ADC (ADCB, immediate)
-	case 0xD9:	addCycles(4);	B() = adc(B(), AM_direct_byte());		break;		// ADC (ADCB, direct)
-	case 0xE9:	addCycles(4);	B() = adc(B(), AM_indexed_byte());		break;		// ADC (ADCB, indexed)
-	case 0xF9:	addCycles(4);	B() = adc(B(), AM_extended_byte());		break;		// ADC (ADCB, extended)
+	case 0xc9:	addCycles(2);	B() = adc(B(), AM_immediate_byte());	break;		// ADC (ADCB, immediate)
+	case 0xd9:	addCycles(4);	B() = adc(B(), AM_direct_byte());		break;		// ADC (ADCB, direct)
+	case 0xe9:	addCycles(4);	B() = adc(B(), AM_indexed_byte());		break;		// ADC (ADCB, indexed)
+	case 0xf9:	addCycles(4);	B() = adc(B(), AM_extended_byte());		break;		// ADC (ADCB, extended)
 
 	// ADD
 	case 0x8b: addCycles(2);	A() = add(A(), AM_immediate_byte());	break;		// ADD (ADDA, immediate)
@@ -90,8 +106,8 @@ int EightBit::mc6809::execute(uint8_t cell) {
 	// BIT
 	case 0x85:	addCycles(2);	andr(A(), AM_immediate_byte());			break;		// BIT (BITA, immediate)
 	case 0x95:	addCycles(4);	andr(A(), AM_direct_byte());			break;		// BIT (BITA, direct)
-	case 0xA5:	addCycles(4);	andr(A(), AM_indexed_byte());			break;		// BIT (BITA, indexed)
-	case 0xB5:	addCycles(5);	andr(A(), AM_extended_byte());			break;		// BIT (BITA, extended)
+	case 0xa5:	addCycles(4);	andr(A(), AM_indexed_byte());			break;		// BIT (BITA, indexed)
+	case 0xb5:	addCycles(5);	andr(A(), AM_extended_byte());			break;		// BIT (BITA, extended)
 
 	case 0xc5:	addCycles(2);	andr(B(), AM_immediate_byte());			break;		// BIT (BITB, immediate)
 	case 0xd5:	addCycles(4);	andr(B(), AM_direct_byte());			break;		// BIT (BITB, direct)
@@ -105,6 +121,26 @@ int EightBit::mc6809::execute(uint8_t cell) {
 	case 0x6f:	addCycles(6);	Address_indexed(); BUS().write(clr());	break;		// CLR (CLR, indexed)
 	case 0x7f:	addCycles(7);	Address_extended(); BUS().write(clr());	break;		// CLR (CLR, extended)
 
+	// CMP
+
+	// CMPA
+	case 0x81:	addCycles(2);	cmp(A(), AM_immediate_byte());			break;		// CMP (CMPA, immediate)
+	case 0x91:	addCycles(4);	cmp(A(), AM_direct_byte());				break;		// CMP (CMPA, direct)
+	case 0xa1:	addCycles(4);	cmp(A(), AM_indexed_byte());			break;		// CMP (CMPA, indexed)
+	case 0xb1:	addCycles(5);	cmp(A(), AM_extended_byte());			break;		// CMP (CMPA, extended)
+
+	// CMPB
+	case 0xc1:	addCycles(2);	cmp(B(), AM_immediate_byte());			break;		// CMP (CMPB, immediate)
+	case 0xd1:	addCycles(4);	cmp(B(), AM_direct_byte());				break;		// CMP (CMPB, direct)
+	case 0xe1:	addCycles(4);	cmp(B(), AM_indexed_byte());			break;		// CMP (CMPB, indexed)
+	case 0xf1:	addCycles(5);	cmp(B(), AM_extended_byte());			break;		// CMP (CMPB, extended)
+
+	// CMPX
+	case 0x8c:	addCycles(4);	cmp(X(), AM_immediate_word());			break;		// CMP (CMPX, immediate)
+	case 0x9c:	addCycles(6);	cmp(X(), AM_direct_word());				break;		// CMP (CMPX, direct)
+	case 0xac:	addCycles(6);	cmp(X(), AM_indexed_word());			break;		// CMP (CMPX, indexed)
+	case 0xbc:	addCycles(7);	cmp(X(), AM_extended_word());			break;		// CMP (CMPX, extended)
+
 	// NEG
 	case 0x00:	addCycles(6);	BUS().write(neg(AM_direct_byte()));		break;		// NEG (direct)
 	case 0x40:	addCycles(2);	A() = neg(A());							break;		// NEG (NEGA, inherent)
@@ -115,6 +151,74 @@ int EightBit::mc6809::execute(uint8_t cell) {
 	default:
 		UNREACHABLE;
 	}
+
+	if (m_prefix10 || m_prefix11)
+		ASSUME(cycles() == 0);
+	else
+		ASSUME(cycles() > 0);
+
+	return cycles();
+}
+
+int EightBit::mc6809::execute10(uint8_t opcode) {
+
+	ASSUME(m_prefix10);
+	ASSUME(!m_prefix11);
+	ASSUME(cycles() == 0);
+
+	switch (opcode) {
+
+	// CMP
+
+	// CMPD
+	case 0x83:	addCycles(5);	cmp(D(), AM_immediate_word());			break;		// CMP (CMPD, immediate)
+	case 0x93:	addCycles(7);	cmp(D(), AM_direct_word());				break;		// CMP (CMPD, direct)
+	case 0xa3:	addCycles(7);	cmp(D(), AM_indexed_word());			break;		// CMP (CMPD, indexed)
+	case 0xb3:	addCycles(8);	cmp(D(), AM_extended_word());			break;		// CMP (CMPD, extended)
+
+	// CMPY
+	case 0x8c:	addCycles(5);	cmp(Y(), AM_immediate_word());			break;		// CMP (CMPY, immediate)
+	case 0x9c:	addCycles(7);	cmp(Y(), AM_direct_word());				break;		// CMP (CMPY, direct)
+	case 0xac:	addCycles(7);	cmp(Y(), AM_indexed_word());			break;		// CMP (CMPY, indexed)
+	case 0xbc:	addCycles(8);	cmp(Y(), AM_extended_word());			break;		// CMP (CMPY, extended)
+
+	default:
+		UNREACHABLE;
+	}
+
+	m_prefix10 = false;
+
+	ASSUME(cycles() > 0);
+	return cycles();
+}
+
+int EightBit::mc6809::execute11(uint8_t opcode) {
+
+	ASSUME(m_prefix10);
+	ASSUME(!m_prefix11);
+	ASSUME(cycles() == 0);
+
+	switch (opcode) {
+
+	// CMP
+
+	// CMPU
+	case 0x83:	addCycles(5);	cmp(U(), AM_immediate_word());			break;		// CMP (CMPU, immediate)
+	case 0x93:	addCycles(7);	cmp(U(), AM_direct_word());				break;		// CMP (CMPU, direct)
+	case 0xa3:	addCycles(7);	cmp(U(), AM_indexed_word());			break;		// CMP (CMPU, indexed)
+	case 0xb3:	addCycles(8);	cmp(U(), AM_extended_word());			break;		// CMP (CMPU, extended)
+
+	// CMPS
+	case 0x8c:	addCycles(5);	cmp(S(), AM_immediate_word());			break;		// CMP (CMPS, immediate)
+	case 0x9c:	addCycles(7);	cmp(S(), AM_direct_word());				break;		// CMP (CMPS, direct)
+	case 0xac:	addCycles(7);	cmp(S(), AM_indexed_word());			break;		// CMP (CMPS, indexed)
+	case 0xbc:	addCycles(8);	cmp(S(), AM_extended_word());			break;		// CMP (CMPS, extended)
+
+	default:
+		UNREACHABLE;
+	}
+
+	m_prefix11 = false;
 
 	ASSUME(cycles() > 0);
 	return cycles();
@@ -281,23 +385,25 @@ uint8_t EightBit::mc6809::adc(uint8_t operand, uint8_t data) {
 }
 
 uint8_t EightBit::mc6809::add(uint8_t operand, uint8_t data, int carry) {
-	const register16_t result = operand + data + carry;
-	adjustNZ(result.low);
-	setFlag(CC(), CF, result.word & Bit8);
-	return result.low;
+	const register16_t addition = operand + data + carry;
+	const auto result = addition.low;
+	adjustNZ(result);
+	adjustCarry(addition.word);
+	adjustOverflow(operand, data, result);
+	return result;
 }
 
 EightBit::register16_t EightBit::mc6809::add(register16_t operand, register16_t data) {
 	const uint32_t addition = operand.word + data.word;
-	const register16_t result = addition;
-	setFlag(CC(), NF, result.high & Bit7);
-	setFlag(CC(), ZF, result.word == 0);
-	setFlag(CC(), CF, addition & Bit16);
+	const register16_t result = addition & Mask16;
+	adjustNZ(result.word);
+	adjustCarry(addition);
+	adjustOverflow(operand.word, data.word, result.word);
 	return result;
 }
 
 uint8_t EightBit::mc6809::andr(uint8_t operand, uint8_t data) {
-	const auto result = operand & data;
+	const uint8_t result = operand & data;
 	clearFlag(CC(), VF);
 	adjustNZ(result);
 	return result;
@@ -308,7 +414,7 @@ uint8_t EightBit::mc6809::asl(uint8_t operand) {
 	operand <<= 1;
 	adjustNZ(operand);
 	const auto overflow = (CC() & CF) ^ ((CC() & NF) >> 3);
-	setFlag(CC(), overflow);
+	setFlag(CC(), VF, overflow);
 	return operand;
 }
 
@@ -323,4 +429,20 @@ uint8_t EightBit::mc6809::clr() {
 	clearFlag(CC(), HF | ZF | VF | CF);
 	setFlag(CC(), ZF);
 	return 0;
+}
+
+void EightBit::mc6809::cmp(const uint8_t operand, const uint8_t data) {
+	const register16_t difference = operand - data;
+	const auto result = difference.low;
+	adjustNZ(result);
+	adjustBorrow(difference.word);
+	adjustOverflow(operand, data, result);
+}
+
+void EightBit::mc6809::cmp(register16_t operand, register16_t data) {
+	const uint32_t difference = operand.word - data.word;
+	const register16_t result = difference & Mask16;
+	adjustNZ(result.word);
+	adjustBorrow(difference);
+	adjustOverflow(operand.word, data.word, result.word);
 }
