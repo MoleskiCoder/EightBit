@@ -158,6 +158,9 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// CWAI
 	case 0x3c:	addCycles(20);	cwai(AM_direct_byte());					break;		// CWAI (CWAI direct)
 
+	// DAA
+	case 0x19:	addCycles(2);	A() = da(A());							break;		// DAA (DAA implied)
+
 	default:
 		UNREACHABLE;
 	}
@@ -464,4 +467,20 @@ void EightBit::mc6809::cwai(uint8_t data) {
 	push(A());
 	push(CC());
 	halt();
+}
+
+uint8_t EightBit::mc6809::da(uint8_t operand) {
+
+	clearFlag(CC(), VF);
+	setFlag(CC(), CF, A() > 0x99);
+
+	const auto lowAdjust = (CC() & HF) || (lowNibble(A()) > 9);
+	const auto highAdjust = (CC() & CF) || (A() > 0x99);
+
+	if (lowAdjust)
+		A() += 6;
+	if (highAdjust)
+		A() += 0x60;
+
+	adjustNZ(A());
 }
