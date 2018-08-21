@@ -272,6 +272,14 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// ORCC
 	case 0x1a:	addCycles(3);	CC() |= AM_immediate_byte();			break;		// OR (ORCC immediate)
 
+	// PSH
+	case 0x34:	addCycles(5);	pshs(AM_immediate_byte());				break;		// PSH (PSHS immediate)
+	case 0x36:	addCycles(5);	pshu(AM_immediate_byte());				break;		// PSH (PSHU immediate)
+
+	// PUL
+	case 0x35:	addCycles(5);	puls(AM_immediate_byte());				break;		// PUL (PULS immediate)
+	case 0x37:	addCycles(5);	pulu(AM_immediate_byte());				break;		// PUL (PULU immediate)
+
 	default:
 		UNREACHABLE;
 	}
@@ -360,6 +368,16 @@ int EightBit::mc6809::execute11(uint8_t opcode) {
 
 	ASSUME(cycles() > 0);
 	return cycles();
+}
+
+//
+
+void EightBit::mc6809::push(register16_t& stack, uint8_t value) {
+	BUS().write(stack--, value);
+}
+
+uint8_t EightBit::mc6809::pop(register16_t& stack) {
+	return BUS().read(++stack);
 }
 
 //
@@ -564,14 +582,14 @@ uint8_t EightBit::mc6809::com(uint8_t operand) {
 
 void EightBit::mc6809::cwai(uint8_t data) {
 	CC() &= data;
-	pushWord(PC());
-	pushWord(U());
-	pushWord(Y());
-	pushWord(X());
-	push(DP());
-	push(B());
-	push(A());
-	push(CC());
+	pushWordS(PC());
+	pushWordS(U());
+	pushWordS(Y());
+	pushWordS(X());
+	pushS(DP());
+	pushS(B());
+	pushS(A());
+	pushS(CC());
 	halt();
 }
 
@@ -697,4 +715,80 @@ uint8_t EightBit::mc6809::orr(uint8_t operand, uint8_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(operand |= data);
 	return operand;
+}
+
+void EightBit::mc6809::pshs(uint8_t data) {
+	if (data & Bit7)
+		pushWordS(PC());
+	if (data & Bit6)
+		pushWordS(U());
+	if (data & Bit5)
+		pushWordS(Y());
+	if (data & Bit4)
+		pushWordS(X());
+	if (data & Bit3)
+		pushS(DP());
+	if (data & Bit2)
+		pushS(B());
+	if (data & Bit1)
+		pushS(A());
+	if (data & Bit0)
+		pushS(CC());
+}
+
+void EightBit::mc6809::pshu(uint8_t data) {
+	if (data & Bit7)
+		pushWordS(PC());
+	if (data & Bit6)
+		pushWordS(S());
+	if (data & Bit5)
+		pushWordS(Y());
+	if (data & Bit4)
+		pushWordS(X());
+	if (data & Bit3)
+		pushS(DP());
+	if (data & Bit2)
+		pushS(B());
+	if (data & Bit1)
+		pushS(A());
+	if (data & Bit0)
+		pushS(CC());
+}
+
+void EightBit::mc6809::puls(uint8_t data) {
+	if (data & Bit0)
+		pushS(CC());
+	if (data & Bit1)
+		pushS(A());
+	if (data & Bit2)
+		pushS(B());
+	if (data & Bit3)
+		pushS(DP());
+	if (data & Bit4)
+		pushWordS(X());
+	if (data & Bit5)
+		pushWordS(Y());
+	if (data & Bit6)
+		pushWordS(U());
+	if (data & Bit7)
+		pushWordS(PC());
+}
+
+void EightBit::mc6809::pulu(uint8_t data) {
+	if (data & Bit0)
+		pushS(CC());
+	if (data & Bit1)
+		pushS(A());
+	if (data & Bit2)
+		pushS(B());
+	if (data & Bit3)
+		pushS(DP());
+	if (data & Bit4)
+		pushWordS(X());
+	if (data & Bit5)
+		pushWordS(Y());
+	if (data & Bit6)
+		pushWordS(S());
+	if (data & Bit7)
+		pushWordS(PC());
 }

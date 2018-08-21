@@ -77,6 +77,9 @@ namespace EightBit {
 	protected:
 		virtual void reset() final;
 
+		virtual void push(uint8_t value) final { pushS(value);  }
+		virtual uint8_t pop() final { return popS(); }
+
 	private:
 		const uint8_t RESETvector = 0xfe;		// RESET vector
 		const uint8_t NMIvector = 0xfc;			// NMI vector
@@ -86,6 +89,33 @@ namespace EightBit {
 		const uint8_t SWI2vector = 0xf4;		// SWI2 vector
 		const uint8_t SWI3vector = 0xf2;		// SWI3 vector
 		const uint8_t RESERVEDvector = 0xf0;	// RESERVED vector
+
+		// Stack manipulation
+
+		void push(register16_t& stack, uint8_t value);
+		void pushS(uint8_t value) { push(S(), value); }
+		void pushU(uint8_t value) { push(U(), value); }
+
+		void pushWord(register16_t& stack, register16_t value) {
+			push(stack, value.low);
+			push(stack, value.high);
+		}
+
+		void pushWordS(register16_t value) { pushWord(S(), value); }
+		void pushWordU(register16_t value) { pushWord(U(), value); }
+
+		uint8_t pop(register16_t& stack);
+		uint8_t popS() { return pop(S()); }
+		uint8_t popU() { return pop(U()); }
+
+		register16_t popWord(register16_t& stack) {
+			const auto high = pop(stack);
+			const auto low = pop(stack);
+			return register16_t(low, high);
+		}
+
+		register16_t popWordS() { popWord(S()); }
+		register16_t popWordU() { popWord(U()); }
 
 		// Execution helpers
 
@@ -216,6 +246,10 @@ namespace EightBit {
 		register16_t mul(uint8_t first, uint8_t second);
 		uint8_t neg(uint8_t operand);
 		uint8_t orr(uint8_t operand, uint8_t data);
+		void pshs(uint8_t data);
+		void pshu(uint8_t data);
+		void puls(uint8_t data);
+		void pulu(uint8_t data);
 
 		register16_t m_d;
 		register16_t m_x;
