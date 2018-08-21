@@ -127,8 +127,10 @@ namespace EightBit {
 		// Flag adjustment
 
 		template<class T> void adjustZero(T datum) { clearFlag(CC(), ZF, datum); }
+		void adjustZero(register16_t datum) { clearFlag(CC(), ZF, datum.word); }
 		void adjustNegative(uint8_t datum) { setFlag(CC(), NF, datum & Bit7); }
 		void adjustNegative(uint16_t datum) { setFlag(CC(), NF, datum & Bit15); }
+		void adjustNegative(register16_t datum) { adjustNegative(datum.word); }
 
 		template<class T> void adjustNZ(T datum) {
 			adjustZero(datum);
@@ -137,9 +139,11 @@ namespace EightBit {
 
 		void adjustCarry(uint16_t datum) { setFlag(CC(), CF, datum & Bit8); }		// 8-bit addition
 		void adjustCarry(uint32_t datum) { setFlag(CC(), CF, datum & Bit16); }		// 16-bit addition
+		void adjustCarry(register16_t datum) { adjustCarry(datum.word); }
 
 		void adjustBorrow(uint16_t datum) { clearFlag(CC(), CF, datum & Bit8); }	// 8-bit subtraction
 		void adjustBorrow(uint32_t datum) { clearFlag(CC(), CF, datum & Bit16); }	// 16-bit subtraction
+		void adjustBorrow(register16_t datum) { adjustBorrow(datum.word); }
 
 		void adjustOverflow(uint8_t before, uint8_t data, uint8_t after) {
 			setFlag(CC(), VF, (before ^ data) & (before ^ after) & Bit7);
@@ -148,33 +152,44 @@ namespace EightBit {
 		void adjustOverflow(uint16_t before, uint16_t data, uint16_t after) {
 			setFlag(CC(), VF, (before ^ data) & (before ^ after) & Bit15);
 		}
+		void adjustOverflow(register16_t before, register16_t data, register16_t after) {
+			adjustOverflow(before.word, data.word, after.word);
+		}
 
 		void adjustAddition(uint8_t before, uint8_t data, register16_t after) {
 			const auto result = after.low;
 			adjustNZ(result);
-			adjustCarry(after.word);
+			adjustCarry(after);
 			adjustOverflow(before, data, result);
 		}
 
 		void adjustAddition(uint16_t before, uint16_t data, uint32_t after) {
 			const register16_t result = after & Mask16;
-			adjustNZ(result.word);
+			adjustNZ(result);
 			adjustCarry(after);
-			adjustOverflow(before, data, result.word);
+			adjustOverflow(before, data, result);
+		}
+
+		void adjustAddition(register16_t before, register16_t data, uint32_t after) {
+			adjustAddition(before.word, data.word, after);
 		}
 
 		void adjustSubtraction(uint8_t before, uint8_t data, register16_t after) {
 			const auto result = after.low;
 			adjustNZ(result);
-			adjustBorrow(after.word);
+			adjustBorrow(after);
 			adjustOverflow(before, data, result);
 		}
 
 		void adjustSubtraction(uint16_t before, uint16_t data, uint32_t after) {
 			const register16_t result = after & Mask16;
-			adjustNZ(result.word);
+			adjustNZ(result);
 			adjustBorrow(after);
-			adjustOverflow(before, data, result.word);
+			adjustOverflow(before, data, result);
+		}
+
+		void adjustSubtraction(register16_t before, register16_t data, uint32_t after) {
+			adjustSubtraction(before.word, data.word, after);
 		}
 
 		// Instruction implementations

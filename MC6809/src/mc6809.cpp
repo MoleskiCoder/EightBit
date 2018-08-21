@@ -236,6 +236,12 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xae:	addCycles(5);	X() = ld(AM_indexed_word());			break;		// LD (LDX indexed)
 	case 0xbe:	addCycles(6);	X() = ld(AM_extended_word());			break;		// LD (LDX extended)
 
+	// LEA
+	case 0x30:	addCycles(4);	adjustZero(X() = Address_indexed());	break;		// LEA (LEAX indexed)
+	case 0x31:	addCycles(4);	adjustZero(Y() = Address_indexed());	break;		// LEA (LEAY indexed)
+	case 0x32:	addCycles(4);	S() = Address_indexed();				break;		// LEA (LEAS indexed)
+	case 0x33:	addCycles(4);	U() = Address_indexed();				break;		// LEA (LEAU indexed)
+
 	default:
 		UNREACHABLE;
 	}
@@ -475,7 +481,7 @@ uint8_t EightBit::mc6809::neg(uint8_t operand) {
 	const register16_t result = 0 - operand;
 	operand = result.low;
 	adjustNZ(operand);
-	adjustCarry(result.word);
+	adjustCarry(result);
 	return operand;
 }
 
@@ -491,7 +497,7 @@ uint8_t EightBit::mc6809::add(uint8_t operand, uint8_t data, int carry) {
 
 EightBit::register16_t EightBit::mc6809::add(register16_t operand, register16_t data) {
 	const uint32_t addition = operand.word + data.word;
-	adjustAddition(operand.word, data.word, addition);
+	adjustAddition(operand, data, addition);
 	return addition & Mask16;
 }
 
@@ -531,7 +537,7 @@ void EightBit::mc6809::cmp(const uint8_t operand, const uint8_t data) {
 
 void EightBit::mc6809::cmp(register16_t operand, register16_t data) {
 	const uint32_t difference = operand.word - data.word;
-	adjustSubtraction(operand.word, data.word, difference);
+	adjustSubtraction(operand, data, difference);
 }
 
 uint8_t EightBit::mc6809::com(uint8_t operand) {
@@ -648,6 +654,6 @@ uint8_t EightBit::mc6809::ld(uint8_t data) {
 
 EightBit::register16_t EightBit::mc6809::ld(register16_t data) {
 	clearFlag(CC(), VF);
-	adjustNZ(data.word);
+	adjustNZ(data);
 	return data;
 }
