@@ -117,11 +117,11 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xf5:	addCycles(5);	andr(B(), AM_extended_byte());			break;		// BIT (BITB, extended)
 
 	// CLR
-	case 0x0f:	addCycles(6);	Address_direct(); BUS().write(clr());	break;		// CLR (CLR, direct)
+	case 0x0f:	addCycles(6);	BUS().write(Address_direct(), clr());	break;		// CLR (CLR, direct)
 	case 0x4f:	addCycles(2);	A() = clr();							break;		// CLR (CLRA, implied)
 	case 0x5f:	addCycles(2);	B() = clr();							break;		// CLR (CLRB, implied)
-	case 0x6f:	addCycles(6);	Address_indexed(); BUS().write(clr());	break;		// CLR (CLR, indexed)
-	case 0x7f:	addCycles(7);	Address_extended(); BUS().write(clr());	break;		// CLR (CLR, extended)
+	case 0x6f:	addCycles(6);	BUS().write(Address_indexed(), clr());	break;		// CLR (CLR, indexed)
+	case 0x7f:	addCycles(7);	BUS().write(Address_extended(), clr());	break;		// CLR (CLR, extended)
 
 	// CMP
 
@@ -193,6 +193,16 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x5c:	addCycles(2);	B() = inc(B());							break;		// INC (INCB inherent)
 	case 0x6c:	addCycles(6);	BUS().write(inc(AM_indexed_byte()));	break;		// INC (INC indexed)
 	case 0x7c:	addCycles(7);	BUS().write(inc(AM_extended_byte()));	break;		// INC (INC extended)
+
+	// JMP
+	case 0x0e:	addCycles(6);	jump(Address_direct());					break;		// JMP (JMP direct)
+	case 0x6e:	addCycles(6);	jump(Address_indexed());				break;		// JMP (JMP indexed)
+	case 0x7e:	addCycles(7);	jump(Address_extended());				break;		// JMP (JMP extended)
+
+	// JSR
+	case 0x9d:	addCycles(6);	call(Address_direct());					break;		// JSR (JSR direct)
+	case 0xad:	addCycles(6);	call(Address_indexed());				break;		// JSR (JSR indexed)
+	case 0xbd:	addCycles(7);	call(Address_extended());				break;		// JSR (JSR extended)
 
 	default:
 		UNREACHABLE;
@@ -289,84 +299,87 @@ EightBit::register16_t& EightBit::mc6809::RR(int which) {
 	}
 }
 
-void EightBit::mc6809::Address_direct() {
-	BUS().ADDRESS() = register16_t(fetchByte(), DP());
+EightBit::register16_t EightBit::mc6809::Address_direct() {
+	return register16_t(fetchByte(), DP());
 }
 
-void EightBit::mc6809::Address_indexed() {
+EightBit::register16_t EightBit::mc6809::Address_indexed() {
 	const auto type = fetchByte();
 	auto& r = RR((type & (Bit6 | Bit5)) >> 5);
 
+	register16_t address = Mask16;
 	if (type & Bit7) {
 		const auto indirect = type & Bit4;
 		switch (type & Mask4) {
 		case 0b0000:	// ,R+
 			ASSUME(!indirect);
 			addCycles(2);
-			BUS().ADDRESS() = r++;
+			address = r++;
 			break;
 		case 0b0001:	// ,R++
 			addCycles(3);
-			BUS().ADDRESS() = r;
+			address = r;
 			r += 2;
 			break;
 		case 0b0010:	// ,-R
 			ASSUME(!indirect);
 			addCycles(2);
-			BUS().ADDRESS() = --r;
+			address = --r;
 			break;
 		case 0b0011:	// ,--R
 			addCycles(3);
 			r -= 2;
-			BUS().ADDRESS() = r;
+			address = r;
 			break;
 		case 0b0100:	// ,R
-			BUS().ADDRESS() = r;
+			address = r;
 			break;
 		case 0b0101:	// B,R
 			addCycles(1);
-			BUS().ADDRESS() = r + (int8_t)B();
+			address = r + (int8_t)B();
 			break;
 		case 0b0110:	// A,R
 			addCycles(1);
-			BUS().ADDRESS() = r + (int8_t)A();
+			address = r + (int8_t)A();
 			break;
 		case 0b1000:	// n,R (eight-bit)
 			addCycles(1);
-			BUS().ADDRESS() = r + (int8_t)fetchByte();
+			address = r + (int8_t)fetchByte();
 			break;
 		case 0b1001:	// n,R (sixteen-bit)
 			addCycles(4);
-			BUS().ADDRESS() = r + (int16_t)fetchWord().word;
+			address = r + (int16_t)fetchWord().word;
 			break;
 		case 0b1011:	// D,R
 			addCycles(4);
-			BUS().ADDRESS() = r + D();
+			address = r + D();
 			break;
 		case 0b1100:	// n,PCR (eight-bit)
 			addCycles(1);
-			BUS().ADDRESS() = PC() + (int8_t)fetchByte();
+			address = PC() + (int8_t)fetchByte();
 			break;
 		case 0b1101:	// n,PCR (sixteen-bit)
 			addCycles(1);
-			BUS().ADDRESS() = PC() + (int16_t)fetchWord().word;
+			address = PC() + (int16_t)fetchWord().word;
 			break;
 		default:
 			UNREACHABLE;
 		}
 		if (indirect) {
 			addCycles(3);
-			BUS().ADDRESS() = fetchWord();
+			BUS().ADDRESS() = address;
+			address = fetchWord();
 		}
 	} else {
 		// EA = ,R + 5-bit offset
 		addCycle();
-		BUS().ADDRESS() = r + (type & Mask5);
+		address = r + (type & Mask5);
 	}
+	return address;
 }
 
-void EightBit::mc6809::Address_extended() {
-	BUS().ADDRESS() = fetchWord();
+EightBit::register16_t EightBit::mc6809::Address_extended() {
+	return fetchWord();
 }
 
 //
@@ -376,18 +389,15 @@ uint8_t EightBit::mc6809::AM_immediate_byte() {
 }
 
 uint8_t EightBit::mc6809::AM_direct_byte() {
-	Address_direct();
-	return BUS().read();
+	return BUS().read(Address_direct());
 }
 
 uint8_t EightBit::mc6809::AM_indexed_byte() {
-	Address_indexed();
-	return BUS().read();
+	return BUS().read(Address_indexed());
 }
 
 uint8_t EightBit::mc6809::AM_extended_byte() {
-	Address_extended();
-	return BUS().read();
+	return BUS().read(Address_extended());
 }
 
 //
@@ -397,18 +407,15 @@ EightBit::register16_t EightBit::mc6809::AM_immediate_word() {
 }
 
 EightBit::register16_t EightBit::mc6809::AM_direct_word() {
-	Address_direct();
-	return getWord();
+	return Processor::getWord(Address_direct());
 }
 
 EightBit::register16_t EightBit::mc6809::AM_indexed_word() {
-	Address_indexed();
-	return getWord();
+	return Processor::getWord(Address_indexed());
 }
 
 EightBit::register16_t EightBit::mc6809::AM_extended_word() {
-	Address_extended();
-	return getWord();
+	return Processor::getWord(Address_extended());
 }
 
 //

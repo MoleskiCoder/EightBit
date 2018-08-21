@@ -134,6 +134,16 @@ namespace EightBit {
 		virtual void pushWord(const register16_t value) = 0;
 		virtual register16_t popWord() = 0;
 
+		register16_t getWord(register16_t address) {
+			BUS().ADDRESS() = address;
+			return getWord();
+		}
+
+		void setWord(register16_t address, register16_t value) {
+			BUS().ADDRESS() = address;
+			return setWord(value);
+		}
+
 		void jump(const register16_t destination) {
 			PC() = destination;
 		}

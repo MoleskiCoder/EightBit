@@ -104,9 +104,9 @@ namespace EightBit {
 
 		// Addressing modes
 
-		void Address_direct();		// DP + fetched offset
-		void Address_indexed();		// Indexed address, complicated!
-		void Address_extended();	// Fetched address
+		register16_t Address_direct();		// DP + fetched offset
+		register16_t Address_indexed();		// Indexed address, complicated!
+		register16_t Address_extended();	// Fetched address
 
 		// Addressing mode readers
 
