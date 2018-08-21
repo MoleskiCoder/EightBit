@@ -161,6 +161,27 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// DAA
 	case 0x19:	addCycles(2);	A() = da(A());							break;		// DAA (DAA implied)
 
+	// DEC
+	case 0x0a:	addCycles(6);	BUS().write(dec(AM_direct_byte()));		break;		// DEC (DEC direct)
+	case 0x4a:	addCycles(2);	A() = dec(A());							break;		// DEC (DECA inherent)
+	case 0x5a:	addCycles(2);	B() = dec(B());							break;		// DEC (DECB inherent)
+	case 0x6a:	addCycles(6);	BUS().write(dec(AM_indexed_byte()));	break;		// DEC (DEC indexed)
+	case 0x7a:	addCycles(7);	BUS().write(dec(AM_extended_byte()));	break;		// DEC (DEC extended)
+
+	// EOR
+
+	// EORA
+	case 0x88:	addCycles(2);	A() = eor(A(), AM_immediate_byte());	break;		// EOR (EORA immediate)
+	case 0x98:	addCycles(4);	A() = eor(A(), AM_direct_byte());		break;		// EOR (EORA direct)
+	case 0xa8:	addCycles(4);	A() = eor(A(), AM_indexed_byte());		break;		// EOR (EORA indexed)
+	case 0xb8:	addCycles(5);	A() = eor(A(), AM_extended_byte());		break;		// EOR (EORA extended)
+
+	// EORB
+	case 0xc8:	addCycles(2);	B() = eor(B(), AM_immediate_byte());	break;		// EOR (EORB immediate)
+	case 0xd8:	addCycles(4);	B() = eor(B(), AM_direct_byte());		break;		// EOR (EORB direct)
+	case 0xe8:	addCycles(4);	B() = eor(B(), AM_indexed_byte());		break;		// EOR (EORB indexed)
+	case 0xf8:	addCycles(5);	B() = eor(B(), AM_extended_byte());		break;		// EOR (EORB extended)
+
 	default:
 		UNREACHABLE;
 	}
@@ -483,4 +504,18 @@ uint8_t EightBit::mc6809::da(uint8_t operand) {
 		A() += 0x60;
 
 	adjustNZ(A());
+}
+
+uint8_t EightBit::mc6809::dec(uint8_t operand) {
+	const uint8_t result = operand - 1;
+	adjustNZ(result);
+	adjustOverflow(operand, 1, result);
+	return result;
+}
+
+uint8_t EightBit::mc6809::eor(uint8_t operand, uint8_t data) {
+	const uint8_t result = operand ^ data;
+	adjustNZ(result);
+	clearFlag(CC(), VF);
+	return result;
 }

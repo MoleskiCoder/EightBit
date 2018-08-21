@@ -186,6 +186,8 @@ namespace EightBit {
 		uint8_t com(uint8_t operand);
 		void cwai(uint8_t data);
 		uint8_t da(uint8_t operand);
+		uint8_t dec(uint8_t operand);
+		uint8_t eor(uint8_t operand, uint8_t data);
 		uint8_t neg(uint8_t operand);
 
 		register16_t m_d;
