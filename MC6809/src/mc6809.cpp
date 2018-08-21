@@ -148,6 +148,13 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x60:	addCycles(6);	BUS().write(neg(AM_indexed_byte()));	break;		// NEG (indexed)
 	case 0x70:	addCycles(7);	BUS().write(neg(AM_extended_byte()));	break;		// NEG (extended)
 
+	// COM
+	case 0x03:	addCycles(6);	BUS().write(com(AM_direct_byte()));		break;		// COM (COM direct)
+	case 0x43:	addCycles(2);	A() = com(A());							break;		// COM (COMA inherent)
+	case 0x53:	addCycles(2);	B() = com(B());							break;		// COM (COMB inherent)
+	case 0x63:	addCycles(6);	BUS().write(com(AM_indexed_byte()));	break;		// COM (COM indexed)
+	case 0x73:	addCycles(7);	BUS().write(com(AM_extended_byte()));	break;		// COM (COM extended)
+
 	default:
 		UNREACHABLE;
 	}
@@ -433,4 +440,12 @@ void EightBit::mc6809::cmp(const uint8_t operand, const uint8_t data) {
 void EightBit::mc6809::cmp(register16_t operand, register16_t data) {
 	const uint32_t difference = operand.word - data.word;
 	adjustSubtraction(operand.word, data.word, difference);
+}
+
+uint8_t EightBit::mc6809::com(uint8_t operand) {
+	const uint8_t result = ~operand;
+	adjustNZ(result);
+	clearFlag(CC(), VF);
+	setFlag(CC(), CF);
+	return result;
 }

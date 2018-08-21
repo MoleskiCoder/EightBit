@@ -183,6 +183,7 @@ namespace EightBit {
 		uint8_t clr();
 		void cmp(uint8_t operand, uint8_t data);
 		void cmp(register16_t operand, register16_t data);
+		uint8_t com(uint8_t operand);
 		uint8_t neg(uint8_t operand);
 
 		register16_t m_d;
