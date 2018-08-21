@@ -49,79 +49,79 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x11:	m_prefix11 = true;	break;
 
 	// ABX
-	case 0x3a:	addCycles(3);	abx();									break;		// ABX (inherent)
+	case 0x3a:	addCycles(3);	X() += B();								break;		// ABX (inherent)
 
 	// ADC
-	case 0x89:	addCycles(2);	A() = adc(A(), AM_immediate_byte());	break;		// ADC (ADCA, immediate)
-	case 0x99:	addCycles(4);	A() = adc(A(), AM_direct_byte());		break;		// ADC (ADCA, direct)
-	case 0xa9:	addCycles(4);	A() = adc(A(), AM_indexed_byte());		break;		// ADC (ADCA, indexed)
-	case 0xb9:	addCycles(4);	A() = adc(A(), AM_extended_byte());		break;		// ADC (ADCA, extended)
+	case 0x89:	addCycles(2);	A() = adc(A(), AM_immediate_byte());	break;		// ADC (ADCA immediate)
+	case 0x99:	addCycles(4);	A() = adc(A(), AM_direct_byte());		break;		// ADC (ADCA direct)
+	case 0xa9:	addCycles(4);	A() = adc(A(), AM_indexed_byte());		break;		// ADC (ADCA indexed)
+	case 0xb9:	addCycles(4);	A() = adc(A(), AM_extended_byte());		break;		// ADC (ADCA extended)
 
-	case 0xc9:	addCycles(2);	B() = adc(B(), AM_immediate_byte());	break;		// ADC (ADCB, immediate)
-	case 0xd9:	addCycles(4);	B() = adc(B(), AM_direct_byte());		break;		// ADC (ADCB, direct)
-	case 0xe9:	addCycles(4);	B() = adc(B(), AM_indexed_byte());		break;		// ADC (ADCB, indexed)
-	case 0xf9:	addCycles(4);	B() = adc(B(), AM_extended_byte());		break;		// ADC (ADCB, extended)
+	case 0xc9:	addCycles(2);	B() = adc(B(), AM_immediate_byte());	break;		// ADC (ADCB immediate)
+	case 0xd9:	addCycles(4);	B() = adc(B(), AM_direct_byte());		break;		// ADC (ADCB direct)
+	case 0xe9:	addCycles(4);	B() = adc(B(), AM_indexed_byte());		break;		// ADC (ADCB indexed)
+	case 0xf9:	addCycles(4);	B() = adc(B(), AM_extended_byte());		break;		// ADC (ADCB extended)
 
 	// ADD
-	case 0x8b: addCycles(2);	A() = add(A(), AM_immediate_byte());	break;		// ADD (ADDA, immediate)
-	case 0x9b: addCycles(4);	A() = add(A(), AM_direct_byte());		break;		// ADD (ADDA, direct)
-	case 0xab: addCycles(4);	A() = add(A(), AM_indexed_byte());		break;		// ADD (ADDA, indexed)
-	case 0xbb: addCycles(5);	A() = add(A(), AM_extended_byte());		break;		// ADD (ADDA, extended)
+	case 0x8b: addCycles(2);	A() = add(A(), AM_immediate_byte());	break;		// ADD (ADDA immediate)
+	case 0x9b: addCycles(4);	A() = add(A(), AM_direct_byte());		break;		// ADD (ADDA direct)
+	case 0xab: addCycles(4);	A() = add(A(), AM_indexed_byte());		break;		// ADD (ADDA indexed)
+	case 0xbb: addCycles(5);	A() = add(A(), AM_extended_byte());		break;		// ADD (ADDA extended)
 
-	case 0xcb: addCycles(2);	B() = add(B(), AM_immediate_byte());	break;		// ADD (ADDB, immediate)
-	case 0xdb: addCycles(4);	B() = add(B(), AM_direct_byte());		break;		// ADD (ADDB, direct)
-	case 0xeb: addCycles(4);	B() = add(B(), AM_indexed_byte());		break;		// ADD (ADDB, indexed)
-	case 0xfb: addCycles(5);	B() = add(B(), AM_extended_byte());		break;		// ADD (ADDB, extended)
+	case 0xcb: addCycles(2);	B() = add(B(), AM_immediate_byte());	break;		// ADD (ADDB immediate)
+	case 0xdb: addCycles(4);	B() = add(B(), AM_direct_byte());		break;		// ADD (ADDB direct)
+	case 0xeb: addCycles(4);	B() = add(B(), AM_indexed_byte());		break;		// ADD (ADDB indexed)
+	case 0xfb: addCycles(5);	B() = add(B(), AM_extended_byte());		break;		// ADD (ADDB extended)
 
-	case 0xc3: addCycles(4);	D() = add(D(), AM_immediate_word());	break;		// ADD (ADDD, immediate)
-	case 0xd3: addCycles(6);	D() = add(D(), AM_direct_word());		break;		// ADD (ADDD, direct)
-	case 0xe3: addCycles(6);	D() = add(D(), AM_indexed_word());		break;		// ADD (ADDD, indexed)
-	case 0xf3: addCycles(7);	D() = add(D(), AM_extended_word());		break;		// ADD (ADDD, extended)
+	case 0xc3: addCycles(4);	D() = add(D(), AM_immediate_word());	break;		// ADD (ADDD immediate)
+	case 0xd3: addCycles(6);	D() = add(D(), AM_direct_word());		break;		// ADD (ADDD direct)
+	case 0xe3: addCycles(6);	D() = add(D(), AM_indexed_word());		break;		// ADD (ADDD indexed)
+	case 0xf3: addCycles(7);	D() = add(D(), AM_extended_word());		break;		// ADD (ADDD extended)
 
 	// AND
-	case 0x84:	addCycles(2);	A() = andr(A(), AM_immediate_byte());	break;		// AND (ANDA, immediate)
-	case 0x94:	addCycles(4);	A() = andr(A(), AM_direct_byte());		break;		// AND (ANDA, direct)
-	case 0xa4:	addCycles(4);	A() = andr(A(), AM_indexed_byte());		break;		// AND (ANDA, indexed)
-	case 0xb4:	addCycles(5);	A() = andr(A(), AM_extended_byte());	break;		// AND (ANDA, extended)
+	case 0x84:	addCycles(2);	A() = andr(A(), AM_immediate_byte());	break;		// AND (ANDA immediate)
+	case 0x94:	addCycles(4);	A() = andr(A(), AM_direct_byte());		break;		// AND (ANDA direct)
+	case 0xa4:	addCycles(4);	A() = andr(A(), AM_indexed_byte());		break;		// AND (ANDA indexed)
+	case 0xb4:	addCycles(5);	A() = andr(A(), AM_extended_byte());	break;		// AND (ANDA extended)
 
-	case 0xc4:	addCycles(2);	B() = andr(B(), AM_immediate_byte());	break;		// AND (ANDB, immediate)
-	case 0xd4:	addCycles(4);	B() = andr(B(), AM_direct_byte());		break;		// AND (ANDB, direct)
-	case 0xe4:	addCycles(4);	B() = andr(B(), AM_indexed_byte());		break;		// AND (ANDB, indexed)
-	case 0xf4:	addCycles(5);	B() = andr(B(), AM_extended_byte());	break;		// AND (ANDB, extended)
+	case 0xc4:	addCycles(2);	B() = andr(B(), AM_immediate_byte());	break;		// AND (ANDB immediate)
+	case 0xd4:	addCycles(4);	B() = andr(B(), AM_direct_byte());		break;		// AND (ANDB direct)
+	case 0xe4:	addCycles(4);	B() = andr(B(), AM_indexed_byte());		break;		// AND (ANDB indexed)
+	case 0xf4:	addCycles(5);	B() = andr(B(), AM_extended_byte());	break;		// AND (ANDB extended)
 
-	case 0x1c:	addCycles(3);	CC() = andr(CC(), AM_immediate_byte());	break;		// AND (ANDCC, immediate)
+	case 0x1c:	addCycles(3);	CC() = andr(CC(), AM_immediate_byte());	break;		// AND (ANDCC immediate)
 
 	// ASL/LSL
-	case 0x08:	addCycles(6);	BUS().write(asl(AM_direct_byte()));		break;		// ASL (ASL, direct)
-	case 0x48:	addCycles(2);	A() = asl(A());							break;		// ASL (ASLA, inherent)
-	case 0x58:	addCycles(2);	B() = asl(B());							break;		// ASL (ASLB, inherent)
-	case 0x68:	addCycles(6);	BUS().write(asl(AM_indexed_byte()));	break;		// ASL (ASL, indexed)
-	case 0x78:	addCycles(7);	BUS().write(asl(AM_extended_byte()));	break;		// ASL (ASL, extended)
+	case 0x08:	addCycles(6);	BUS().write(asl(AM_direct_byte()));		break;		// ASL (direct)
+	case 0x48:	addCycles(2);	A() = asl(A());							break;		// ASL (ASLA inherent)
+	case 0x58:	addCycles(2);	B() = asl(B());							break;		// ASL (ASLB inherent)
+	case 0x68:	addCycles(6);	BUS().write(asl(AM_indexed_byte()));	break;		// ASL (indexed)
+	case 0x78:	addCycles(7);	BUS().write(asl(AM_extended_byte()));	break;		// ASL (extended)
 
 	// ASR
-	case 0x07:	addCycles(6);	BUS().write(asr(AM_direct_byte()));		break;		// ASR (ASR, direct)
-	case 0x47:	addCycles(2);	A() = asr(A());							break;		// ASR (ASRA, inherent)
-	case 0x57:	addCycles(2);	B() = asr(B());							break;		// ASR (ASRB, inherent)
-	case 0x67:	addCycles(6);	BUS().write(asr(AM_indexed_byte()));	break;		// ASR (ASR, indexed)
-	case 0x77:	addCycles(7);	BUS().write(asr(AM_extended_byte()));	break;		// ASR (ASR, extended)
+	case 0x07:	addCycles(6);	BUS().write(asr(AM_direct_byte()));		break;		// ASR (direct)
+	case 0x47:	addCycles(2);	A() = asr(A());							break;		// ASR (ASRA inherent)
+	case 0x57:	addCycles(2);	B() = asr(B());							break;		// ASR (ASRB inherent)
+	case 0x67:	addCycles(6);	BUS().write(asr(AM_indexed_byte()));	break;		// ASR (indexed)
+	case 0x77:	addCycles(7);	BUS().write(asr(AM_extended_byte()));	break;		// ASR (extended)
 
 	// BIT
-	case 0x85:	addCycles(2);	andr(A(), AM_immediate_byte());			break;		// BIT (BITA, immediate)
-	case 0x95:	addCycles(4);	andr(A(), AM_direct_byte());			break;		// BIT (BITA, direct)
-	case 0xa5:	addCycles(4);	andr(A(), AM_indexed_byte());			break;		// BIT (BITA, indexed)
-	case 0xb5:	addCycles(5);	andr(A(), AM_extended_byte());			break;		// BIT (BITA, extended)
+	case 0x85:	addCycles(2);	andr(A(), AM_immediate_byte());			break;		// BIT (BITA immediate)
+	case 0x95:	addCycles(4);	andr(A(), AM_direct_byte());			break;		// BIT (BITA direct)
+	case 0xa5:	addCycles(4);	andr(A(), AM_indexed_byte());			break;		// BIT (BITA indexed)
+	case 0xb5:	addCycles(5);	andr(A(), AM_extended_byte());			break;		// BIT (BITA extended)
 
-	case 0xc5:	addCycles(2);	andr(B(), AM_immediate_byte());			break;		// BIT (BITB, immediate)
-	case 0xd5:	addCycles(4);	andr(B(), AM_direct_byte());			break;		// BIT (BITB, direct)
-	case 0xe5:	addCycles(4);	andr(B(), AM_indexed_byte());			break;		// BIT (BITB, indexed)
-	case 0xf5:	addCycles(5);	andr(B(), AM_extended_byte());			break;		// BIT (BITB, extended)
+	case 0xc5:	addCycles(2);	andr(B(), AM_immediate_byte());			break;		// BIT (BITB immediate)
+	case 0xd5:	addCycles(4);	andr(B(), AM_direct_byte());			break;		// BIT (BITB direct)
+	case 0xe5:	addCycles(4);	andr(B(), AM_indexed_byte());			break;		// BIT (BITB indexed)
+	case 0xf5:	addCycles(5);	andr(B(), AM_extended_byte());			break;		// BIT (BITB extended)
 
 	// CLR
-	case 0x0f:	addCycles(6);	BUS().write(Address_direct(), clr());	break;		// CLR (CLR, direct)
-	case 0x4f:	addCycles(2);	A() = clr();							break;		// CLR (CLRA, implied)
-	case 0x5f:	addCycles(2);	B() = clr();							break;		// CLR (CLRB, implied)
-	case 0x6f:	addCycles(6);	BUS().write(Address_indexed(), clr());	break;		// CLR (CLR, indexed)
-	case 0x7f:	addCycles(7);	BUS().write(Address_extended(), clr());	break;		// CLR (CLR, extended)
+	case 0x0f:	addCycles(6);	BUS().write(Address_direct(), clr());	break;		// CLR (CLR direct)
+	case 0x4f:	addCycles(2);	A() = clr();							break;		// CLR (CLRA implied)
+	case 0x5f:	addCycles(2);	B() = clr();							break;		// CLR (CLRB implied)
+	case 0x6f:	addCycles(6);	BUS().write(Address_indexed(), clr());	break;		// CLR (indexed)
+	case 0x7f:	addCycles(7);	BUS().write(Address_extended(), clr());	break;		// CLR (extended)
 
 	// CMP
 
@@ -143,32 +143,25 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xac:	addCycles(6);	cmp(X(), AM_indexed_word());			break;		// CMP (CMPX, indexed)
 	case 0xbc:	addCycles(7);	cmp(X(), AM_extended_word());			break;		// CMP (CMPX, extended)
 
-	// NEG
-	case 0x00:	addCycles(6);	BUS().write(neg(AM_direct_byte()));		break;		// NEG (direct)
-	case 0x40:	addCycles(2);	A() = neg(A());							break;		// NEG (NEGA, inherent)
-	case 0x50:	addCycles(2);	B() = neg(B());							break;		// NEG (NEGB, inherent)
-	case 0x60:	addCycles(6);	BUS().write(neg(AM_indexed_byte()));	break;		// NEG (indexed)
-	case 0x70:	addCycles(7);	BUS().write(neg(AM_extended_byte()));	break;		// NEG (extended)
-
 	// COM
-	case 0x03:	addCycles(6);	BUS().write(com(AM_direct_byte()));		break;		// COM (COM direct)
+	case 0x03:	addCycles(6);	BUS().write(com(AM_direct_byte()));		break;		// COM (direct)
 	case 0x43:	addCycles(2);	A() = com(A());							break;		// COM (COMA inherent)
 	case 0x53:	addCycles(2);	B() = com(B());							break;		// COM (COMB inherent)
-	case 0x63:	addCycles(6);	BUS().write(com(AM_indexed_byte()));	break;		// COM (COM indexed)
-	case 0x73:	addCycles(7);	BUS().write(com(AM_extended_byte()));	break;		// COM (COM extended)
+	case 0x63:	addCycles(6);	BUS().write(com(AM_indexed_byte()));	break;		// COM (indexed)
+	case 0x73:	addCycles(7);	BUS().write(com(AM_extended_byte()));	break;		// COM (extended)
 
 	// CWAI
-	case 0x3c:	addCycles(20);	cwai(AM_direct_byte());					break;		// CWAI (CWAI direct)
+	case 0x3c:	addCycles(20);	cwai(AM_direct_byte());					break;		// CWAI (direct)
 
 	// DAA
-	case 0x19:	addCycles(2);	A() = da(A());							break;		// DAA (DAA implied)
+	case 0x19:	addCycles(2);	A() = da(A());							break;		// DAA (inherent)
 
 	// DEC
-	case 0x0a:	addCycles(6);	BUS().write(dec(AM_direct_byte()));		break;		// DEC (DEC direct)
+	case 0x0a:	addCycles(6);	BUS().write(dec(AM_direct_byte()));		break;		// DEC (direct)
 	case 0x4a:	addCycles(2);	A() = dec(A());							break;		// DEC (DECA inherent)
 	case 0x5a:	addCycles(2);	B() = dec(B());							break;		// DEC (DECB inherent)
-	case 0x6a:	addCycles(6);	BUS().write(dec(AM_indexed_byte()));	break;		// DEC (DEC indexed)
-	case 0x7a:	addCycles(7);	BUS().write(dec(AM_extended_byte()));	break;		// DEC (DEC extended)
+	case 0x6a:	addCycles(6);	BUS().write(dec(AM_indexed_byte()));	break;		// DEC (indexed)
+	case 0x7a:	addCycles(7);	BUS().write(dec(AM_extended_byte()));	break;		// DEC (extended)
 
 	// EOR
 
@@ -185,19 +178,19 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xf8:	addCycles(5);	B() = eor(B(), AM_extended_byte());		break;		// EOR (EORB extended)
 
 	// EXG
-	case 0x1e:	addCycles(8);	exg(AM_immediate_byte());				break;		// EXG (EXG R1,R2 immediate)
+	case 0x1e:	addCycles(8);	exg(AM_immediate_byte());				break;		// EXG (R1,R2 immediate)
 
 	// INC
-	case 0x0c:	addCycles(6);	BUS().write(inc(AM_direct_byte()));		break;		// INC (INC direct)
+	case 0x0c:	addCycles(6);	BUS().write(inc(AM_direct_byte()));		break;		// INC (direct)
 	case 0x4c:	addCycles(2);	A() = inc(A());							break;		// INC (INCA inherent)
 	case 0x5c:	addCycles(2);	B() = inc(B());							break;		// INC (INCB inherent)
-	case 0x6c:	addCycles(6);	BUS().write(inc(AM_indexed_byte()));	break;		// INC (INC indexed)
-	case 0x7c:	addCycles(7);	BUS().write(inc(AM_extended_byte()));	break;		// INC (INC extended)
+	case 0x6c:	addCycles(6);	BUS().write(inc(AM_indexed_byte()));	break;		// INC (indexed)
+	case 0x7c:	addCycles(7);	BUS().write(inc(AM_extended_byte()));	break;		// INC (extended)
 
 	// JMP
-	case 0x0e:	addCycles(6);	jump(Address_direct());					break;		// JMP (JMP direct)
-	case 0x6e:	addCycles(6);	jump(Address_indexed());				break;		// JMP (JMP indexed)
-	case 0x7e:	addCycles(7);	jump(Address_extended());				break;		// JMP (JMP extended)
+	case 0x0e:	addCycles(6);	jump(Address_direct());					break;		// JMP (direct)
+	case 0x6e:	addCycles(6);	jump(Address_indexed());				break;		// JMP (indexed)
+	case 0x7e:	addCycles(7);	jump(Address_extended());				break;		// JMP (extended)
 
 	// JSR
 	case 0x9d:	addCycles(6);	call(Address_direct());					break;		// JSR (JSR direct)
@@ -243,11 +236,24 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x33:	addCycles(4);	U() = Address_indexed();				break;		// LEA (LEAU indexed)
 
 	// LSR
-	case 0x04:	addCycles(6);	BUS().write(lsr(AM_direct_byte()));		break;	// LSR (LSR direct)
-	case 0x44:	addCycles(2);	A() = lsr(A());							break;	// LSR (LSRA inherent)
-	case 0x54:	addCycles(2);	B() = lsr(B());							break;	// LSR (LSRB inherent)
-	case 0x64:	addCycles(6);	BUS().write(lsr(AM_indexed_byte()));	break;	// LSR (LSR indexed)
-	case 0x74:	addCycles(7);	BUS().write(lsr(AM_extended_byte()));	break;	// LSR (LSR extended)
+	case 0x04:	addCycles(6);	BUS().write(lsr(AM_direct_byte()));		break;		// LSR (direct)
+	case 0x44:	addCycles(2);	A() = lsr(A());							break;		// LSR (LSRA inherent)
+	case 0x54:	addCycles(2);	B() = lsr(B());							break;		// LSR (LSRB inherent)
+	case 0x64:	addCycles(6);	BUS().write(lsr(AM_indexed_byte()));	break;		// LSR (indexed)
+	case 0x74:	addCycles(7);	BUS().write(lsr(AM_extended_byte()));	break;		// LSR (extended)
+
+	// MUL
+	case 0x3d:	addCycles(11);	D() = mul(A(), B());					break;		// MUL (inherent)
+
+	// NEG
+	case 0x00:	addCycles(6);	BUS().write(neg(AM_direct_byte()));		break;		// NEG (direct)
+	case 0x40:	addCycles(2);	A() = neg(A());							break;		// NEG (NEGA, inherent)
+	case 0x50:	addCycles(2);	B() = neg(B());							break;		// NEG (NEGB, inherent)
+	case 0x60:	addCycles(6);	BUS().write(neg(AM_indexed_byte()));	break;		// NEG (indexed)
+	case 0x70:	addCycles(7);	BUS().write(neg(AM_extended_byte()));	break;		// NEG (extended)
+
+	// NOP
+	case 0x12:	addCycles(2);											break;		// NOP (inherent)
 
 	default:
 		UNREACHABLE;
@@ -479,19 +485,6 @@ EightBit::register16_t EightBit::mc6809::AM_extended_word() {
 
 //
 
-void EightBit::mc6809::abx() {
-	X() += B();
-}
-
-uint8_t EightBit::mc6809::neg(uint8_t operand) {
-	setFlag(CC(), VF, operand == Bit7);
-	const register16_t result = 0 - operand;
-	operand = result.low;
-	adjustNZ(operand);
-	adjustCarry(result);
-	return operand;
-}
-
 uint8_t EightBit::mc6809::adc(uint8_t operand, uint8_t data) {
 	return add(operand, data, CC() & CF);
 }
@@ -664,5 +657,21 @@ EightBit::register16_t EightBit::mc6809::ld(register16_t data) {
 uint8_t EightBit::mc6809::lsr(uint8_t operand) {
 	setFlag(CC(), CF, operand & Bit0);
 	adjustNZ(operand >>= 1);
+	return operand;
+}
+
+EightBit::register16_t EightBit::mc6809::mul(uint8_t first, uint8_t second) {
+	const register16_t result = first * second;
+	adjustZero(result);
+	setFlag(CC(), CF, result.low & Bit7);
+	return result;
+}
+
+uint8_t EightBit::mc6809::neg(uint8_t operand) {
+	setFlag(CC(), VF, operand == Bit7);
+	const register16_t result = 0 - operand;
+	operand = result.low;
+	adjustNZ(operand);
+	adjustCarry(result);
 	return operand;
 }

@@ -194,7 +194,6 @@ namespace EightBit {
 
 		// Instruction implementations
 
-		void abx();
 		uint8_t adc(uint8_t operand, uint8_t data);
 		uint8_t add(uint8_t operand, uint8_t data, int carry = 0);
 		register16_t add(register16_t operand, register16_t data);
@@ -214,6 +213,7 @@ namespace EightBit {
 		uint8_t ld(uint8_t data);
 		register16_t ld(register16_t data);
 		uint8_t lsr(uint8_t operand);
+		register16_t mul(uint8_t first, uint8_t second);
 		uint8_t neg(uint8_t operand);
 
 		register16_t m_d;
