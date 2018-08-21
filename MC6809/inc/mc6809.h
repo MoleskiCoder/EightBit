@@ -215,6 +215,7 @@ namespace EightBit {
 		uint8_t lsr(uint8_t operand);
 		register16_t mul(uint8_t first, uint8_t second);
 		uint8_t neg(uint8_t operand);
+		uint8_t orr(uint8_t operand, uint8_t data);
 
 		register16_t m_d;
 		register16_t m_x;

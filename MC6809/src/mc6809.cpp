@@ -89,7 +89,7 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xe4:	addCycles(4);	B() = andr(B(), AM_indexed_byte());		break;		// AND (ANDB indexed)
 	case 0xf4:	addCycles(5);	B() = andr(B(), AM_extended_byte());	break;		// AND (ANDB extended)
 
-	case 0x1c:	addCycles(3);	CC() = andr(CC(), AM_immediate_byte());	break;		// AND (ANDCC immediate)
+	case 0x1c:	addCycles(3);	CC() &= AM_immediate_byte();			break;		// AND (ANDCC immediate)
 
 	// ASL/LSL
 	case 0x08:	addCycles(6);	BUS().write(asl(AM_direct_byte()));		break;		// ASL (direct)
@@ -254,6 +254,23 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 
 	// NOP
 	case 0x12:	addCycles(2);											break;		// NOP (inherent)
+
+	// OR
+
+	// ORA
+	case 0x8a:	addCycles(3);	A() = orr(A(), AM_immediate_byte());	break;		// OR (ORA immediate)
+	case 0x9a:	addCycles(3);	A() = orr(A(), AM_direct_byte());		break;		// OR (ORA direct)
+	case 0xaa:	addCycles(3);	A() = orr(A(), AM_indexed_byte());		break;		// OR (ORA indexed)
+	case 0xba:	addCycles(3);	A() = orr(A(), AM_extended_byte());		break;		// OR (ORA extended)
+
+	// ORB
+	case 0xca:	addCycles(3);	A() = orr(A(), AM_immediate_byte());	break;		// OR (ORB immediate)
+	case 0xda:	addCycles(3);	A() = orr(A(), AM_direct_byte());		break;		// OR (ORB direct)
+	case 0xea:	addCycles(3);	A() = orr(A(), AM_indexed_byte());		break;		// OR (ORB indexed)
+	case 0xfa:	addCycles(3);	A() = orr(A(), AM_extended_byte());		break;		// OR (ORB extended)
+
+	// ORCC
+	case 0x1a:	addCycles(3);	CC() |= AM_immediate_byte();			break;		// OR (ORCC immediate)
 
 	default:
 		UNREACHABLE;
@@ -673,5 +690,11 @@ uint8_t EightBit::mc6809::neg(uint8_t operand) {
 	operand = result.low;
 	adjustNZ(operand);
 	adjustCarry(result);
+	return operand;
+}
+
+uint8_t EightBit::mc6809::orr(uint8_t operand, uint8_t data) {
+	clearFlag(CC(), VF);
+	adjustNZ(operand |= data);
 	return operand;
 }
