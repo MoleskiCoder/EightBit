@@ -91,7 +91,7 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 
 	case 0x1c:	addCycles(3);	CC() = andr(CC(), AM_immediate_byte());	break;		// AND (ANDCC, immediate)
 
-	// ASL
+	// ASL/LSL
 	case 0x08:	addCycles(6);	BUS().write(asl(AM_direct_byte()));		break;		// ASL (ASL, direct)
 	case 0x48:	addCycles(2);	A() = asl(A());							break;		// ASL (ASLA, inherent)
 	case 0x58:	addCycles(2);	B() = asl(B());							break;		// ASL (ASLB, inherent)
@@ -241,6 +241,13 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x31:	addCycles(4);	adjustZero(Y() = Address_indexed());	break;		// LEA (LEAY indexed)
 	case 0x32:	addCycles(4);	S() = Address_indexed();				break;		// LEA (LEAS indexed)
 	case 0x33:	addCycles(4);	U() = Address_indexed();				break;		// LEA (LEAU indexed)
+
+	// LSR
+	case 0x04:	addCycles(6);	BUS().write(lsr(AM_direct_byte()));		break;	// LSR (LSR direct)
+	case 0x44:	addCycles(2);	A() = lsr(A());							break;	// LSR (LSRA inherent)
+	case 0x54:	addCycles(2);	B() = lsr(B());							break;	// LSR (LSRB inherent)
+	case 0x64:	addCycles(6);	BUS().write(lsr(AM_indexed_byte()));	break;	// LSR (LSR indexed)
+	case 0x74:	addCycles(7);	BUS().write(lsr(AM_extended_byte()));	break;	// LSR (LSR extended)
 
 	default:
 		UNREACHABLE;
@@ -502,16 +509,14 @@ EightBit::register16_t EightBit::mc6809::add(register16_t operand, register16_t 
 }
 
 uint8_t EightBit::mc6809::andr(uint8_t operand, uint8_t data) {
-	const uint8_t result = operand & data;
 	clearFlag(CC(), VF);
-	adjustNZ(result);
-	return result;
+	adjustNZ(operand &= data);
+	return operand;
 }
 
 uint8_t EightBit::mc6809::asl(uint8_t operand) {
 	setFlag(CC(), CF, operand & Bit7);
-	operand <<= 1;
-	adjustNZ(operand);
+	adjustNZ(operand <<= 1);
 	const auto overflow = (CC() & CF) ^ ((CC() & NF) >> 3);
 	setFlag(CC(), VF, overflow);
 	return operand;
@@ -519,8 +524,7 @@ uint8_t EightBit::mc6809::asl(uint8_t operand) {
 
 uint8_t EightBit::mc6809::asr(uint8_t operand) {
 	setFlag(CC(), CF, operand & Bit7);
-	operand >>= 1;
-	adjustNZ(operand);
+	adjustNZ(operand >>= 1);
 	return operand;
 }
 
@@ -585,10 +589,9 @@ uint8_t EightBit::mc6809::dec(uint8_t operand) {
 }
 
 uint8_t EightBit::mc6809::eor(uint8_t operand, uint8_t data) {
-	const uint8_t result = operand ^ data;
-	adjustNZ(result);
 	clearFlag(CC(), VF);
-	return result;
+	adjustNZ(operand ^= data);
+	return operand;
 }
 
 uint8_t& EightBit::mc6809::referenceTransfer8(int specifier) {
@@ -656,4 +659,10 @@ EightBit::register16_t EightBit::mc6809::ld(register16_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(data);
 	return data;
+}
+
+uint8_t EightBit::mc6809::lsr(uint8_t operand) {
+	setFlag(CC(), CF, operand & Bit0);
+	adjustNZ(operand >>= 1);
+	return operand;
 }
