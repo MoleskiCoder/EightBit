@@ -187,6 +187,13 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// EXG
 	case 0x1e:	addCycles(8);	exg(AM_immediate_byte());				break;		// EXG (EXG R1,R2 immediate)
 
+	// INC
+	case 0x0c:	addCycles(6);	BUS().write(inc(AM_direct_byte()));		break;		// INC (INC direct)
+	case 0x4c:	addCycles(2);	A() = inc(A());							break;		// INC (INCA inherent)
+	case 0x5c:	addCycles(2);	B() = inc(B());							break;		// INC (INCB inherent)
+	case 0x6c:	addCycles(6);	BUS().write(inc(AM_indexed_byte()));	break;		// INC (INC indexed)
+	case 0x7c:	addCycles(7);	BUS().write(inc(AM_extended_byte()));	break;		// INC (INC extended)
+
 	default:
 		UNREACHABLE;
 	}
@@ -571,4 +578,11 @@ void EightBit::mc6809::exg(uint8_t data) {
 		std::swap(referenceTransfer16(reg1), referenceTransfer16(reg2));
 	else
 		std::swap(referenceTransfer8(reg1), referenceTransfer8(reg2));
+}
+
+uint8_t EightBit::mc6809::inc(uint8_t operand) {
+	const uint8_t result = operand + 1;
+	adjustNZ(result);
+	adjustOverflow(operand, 1, result);
+	return result;
 }
