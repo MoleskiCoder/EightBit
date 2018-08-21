@@ -258,16 +258,16 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// OR
 
 	// ORA
-	case 0x8a:	addCycles(3);	A() = orr(A(), AM_immediate_byte());	break;		// OR (ORA immediate)
-	case 0x9a:	addCycles(3);	A() = orr(A(), AM_direct_byte());		break;		// OR (ORA direct)
-	case 0xaa:	addCycles(3);	A() = orr(A(), AM_indexed_byte());		break;		// OR (ORA indexed)
-	case 0xba:	addCycles(3);	A() = orr(A(), AM_extended_byte());		break;		// OR (ORA extended)
+	case 0x8a:	addCycles(2);	A() = orr(A(), AM_immediate_byte());	break;		// OR (ORA immediate)
+	case 0x9a:	addCycles(4);	A() = orr(A(), AM_direct_byte());		break;		// OR (ORA direct)
+	case 0xaa:	addCycles(4);	A() = orr(A(), AM_indexed_byte());		break;		// OR (ORA indexed)
+	case 0xba:	addCycles(5);	A() = orr(A(), AM_extended_byte());		break;		// OR (ORA extended)
 
 	// ORB
-	case 0xca:	addCycles(3);	A() = orr(A(), AM_immediate_byte());	break;		// OR (ORB immediate)
-	case 0xda:	addCycles(3);	A() = orr(A(), AM_direct_byte());		break;		// OR (ORB direct)
-	case 0xea:	addCycles(3);	A() = orr(A(), AM_indexed_byte());		break;		// OR (ORB indexed)
-	case 0xfa:	addCycles(3);	A() = orr(A(), AM_extended_byte());		break;		// OR (ORB extended)
+	case 0xca:	addCycles(2);	A() = orr(A(), AM_immediate_byte());	break;		// OR (ORB immediate)
+	case 0xda:	addCycles(4);	A() = orr(A(), AM_direct_byte());		break;		// OR (ORB direct)
+	case 0xea:	addCycles(4);	A() = orr(A(), AM_indexed_byte());		break;		// OR (ORB indexed)
+	case 0xfa:	addCycles(5);	A() = orr(A(), AM_extended_byte());		break;		// OR (ORB extended)
 
 	// ORCC
 	case 0x1a:	addCycles(3);	CC() |= AM_immediate_byte();			break;		// OR (ORCC immediate)
