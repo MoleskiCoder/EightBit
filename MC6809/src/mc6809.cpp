@@ -155,6 +155,9 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x63:	addCycles(6);	BUS().write(com(AM_indexed_byte()));	break;		// COM (COM indexed)
 	case 0x73:	addCycles(7);	BUS().write(com(AM_extended_byte()));	break;		// COM (COM extended)
 
+	// CWAI
+	case 0x3c:	addCycles(20);	cwai(AM_direct_byte());					break;		// CWAI (CWAI direct)
+
 	default:
 		UNREACHABLE;
 	}
@@ -448,4 +451,17 @@ uint8_t EightBit::mc6809::com(uint8_t operand) {
 	clearFlag(CC(), VF);
 	setFlag(CC(), CF);
 	return result;
+}
+
+void EightBit::mc6809::cwai(uint8_t data) {
+	CC() &= data;
+	pushWord(PC());
+	pushWord(U());
+	pushWord(Y());
+	pushWord(X());
+	push(DP());
+	push(B());
+	push(A());
+	push(CC());
+	halt();
 }
