@@ -204,6 +204,38 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xad:	addCycles(6);	call(Address_indexed());				break;		// JSR (JSR indexed)
 	case 0xbd:	addCycles(7);	call(Address_extended());				break;		// JSR (JSR extended)
 
+	// LD
+
+	// LDA
+	case 0x86:	addCycles(2);	A() = ld(AM_immediate_byte());			break;		// LD (LDA immediate)
+	case 0x96:	addCycles(4);	A() = ld(AM_direct_byte());				break;		// LD (LDA direct)
+	case 0xa6:	addCycles(4);	A() = ld(AM_indexed_byte());			break;		// LD (LDA indexed)
+	case 0xb6:	addCycles(5);	A() = ld(AM_extended_byte());			break;		// LD (LDA extended)
+
+	// LDB
+	case 0xc6:	addCycles(2);	B() = ld(AM_immediate_byte());			break;		// LD (LDB immediate)
+	case 0xd6:	addCycles(4);	B() = ld(AM_direct_byte());				break;		// LD (LDB direct)
+	case 0xe6:	addCycles(4);	B() = ld(AM_indexed_byte());			break;		// LD (LDB indexed)
+	case 0xf6:	addCycles(5);	B() = ld(AM_extended_byte());			break;		// LD (LDB extended)
+
+	// LDD
+	case 0xcc:	addCycles(3);	D() = ld(AM_immediate_word());			break;		// LD (LDD immediate)
+	case 0xdc:	addCycles(5);	D() = ld(AM_direct_word());				break;		// LD (LDD direct)
+	case 0xec:	addCycles(5);	D() = ld(AM_indexed_word());			break;		// LD (LDD indexed)
+	case 0xfc:	addCycles(6);	D() = ld(AM_extended_word());			break;		// LD (LDD extended)
+
+	// LDU
+	case 0xce:	addCycles(3);	U() = ld(AM_immediate_word());			break;		// LD (LDU immediate)
+	case 0xde:	addCycles(5);	U() = ld(AM_direct_word());				break;		// LD (LDU direct)
+	case 0xee:	addCycles(5);	U() = ld(AM_indexed_word());			break;		// LD (LDU indexed)
+	case 0xfe:	addCycles(6);	U() = ld(AM_extended_word());			break;		// LD (LDU extended)
+
+	// LDX
+	case 0x8e:	addCycles(3);	X() = ld(AM_immediate_word());			break;		// LD (LDX immediate)
+	case 0x9e:	addCycles(5);	X() = ld(AM_direct_word());				break;		// LD (LDX direct)
+	case 0xae:	addCycles(5);	X() = ld(AM_indexed_word());			break;		// LD (LDX indexed)
+	case 0xbe:	addCycles(6);	X() = ld(AM_extended_word());			break;		// LD (LDX extended)
+
 	default:
 		UNREACHABLE;
 	}
@@ -237,6 +269,20 @@ int EightBit::mc6809::execute10(uint8_t opcode) {
 	case 0x9c:	addCycles(7);	cmp(Y(), AM_direct_word());				break;		// CMP (CMPY, direct)
 	case 0xac:	addCycles(7);	cmp(Y(), AM_indexed_word());			break;		// CMP (CMPY, indexed)
 	case 0xbc:	addCycles(8);	cmp(Y(), AM_extended_word());			break;		// CMP (CMPY, extended)
+
+	// LD
+
+	// LDS
+	case 0xce:	addCycles(4);	S() = ld(AM_immediate_word());			break;		// LD (LDS immediate)
+	case 0xde:	addCycles(6);	S() = ld(AM_direct_word());				break;		// LD (LDS direct)
+	case 0xee:	addCycles(6);	S() = ld(AM_indexed_word());			break;		// LD (LDS indexed)
+	case 0xfe:	addCycles(7);	S() = ld(AM_extended_word());			break;		// LD (LDS extended)
+
+	// LDY
+	case 0x8e:	addCycles(4);	Y() = ld(AM_immediate_word());			break;		// LD (LDY immediate)
+	case 0x9e:	addCycles(6);	Y() = ld(AM_direct_word());				break;		// LD (LDY direct)
+	case 0xae:	addCycles(6);	Y() = ld(AM_indexed_word());			break;		// LD (LDY indexed)
+	case 0xbe:	addCycles(7);	Y() = ld(AM_extended_word());			break;		// LD (LDY extended)
 
 	default:
 		UNREACHABLE;
@@ -592,4 +638,16 @@ uint8_t EightBit::mc6809::inc(uint8_t operand) {
 	adjustNZ(result);
 	adjustOverflow(operand, 1, result);
 	return result;
+}
+
+uint8_t EightBit::mc6809::ld(uint8_t data) {
+	clearFlag(CC(), VF);
+	adjustNZ(data);
+	return data;
+}
+
+EightBit::register16_t EightBit::mc6809::ld(register16_t data) {
+	clearFlag(CC(), VF);
+	adjustNZ(data.word);
+	return data;
 }
