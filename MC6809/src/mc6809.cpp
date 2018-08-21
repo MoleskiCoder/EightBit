@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "mc6809.h"
 
+#include <algorithm>
+
 EightBit::mc6809::mc6809(Bus& bus)
 : BigEndianProcessor(bus) {}
 
@@ -181,6 +183,9 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xd8:	addCycles(4);	B() = eor(B(), AM_direct_byte());		break;		// EOR (EORB direct)
 	case 0xe8:	addCycles(4);	B() = eor(B(), AM_indexed_byte());		break;		// EOR (EORB indexed)
 	case 0xf8:	addCycles(5);	B() = eor(B(), AM_extended_byte());		break;		// EOR (EORB extended)
+
+	// EXG
+	case 0x1e:	addCycles(8);	exg(AM_immediate_byte());				break;		// EXG (EXG R1,R2 immediate)
 
 	default:
 		UNREACHABLE;
@@ -518,4 +523,52 @@ uint8_t EightBit::mc6809::eor(uint8_t operand, uint8_t data) {
 	adjustNZ(result);
 	clearFlag(CC(), VF);
 	return result;
+}
+
+uint8_t& EightBit::mc6809::referenceTransfer8(int specifier) {
+	switch (specifier) {
+	case 0b1000:
+		return A();
+	case 0b1001:
+		return B();
+	case 0b1010:
+		return CC();
+	case 0b1011:
+		return DP();
+	default:
+		UNREACHABLE;
+	}
+}
+
+EightBit::register16_t& EightBit::mc6809::referenceTransfer16(int specifier) {
+	switch (specifier) {
+	case 0b0000:
+		return D();
+	case 0b0001:
+		return X();
+	case 0b0010:
+		return Y();
+	case 0b0011:
+		return U();
+	case 0b0100:
+		return S();
+	case 0b0101:
+		return PC();
+	default:
+		UNREACHABLE;
+	}
+}
+
+void EightBit::mc6809::exg(uint8_t data) {
+
+	const auto reg1 = highNibble(data);
+	const auto reg2 = lowNibble(data);
+
+	const bool type16 = !!(reg1 & Bit3);	// 16 bit exchange?
+	ASSUME(type16 == !!(reg2 & Bit3));		// Regardless, the register exchange must be equivalent
+
+	if (type16)
+		std::swap(referenceTransfer16(reg1), referenceTransfer16(reg2));
+	else
+		std::swap(referenceTransfer8(reg1), referenceTransfer8(reg2));
 }

@@ -96,6 +96,12 @@ namespace EightBit {
 		// Register selection for "indexed"
 		register16_t& RR(int which);
 
+		// Register selection for 8-bit transfer/exchange
+		uint8_t& referenceTransfer8(int specifier);
+
+		// Register selection for 16-bit transfer/exchange
+		register16_t& referenceTransfer16(int specifier);
+
 		// Addressing modes
 
 		void Address_direct();		// DP + fetched offset
@@ -188,6 +194,7 @@ namespace EightBit {
 		uint8_t da(uint8_t operand);
 		uint8_t dec(uint8_t operand);
 		uint8_t eor(uint8_t operand, uint8_t data);
+		void exg(uint8_t data);
 		uint8_t neg(uint8_t operand);
 
 		register16_t m_d;
