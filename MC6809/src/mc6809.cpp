@@ -300,6 +300,86 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// RTS
 	case 0x39:	addCycles(5);	rts();									break;		// RTS (RTS inherent)
 
+	// SBC
+
+	// SBCA
+	case 0x82:	addCycles(4);	break;		// SBC (SBCA immediate)
+	case 0x92:	addCycles(4);	break;		// SBC (SBCA direct)
+	case 0xa2:	addCycles(4);	break;		// SBC (SBCA indexed)
+	case 0xb2:	addCycles(5);	break;		// SBC (SBCB extended)
+
+	// SBCB
+	case 0xc2:	addCycles(4);	break;		// SBC (SBCB immediate)
+	case 0xd2:	addCycles(4);	break;		// SBC (SBCB direct)
+	case 0xe2:	addCycles(4);	break;		// SBC (SBCB indexed)
+	case 0xf2:	addCycles(5);	break;		// SBC (SBCB extended)
+
+	// SEX
+	case 0x1d:	addCycles(2);	rts();									break;		// RTS (RTS inherent)
+
+	// ST
+
+	// STA
+	case 0x97:	addCycles(4);	break;		// ST (STA direct)
+	case 0xa7:	addCycles(4);	break;		// ST (STA indexed)
+	case 0xb7:	addCycles(5);	break;		// ST (STA extended)
+
+	// STB
+	case 0xd7:	addCycles(4);	break;		// ST (STB direct)
+	case 0xe7:	addCycles(4);	break;		// ST (STB indexed)
+	case 0xf7:	addCycles(5);	break;		// ST (STB extended)
+
+	// STD
+	case 0xdd:	addCycles(5);	break;		// ST (STB direct)
+	case 0xed:	addCycles(5);	break;		// ST (STB indexed)
+	case 0xfd:	addCycles(6);	break;		// ST (STB extended)
+
+	// STU
+	case 0xdf:	addCycles(5);	break;		// ST (STU direct)
+	case 0xef:	addCycles(5);	break;		// ST (STU indexed)
+	case 0xff:	addCycles(6);	break;		// ST (STU extended)
+
+	// STX
+	case 0x9f:	addCycles(5);	break;		// ST (STX direct)
+	case 0xaf:	addCycles(5);	break;		// ST (STX indexed)
+	case 0xbf:	addCycles(6);	break;		// ST (STX extended)
+
+	// SUB
+
+	// SUBA
+	case 0x80:	addCycles(2);	break;		// SUB (SUBA immediate)
+	case 0x90:	addCycles(4);	break;		// SUB (SUBA direct)
+	case 0xa0:	addCycles(4);	break;		// SUB (SUBA indexed)
+	case 0xb0:	addCycles(5);	break;		// SUB (SUBA extended)
+
+	// SUBB
+	case 0xc0:	addCycles(2);	break;		// SUB (SUBB immediate)
+	case 0xd0:	addCycles(4);	break;		// SUB (SUBB direct)
+	case 0xe0:	addCycles(4);	break;		// SUB (SUBB indexed)
+	case 0xf0:	addCycles(5);	break;		// SUB (SUBB extended)
+
+	// SUBD
+	case 0x83:	addCycles(4);	break;		// SUB (SUBD immediate)
+	case 0x93:	addCycles(6);	break;		// SUB (SUBD direct)
+	case 0xa3:	addCycles(6);	break;		// SUB (SUBD indexed)
+	case 0xb3:	addCycles(7);	break;		// SUB (SUBD extended)
+
+	// SWI
+	case 0x3f:	addCycles(19);	break;		// SWI (inherent)
+
+	// SYNC
+	case 0x13:	addCycles(4);	break;		// SYNC (inherent)
+
+	// TFR
+	case 0x1f:	addCycles(6);	break;		// TFR (direct)
+
+	// TST
+	case 0x0d:	addCycles(6);	break;		// TST (direct)
+	case 0x4d:	addCycles(2);	break;		// TST (TSTA inherent)
+	case 0x5d:	addCycles(2);	break;		// TST (TSTB inherent)
+	case 0x6d:	addCycles(6);	break;		// TST (indexed)
+	case 0x7d:	addCycles(7);	break;		// TST (extended)
+
 	// Branching
 
 	case 0x16:	addCycles(5);	jump(Address_relative_word());			break;		// BRA (LBRA relative)
@@ -389,6 +469,19 @@ int EightBit::mc6809::execute10(uint8_t opcode) {
 	case 0x2e:	addCycles(5);	if (branchLong(BGT())) addCycle();		break;		// BGT (LBGT relative)
 	case 0x2f:	addCycles(5);	if (branchLong(BLE())) addCycle();		break;		// BLE (LBLE relative)
 
+	// STS
+	case 0xdf:	addCycles(6);	break;		// ST (STS direct)
+	case 0xef:	addCycles(6);	break;		// ST (STS indexed)
+	case 0xff:	addCycles(7);	break;		// ST (STS extended)
+
+	// STY
+	case 0x9f:	addCycles(6);	break;		// ST (STY direct)
+	case 0xaf:	addCycles(6);	break;		// ST (STY indexed)
+	case 0xbf:	addCycles(7);	break;		// ST (STY extended)
+
+	// SWI
+	case 0x3f:	addCycles(20);	break;		// SWI (SWI2 inherent)
+
 	default:
 		UNREACHABLE;
 	}
@@ -420,6 +513,9 @@ int EightBit::mc6809::execute11(uint8_t opcode) {
 	case 0x9c:	addCycles(7);	cmp(S(), AM_direct_word());				break;		// CMP (CMPS, direct)
 	case 0xac:	addCycles(7);	cmp(S(), AM_indexed_word());			break;		// CMP (CMPS, indexed)
 	case 0xbc:	addCycles(8);	cmp(S(), AM_extended_word());			break;		// CMP (CMPS, extended)
+
+	// SWI
+	case 0x3f:	addCycles(20);	break;		// SWI (SWI3 inherent)
 
 	default:
 		UNREACHABLE;
