@@ -300,6 +300,29 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// RTS
 	case 0x39:	addCycles(5);	rts();									break;		// RTS (RTS inherent)
 
+	// Branching
+
+	case 0x16:	addCycles(5);	jump(Address_relative_word());			break;		// BRA (LBRA relative)
+	case 0x17:	addCycles(9);	call(Address_relative_word());			break;		// BSR (LBSR relative)
+	case 0x20:	addCycles(3);	jump(Address_relative_byte());			break;		// BRA (BRA relative)
+	case 0x21:	addCycles(3);	Address_relative_byte();				break;		// BRN (BRN relative)
+	case 0x22:	addCycles(3);	branchShort(BHI());						break;		// BHI (BHI relative)
+	case 0x23:	addCycles(3);	branchShort(BLS());						break;		// BLS (BLS relative)
+	case 0x24:	addCycles(3);	branchShort(!carry());					break;		// BCC (BCC relative)
+	case 0x25:	addCycles(3);	branchShort(carry());					break;		// BCS (BCS relative)
+	case 0x26:	addCycles(3);	branchShort(!zero());					break;		// BNE (BNE relative)
+	case 0x27:	addCycles(3);	branchShort(zero());					break;		// BEQ (BEQ relative)
+	case 0x28: 	addCycles(3);	branchShort(!overflow());				break;		// BVC (BVC relative)
+	case 0x29: 	addCycles(3);	branchShort(overflow());				break;		// BVS (BVS relative)
+	case 0x2a: 	addCycles(3);	branchShort(!negative());				break;		// BPL (BPL relative)
+	case 0x2b: 	addCycles(3);	branchShort(negative());				break;		// BMI (BMI relative)
+	case 0x2c:	addCycles(3);	branchShort(BGE());						break;		// BGE (BGE relative)
+	case 0x2d:	addCycles(3);	branchShort(BLT());						break;		// BLT (BLT relative)
+	case 0x2e:	addCycles(3);	branchShort(BGT());						break;		// BGT (BGT relative)
+	case 0x2f:	addCycles(3);	branchShort(BLE());						break;		// BLE (BLE relative)
+
+	case 0x8d:	addCycles(7);	call(Address_relative_byte());			break;		// BSR (BSR relative)
+
 	default:
 		UNREACHABLE;
 	}
@@ -347,6 +370,24 @@ int EightBit::mc6809::execute10(uint8_t opcode) {
 	case 0x9e:	addCycles(6);	Y() = ld(AM_direct_word());				break;		// LD (LDY direct)
 	case 0xae:	addCycles(6);	Y() = ld(AM_indexed_word());			break;		// LD (LDY indexed)
 	case 0xbe:	addCycles(7);	Y() = ld(AM_extended_word());			break;		// LD (LDY extended)
+
+	// Branching
+
+	case 0x21:	addCycles(5);	Address_relative_word();				break;		// BRN (LBRN relative)
+	case 0x22:	addCycles(5);	if (branchLong(BHI())) addCycle();		break;		// BHI (LBHI relative)
+	case 0x23:	addCycles(5);	if (branchLong(BLS())) addCycle();		break;		// BLS (LBLS relative)
+	case 0x24:	addCycles(5);	if (branchLong(!carry())) addCycle();	break;		// BCC (LBCC relative)
+	case 0x25:	addCycles(5);	if (branchLong(carry())) addCycle();	break;		// BCS (LBCS relative)
+	case 0x26:	addCycles(5);	if (branchLong(!zero())) addCycle();	break;		// BNE (LBNE relative)
+	case 0x27:	addCycles(5);	if (branchLong(zero())) addCycle();		break;		// BEQ (LBEQ relative)
+	case 0x28:	addCycles(5);	if (branchLong(!overflow())) addCycle();break;		// BVC (LBVC relative)
+	case 0x29:	addCycles(5);	if (branchLong(overflow())) addCycle();	break;		// BVS (LBVS relative)
+	case 0x2a:	addCycles(5);	if (branchLong(!negative())) addCycle();break;		// BPL (LBPL relative)
+	case 0x2b: 	addCycles(5);	if (branchLong(negative())) addCycle();	break;		// BMI (LBMI relative)
+	case 0x2c:	addCycles(5);	if (branchLong(BGE())) addCycle();		break;		// BGE (LBGE relative)
+	case 0x2d:	addCycles(5);	if (branchLong(BLT())) addCycle();		break;		// BLT (LBLT relative)
+	case 0x2e:	addCycles(5);	if (branchLong(BGT())) addCycle();		break;		// BGT (LBGT relative)
+	case 0x2f:	addCycles(5);	if (branchLong(BLE())) addCycle();		break;		// BLE (LBLE relative)
 
 	default:
 		UNREACHABLE;
@@ -417,6 +458,14 @@ EightBit::register16_t& EightBit::mc6809::RR(int which) {
 	default:
 		UNREACHABLE;
 	}
+}
+
+EightBit::register16_t EightBit::mc6809::Address_relative_byte() {
+	return PC() + (int8_t)fetchByte();
+}
+
+EightBit::register16_t EightBit::mc6809::Address_relative_word() {
+	return PC() + (int16_t)fetchWord().word;
 }
 
 EightBit::register16_t EightBit::mc6809::Address_direct() {

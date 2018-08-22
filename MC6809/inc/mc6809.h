@@ -134,9 +134,11 @@ namespace EightBit {
 
 		// Addressing modes
 
-		register16_t Address_direct();		// DP + fetched offset
-		register16_t Address_indexed();		// Indexed address, complicated!
-		register16_t Address_extended();	// Fetched address
+		register16_t Address_direct();			// DP + fetched offset
+		register16_t Address_indexed();			// Indexed address, complicated!
+		register16_t Address_extended();		// Fetched address
+		register16_t Address_relative_byte();	// PC + fetched byte offset
+		register16_t Address_relative_word();	// PC + fetched word offset
 
 		// Addressing mode readers
 
@@ -220,6 +222,36 @@ namespace EightBit {
 
 		void adjustSubtraction(register16_t before, register16_t data, uint32_t after) {
 			adjustSubtraction(before.word, data.word, after);
+		}
+
+		// Flag checking
+
+		int negative() { return CC() & NF; }
+		int zero() { return CC() & ZF; }
+		int overflow() { return CC() & VF; }
+		int carry() { return CC() & CF; }
+
+		bool BLS() { return carry() | (zero() >> 2); }									// (C OR Z)
+		bool BHI() { return !BLS(); }													// !(C OR Z)
+		bool BLT() { return (negative() >> 2) ^ overflow(); }							// (N XOR V)
+		bool BGE() { return !BLT(); }													// !(N XOR V)
+		bool BLE() { return (zero() >> 2) & ((negative() >> 3) ^ (overflow() >> 1)); }	// (Z OR (N XOR V))
+		bool BGT() { return !BLE(); }													// !(Z OR (N XOR V))
+
+		// Branching
+
+		bool branch(register16_t destination, int condition) {
+			if (condition)
+				jump(destination);
+			return !!condition;
+		}
+
+		bool branchShort(int condition) {
+			branch(Address_relative_byte(), condition);
+		}
+
+		bool branchLong(int condition) {
+			branch(Address_relative_word(), condition);
 		}
 
 		// Instruction implementations
