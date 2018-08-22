@@ -252,6 +252,8 @@ namespace EightBit {
 		void pulu(uint8_t data);
 		uint8_t rol(uint8_t operand);
 		uint8_t ror(uint8_t operand);
+		void rti();
+		void rts();
 
 		register16_t m_d;
 		register16_t m_x;

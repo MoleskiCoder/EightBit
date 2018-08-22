@@ -294,6 +294,12 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x66:	addCycles(6);	BUS().write(ror(AM_indexed_byte()));	break;		// ROR (indexed)
 	case 0x76:	addCycles(7);	BUS().write(ror(AM_extended_byte()));	break;		// ROR (extended)
 
+	// RTI
+	case 0x38:	addCycles(6);	rti();									break;		// RTI (RTI inherent)
+
+	// RTS
+	case 0x39:	addCycles(5);	rts();									break;		// RTS (RTS inherent)
+
 	default:
 		UNREACHABLE;
 	}
@@ -889,4 +895,22 @@ uint8_t EightBit::mc6809::ror(uint8_t operand) {
 	operand |= (carry << 7);
 	adjustNZ(operand);
 	return operand;
+}
+
+void EightBit::mc6809::rti() {
+	CC() = popS();
+	if (CC() & EF) {
+		addCycles(9);	// One cycle per byte
+		A() = popS();
+		B() = popS();
+		DP() = popS();
+		X() = popWordS();
+		Y() = popWordS();
+		U() = popWordS();
+	}
+	ret();
+}
+
+void EightBit::mc6809::rts() {
+	ret();
 }
