@@ -295,7 +295,7 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x76:	addCycles(7);	BUS().write(ror(AM_extended_byte()));	break;		// ROR (extended)
 
 	// RTI
-	case 0x38:	addCycles(6);	rti();									break;		// RTI (RTI inherent)
+	case 0x3B:	addCycles(6);	rti();									break;		// RTI (RTI inherent)
 
 	// RTS
 	case 0x39:	addCycles(5);	rts();									break;		// RTS (RTS inherent)
