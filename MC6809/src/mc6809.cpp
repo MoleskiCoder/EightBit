@@ -280,6 +280,20 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x35:	addCycles(5);	puls(AM_immediate_byte());				break;		// PUL (PULS immediate)
 	case 0x37:	addCycles(5);	pulu(AM_immediate_byte());				break;		// PUL (PULU immediate)
 
+	// ROL
+	case 0x09:	addCycles(6);	BUS().write(rol(AM_direct_byte()));		break;		// ROL (direct)
+	case 0x49:	addCycles(2);	A() = rol(A());							break;		// ROL (ROLA inherent)
+	case 0x59:	addCycles(2);	B() = rol(B());							break;		// ROL (ROLB inherent)
+	case 0x69:	addCycles(6);	BUS().write(rol(AM_indexed_byte()));	break;		// ROL (indexed)
+	case 0x79:	addCycles(7);	BUS().write(rol(AM_extended_byte()));	break;		// ROL (extended)
+
+	// ROR
+	case 0x06:	addCycles(6);	BUS().write(ror(AM_direct_byte()));		break;		// ROR (direct)
+	case 0x46:	addCycles(2);	A() = ror(A());							break;		// ROR (RORA inherent)
+	case 0x56:	addCycles(2);	B() = ror(B());							break;		// ROR (RORB inherent)
+	case 0x66:	addCycles(6);	BUS().write(ror(AM_indexed_byte()));	break;		// ROR (indexed)
+	case 0x76:	addCycles(7);	BUS().write(ror(AM_extended_byte()));	break;		// ROR (extended)
+
 	default:
 		UNREACHABLE;
 	}
@@ -856,4 +870,23 @@ void EightBit::mc6809::pulu(uint8_t data) {
 		addCycles(2);
 		PC() = popWordU();
 	}
+}
+
+uint8_t EightBit::mc6809::rol(uint8_t operand) {
+	const auto carry = CC() & CF;
+	setFlag(CC(), CF, operand & Bit7);
+	setFlag(CC(), VF, ((operand & Bit7) >> 7) ^ ((operand & Bit6) >> 6));
+	operand <<= 1;
+	operand |= carry;
+	adjustNZ(operand);
+	return operand;
+}
+		
+uint8_t EightBit::mc6809::ror(uint8_t operand) {
+	const auto carry = CC() & CF;
+	setFlag(CC(), CF, operand & Bit0);
+	operand >>= 1;
+	operand |= (carry << 7);
+	adjustNZ(operand);
+	return operand;
 }
