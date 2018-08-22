@@ -719,77 +719,141 @@ uint8_t EightBit::mc6809::orr(uint8_t operand, uint8_t data) {
 }
 
 void EightBit::mc6809::pshs(uint8_t data) {
-	if (data & Bit7)
+	if (data & Bit7) {
+		addCycles(2);
 		pushWordS(PC());
-	if (data & Bit6)
+	}
+	if (data & Bit6) {
+		addCycles(2);
 		pushWordS(U());
-	if (data & Bit5)
+	}
+	if (data & Bit5) {
+		addCycles(2);
 		pushWordS(Y());
-	if (data & Bit4)
+	}
+	if (data & Bit4) {
+		addCycles(2);
 		pushWordS(X());
-	if (data & Bit3)
+	}
+	if (data & Bit3) {
+		addCycle();
 		pushS(DP());
-	if (data & Bit2)
+	}
+	if (data & Bit2) {
+		addCycle();
 		pushS(B());
-	if (data & Bit1)
+	}
+	if (data & Bit1) {
+		addCycle();
 		pushS(A());
-	if (data & Bit0)
+	}
+	if (data & Bit0) {
+		addCycle();
 		pushS(CC());
+	}
 }
 
 void EightBit::mc6809::pshu(uint8_t data) {
-	if (data & Bit7)
+	if (data & Bit7) {
+		addCycles(2);
 		pushWordU(PC());
-	if (data & Bit6)
+	}
+	if (data & Bit6) {
+		addCycles(2);
 		pushWordU(S());
-	if (data & Bit5)
+	}
+	if (data & Bit5) {
+		addCycles(2);
 		pushWordU(Y());
-	if (data & Bit4)
+	}
+	if (data & Bit4) {
+		addCycles(2);
 		pushWordU(X());
-	if (data & Bit3)
+	}
+	if (data & Bit3) {
+		addCycle();
 		pushU(DP());
-	if (data & Bit2)
+	}
+	if (data & Bit2) {
+		addCycle();
 		pushU(B());
-	if (data & Bit1)
+	}
+	if (data & Bit1) {
+		addCycle();
 		pushU(A());
-	if (data & Bit0)
+	}
+	if (data & Bit0) {
+		addCycle();
 		pushU(CC());
+	}
 }
 
 void EightBit::mc6809::puls(uint8_t data) {
-	if (data & Bit0)
+	if (data & Bit0) {
+		addCycle();
 		CC() = popS();
-	if (data & Bit1)
+	}
+	if (data & Bit1) {
+		addCycle();
 		A() = popS();
-	if (data & Bit2)
+	}
+	if (data & Bit2) {
+		addCycle();
 		B() = popS();
-	if (data & Bit3)
+	}
+	if (data & Bit3) {
+		addCycle();
 		DP() = popS();
-	if (data & Bit4)
+	}
+	if (data & Bit4) {
+		addCycles(2);
 		X() = popWordS();
-	if (data & Bit5)
+	}
+	if (data & Bit5) {
+		addCycles(2);
 		Y() = popWordS();
-	if (data & Bit6)
+	}
+	if (data & Bit6) {
+		addCycles(2);
 		U() = popWordS();
-	if (data & Bit7)
+	}
+	if (data & Bit7) {
+		addCycles(2);
 		PC() = popWordS();
+	}
 }
 
 void EightBit::mc6809::pulu(uint8_t data) {
-	if (data & Bit0)
+	if (data & Bit0) {
+		addCycle();
 		CC() = popU();
-	if (data & Bit1)
+	}
+	if (data & Bit1) {
+		addCycle();
 		A() = popU();
-	if (data & Bit2)
+	}
+	if (data & Bit2) {
+		addCycle();
 		B() = popU();
-	if (data & Bit3)
+	}
+	if (data & Bit3) {
+		addCycle();
 		DP() = popU();
-	if (data & Bit4)
+	}
+	if (data & Bit4) {
+		addCycles(2);
 		X() = popWordU();
-	if (data & Bit5)
+	}
+	if (data & Bit5) {
+		addCycles(2);
 		Y() = popWordU();
-	if (data & Bit6)
+	}
+	if (data & Bit6) {
+		addCycles(2);
 		S() = popWordU();
-	if (data & Bit7)
+	}
+	if (data & Bit7) {
+		addCycles(2);
 		PC() = popWordU();
+	}
 }
