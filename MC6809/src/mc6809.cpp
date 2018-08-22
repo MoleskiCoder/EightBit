@@ -739,57 +739,57 @@ void EightBit::mc6809::pshs(uint8_t data) {
 
 void EightBit::mc6809::pshu(uint8_t data) {
 	if (data & Bit7)
-		pushWordS(PC());
+		pushWordU(PC());
 	if (data & Bit6)
-		pushWordS(S());
+		pushWordU(S());
 	if (data & Bit5)
-		pushWordS(Y());
+		pushWordU(Y());
 	if (data & Bit4)
-		pushWordS(X());
+		pushWordU(X());
 	if (data & Bit3)
-		pushS(DP());
+		pushU(DP());
 	if (data & Bit2)
-		pushS(B());
+		pushU(B());
 	if (data & Bit1)
-		pushS(A());
+		pushU(A());
 	if (data & Bit0)
-		pushS(CC());
+		pushU(CC());
 }
 
 void EightBit::mc6809::puls(uint8_t data) {
 	if (data & Bit0)
-		pushS(CC());
+		CC() = popS();
 	if (data & Bit1)
-		pushS(A());
+		A() = popS();
 	if (data & Bit2)
-		pushS(B());
+		B() = popS();
 	if (data & Bit3)
-		pushS(DP());
+		DP() = popS();
 	if (data & Bit4)
-		pushWordS(X());
+		X() = popWordS();
 	if (data & Bit5)
-		pushWordS(Y());
+		Y() = popWordS();
 	if (data & Bit6)
-		pushWordS(U());
+		U() = popWordS();
 	if (data & Bit7)
-		pushWordS(PC());
+		PC() = popWordS();
 }
 
 void EightBit::mc6809::pulu(uint8_t data) {
 	if (data & Bit0)
-		pushS(CC());
+		CC() = popU();
 	if (data & Bit1)
-		pushS(A());
+		A() = popU();
 	if (data & Bit2)
-		pushS(B());
+		B() = popU();
 	if (data & Bit3)
-		pushS(DP());
+		DP() = popU();
 	if (data & Bit4)
-		pushWordS(X());
+		X() = popWordU();
 	if (data & Bit5)
-		pushWordS(Y());
+		Y() = popWordU();
 	if (data & Bit6)
-		pushWordS(S());
+		S() = popWordU();
 	if (data & Bit7)
-		pushWordS(PC());
+		PC() = popWordU();
 }
