@@ -582,6 +582,7 @@ uint8_t EightBit::mc6809::com(uint8_t operand) {
 
 void EightBit::mc6809::cwai(uint8_t data) {
 	CC() &= data;
+	CC() |= EF;
 	pushWordS(PC());
 	pushWordS(U());
 	pushWordS(Y());
