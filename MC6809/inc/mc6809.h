@@ -294,6 +294,8 @@ namespace EightBit {
 		void swi();
 		void swi2();
 		void swi3();
+		uint8_t st(uint8_t data);
+		register16_t st(register16_t data);
 		void tfr(uint8_t data);
 
 		register16_t m_d;

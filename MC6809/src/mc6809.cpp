@@ -320,29 +320,29 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// ST
 
 	// STA
-	case 0x97:	addCycles(4);	break;		// ST (STA direct)
-	case 0xa7:	addCycles(4);	break;		// ST (STA indexed)
-	case 0xb7:	addCycles(5);	break;		// ST (STA extended)
+	case 0x97:	addCycles(4);	BUS().write(Address_direct(), st(A()));				break;		// ST (STA direct)
+	case 0xa7:	addCycles(4);	BUS().write(Address_indexed(), st(A()));			break;		// ST (STA indexed)
+	case 0xb7:	addCycles(5);	BUS().write(Address_extended(), st(A()));			break;		// ST (STA extended)
 
 	// STB
-	case 0xd7:	addCycles(4);	break;		// ST (STB direct)
-	case 0xe7:	addCycles(4);	break;		// ST (STB indexed)
-	case 0xf7:	addCycles(5);	break;		// ST (STB extended)
+	case 0xd7:	addCycles(4);	BUS().write(Address_direct(), st(B()));				break;		// ST (STB direct)
+	case 0xe7:	addCycles(4);	BUS().write(Address_indexed(), st(B()));			break;		// ST (STB indexed)
+	case 0xf7:	addCycles(5);	BUS().write(Address_extended(), st(B()));			break;		// ST (STB extended)
 
 	// STD
-	case 0xdd:	addCycles(5);	break;		// ST (STB direct)
-	case 0xed:	addCycles(5);	break;		// ST (STB indexed)
-	case 0xfd:	addCycles(6);	break;		// ST (STB extended)
+	case 0xdd:	addCycles(5);	Processor::setWord(Address_direct(), st(D()));		break;		// ST (STD direct)
+	case 0xed:	addCycles(5);	Processor::setWord(Address_indexed(), st(D()));		break;		// ST (STD indexed)
+	case 0xfd:	addCycles(6);	Processor::setWord(Address_extended(), st(D()));	break;		// ST (STD extended)
 
 	// STU
-	case 0xdf:	addCycles(5);	break;		// ST (STU direct)
-	case 0xef:	addCycles(5);	break;		// ST (STU indexed)
-	case 0xff:	addCycles(6);	break;		// ST (STU extended)
+	case 0xdf:	addCycles(5);	Processor::setWord(Address_direct(), st(U()));		break;		// ST (STU direct)
+	case 0xef:	addCycles(5);	Processor::setWord(Address_indexed(), st(U()));		break;		// ST (STU indexed)
+	case 0xff:	addCycles(6);	Processor::setWord(Address_extended(), st(U()));	break;		// ST (STU extended)
 
 	// STX
-	case 0x9f:	addCycles(5);	break;		// ST (STX direct)
-	case 0xaf:	addCycles(5);	break;		// ST (STX indexed)
-	case 0xbf:	addCycles(6);	break;		// ST (STX extended)
+	case 0x9f:	addCycles(5);	Processor::setWord(Address_direct(), st(X()));		break;		// ST (STX direct)
+	case 0xaf:	addCycles(5);	Processor::setWord(Address_indexed(), st(X()));		break;		// ST (STX indexed)
+	case 0xbf:	addCycles(6);	Processor::setWord(Address_extended(), st(X()));	break;		// ST (STX extended)
 
 	// SUB
 
@@ -470,14 +470,14 @@ int EightBit::mc6809::execute10(uint8_t opcode) {
 	case 0x2f:	addCycles(5);	if (branchLong(BLE())) addCycle();		break;		// BLE (LBLE relative)
 
 	// STS
-	case 0xdf:	addCycles(6);	break;		// ST (STS direct)
-	case 0xef:	addCycles(6);	break;		// ST (STS indexed)
-	case 0xff:	addCycles(7);	break;		// ST (STS extended)
+	case 0xdf:	addCycles(6);	Processor::setWord(Address_direct(), st(S()));		break;		// ST (STS direct)
+	case 0xef:	addCycles(6);	Processor::setWord(Address_indexed(), st(S()));		break;		// ST (STS indexed)
+	case 0xff:	addCycles(7);	Processor::setWord(Address_extended(), st(S()));	break;		// ST (STS extended)
 
 	// STY
-	case 0x9f:	addCycles(6);	break;		// ST (STY direct)
-	case 0xaf:	addCycles(6);	break;		// ST (STY indexed)
-	case 0xbf:	addCycles(7);	break;		// ST (STY extended)
+	case 0x9f:	addCycles(6);	Processor::setWord(Address_extended(), st(Y()));	break;		// ST (STY direct)
+	case 0xaf:	addCycles(6);	Processor::setWord(Address_indexed(), st(Y()));		break;		// ST (STY indexed)
+	case 0xbf:	addCycles(7);	Processor::setWord(Address_extended(), st(Y()));	break;		// ST (STY extended)
 
 	// SWI
 	case 0x3f:	addCycles(20);	swi2();									break;		// SWI (SWI2 inherent)
@@ -1100,4 +1100,16 @@ void EightBit::mc6809::tfr(uint8_t data) {
 		referenceTransfer16(reg2) = referenceTransfer16(reg1);
 	else
 		referenceTransfer8(reg2) = referenceTransfer8(reg1);
+}
+
+uint8_t EightBit::mc6809::st(uint8_t data) {
+	clearFlag(CC(), VF);
+	adjustNZ(data);
+	return data;
+}
+
+EightBit::register16_t EightBit::mc6809::st(register16_t data) {
+	clearFlag(CC(), VF);
+	adjustNZ(data);
+	return data;
 }
