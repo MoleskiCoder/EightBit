@@ -300,6 +300,7 @@ namespace EightBit {
 		uint8_t st(uint8_t data);
 		register16_t st(register16_t data);
 		void tfr(uint8_t data);
+		void tst(uint8_t data);
 
 		register16_t m_d;
 		register16_t m_x;

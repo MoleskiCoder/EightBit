@@ -374,11 +374,11 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x1f:	addCycles(6);	tfr(AM_immediate_byte());							break;		// TFR (immediate)
 
 	// TST
-	case 0x0d:	addCycles(6);	break;		// TST (direct)
-	case 0x4d:	addCycles(2);	break;		// TST (TSTA inherent)
-	case 0x5d:	addCycles(2);	break;		// TST (TSTB inherent)
-	case 0x6d:	addCycles(6);	break;		// TST (indexed)
-	case 0x7d:	addCycles(7);	break;		// TST (extended)
+	case 0x0d:	addCycles(6);	tst(AM_direct_byte());								break;		// TST (direct)
+	case 0x4d:	addCycles(2);	tst(A());											break;		// TST (TSTA inherent)
+	case 0x5d:	addCycles(2);	tst(B());											break;		// TST (TSTB inherent)
+	case 0x6d:	addCycles(6);	tst(AM_indexed_byte());								break;		// TST (indexed)
+	case 0x7d:	addCycles(7);	tst(AM_extended_byte());							break;		// TST (extended)
 
 	// Branching
 
@@ -1126,4 +1126,8 @@ EightBit::register16_t EightBit::mc6809::sub(register16_t operand, register16_t 
 	const uint32_t subtraction = operand.word - data.word;
 	adjustSubtraction(operand, data, subtraction);
 	return subtraction & Mask16;
+}
+
+void EightBit::mc6809::tst(uint8_t data) {
+	cmp(data, 0);
 }
