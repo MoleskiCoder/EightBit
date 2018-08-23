@@ -254,6 +254,10 @@ namespace EightBit {
 			return branch(Address_relative_word(), condition);
 		}
 
+		// Miscellaneous
+
+		void saveEntireRegisterState();
+
 		// Instruction implementations
 
 		uint8_t adc(uint8_t operand, uint8_t data);
@@ -286,6 +290,11 @@ namespace EightBit {
 		uint8_t ror(uint8_t operand);
 		void rti();
 		void rts();
+		uint8_t sex(uint8_t from);
+		void swi();
+		void swi2();
+		void swi3();
+		void tfr(uint8_t data);
 
 		register16_t m_d;
 		register16_t m_x;

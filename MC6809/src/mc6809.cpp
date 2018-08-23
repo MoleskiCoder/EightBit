@@ -315,7 +315,7 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xf2:	addCycles(5);	break;		// SBC (SBCB extended)
 
 	// SEX
-	case 0x1d:	addCycles(2);	break;		// SEX (inherent)
+	case 0x1d:	addCycles(2);	A() = sex(B());							break;		// SEX (inherent)
 
 	// ST
 
@@ -365,13 +365,13 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xb3:	addCycles(7);	break;		// SUB (SUBD extended)
 
 	// SWI
-	case 0x3f:	addCycles(19);	break;		// SWI (inherent)
+	case 0x3f:	addCycles(19);	swi();									break;		// SWI (inherent)
 
 	// SYNC
-	case 0x13:	addCycles(4);	break;		// SYNC (inherent)
+	case 0x13:	addCycles(4);	halt();									break;		// SYNC (inherent)
 
 	// TFR
-	case 0x1f:	addCycles(6);	break;		// TFR (direct)
+	case 0x1f:	addCycles(6);	tfr(AM_immediate_byte());				break;		// TFR (immediate)
 
 	// TST
 	case 0x0d:	addCycles(6);	break;		// TST (direct)
@@ -480,7 +480,7 @@ int EightBit::mc6809::execute10(uint8_t opcode) {
 	case 0xbf:	addCycles(7);	break;		// ST (STY extended)
 
 	// SWI
-	case 0x3f:	addCycles(20);	break;		// SWI (SWI2 inherent)
+	case 0x3f:	addCycles(20);	swi2();									break;		// SWI (SWI2 inherent)
 
 	default:
 		UNREACHABLE;
@@ -515,7 +515,7 @@ int EightBit::mc6809::execute11(uint8_t opcode) {
 	case 0xbc:	addCycles(8);	cmp(S(), AM_extended_word());			break;		// CMP (CMPS, extended)
 
 	// SWI
-	case 0x3f:	addCycles(20);	break;		// SWI (SWI3 inherent)
+	case 0x3f:	addCycles(20);	swi3();									break;		// SWI (SWI3 inherent)
 
 	default:
 		UNREACHABLE;
@@ -685,6 +685,20 @@ EightBit::register16_t EightBit::mc6809::AM_extended_word() {
 
 //
 
+void EightBit::mc6809::saveEntireRegisterState() {
+	CC() |= EF;
+	pushWordS(PC());
+	pushWordS(U());
+	pushWordS(Y());
+	pushWordS(X());
+	pushS(DP());
+	pushS(B());
+	pushS(A());
+	pushS(CC());
+}
+
+//
+
 uint8_t EightBit::mc6809::adc(uint8_t operand, uint8_t data) {
 	return add(operand, data, CC() & CF);
 }
@@ -747,15 +761,7 @@ uint8_t EightBit::mc6809::com(uint8_t operand) {
 
 void EightBit::mc6809::cwai(uint8_t data) {
 	CC() &= data;
-	CC() |= EF;
-	pushWordS(PC());
-	pushWordS(U());
-	pushWordS(Y());
-	pushWordS(X());
-	pushS(DP());
-	pushS(B());
-	pushS(A());
-	pushS(CC());
+	saveEntireRegisterState();
 	halt();
 }
 
@@ -1058,4 +1064,40 @@ void EightBit::mc6809::rti() {
 
 void EightBit::mc6809::rts() {
 	ret();
+}
+
+void EightBit::mc6809::swi() {
+	saveEntireRegisterState();
+	setFlag(CC(), (IF | FF));
+	jump(getWordPaged(0xff, SWIvector));
+}
+
+void EightBit::mc6809::swi2() {
+	saveEntireRegisterState();
+	jump(getWordPaged(0xff, SWI2vector));
+}
+
+void EightBit::mc6809::swi3() {
+	saveEntireRegisterState();
+	jump(getWordPaged(0xff, SWI3vector));
+}
+
+uint8_t EightBit::mc6809::sex(uint8_t from) {
+	const uint8_t result = from & Bit7 ? Mask8 : 0;
+	adjustNZ(from);
+	return result;
+}
+
+void EightBit::mc6809::tfr(uint8_t data) {
+
+	const auto reg1 = highNibble(data);
+	const auto reg2 = lowNibble(data);
+
+	const bool type16 = !!(reg1 & Bit3);	// 16 bit transfer?
+	ASSUME(type16 == !!(reg2 & Bit3));		// Regardless, the register transfer must be equivalent
+
+	if (type16)
+		referenceTransfer16(reg2) = referenceTransfer16(reg1);
+	else
+		referenceTransfer8(reg2) = referenceTransfer8(reg1);
 }
