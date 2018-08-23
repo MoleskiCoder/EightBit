@@ -303,16 +303,16 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// SBC
 
 	// SBCA
-	case 0x82:	addCycles(4);	break;		// SBC (SBCA immediate)
-	case 0x92:	addCycles(4);	break;		// SBC (SBCA direct)
-	case 0xa2:	addCycles(4);	break;		// SBC (SBCA indexed)
-	case 0xb2:	addCycles(5);	break;		// SBC (SBCB extended)
+	case 0x82:	addCycles(4);	A() = sbc(A(), AM_immediate_byte());				break;		// SBC (SBCA immediate)
+	case 0x92:	addCycles(4);	A() = sbc(A(), AM_direct_byte());					break;		// SBC (SBCA direct)
+	case 0xa2:	addCycles(4);	A() = sbc(A(), AM_indexed_byte());					break;		// SBC (SBCA indexed)
+	case 0xb2:	addCycles(5);	A() = sbc(A(), AM_extended_byte());					break;		// SBC (SBCB extended)
 
 	// SBCB
-	case 0xc2:	addCycles(4);	break;		// SBC (SBCB immediate)
-	case 0xd2:	addCycles(4);	break;		// SBC (SBCB direct)
-	case 0xe2:	addCycles(4);	break;		// SBC (SBCB indexed)
-	case 0xf2:	addCycles(5);	break;		// SBC (SBCB extended)
+	case 0xc2:	addCycles(4);	B() = sbc(B(), AM_immediate_byte());				break;		// SBC (SBCB immediate)
+	case 0xd2:	addCycles(4);	B() = sbc(B(), AM_direct_byte());					break;		// SBC (SBCB direct)
+	case 0xe2:	addCycles(4);	B() = sbc(B(), AM_indexed_byte());					break;		// SBC (SBCB indexed)
+	case 0xf2:	addCycles(5);	B() = sbc(B(), AM_extended_byte());					break;		// SBC (SBCB extended)
 
 	// SEX
 	case 0x1d:	addCycles(2);	A() = sex(B());										break;		// SEX (inherent)
@@ -347,22 +347,22 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// SUB
 
 	// SUBA
-	case 0x80:	addCycles(2);	break;		// SUB (SUBA immediate)
-	case 0x90:	addCycles(4);	break;		// SUB (SUBA direct)
-	case 0xa0:	addCycles(4);	break;		// SUB (SUBA indexed)
-	case 0xb0:	addCycles(5);	break;		// SUB (SUBA extended)
+	case 0x80:	addCycles(2);	A() = sub(A(), AM_immediate_byte());				break;		// SUB (SUBA immediate)
+	case 0x90:	addCycles(4);	A() = sub(A(), AM_direct_byte());					break;		// SUB (SUBA direct)
+	case 0xa0:	addCycles(4);	A() = sub(A(), AM_indexed_byte());					break;		// SUB (SUBA indexed)
+	case 0xb0:	addCycles(5);	A() = sub(A(), AM_extended_byte());					break;		// SUB (SUBA extended)
 
 	// SUBB
-	case 0xc0:	addCycles(2);	break;		// SUB (SUBB immediate)
-	case 0xd0:	addCycles(4);	break;		// SUB (SUBB direct)
-	case 0xe0:	addCycles(4);	break;		// SUB (SUBB indexed)
-	case 0xf0:	addCycles(5);	break;		// SUB (SUBB extended)
+	case 0xc0:	addCycles(2);	B() = sub(B(), AM_immediate_byte());				break;		// SUB (SUBB immediate)
+	case 0xd0:	addCycles(4);	B() = sub(B(), AM_direct_byte());					break;		// SUB (SUBB direct)
+	case 0xe0:	addCycles(4);	B() = sub(B(), AM_indexed_byte());					break;		// SUB (SUBB indexed)
+	case 0xf0:	addCycles(5);	B() = sub(B(), AM_extended_byte());					break;		// SUB (SUBB extended)
 
 	// SUBD
-	case 0x83:	addCycles(4);	break;		// SUB (SUBD immediate)
-	case 0x93:	addCycles(6);	break;		// SUB (SUBD direct)
-	case 0xa3:	addCycles(6);	break;		// SUB (SUBD indexed)
-	case 0xb3:	addCycles(7);	break;		// SUB (SUBD extended)
+	case 0x83:	addCycles(4);	D() = sub(D(), AM_immediate_word());				break;		// SUB (SUBD immediate)
+	case 0x93:	addCycles(6);	D() = sub(D(), AM_direct_word());					break;		// SUB (SUBD direct)
+	case 0xa3:	addCycles(6);	D() = sub(D(), AM_indexed_word());					break;		// SUB (SUBD indexed)
+	case 0xb3:	addCycles(7);	D() = sub(D(), AM_extended_word());					break;		// SUB (SUBD extended)
 
 	// SWI
 	case 0x3f:	addCycles(19);	swi();												break;		// SWI (inherent)
@@ -742,13 +742,11 @@ uint8_t EightBit::mc6809::clr() {
 }
 
 void EightBit::mc6809::cmp(const uint8_t operand, const uint8_t data) {
-	const register16_t difference = operand - data;
-	adjustSubtraction(operand, data, difference);
+	sub(operand, data);
 }
 
 void EightBit::mc6809::cmp(register16_t operand, register16_t data) {
-	const uint32_t difference = operand.word - data.word;
-	adjustSubtraction(operand, data, difference);
+	sub(operand, data);
 }
 
 uint8_t EightBit::mc6809::com(uint8_t operand) {
@@ -1112,4 +1110,20 @@ EightBit::register16_t EightBit::mc6809::st(register16_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(data);
 	return data;
+}
+
+uint8_t EightBit::mc6809::sbc(uint8_t operand, uint8_t data) {
+	return sub(operand, data, CC() & CF);
+}
+
+uint8_t EightBit::mc6809::sub(uint8_t operand, uint8_t data, int carry) {
+	const register16_t subtraction = operand - data - carry;
+	adjustSubtraction(operand, data, subtraction);
+	return subtraction.low;
+}
+
+EightBit::register16_t EightBit::mc6809::sub(register16_t operand, register16_t data) {
+	const uint32_t subtraction = operand.word - data.word;
+	adjustSubtraction(operand, data, subtraction);
+	return subtraction & Mask16;
 }

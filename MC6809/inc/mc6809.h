@@ -290,6 +290,9 @@ namespace EightBit {
 		uint8_t ror(uint8_t operand);
 		void rti();
 		void rts();
+		uint8_t sbc(uint8_t operand, uint8_t data);
+		uint8_t sub(uint8_t operand, uint8_t data, int carry = 0);
+		register16_t sub(register16_t operand, register16_t data);
 		uint8_t sex(uint8_t from);
 		void swi();
 		void swi2();
