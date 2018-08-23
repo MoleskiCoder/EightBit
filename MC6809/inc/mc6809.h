@@ -247,11 +247,11 @@ namespace EightBit {
 		}
 
 		bool branchShort(int condition) {
-			branch(Address_relative_byte(), condition);
+			return branch(Address_relative_byte(), condition);
 		}
 
 		bool branchLong(int condition) {
-			branch(Address_relative_word(), condition);
+			return branch(Address_relative_word(), condition);
 		}
 
 		// Instruction implementations
