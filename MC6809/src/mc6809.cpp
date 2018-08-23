@@ -117,7 +117,7 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xf5:	addCycles(5);	andr(B(), AM_extended_byte());			break;		// BIT (BITB extended)
 
 	// CLR
-	case 0x0f:	addCycles(6);	BUS().write(Address_direct(), clr());	break;		// CLR (CLR direct)
+	case 0x0f:	addCycles(6);	BUS().write(Address_direct(), clr());	break;		// CLR (direct)
 	case 0x4f:	addCycles(2);	A() = clr();							break;		// CLR (CLRA implied)
 	case 0x5f:	addCycles(2);	B() = clr();							break;		// CLR (CLRB implied)
 	case 0x6f:	addCycles(6);	BUS().write(Address_indexed(), clr());	break;		// CLR (indexed)
@@ -193,9 +193,9 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x7e:	addCycles(7);	jump(Address_extended());				break;		// JMP (extended)
 
 	// JSR
-	case 0x9d:	addCycles(6);	call(Address_direct());					break;		// JSR (JSR direct)
-	case 0xad:	addCycles(6);	call(Address_indexed());				break;		// JSR (JSR indexed)
-	case 0xbd:	addCycles(7);	call(Address_extended());				break;		// JSR (JSR extended)
+	case 0x9d:	addCycles(6);	call(Address_direct());					break;		// JSR (direct)
+	case 0xad:	addCycles(6);	call(Address_indexed());				break;		// JSR (indexed)
+	case 0xbd:	addCycles(7);	call(Address_extended());				break;		// JSR (extended)
 
 	// LD
 
@@ -295,10 +295,10 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x76:	addCycles(7);	BUS().write(ror(AM_extended_byte()));	break;		// ROR (extended)
 
 	// RTI
-	case 0x3B:	addCycles(6);	rti();									break;		// RTI (RTI inherent)
+	case 0x3B:	addCycles(6);	rti();									break;		// RTI (inherent)
 
 	// RTS
-	case 0x39:	addCycles(5);	rts();									break;		// RTS (RTS inherent)
+	case 0x39:	addCycles(5);	rts();									break;		// RTS (inherent)
 
 	// SBC
 
@@ -315,7 +315,7 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0xf2:	addCycles(5);	break;		// SBC (SBCB extended)
 
 	// SEX
-	case 0x1d:	addCycles(2);	rts();									break;		// RTS (RTS inherent)
+	case 0x1d:	addCycles(2);	break;		// SEX (inherent)
 
 	// ST
 
@@ -384,24 +384,24 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 
 	case 0x16:	addCycles(5);	jump(Address_relative_word());			break;		// BRA (LBRA relative)
 	case 0x17:	addCycles(9);	call(Address_relative_word());			break;		// BSR (LBSR relative)
-	case 0x20:	addCycles(3);	jump(Address_relative_byte());			break;		// BRA (BRA relative)
-	case 0x21:	addCycles(3);	Address_relative_byte();				break;		// BRN (BRN relative)
-	case 0x22:	addCycles(3);	branchShort(BHI());						break;		// BHI (BHI relative)
-	case 0x23:	addCycles(3);	branchShort(BLS());						break;		// BLS (BLS relative)
-	case 0x24:	addCycles(3);	branchShort(!carry());					break;		// BCC (BCC relative)
-	case 0x25:	addCycles(3);	branchShort(carry());					break;		// BCS (BCS relative)
-	case 0x26:	addCycles(3);	branchShort(!zero());					break;		// BNE (BNE relative)
-	case 0x27:	addCycles(3);	branchShort(zero());					break;		// BEQ (BEQ relative)
-	case 0x28: 	addCycles(3);	branchShort(!overflow());				break;		// BVC (BVC relative)
-	case 0x29: 	addCycles(3);	branchShort(overflow());				break;		// BVS (BVS relative)
-	case 0x2a: 	addCycles(3);	branchShort(!negative());				break;		// BPL (BPL relative)
-	case 0x2b: 	addCycles(3);	branchShort(negative());				break;		// BMI (BMI relative)
-	case 0x2c:	addCycles(3);	branchShort(BGE());						break;		// BGE (BGE relative)
-	case 0x2d:	addCycles(3);	branchShort(BLT());						break;		// BLT (BLT relative)
-	case 0x2e:	addCycles(3);	branchShort(BGT());						break;		// BGT (BGT relative)
-	case 0x2f:	addCycles(3);	branchShort(BLE());						break;		// BLE (BLE relative)
+	case 0x20:	addCycles(3);	jump(Address_relative_byte());			break;		// BRA (relative)
+	case 0x21:	addCycles(3);	Address_relative_byte();				break;		// BRN (relative)
+	case 0x22:	addCycles(3);	branchShort(BHI());						break;		// BHI (relative)
+	case 0x23:	addCycles(3);	branchShort(BLS());						break;		// BLS (relative)
+	case 0x24:	addCycles(3);	branchShort(!carry());					break;		// BCC (relative)
+	case 0x25:	addCycles(3);	branchShort(carry());					break;		// BCS (relative)
+	case 0x26:	addCycles(3);	branchShort(!zero());					break;		// BNE (relative)
+	case 0x27:	addCycles(3);	branchShort(zero());					break;		// BEQ (relative)
+	case 0x28: 	addCycles(3);	branchShort(!overflow());				break;		// BVC (relative)
+	case 0x29: 	addCycles(3);	branchShort(overflow());				break;		// BVS (relative)
+	case 0x2a: 	addCycles(3);	branchShort(!negative());				break;		// BPL (relative)
+	case 0x2b: 	addCycles(3);	branchShort(negative());				break;		// BMI (relative)
+	case 0x2c:	addCycles(3);	branchShort(BGE());						break;		// BGE (relative)
+	case 0x2d:	addCycles(3);	branchShort(BLT());						break;		// BLT (relative)
+	case 0x2e:	addCycles(3);	branchShort(BGT());						break;		// BGT (relative)
+	case 0x2f:	addCycles(3);	branchShort(BLE());						break;		// BLE (relative)
 
-	case 0x8d:	addCycles(7);	call(Address_relative_byte());			break;		// BSR (BSR relative)
+	case 0x8d:	addCycles(7);	call(Address_relative_byte());			break;		// BSR (relative)
 
 	default:
 		UNREACHABLE;
