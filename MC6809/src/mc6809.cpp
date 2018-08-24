@@ -7,10 +7,6 @@
 EightBit::mc6809::mc6809(Bus& bus)
 : BigEndianProcessor(bus) {}
 
-void EightBit::mc6809::powerOn() {
-	Processor::powerOn();
-}
-
 int EightBit::mc6809::step() {
 	resetCycles();
 	auto returned = 0;

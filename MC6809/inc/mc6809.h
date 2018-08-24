@@ -57,7 +57,6 @@ namespace EightBit {
 
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
-		virtual void powerOn() final;
 
 		register16_t& D() { return m_d; }
 		uint8_t& A() { return D().high; }
