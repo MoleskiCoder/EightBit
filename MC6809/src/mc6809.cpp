@@ -2,6 +2,7 @@
 #include "mc6809.h"
 
 #include <algorithm>
+#include <cassert>
 
 EightBit::mc6809::mc6809(Bus& bus)
 : BigEndianProcessor(bus) {}
@@ -14,39 +15,46 @@ int EightBit::mc6809::step() {
 	resetCycles();
 	auto returned = 0;
 	if (LIKELY(powered())) {
+		m_prefix10 = m_prefix11 = false;
 		ExecutingInstruction.fire(*this);
-		returned = execute(fetchByte());
+		return execute(fetchByte());
 		ExecutedInstruction.fire(*this);
 	}
-	return returned;
+	return cycles();
 }
 
 void EightBit::mc6809::reset() {
 	Processor::reset();
 	DP() = 0;	// Reestablish zero page
 	CC() |= (IF & FF);	// Disable interrupts
-	m_prefix10 = m_prefix11 = false;
 	jump(getWordPaged(0xff, RESETvector));
 }
 
 int EightBit::mc6809::execute(uint8_t opcode) {
-	if (m_prefix10)
-		return execute10(opcode);
-	else if (m_prefix11)
-		return execute11(opcode);
-	return executeUnprefixed(opcode);
+	const bool prefixed = m_prefix10 || m_prefix11;
+	if (LIKELY(!prefixed)) {
+		executeUnprefixed(opcode);
+	} else {
+		if (m_prefix10)
+			execute10(opcode);
+		else if (m_prefix11)
+			execute11(opcode);
+		else
+			UNREACHABLE;
+	}
+	assert(cycles() > 0);
+	return cycles();
 }
 
-int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
+void EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 
-	ASSUME(!m_prefix10);
-	ASSUME(!m_prefix11);
-	ASSUME(cycles() == 0);
+	assert(!(m_prefix10 || m_prefix11));
+	assert(cycles() == 0);
 
 	switch (opcode) {
 
-	case 0x10:	m_prefix10 = true;	break;
-	case 0x11:	m_prefix11 = true;	break;
+	case 0x10:	m_prefix10 = true;	execute(fetchByte());	break;
+	case 0x11:	m_prefix11 = true;	execute(fetchByte());	break;
 
 	// ABX
 	case 0x3a:	addCycles(3);	X() += B();											break;		// ABX (inherent)
@@ -406,20 +414,12 @@ int EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	default:
 		UNREACHABLE;
 	}
-
-	if (m_prefix10 || m_prefix11)
-		ASSUME(cycles() == 0);
-	else
-		ASSUME(cycles() > 0);
-
-	return cycles();
 }
 
-int EightBit::mc6809::execute10(uint8_t opcode) {
+void EightBit::mc6809::execute10(uint8_t opcode) {
 
-	ASSUME(m_prefix10);
-	ASSUME(!m_prefix11);
-	ASSUME(cycles() == 0);
+	assert(m_prefix10 && !m_prefix11);
+	assert(cycles() == 0);
 
 	switch (opcode) {
 
@@ -485,18 +485,12 @@ int EightBit::mc6809::execute10(uint8_t opcode) {
 	default:
 		UNREACHABLE;
 	}
-
-	m_prefix10 = false;
-
-	ASSUME(cycles() > 0);
-	return cycles();
 }
 
-int EightBit::mc6809::execute11(uint8_t opcode) {
+void EightBit::mc6809::execute11(uint8_t opcode) {
 
-	ASSUME(m_prefix10);
-	ASSUME(!m_prefix11);
-	ASSUME(cycles() == 0);
+	assert(!m_prefix10 && m_prefix11);
+	assert(cycles() == 0);
 
 	switch (opcode) {
 
@@ -520,11 +514,6 @@ int EightBit::mc6809::execute11(uint8_t opcode) {
 	default:
 		UNREACHABLE;
 	}
-
-	m_prefix11 = false;
-
-	ASSUME(cycles() > 0);
-	return cycles();
 }
 
 //

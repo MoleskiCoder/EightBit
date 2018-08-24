@@ -119,9 +119,9 @@ namespace EightBit {
 
 		// Execution helpers
 
-		int executeUnprefixed(uint8_t opcode);
-		int execute10(uint8_t opcode);
-		int execute11(uint8_t opcode);
+		void executeUnprefixed(uint8_t opcode);
+		void execute10(uint8_t opcode);
+		void execute11(uint8_t opcode);
 
 		// Register selection for "indexed"
 		register16_t& RR(int which);
