@@ -235,6 +235,7 @@ namespace EightBit {
 		int zero() { return CC() & ZF; }
 		int overflow() { return CC() & VF; }
 		int carry() { return CC() & CF; }
+		int halfCarry() { return CC() & HF; }
 
 		bool BLS() { return carry() | (zero() >> 2); }									// (C OR Z)
 		bool BHI() { return !BLS(); }													// !(C OR Z)
