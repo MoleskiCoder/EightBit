@@ -9,7 +9,6 @@ EightBit::mc6809::mc6809(Bus& bus)
 
 int EightBit::mc6809::step() {
 	resetCycles();
-	auto returned = 0;
 	if (LIKELY(powered())) {
 		m_prefix10 = m_prefix11 = false;
 		ExecutingInstruction.fire(*this);
@@ -787,17 +786,19 @@ void EightBit::mc6809::cwai(uint8_t data) {
 uint8_t EightBit::mc6809::da(uint8_t operand) {
 
 	clearFlag(CC(), VF);
-	setFlag(CC(), CF, A() > 0x99);
+	setFlag(CC(), CF, operand > 0x99);
 
-	const auto lowAdjust = halfCarry() || (lowNibble(A()) > 9);
-	const auto highAdjust = carry() || (A() > 0x99);
+	const auto lowAdjust = halfCarry() || (lowNibble(operand) > 9);
+	const auto highAdjust = carry() || (operand > 0x99);
 
 	if (lowAdjust)
-		A() += 6;
+		operand += 6;
 	if (highAdjust)
-		A() += 0x60;
+		operand += 0x60;
 
-	adjustNZ(A());
+	adjustNZ(operand);
+
+	return operand;
 }
 
 uint8_t EightBit::mc6809::dec(uint8_t operand) {
