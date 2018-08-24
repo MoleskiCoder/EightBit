@@ -239,7 +239,7 @@ namespace EightBit {
 
 		bool BLS() { return carry() | (zero() >> 2); }									// (C OR Z)
 		bool BHI() { return !BLS(); }													// !(C OR Z)
-		bool BLT() { return (negative() >> 2) ^ overflow(); }							// (N XOR V)
+		bool BLT() { return (negative() >> 1) ^ overflow(); }							// (N XOR V)
 		bool BGE() { return !BLT(); }													// !(N XOR V)
 		bool BLE() { return (zero() >> 2) & ((negative() >> 3) ^ (overflow() >> 1)); }	// (Z OR (N XOR V))
 		bool BGT() { return !BLE(); }													// !(Z OR (N XOR V))
