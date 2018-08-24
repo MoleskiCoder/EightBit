@@ -122,6 +122,12 @@ namespace EightBit {
 		void execute10(uint8_t opcode);
 		void execute11(uint8_t opcode);
 
+		// Interrupt handlers
+
+		void handleNMI();
+		void handleIRQ();
+		void handleFIRQ();
+
 		// Register selection for "indexed"
 		register16_t& RR(int which);
 

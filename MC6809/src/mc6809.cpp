@@ -13,18 +13,54 @@ int EightBit::mc6809::step() {
 	if (LIKELY(powered())) {
 		m_prefix10 = m_prefix11 = false;
 		ExecutingInstruction.fire(*this);
-		return execute(fetchByte());
+		if (lowered(NMI()))
+			handleNMI();
+		else if (lowered(FIRQ()) && !(CC() & FF))
+			handleFIRQ();
+		else if (lowered(IRQ()) && !(CC() & IF))
+			handleIRQ();
+		else
+			execute(fetchByte());
 		ExecutedInstruction.fire(*this);
 	}
 	return cycles();
 }
 
+// Interrupt (etc.) handlers
+
 void EightBit::mc6809::reset() {
 	Processor::reset();
 	DP() = 0;	// Reestablish zero page
-	CC() |= (IF & FF);	// Disable interrupts
+	CC() |= (IF & FF);	// Disable IRQ and FIRQ
 	jump(getWordPaged(0xff, RESETvector));
 }
+
+void EightBit::mc6809::handleNMI() {
+	raise(NMI());
+	addCycles(21);
+	saveEntireRegisterState();
+	jump(getWordPaged(0xff, NMIvector));
+}
+
+void EightBit::mc6809::handleIRQ() {
+	raise(IRQ());
+	addCycles(21);
+	saveEntireRegisterState();
+	CC() |= IF;		// Disable IRQ
+	jump(getWordPaged(0xff, IRQvector));
+}
+
+void EightBit::mc6809::handleFIRQ() {
+	addCycles(12);
+	raise(FIRQ());
+	CC() &= ~EF;	// Clear the EF flag. i.e. this only saves PC and CC
+	pushWordS(PC());
+	pushS(CC());
+	CC() |= (IF & FF);	// Disable IRQ and FIRQ
+	jump(getWordPaged(0xff, FIRQvector));
+}
+
+//
 
 int EightBit::mc6809::execute(uint8_t opcode) {
 	const bool prefixed = m_prefix10 || m_prefix11;
