@@ -745,7 +745,7 @@ uint8_t EightBit::mc6809::andr(uint8_t operand, uint8_t data) {
 uint8_t EightBit::mc6809::asl(uint8_t operand) {
 	setFlag(CC(), CF, operand & Bit7);
 	adjustNZ(operand <<= 1);
-	const auto overflow = (carry() ^ (negative() >> 3);
+	const auto overflow = carry() ^ (negative() >> 3);
 	setFlag(CC(), VF, overflow);
 	return operand;
 }
@@ -1102,9 +1102,8 @@ void EightBit::mc6809::swi3() {
 }
 
 uint8_t EightBit::mc6809::sex(uint8_t from) {
-	const uint8_t result = from & Bit7 ? Mask8 : 0;
 	adjustNZ(from);
-	return result;
+	return from & Bit7 ? Mask8 : 0;
 }
 
 void EightBit::mc6809::tfr(uint8_t data) {
