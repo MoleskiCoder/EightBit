@@ -10,14 +10,14 @@ namespace EightBit {
 		LittleEndianProcessor(Bus& memory) : Processor(memory) {}
 		virtual ~LittleEndianProcessor() = default;
 
-		virtual register16_t getWord() {
+		virtual register16_t getWord() override {
 			const auto low = BUS().read();
 			++BUS().ADDRESS();
 			const auto high = BUS().read();
 			return register16_t(low, high);
 		}
 
-		virtual void setWord(const register16_t value) {
+		virtual void setWord(const register16_t value) override {
 			BUS().write(value.low);
 			++BUS().ADDRESS();
 			BUS().write(value.high);

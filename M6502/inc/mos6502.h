@@ -31,7 +31,7 @@ namespace EightBit {
 
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
-		virtual void powerOn() override;
+		virtual void powerOn() final;
 
 		uint8_t& X() { return x; }
 		uint8_t& Y() { return y; }

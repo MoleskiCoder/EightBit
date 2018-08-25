@@ -43,8 +43,8 @@ namespace EightBit {
 			virtual int execute(uint8_t opcode) final;
 			virtual int step() final;
 
-			virtual void handleRESET() override;
-			virtual void handleINT() override;
+			virtual void handleRESET() final;
+			virtual void handleINT() final;
 
 		private:
 			Bus& m_bus;
