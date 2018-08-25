@@ -73,6 +73,9 @@ namespace EightBit {
 		PinLevel& NMI() { return m_nmiLine; }		// In
 		PinLevel& FIRQ() { return m_firqLine; }		// In
 
+		PinLevel& BA() { return m_baLine; }			// Out
+		PinLevel& BS() { return m_bsLine; }			// Out
+
 	protected:
 		virtual void powerOn() final;
 
@@ -125,6 +128,7 @@ namespace EightBit {
 
 		// Interrupt (etc.) handlers
 
+		void handleHALT();
 		void handleNMI();
 		void handleFIRQ();
 
@@ -325,6 +329,9 @@ namespace EightBit {
 
 		PinLevel m_nmiLine = Low;
 		PinLevel m_firqLine = Low;
+
+		PinLevel m_baLine = Low;
+		PinLevel m_bsLine = Low;
 
 		bool m_prefix10 = false;
 		bool m_prefix11 = false;

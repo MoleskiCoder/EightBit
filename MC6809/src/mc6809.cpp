@@ -11,6 +11,8 @@ void EightBit::mc6809::powerOn() {
 	Processor::powerOn();
 	raise(NMI());
 	raise(FIRQ());
+	lower(BA());
+	lower(BS());
 }
 
 int EightBit::mc6809::step() {
@@ -18,7 +20,9 @@ int EightBit::mc6809::step() {
 	if (LIKELY(powered())) {
 		m_prefix10 = m_prefix11 = false;
 		ExecutingInstruction.fire(*this);
-		if (UNLIKELY(lowered(RESET())))
+		if (UNLIKELY(lowered(HALT())))
+			handleHALT();
+		else if (UNLIKELY(lowered(RESET())))
 			handleRESET();
 		else if (UNLIKELY(lowered(NMI())))
 			handleNMI();
@@ -35,9 +39,16 @@ int EightBit::mc6809::step() {
 
 // Interrupt (etc.) handlers
 
+void EightBit::mc6809::handleHALT() {
+	raise(BA());
+	raise(BS());
+}
+
 void EightBit::mc6809::handleRESET() {
 	Processor::handleRESET();
 	raise(NMI());
+	lower(BA());
+	raise(BS());
 	DP() = 0;
 	setFlag(CC(), IF | FF);	// Disable all IRQs
 	jump(getWordPaged(0xff, RESETvector));
@@ -45,13 +56,18 @@ void EightBit::mc6809::handleRESET() {
 
 void EightBit::mc6809::handleNMI() {
 	raise(NMI());
+	lower(BA());
+	raise(BS());
 	saveEntireRegisterState();
+	setFlag(CC(), IF | FF);	// Disable all IRQs
 	jump(getWordPaged(0xff, NMIvector));
 	addCycles(21);
 }
 
 void EightBit::mc6809::handleIRQ() {
 	Processor::handleIRQ();
+	lower(BA());
+	raise(BS());
 	saveEntireRegisterState();
 	setFlag(CC(), IF);	// Disable IRQ
 	jump(getWordPaged(0xff, IRQvector));
@@ -60,6 +76,8 @@ void EightBit::mc6809::handleIRQ() {
 
 void EightBit::mc6809::handleFIRQ() {
 	raise(FIRQ());
+	lower(BA());
+	raise(BS());
 	clearFlag(CC(), EF);
 	pushWordS(PC());
 	pushS(CC());
@@ -71,6 +89,8 @@ void EightBit::mc6809::handleFIRQ() {
 //
 
 int EightBit::mc6809::execute(uint8_t opcode) {
+	lower(BA());
+	lower(BS());
 	if (UNLIKELY(m_prefix10))
 		execute10(opcode);
 	else if (UNLIKELY(m_prefix11))
