@@ -39,10 +39,12 @@ namespace EightBit {
 		uint8_t& S() { return s; }
 		uint8_t& P() { return p; }
 
+		PinLevel& NMI() { return m_nmiLine; }	// In
 		PinLevel& SO() { return m_soLine;  }	// In
 
 	protected:
-		virtual void reset() final;
+		virtual void handleRESET() final;
+		virtual void handleIRQ() final;
 
 		virtual uint8_t SUB(uint8_t operand, uint8_t data, int borrow = 0);
 		uint8_t SBC(uint8_t operand, uint8_t data);
@@ -55,6 +57,10 @@ namespace EightBit {
 		uint8_t ADD_d(uint8_t operand, uint8_t data, int carry);
 
 	private:
+		void handleNMI();
+		void handleSO();
+		void handleHALT();
+
 		void interrupt(uint8_t vector);
 
 		void adjustZero(uint8_t datum) { clearFlag(P(), ZF, datum); }
@@ -324,6 +330,7 @@ namespace EightBit {
 		uint8_t s = 0;		// stack pointer
 		uint8_t p = 0;		// processor status
 
+		PinLevel m_nmiLine = Low;
 		PinLevel m_soLine = Low;
 
 		register16_t m_intermediate;

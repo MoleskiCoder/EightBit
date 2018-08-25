@@ -21,7 +21,7 @@ void Board::initialise() {
 
 	switch (m_configuration.getLoadMethod()) {
 	case Configuration::LoadMethod::Ram:
-		m_ram.load(programPath, loadAddress);
+		m_ram.load(programPath, loadAddress.word);
 		break;
 	case Configuration::LoadMethod::Rom:
 		// m_rom.load(programPath, loadAddress);
@@ -58,7 +58,10 @@ void Board::initialise() {
 	m_pollInterval = m_configuration.getPollInterval();
 
 	CPU().powerOn();
-	CPU().PC().word = m_configuration.getStartAddress();
+
+	poke(0x00, 0x4c);
+	poke(0x01, m_configuration.getStartAddress().low);
+	poke(0x02, m_configuration.getStartAddress().high);
 }
 
 void Board::Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu) {
@@ -101,14 +104,14 @@ void Board::Cpu_ExecutingInstruction_Debug(EightBit::MOS6502& cpu) {
 }
 
 void Board::Memory_ReadingByte_Input(EightBit::EventArgs) {
-	if (ADDRESS().word == m_configuration.getInputAddress()) {
+	if (ADDRESS().word == m_configuration.getInputAddress().word) {
 		if (!!DATA())
 			write(0);
 	}
 }
 
 void Board::Memory_WrittenByte_Output(EightBit::EventArgs) {
-	if (ADDRESS().word == m_configuration.getOutputAddress()) {
+	if (ADDRESS().word == m_configuration.getOutputAddress().word) {
 #ifdef _MSC_VER
 		_putch(DATA());
 #endif
@@ -125,6 +128,6 @@ void Board::Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu) {
 void Board::pollKeyboard() {
 #ifdef _MSC_VER
 	if (_kbhit())
-		poke(m_configuration.getInputAddress(), _getch());
+		poke(m_configuration.getInputAddress().word, _getch());
 #endif
 }

@@ -74,7 +74,7 @@ namespace EightBit {
 		PinLevel& RESET() { return m_resetLine; }
 		PinLevel& HALT() { return m_haltLine; }
 		PinLevel& INT() { return m_intLine; }
-		PinLevel& NMI() { return m_nmiLine; }
+		PinLevel& IRQ() { return INT(); }	// Synonym
 		PinLevel& POWER() { return m_powerLine; }
 
 		bool powered() { return raised(POWER()); }
@@ -84,8 +84,9 @@ namespace EightBit {
 
 		int run(int limit);
 		virtual int step() = 0;
-
 		virtual int execute(uint8_t opcode) = 0;
+
+		int cycles() const { return m_cycles; }
 
 	protected:
 		static void clearFlag(uint8_t& f, const int flag) { f &= ~flag; }
@@ -107,8 +108,8 @@ namespace EightBit {
 		void proceed() { ++PC(); raise(HALT()); }
 
 		virtual void handleRESET();
-		virtual void handleNMI();
 		virtual void handleINT();
+		virtual void handleIRQ();
 
 		uint8_t getBytePaged(uint8_t page, uint8_t offset) {
 			return BUS().read(register16_t(offset, page));
@@ -159,7 +160,6 @@ namespace EightBit {
 			jump(popWord());
 		}
 
-		int cycles() const { return m_cycles; }
 		void resetCycles() { m_cycles = 0; }
 		void addCycles(const int extra) { m_cycles += extra; }
 		void addCycle() { ++m_cycles;  }
@@ -170,7 +170,6 @@ namespace EightBit {
 		register16_t m_pc;
 
 		PinLevel m_intLine = Low;
-		PinLevel m_nmiLine = Low;
 		PinLevel m_haltLine = Low;
 		PinLevel m_resetLine = Low;
 		PinLevel m_powerLine = Low;

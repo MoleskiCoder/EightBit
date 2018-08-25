@@ -51,7 +51,7 @@ void EightBit::Z80::handleRESET() {
 }
 
 void EightBit::Z80::handleNMI() {
-	Processor::handleNMI();
+	raise(NMI());
 	raise(HALT());
 	IFF1() = false;
 	restart(0x66);

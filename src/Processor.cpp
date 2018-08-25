@@ -9,7 +9,6 @@ void EightBit::Processor::powerOn() {
 	raise(RESET());
 	raise(HALT());
 	raise(INT());
-	raise(NMI());
 	raise(POWER());
 }
 
@@ -18,12 +17,12 @@ void EightBit::Processor::handleRESET() {
 	PC() = 0;
 }
 
-void EightBit::Processor::handleNMI() {
-	raise(NMI());
-}
-
 void EightBit::Processor::handleINT() {
 	raise(INT());
+}
+
+void EightBit::Processor::handleIRQ() {
+	raise(IRQ());
 }
 
 int EightBit::Processor::run(const int limit) {

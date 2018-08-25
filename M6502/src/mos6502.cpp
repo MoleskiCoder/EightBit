@@ -17,37 +17,56 @@ void EightBit::MOS6502::powerOn() {
 	raise(SO());
 }
 
+void EightBit::MOS6502::handleSO() {
+	raise(SO());
+	P() |= VF;
+}
+
+void EightBit::MOS6502::handleRESET() {
+	Processor::handleRESET();
+	jump(getWordPaged(0xff, RSTvector));
+	addCycles(4);	// ?? TBC
+}
+
+
+void EightBit::MOS6502::handleNMI() {
+	raise(NMI());
+	interrupt(NMIvector);
+	addCycles(4);	// ?? TBC
+}
+
+void EightBit::MOS6502::handleIRQ() {
+	Processor::handleIRQ();
+	interrupt(IRQvector);
+	addCycles(4);	// ?? TBC
+}
+
+void EightBit::MOS6502::handleHALT() {
+	execute(0xea);	// NOP
+	addCycles(2);
+}
+
 int EightBit::MOS6502::step() {
 	resetCycles();
-	auto returned = 0;
 	if (LIKELY(powered())) {
 		ExecutingInstruction.fire(*this);
 		if (UNLIKELY(lowered(SO()))) {
-			P() |= VF;
-			raise(SO());
+			handleSO();
 		}
-		if (UNLIKELY(lowered(NMI()))) {
-			raise(NMI());
-			interrupt(NMIvector);
-			returned = 4;	// ?? TBC
-		} else if (UNLIKELY(lowered(INT()))) {
-			raise(INT());
-			interrupt(IRQvector);
-			returned = 4;	// ?? TBC
+		if (lowered(RESET())) {
+			handleRESET();
+		} else if (UNLIKELY(lowered(NMI()))) {
+			handleNMI();
+		} else if (UNLIKELY(lowered(IRQ()))) {
+			handleIRQ();
 		} else if (UNLIKELY(lowered(HALT()))) {
-			execute(0xea);	// NOP
-			returned = 2;	//
+			handleHALT();
 		} else {
-			returned = execute(fetchByte());
+			execute(fetchByte());
 		}
 		ExecutedInstruction.fire(*this);
 	}
-	return returned;
-}
-
-void EightBit::MOS6502::reset() {
-	Processor::reset();
-	jump(getWordPaged(0xff, RSTvector));
+	return cycles();
 }
 
 void EightBit::MOS6502::interrupt(uint8_t vector) {

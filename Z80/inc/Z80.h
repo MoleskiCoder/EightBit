@@ -51,6 +51,7 @@ namespace EightBit {
 		Signal<Z80> ExecutingInstruction;
 		Signal<Z80> ExecutedInstruction;
 
+		PinLevel& NMI() { return m_nmiLine; }		// In
 		PinLevel& M1() { return m_m1Line; }			// Out
 
 		virtual int execute(uint8_t opcode) final;
@@ -86,10 +87,10 @@ namespace EightBit {
 
 	protected:
 		virtual void handleRESET() final;
-		virtual void handleNMI() final;
 		virtual void handleINT() final;
 
 	private:
+		PinLevel m_nmiLine = Low;
 		PinLevel m_m1Line = Low;
 
 		InputOutput& m_ports;
@@ -119,6 +120,8 @@ namespace EightBit {
 
 		int8_t m_displacement = 0;
 		bool m_displaced = false;
+
+		void handleNMI();
 
 		uint16_t displacedAddress() {
 			assert(m_displaced);

@@ -7,6 +7,12 @@
 EightBit::mc6809::mc6809(Bus& bus)
 : BigEndianProcessor(bus) {}
 
+void EightBit::mc6809::powerOn() {
+	Processor::powerOn();
+	raise(NMI());
+	raise(FIRQ());
+}
+
 int EightBit::mc6809::step() {
 	resetCycles();
 	if (LIKELY(powered())) {
@@ -33,21 +39,21 @@ void EightBit::mc6809::handleRESET() {
 	Processor::handleRESET();
 	raise(NMI());
 	DP() = 0;
-	setFlag(CC(), IF | FF);
+	setFlag(CC(), IF | FF);	// Disable all IRQs
 	jump(getWordPaged(0xff, RESETvector));
 }
 
 void EightBit::mc6809::handleNMI() {
-	Processor::handleNMI();
+	raise(NMI());
 	saveEntireRegisterState();
 	jump(getWordPaged(0xff, NMIvector));
 	addCycles(21);
 }
 
 void EightBit::mc6809::handleIRQ() {
-	Processor::handleINT();	// Synonymous
+	Processor::handleIRQ();
 	saveEntireRegisterState();
-	setFlag(CC(), IF);
+	setFlag(CC(), IF);	// Disable IRQ
 	jump(getWordPaged(0xff, IRQvector));
 	addCycles(21);
 }
@@ -57,7 +63,7 @@ void EightBit::mc6809::handleFIRQ() {
 	clearFlag(CC(), EF);
 	pushWordS(PC());
 	pushS(CC());
-	setFlag(CC(), IF | FF);
+	setFlag(CC(), IF | FF);		// Disable all IRQs
 	jump(getWordPaged(0xff, FIRQvector));
 	addCycles(12);
 }
@@ -65,17 +71,12 @@ void EightBit::mc6809::handleFIRQ() {
 //
 
 int EightBit::mc6809::execute(uint8_t opcode) {
-	const bool prefixed = m_prefix10 || m_prefix11;
-	if (LIKELY(!prefixed)) {
+	if (m_prefix10)
+		execute10(opcode);
+	else if (m_prefix11)
+		execute11(opcode);
+	else
 		executeUnprefixed(opcode);
-	} else {
-		if (m_prefix10)
-			execute10(opcode);
-		else if (m_prefix11)
-			execute11(opcode);
-		else
-			UNREACHABLE;
-	}
 	assert(cycles() > 0);
 	return cycles();
 }

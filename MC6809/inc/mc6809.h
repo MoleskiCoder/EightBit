@@ -70,10 +70,11 @@ namespace EightBit {
 		uint8_t& DP() { return m_dp; }
 		uint8_t& CC() { return m_cc; }
 
-		PinLevel& IRQ() { return INT(); }
-		PinLevel& FIRQ() { return m_firq; }
+		PinLevel& NMI() { return m_nmiLine; }		// In
+		PinLevel& FIRQ() { return m_firqLine; }		// In
 
 	protected:
+		virtual void powerOn() final;
 
 		// Default push/pop handlers
 
@@ -83,7 +84,7 @@ namespace EightBit {
 		// Interrupt (etc.) handlers
 
 		virtual void handleRESET() final;
-		virtual void handleNMI() final;
+		virtual void handleIRQ() final;	
 
 	private:
 		const uint8_t RESETvector = 0xfe;		// RESET vector
@@ -124,7 +125,7 @@ namespace EightBit {
 
 		// Interrupt (etc.) handlers
 
-		void handleIRQ();	
+		void handleNMI();
 		void handleFIRQ();
 
 		// Execution helpers
@@ -322,7 +323,8 @@ namespace EightBit {
 		uint8_t m_dp;
 		uint8_t m_cc;
 
-		PinLevel m_firq;
+		PinLevel m_nmiLine = Low;
+		PinLevel m_firqLine = Low;
 
 		bool m_prefix10 = false;
 		bool m_prefix11 = false;
