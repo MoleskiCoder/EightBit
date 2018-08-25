@@ -74,10 +74,16 @@ namespace EightBit {
 		PinLevel& FIRQ() { return m_firq; }
 
 	protected:
-		virtual void reset() final;
+
+		// Default push/pop handlers
 
 		virtual void push(uint8_t value) final { pushS(value);  }
 		virtual uint8_t pop() final { return popS(); }
+
+		// Interrupt (etc.) handlers
+
+		virtual void handleRESET() final;
+		virtual void handleNMI() final;
 
 	private:
 		const uint8_t RESETvector = 0xfe;		// RESET vector
@@ -113,20 +119,19 @@ namespace EightBit {
 			return register16_t(low, high);
 		}
 
-		register16_t popWordS() { popWord(S()); }
-		register16_t popWordU() { popWord(U()); }
+		register16_t popWordS() { return popWord(S()); }
+		register16_t popWordU() { return popWord(U()); }
+
+		// Interrupt (etc.) handlers
+
+		void handleIRQ();	
+		void handleFIRQ();
 
 		// Execution helpers
 
 		void executeUnprefixed(uint8_t opcode);
 		void execute10(uint8_t opcode);
 		void execute11(uint8_t opcode);
-
-		// Interrupt handlers
-
-		void handleNMI();
-		void handleIRQ();
-		void handleFIRQ();
 
 		// Register selection for "indexed"
 		register16_t& RR(int which);

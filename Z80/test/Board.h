@@ -32,6 +32,7 @@ private:
 	EightBit::Z80 m_cpu;
 	EightBit::Disassembler m_disassembler;
 	EightBit::Profiler m_profiler;
+	int m_warmstartCount = 0;
 
 	void Cpu_ExecutingInstruction_Cpm(EightBit::Z80& cpu);
 

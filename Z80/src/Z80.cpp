@@ -24,9 +24,9 @@ EightBit::register16_t& EightBit::Z80::HL() {
 	return m_registers[m_registerSet][HL_IDX];
 }
 
-void EightBit::Z80::reset() {
+void EightBit::Z80::powerOn() {
 
-	IntelProcessor::reset();
+	IntelProcessor::powerOn();
 
 	raise(M1());
 
@@ -34,21 +34,51 @@ void EightBit::Z80::reset() {
 	IM() = 0;
 
 	REFRESH() = 0;
-	IV() = 0xff;
+	IV() = Mask8;
 
 	exxAF();
 	exx();
 
-	AF() = 0xffff;
-
-	BC() = 0xffff;
-	DE() = 0xffff;
-	HL() = 0xffff;
-
-	IX() = 0xffff;
-	IY() = 0xffff;
+	IX() = IY() = AF() = BC() = DE() = HL() = Mask16;
 
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
+}
+
+void EightBit::Z80::handleRESET() {
+	Processor::handleRESET();
+	di();
+	addCycles(3);
+}
+
+void EightBit::Z80::handleNMI() {
+	Processor::handleNMI();
+	raise(HALT());
+	IFF1() = false;
+	restart(0x66);
+	addCycles(13);
+}
+
+void EightBit::Z80::handleINT() {
+	Processor::handleINT();
+	raise(HALT());
+	if (IFF1()) {
+		di();
+		switch (IM()) {
+		case 0:		// i8080 equivalent
+			execute(BUS().DATA());
+			break;
+		case 1:
+			restart(7 << 3);
+			addCycles(13);
+			break;
+		case 2:
+			call(MEMPTR() = register16_t(BUS().DATA(), IV()));
+			addCycles(19);
+			break;
+		default:
+			UNREACHABLE;
+		}
+	}
 }
 
 void EightBit::Z80::di() {
@@ -614,39 +644,19 @@ int EightBit::Z80::step() {
 	resetCycles();
 	if (LIKELY(powered())) {
 		lower(M1());
-		if (UNLIKELY(lowered(NMI()))) {
-			raise(HALT());
-			raise(NMI());
-			IFF1() = false;
-			restart(0x66);
-			addCycles(13);
-			return cycles();
+		if (UNLIKELY(lowered(RESET()))) {
+			handleRESET();
+		} else if (UNLIKELY(lowered(NMI()))) {
+			handleNMI();
+		} else if (UNLIKELY(lowered(INT()))) {
+			handleINT();
+		} else if (UNLIKELY(lowered(HALT()))) {
+			execute(0);	// NOP
+		} else {
+			execute(fetchByte());
 		}
-		if (UNLIKELY(lowered(INT()))) {
-			raise(HALT());
-			raise(INT());
-			if (IFF1()) {
-				di();
-				switch (IM()) {
-				case 0:		// i8080 equivalent
-					return execute(BUS().DATA());
-				case 1:
-					restart(7 << 3);
-					addCycles(13);
-					return cycles();
-				case 2:
-					call(MEMPTR() = register16_t(BUS().DATA(), IV()));
-					addCycles(19);
-					return cycles();
-				default:
-					UNREACHABLE;
-				}
-			}
-		}
-		if (UNLIKELY(lowered(HALT())))
-			return execute(0);	// NOP
-		return execute(fetchByte());
 	}
+	ExecutedInstruction.fire(*this);
 	return cycles();
 }
 

@@ -7,8 +7,8 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 		m_decodedOpcodes[i] = i;
 }
 
-void EightBit::IntelProcessor::reset() {
-	Processor::reset();
+void EightBit::IntelProcessor::powerOn() {
+	Processor::powerOn();
 	SP() = AF() = BC() = DE() = HL() = Mask16;
 }
 

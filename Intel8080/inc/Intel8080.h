@@ -25,6 +25,7 @@ namespace EightBit {
 		Intel8080(Bus& bus, InputOutput& ports);
 
 		Signal<Intel8080> ExecutingInstruction;
+		Signal<Intel8080> ExecutedInstruction;
 
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
@@ -35,7 +36,8 @@ namespace EightBit {
 		virtual register16_t& HL() final;
 
 	protected:
-		virtual void reset() final;
+		virtual void handleRESET() final;
+		virtual void handleINT() final;
 
 	private:
 		bool m_interruptEnable = false;

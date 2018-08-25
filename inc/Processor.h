@@ -78,11 +78,11 @@ namespace EightBit {
 		PinLevel& POWER() { return m_powerLine; }
 
 		bool powered() { return raised(POWER()); }
-		virtual void powerOn() { raise(POWER()); raise(HALT()); reset(); }
+		virtual void powerOn();
 		void powerOff() { lower(POWER()); }
+		void reset() { lower(RESET()); }
 
 		int run(int limit);
-		virtual int singleStep();
 		virtual int step() = 0;
 
 		virtual int execute(uint8_t opcode) = 0;
@@ -102,11 +102,13 @@ namespace EightBit {
 		Processor(Bus& memory);
 		virtual ~Processor() = default;
 
-		virtual void reset();
-
 		bool halted() { return lowered(HALT()); }
 		void halt() { --PC();  lower(HALT()); }
 		void proceed() { ++PC(); raise(HALT()); }
+
+		virtual void handleRESET();
+		virtual void handleNMI();
+		virtual void handleINT();
 
 		uint8_t getBytePaged(uint8_t page, uint8_t offset) {
 			return BUS().read(register16_t(offset, page));

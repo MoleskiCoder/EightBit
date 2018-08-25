@@ -23,9 +23,21 @@ EightBit::register16_t& EightBit::Intel8080::HL() {
 	return hl;
 }
 
-void EightBit::Intel8080::reset() {
-	IntelProcessor::reset();
+void EightBit::Intel8080::handleRESET() {
+	Processor::handleRESET();
 	di();
+	addCycles(3);
+}
+
+
+void EightBit::Intel8080::handleINT() {
+	Processor::handleINT();
+	raise(HALT());
+	if (m_interruptEnable) {
+		di();
+		execute(BUS().DATA());
+	}
+	addCycles(3);
 }
 
 void EightBit::Intel8080::di() {
@@ -258,18 +270,17 @@ int EightBit::Intel8080::step() {
 	ExecutingInstruction.fire(*this);
 	resetCycles();
 	if (LIKELY(powered())) {
-		if (UNLIKELY(lowered(INT()))) {
-			raise(HALT());
-			raise(INT());
-			if (m_interruptEnable) {
-				di();
-				return execute(BUS().DATA());
-			}
+		if (UNLIKELY(lowered(RESET()))) {
+			handleRESET();
+		} else if (UNLIKELY(lowered(INT()))) {
+			handleINT();
+		} else if (UNLIKELY(lowered(HALT()))) {
+			execute(0);	// NOP
+		} else {
+			execute(fetchByte());
 		}
-		if (UNLIKELY(lowered(HALT())))
-			return execute(0);	// NOP
-		return execute(fetchByte());
 	}
+	ExecutedInstruction.fire(*this);
 	return cycles();
 }
 

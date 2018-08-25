@@ -18,7 +18,6 @@ void Board::initialise() {
 	m_ram.load(romDirectory + "/zexall.com", 0x100);	// Cringle/Bartholomew
 	//m_ram.load(romDirectory + "/CPUTEST.COM", 0x100);	// SuperSoft diagnostics
 
-	poke(5, 0xc9);	// ret
 	m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Cpm, this, std::placeholders::_1));
 
 	if (m_configuration.isProfileMode()) {
@@ -30,7 +29,13 @@ void Board::initialise() {
 	}
 
 	CPU().powerOn();
-	CPU().PC() = m_configuration.getStartAddress();
+	CPU().reset();
+
+	poke(0, 0xc3);	// JMP
+	poke(1, m_configuration.getStartAddress().low);
+	poke(2, m_configuration.getStartAddress().high);
+
+	poke(5, 0xc9);	// ret
 }
 
 void Board::Cpu_ExecutingInstruction_Cpm(EightBit::Z80& cpu) {
@@ -38,9 +43,11 @@ void Board::Cpu_ExecutingInstruction_Cpm(EightBit::Z80& cpu) {
 		CPU().powerOff();
 	switch (cpu.PC().word) {
 	case 0x0:	// CP/M warm start
-		CPU().powerOff();
-		if (m_configuration.isProfileMode()) {
-			m_profiler.dump();
+		if (++m_warmstartCount == 3) {
+			CPU().powerOff();
+			if (m_configuration.isProfileMode()) {
+				m_profiler.dump();
+			}
 		}
 		break;
 	case 0x5:	// BDOS

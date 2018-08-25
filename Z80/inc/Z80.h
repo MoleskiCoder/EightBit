@@ -49,11 +49,13 @@ namespace EightBit {
 		Z80(Bus& bus, InputOutput& ports);
 
 		Signal<Z80> ExecutingInstruction;
+		Signal<Z80> ExecutedInstruction;
 
 		PinLevel& M1() { return m_m1Line; }			// Out
 
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
+		virtual void powerOn() final;
 
 		virtual register16_t& AF() final;
 		virtual register16_t& BC() final;
@@ -83,7 +85,9 @@ namespace EightBit {
 		}
 
 	protected:
-		virtual void reset() final;
+		virtual void handleRESET() final;
+		virtual void handleNMI() final;
+		virtual void handleINT() final;
 
 	private:
 		PinLevel m_m1Line = Low;

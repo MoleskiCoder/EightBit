@@ -56,11 +56,11 @@ namespace EightBit {
 		uint8_t& H() { return HL().high; }
 		uint8_t& L() { return HL().low; }
 
+		virtual void powerOn() override;
+
 	protected:
 		IntelProcessor(Bus& bus);
 		virtual ~IntelProcessor() = default;
-
-		virtual void reset() override;
 
 		template<class T> static void adjustSign(uint8_t& f, const uint8_t value) {
 			setFlag(f, T::SF, value & T::SF);

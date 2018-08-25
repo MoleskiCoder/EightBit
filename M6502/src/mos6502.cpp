@@ -6,6 +6,8 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 
 void EightBit::MOS6502::powerOn() {
 
+	Processor::powerOn();
+
 	X() = Bit7;
 	Y() = 0;
 	A() = 0;
@@ -13,8 +15,6 @@ void EightBit::MOS6502::powerOn() {
 	S() = Mask8;
 
 	raise(SO());
-
-	Processor::powerOn();
 }
 
 int EightBit::MOS6502::step() {

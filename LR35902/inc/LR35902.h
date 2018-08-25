@@ -39,8 +39,6 @@ namespace EightBit {
 			virtual register16_t& DE() final { return de; }
 			virtual register16_t& HL() final { return hl; }
 
-			int singleStep();
-
 		protected:
 			virtual void reset() final;
 			virtual int execute(uint8_t opcode) final;

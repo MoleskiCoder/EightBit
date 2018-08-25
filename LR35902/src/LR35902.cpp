@@ -277,38 +277,30 @@ void EightBit::GameBoy::LR35902::ccf() {
 	clearFlag(F(), CF, F() & CF);
 }
 
-int EightBit::GameBoy::LR35902::singleStep() {
-
-	const auto interruptEnable = BUS().peek(IoRegisters::BASE + IoRegisters::IE);
-	const auto interruptFlags = m_bus.IO().peek(IoRegisters::IF);
-
-	auto masked = interruptEnable & interruptFlags;
-	if (masked) {
-		if (IME()) {
-			m_bus.IO().poke(IoRegisters::IF, 0);
-			lower(INT());
-			const int index = EightBit::findFirstSet(masked);
-			BUS().DATA() = 0x38 + (index << 3);
-		} else {
-			if (halted())
-				proceed();
-		}
-	}
-
-	const auto current = step();
-
-	m_bus.IO().checkTimers(current);
-	m_bus.IO().transferDma();
-
-	return current;
-}
-
 int EightBit::GameBoy::LR35902::step() {
+
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;
 	resetCycles();
 	int ran = 0;
 	if (LIKELY(powered())) {
+
+		const auto interruptEnable = BUS().peek(IoRegisters::BASE + IoRegisters::IE);
+		const auto interruptFlags = m_bus.IO().peek(IoRegisters::IF);
+
+		auto masked = interruptEnable & interruptFlags;
+		if (masked) {
+			if (IME()) {
+				m_bus.IO().poke(IoRegisters::IF, 0);
+				lower(INT());
+				const int index = EightBit::findFirstSet(masked);
+				BUS().DATA() = 0x38 + (index << 3);
+			} else {
+				if (halted())
+					proceed();
+			}
+		}
+
 		if (UNLIKELY(lowered(INT()))) {
 			raise(HALT());
 			raise(INT());
@@ -320,6 +312,10 @@ int EightBit::GameBoy::LR35902::step() {
 		} else {
 			ran = execute(fetchByte());
 		}
+
+		m_bus.IO().checkTimers(ran);
+		m_bus.IO().transferDma();
+
 	}
 	ExecutedInstruction.fire(*this);
 	return ran;
