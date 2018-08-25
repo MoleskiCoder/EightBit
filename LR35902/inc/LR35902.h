@@ -40,9 +40,11 @@ namespace EightBit {
 			virtual register16_t& HL() final { return hl; }
 
 		protected:
-			virtual void reset() final;
 			virtual int execute(uint8_t opcode) final;
 			virtual int step() final;
+
+			virtual void handleRESET() override;
+			virtual void handleINT() override;
 
 		private:
 			Bus& m_bus;

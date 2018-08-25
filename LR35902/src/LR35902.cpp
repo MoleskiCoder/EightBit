@@ -9,11 +9,19 @@ EightBit::GameBoy::LR35902::LR35902(Bus& memory)
   m_bus(memory) {
 }
 
-void EightBit::GameBoy::LR35902::reset() {
-	IntelProcessor::reset();
+void EightBit::GameBoy::LR35902::handleRESET() {
+	Processor::handleRESET();
 	di();
 	SP() = Mask16 - 1;
-	m_prefixCB = false;
+	addCycles(4);
+}
+
+void EightBit::GameBoy::LR35902::handleINT() {
+	Processor::handleINT();
+	raise(HALT());
+	di();
+	restart(BUS().DATA());
+	addCycles(4);
 }
 
 void EightBit::GameBoy::LR35902::di() {
@@ -282,7 +290,6 @@ int EightBit::GameBoy::LR35902::step() {
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;
 	resetCycles();
-	int ran = 0;
 	if (LIKELY(powered())) {
 
 		const auto interruptEnable = BUS().peek(IoRegisters::BASE + IoRegisters::IE);
@@ -301,24 +308,22 @@ int EightBit::GameBoy::LR35902::step() {
 			}
 		}
 
-		if (UNLIKELY(lowered(INT()))) {
-			raise(HALT());
-			raise(INT());
-			di();
-			restart(BUS().DATA());
-			ran = 4;
+		if (UNLIKELY(lowered(RESET()))) {
+			handleRESET();
+		} else if (UNLIKELY(lowered(INT()))) {
+			handleINT();
 		} else if (UNLIKELY(lowered(HALT()))) {
-			ran = execute(0);	// NOP
+			execute(0);	// NOP
 		} else {
-			ran = execute(fetchByte());
+			execute(fetchByte());
 		}
 
-		m_bus.IO().checkTimers(ran);
+		m_bus.IO().checkTimers(clockCycles());
 		m_bus.IO().transferDma();
 
 	}
 	ExecutedInstruction.fire(*this);
-	return ran;
+	return clockCycles();
 }
 
 int EightBit::GameBoy::LR35902::execute(uint8_t opcode) {
