@@ -18,13 +18,13 @@ int EightBit::mc6809::step() {
 	if (LIKELY(powered())) {
 		m_prefix10 = m_prefix11 = false;
 		ExecutingInstruction.fire(*this);
-		if (lowered(RESET()))
+		if (UNLIKELY(lowered(RESET())))
 			handleRESET();
-		else if (lowered(NMI()))
+		else if (UNLIKELY(lowered(NMI())))
 			handleNMI();
-		else if (lowered(FIRQ()) && !(CC() & FF))
+		else if (UNLIKELY(lowered(FIRQ()) && !(CC() & FF)))
 			handleFIRQ();
-		else if (lowered(IRQ()) && !(CC() & IF))
+		else if (UNLIKELY(lowered(IRQ()) && !(CC() & IF)))
 			handleIRQ();
 		else
 			execute(fetchByte());
@@ -71,9 +71,9 @@ void EightBit::mc6809::handleFIRQ() {
 //
 
 int EightBit::mc6809::execute(uint8_t opcode) {
-	if (m_prefix10)
+	if (UNLIKELY(m_prefix10))
 		execute10(opcode);
-	else if (m_prefix11)
+	else if (UNLIKELY(m_prefix11))
 		execute11(opcode);
 	else
 		executeUnprefixed(opcode);
