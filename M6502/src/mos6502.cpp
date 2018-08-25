@@ -53,7 +53,7 @@ int EightBit::MOS6502::step() {
 		if (UNLIKELY(lowered(SO()))) {
 			handleSO();
 		}
-		if (lowered(RESET())) {
+		if (UNLIKELY(lowered(RESET()))) {
 			handleRESET();
 		} else if (UNLIKELY(lowered(NMI()))) {
 			handleNMI();
