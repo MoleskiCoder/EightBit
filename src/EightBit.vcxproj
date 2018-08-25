@@ -152,10 +152,12 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BigEndianProcessor.cpp" />
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="EventArgs.cpp" />
     <ClCompile Include="InputOutput.cpp" />
     <ClCompile Include="IntelProcessor.cpp" />
+    <ClCompile Include="LittleEndianProcessor.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Processor.cpp" />
     <ClCompile Include="stdafx.cpp">
