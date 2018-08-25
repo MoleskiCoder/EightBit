@@ -28,6 +28,7 @@ void EightBit::Z80::powerOn() {
 
 	IntelProcessor::powerOn();
 
+	raise(NMI());
 	raise(M1());
 
 	di();

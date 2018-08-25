@@ -14,6 +14,7 @@ void EightBit::MOS6502::powerOn() {
 	P() = RF;
 	S() = Mask8;
 
+	raise(NMI());
 	raise(SO());
 }
 
