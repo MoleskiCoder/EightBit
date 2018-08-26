@@ -27,7 +27,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_M6502", "M6502\test\te
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MC6809", "MC6809\src\MC6809.vcxproj", "{09C1B50E-408E-48B1-A616-8400904B5829}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_MC6809", "MC6809\test\test_MC6809.vcxproj", "{80412055-64FB-417B-B017-EBF92770C922}"
+EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
@@ -131,6 +136,14 @@ Global
 		{09C1B50E-408E-48B1-A616-8400904B5829}.Release|x64.Build.0 = Release|x64
 		{09C1B50E-408E-48B1-A616-8400904B5829}.Release|x86.ActiveCfg = Release|Win32
 		{09C1B50E-408E-48B1-A616-8400904B5829}.Release|x86.Build.0 = Release|Win32
+		{80412055-64FB-417B-B017-EBF92770C922}.Debug|x64.ActiveCfg = Debug|x64
+		{80412055-64FB-417B-B017-EBF92770C922}.Debug|x64.Build.0 = Debug|x64
+		{80412055-64FB-417B-B017-EBF92770C922}.Debug|x86.ActiveCfg = Debug|Win32
+		{80412055-64FB-417B-B017-EBF92770C922}.Debug|x86.Build.0 = Debug|Win32
+		{80412055-64FB-417B-B017-EBF92770C922}.Release|x64.ActiveCfg = Release|x64
+		{80412055-64FB-417B-B017-EBF92770C922}.Release|x64.Build.0 = Release|x64
+		{80412055-64FB-417B-B017-EBF92770C922}.Release|x86.ActiveCfg = Release|Win32
+		{80412055-64FB-417B-B017-EBF92770C922}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
