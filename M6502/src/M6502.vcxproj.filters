@@ -17,13 +17,7 @@
     <ClInclude Include="..\inc\Disassembly.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\inc\DisassemblyEventArgs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\inc\mos6502.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inc\ProfileEventArgs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\inc\ProfileLineEventArgs.h">
