@@ -60,6 +60,8 @@ namespace EightBit {
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
 
+		virtual void powerOn() final;
+
 		register16_t& D() { return m_d; }
 		uint8_t& A() { return D().high; }
 		uint8_t& B() { return D().low; }
@@ -79,8 +81,6 @@ namespace EightBit {
 		PinLevel& BS() { return m_bsLine; }			// Out
 
 	protected:
-		virtual void powerOn() final;
-
 		// Default push/pop handlers
 
 		virtual void push(uint8_t value) final { pushS(value);  }
