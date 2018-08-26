@@ -77,6 +77,17 @@ namespace EightBit {
 		PinLevel& NMI() { return m_nmiLine; }		// In
 		PinLevel& FIRQ() { return m_firqLine; }		// In
 
+		//	|---------------|-----------------------------------|
+		//	|	MPU State	|									|
+		//	|_______________|	MPU State Definition			|
+		//	|	BA  |	BS	|									|
+		//	|_______|_______|___________________________________|
+		//	|	0	|	0	|	Normal (running)				|
+		//	|	0	|	1	|	Interrupt or RESET Acknowledge	|
+		//	|	1	|	0	|	SYNC Acknowledge				|
+		//	|	1	|	1	|	HALT Acknowledge				|
+		//	|-------|-------|-----------------------------------|
+
 		PinLevel& BA() { return m_baLine; }			// Out
 		PinLevel& BS() { return m_bsLine; }			// Out
 
