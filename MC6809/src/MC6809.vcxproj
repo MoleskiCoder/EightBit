@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\inc\Disassembly.h" />
     <ClInclude Include="..\inc\mc6809.h" />
     <ClInclude Include="..\inc\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Disassembly.cpp" />
     <ClCompile Include="mc6809.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
