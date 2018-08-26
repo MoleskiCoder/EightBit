@@ -7,6 +7,8 @@
 
 #include <Bus.h>
 #include <BigEndianProcessor.h>
+#include <Signal.h>
+#include <Register.h>
 
 namespace EightBit {
 	class mc6809 : public BigEndianProcessor {
