@@ -135,18 +135,18 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	switch (opcode) {
 	// ABX
-	//case 0x3a:	X() += B();											break;		// ABX (inherent)
+	case 0x3a:	output << "\tABX";						break;		// ABX (inherent)
 
 	//// ADC
-	//case 0x89:	A() = adc(A(), AM_immediate_byte());				break;		// ADC (ADCA immediate)
-	//case 0x99:	A() = adc(A(), AM_direct_byte());					break;		// ADC (ADCA direct)
-	//case 0xa9:	A() = adc(A(), AM_indexed_byte());					break;		// ADC (ADCA indexed)
-	//case 0xb9:	A() = adc(A(), AM_extended_byte());					break;		// ADC (ADCA extended)
+	case 0x89:	output << AM_immediate_byte("ADCA");	break;		// ADC (ADCA immediate)
+	case 0x99:	output << AM_direct_byte("ADCA");		break;		// ADC (ADCA direct)
+	case 0xa9:	output << AM_indexed_byte("ADCA");		break;		// ADC (ADCA indexed)
+	case 0xb9:	output << AM_extended_byte("ADCA");		break;		// ADC (ADCA extended)
 
-	//case 0xc9:	B() = adc(B(), AM_immediate_byte());				break;		// ADC (ADCB immediate)
-	//case 0xd9:	B() = adc(B(), AM_direct_byte());					break;		// ADC (ADCB direct)
-	//case 0xe9:	B() = adc(B(), AM_indexed_byte());					break;		// ADC (ADCB indexed)
-	//case 0xf9:	B() = adc(B(), AM_extended_byte());					break;		// ADC (ADCB extended)
+	case 0xc9:	output << AM_immediate_byte("ADCB");	break;		// ADC (ADCB immediate)
+	case 0xd9:	output << AM_direct_byte("ADCB");		break;		// ADC (ADCB direct)
+	case 0xe9:	output << AM_indexed_byte("ADCB");		break;		// ADC (ADCB indexed)
+	case 0xf9:	output << AM_extended_byte("ADCB");		break;		// ADC (ADCB extended)
 
 	//// ADD
 	//case 0x8b: A() = add(A(), AM_immediate_byte());				break;		// ADD (ADDA immediate)
@@ -245,7 +245,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//// DEC
 	//case 0x0a:	BUS().write(dec(AM_direct_byte()));					break;		// DEC (direct)
 	case 0x4a:	output << "\tDECA";	break;	// DEC (DECA inherent)
-	//case 0x5a:	B() = dec(B());										break;		// DEC (DECB inherent)
+	case 0x5a:	output << "\tDECB";	break;	// DEC (DECB inherent)
 	//case 0x6a:	BUS().write(dec(AM_indexed_byte()));				break;		// DEC (indexed)
 	//case 0x7a:	BUS().write(dec(AM_extended_byte()));				break;		// DEC (extended)
 
@@ -292,7 +292,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//case 0xb6:	A() = ld(AM_extended_byte());						break;		// LD (LDA extended)
 
 	//// LDB
-	//case 0xc6:	B() = ld(AM_immediate_byte());						break;		// LD (LDB immediate)
+	case 0xc6:	output << AM_immediate_byte("LDB");	break;	// LD (LDB immediate)
 	//case 0xd6:	B() = ld(AM_direct_byte());							break;		// LD (LDB direct)
 	//case 0xe6:	B() = ld(AM_indexed_byte());						break;		// LD (LDB indexed)
 	//case 0xf6:	B() = ld(AM_extended_byte());						break;		// LD (LDB extended)
@@ -304,7 +304,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//case 0xfc:	D() = ld(AM_extended_word());						break;		// LD (LDD extended)
 
 	//// LDU
-	//case 0xce:	U() = ld(AM_immediate_word());						break;		// LD (LDU immediate)
+	case 0xce:	output << AM_immediate_word("LDU"); break;	// LD (LDU immediate)
 	//case 0xde:	U() = ld(AM_direct_word());							break;		// LD (LDU direct)
 	//case 0xee:	U() = ld(AM_indexed_word());						break;		// LD (LDU indexed)
 	//case 0xfe:	U() = ld(AM_extended_word());						break;		// LD (LDU extended)
@@ -408,7 +408,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//// STA
 	//case 0x97:	BUS().write(Address_direct(), st(A()));				break;		// ST (STA direct)
 	case 0xa7:	output << Address_indexed("STA");	break;	// ST (STA indexed)
-	//case 0xb7:	BUS().write(Address_extended(), st(A()));			break;		// ST (STA extended)
+	case 0xb7:	output << Address_extended("STA");	break;	// ST (STA extended)
 
 	//// STB
 	//case 0xd7:	BUS().write(Address_direct(), st(B()));				break;		// ST (STB direct)
@@ -457,7 +457,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//case 0x13:	halt();												break;		// SYNC (inherent)
 
 	//// TFR
-	//case 0x1f:	tfr(AM_immediate_byte());							break;		// TFR (immediate)
+	case 0x1f:	output << tfr();	break;		// TFR (immediate)
 
 	//// TST
 	//case 0x0d:	tst(AM_direct_byte());								break;		// TST (direct)
@@ -476,7 +476,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//case 0x23:	branchShort(BLS());									break;		// BLS (relative)
 	//case 0x24:	branchShort(!carry());								break;		// BCC (relative)
 	//case 0x25:	branchShort(carry());								break;		// BCS (relative)
-	//case 0x26:	branchShort(!zero());								break;		// BNE (relative)
+	case 0x26:	output << branchShort("BNE");	break;	// BNE (relative)
 	//case 0x27:	branchShort(zero());								break;		// BEQ (relative)
 	//case 0x28: 	branchShort(!overflow());							break;		// BVC (relative)
 	//case 0x29: 	branchShort(overflow());							break;		// BVS (relative)
@@ -522,7 +522,7 @@ std::string EightBit::Disassembly::disassemble10() {
 	//// LD
 
 	//// LDS
-	//case 0xce:	S() = ld(AM_immediate_word());						break;		// LD (LDS immediate)
+	case 0xce:	output << AM_immediate_word("LDS");	break;	//	LD (LDS immediate)
 	//case 0xde:	S() = ld(AM_direct_word());							break;		// LD (LDS direct)
 	//case 0xee:	S() = ld(AM_indexed_word());						break;		// LD (LDS indexed)
 	//case 0xfe:	S() = ld(AM_extended_word());						break;		// LD (LDS extended)
@@ -699,6 +699,26 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 	return output.str();
 }
 
+std::string EightBit::Disassembly::Address_extended(std::string mnemomic) {
+	std::ostringstream output;
+	const auto word = getWord(++m_address);
+	output
+		<< dump_WordValue(word)
+		<< "\t" << mnemomic << "\t"
+		<< "$" << dump_WordValue(word);
+	return output.str();
+}
+
+std::string EightBit::Disassembly::Address_relative_byte(std::string mnemomic) {
+	std::ostringstream output;
+	const auto byte = getByte(++m_address);
+	output
+		<< dump_ByteValue(byte)
+		<< "\t" << mnemomic << "\t"
+		<< "$" << dump_WordValue(++m_address + (int8_t)byte);
+	return output.str();
+}
+
 ////
 
 std::string EightBit::Disassembly::AM_immediate_byte(std::string mnemomic) {
@@ -718,6 +738,99 @@ std::string EightBit::Disassembly::AM_immediate_word(std::string mnemomic) {
 		<< dump_WordValue(word)
 		<< "\t" << mnemomic << "\t"
 		<< "#$" << dump_WordValue(word);
+	return output.str();
+}
+
+std::string EightBit::Disassembly::AM_direct_byte(std::string mnemomic) {
+	std::ostringstream output;
+	output
+		<< "\t**" << mnemomic << "**\t";
+	return output.str();
+}
+
+std::string EightBit::Disassembly::AM_indexed_byte(std::string mnemomic) {
+	std::ostringstream output;
+	output
+		<< "\t**" << mnemomic << "**\t";
+	return output.str();
+}
+
+std::string EightBit::Disassembly::AM_extended_byte(std::string mnemomic) {
+	std::ostringstream output;
+	output
+		<< "\t**" << mnemomic << "**\t";
+	return output.str();
+}
+
+////
+
+std::string EightBit::Disassembly::branchShort(std::string mnemomic) {
+	return Address_relative_byte(mnemomic);
+}
+
+std::string EightBit::Disassembly::branchLong(std::string mnemomic) {
+	std::ostringstream output;
+	output
+		<< "\t**" << mnemomic << "**\t";
+	return output.str();
+}
+
+////
+
+std::string EightBit::Disassembly::referenceTransfer8(int specifier) {
+	switch (specifier) {
+	case 0b1000:
+		return "A";
+	case 0b1001:
+		return "B";
+	case 0b1010:
+		return "CC";
+	case 0b1011:
+		return "DP";
+	default:
+		UNREACHABLE;
+	}
+}
+
+std::string EightBit::Disassembly::referenceTransfer16(int specifier) {
+	switch (specifier) {
+	case 0b0000:
+		return "D";
+	case 0b0001:
+		return "X";
+	case 0b0010:
+		return "Y";
+	case 0b0011:
+		return "U";
+	case 0b0100:
+		return "S";
+	case 0b0101:
+		return "PC";
+	default:
+		UNREACHABLE;
+	}
+}
+
+std::string EightBit::Disassembly::tfr() {
+
+	const auto data = getByte(++m_address);
+	const auto reg1 = Processor::highNibble(data);
+	const auto reg2 = Processor::lowNibble(data);
+
+	const bool type8 = !!(reg1 & Processor::Bit3);	// 8 bit transfer?
+
+	std::string from = "unknown";
+	std::string to = "unknown";
+	if (type8) {
+		from = referenceTransfer8(reg1);
+		to = referenceTransfer8(reg2);
+	} else {
+		from = referenceTransfer16(reg1);
+		to = referenceTransfer16(reg2);
+	}
+
+	std::ostringstream output;
+	output << "\tTFR\t" << from << "," << to;
 	return output.str();
 }
 

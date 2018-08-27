@@ -44,12 +44,31 @@ namespace EightBit {
 		std::string disassemble11();
 
 		//
+
 		std::string RR(int which);
 
 		std::string Address_indexed(std::string mnemomic);
+		std::string Address_extended(std::string mnemomic);
+		std::string Address_relative_byte(std::string mnemomic);
 
 		std::string AM_immediate_byte(std::string mnemomic);
 		std::string AM_immediate_word(std::string mnemomic);
+		std::string AM_direct_byte(std::string mnemomic);
+		std::string AM_indexed_byte(std::string mnemomic);
+		std::string AM_extended_byte(std::string mnemomic);
+
+		//
+
+		std::string branchShort(std::string mnemomic);
+		std::string branchLong(std::string mnemomic);
+
+		//
+
+		std::string referenceTransfer8(int specifier);
+		std::string referenceTransfer16(int specifier);
+		std::string tfr();
+
+		//
 
 		std::string dump_Byte(uint16_t address);
 		std::string dump_DByte(uint16_t address);

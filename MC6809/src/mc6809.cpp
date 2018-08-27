@@ -877,13 +877,13 @@ void EightBit::mc6809::exg(uint8_t data) {
 	const auto reg1 = highNibble(data);
 	const auto reg2 = lowNibble(data);
 
-	const bool type16 = !!(reg1 & Bit3);	// 16 bit exchange?
-	ASSUME(type16 == !!(reg2 & Bit3));		// Regardless, the register exchange must be equivalent
+	const bool type8 = !(reg1 & Bit3);	// 8 bit exchange?
+	ASSUME(type8 == !(reg2 & Bit3));	// Regardless, the register exchange must be equivalent
 
-	if (type16)
-		std::swap(referenceTransfer16(reg1), referenceTransfer16(reg2));
-	else
+	if (type8)
 		std::swap(referenceTransfer8(reg1), referenceTransfer8(reg2));
+	else
+		std::swap(referenceTransfer16(reg1), referenceTransfer16(reg2));
 }
 
 uint8_t EightBit::mc6809::inc(uint8_t operand) {
@@ -1136,13 +1136,13 @@ void EightBit::mc6809::tfr(uint8_t data) {
 	const auto reg1 = highNibble(data);
 	const auto reg2 = lowNibble(data);
 
-	const bool type16 = !!(reg1 & Bit3);	// 16 bit transfer?
-	ASSUME(type16 == !!(reg2 & Bit3));		// Regardless, the register transfer must be equivalent
+	const bool type8 = !!(reg1 & Bit3);	// 8 bit transfer?
+	ASSUME(type8 == !!(reg2 & Bit3));	// Regardless, the register transfer must be equivalent
 
-	if (type16)
-		referenceTransfer16(reg2) = referenceTransfer16(reg1);
-	else
+	if (type8)
 		referenceTransfer8(reg2) = referenceTransfer8(reg1);
+	else
+		referenceTransfer16(reg2) = referenceTransfer16(reg1);
 }
 
 uint8_t EightBit::mc6809::st(uint8_t data) {
