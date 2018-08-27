@@ -48,6 +48,8 @@ namespace EightBit {
 
 		std::string Address_indexed(std::string mnemomic);
 
+		std::string AM_immediate_word(std::string mnemomic);
+
 		std::string dump_Byte(uint16_t address);
 		std::string dump_DByte(uint16_t address);
 		std::string dump_Word(uint16_t address);

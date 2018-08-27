@@ -125,7 +125,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	std::ostringstream output;
 
-	const auto opcode = CPU().BUS().peek(m_address);
+	const auto opcode = getByte(m_address);
 	output << dump_ByteValue(opcode);
 
 	switch (opcode) {
@@ -310,7 +310,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//case 0xfe:	U() = ld(AM_extended_word());						break;		// LD (LDU extended)
 
 	//// LDX
-	//case 0x8e:	X() = ld(AM_immediate_word());						break;		// LD (LDX immediate)
+	case 0x8e:	output << AM_immediate_word("LDX");	break;	// LD (LDX immediate)
 	//case 0x9e:	X() = ld(AM_direct_word());							break;		// LD (LDX direct)
 	//case 0xae:	X() = ld(AM_indexed_word());						break;		// LD (LDX indexed)
 	//case 0xbe:	X() = ld(AM_extended_word());						break;		// LD (LDX extended)
@@ -500,7 +500,7 @@ std::string EightBit::Disassembly::disassemble10() {
 
 	std::ostringstream output;
 
-	const auto opcode = CPU().BUS().peek(m_address);
+	const auto opcode = getByte(m_address);
 	output << dump_ByteValue(opcode);
 
 	switch (opcode) {
@@ -575,7 +575,7 @@ std::string EightBit::Disassembly::disassemble11() {
 
 	std::ostringstream output;
 
-	const auto opcode = CPU().BUS().peek(m_address);
+	const auto opcode = getByte(m_address);
 	output << dump_ByteValue(opcode);
 
 	switch (opcode) {
@@ -625,13 +625,11 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 
 	std::ostringstream output;
 
-	auto& bus = CPU().BUS();
-
-	const auto type = bus.peek(++m_address);
+	const auto type = getByte(++m_address);
 	const auto r = RR((type & (Processor::Bit6 | Processor::Bit5)) >> 5);
 
-	auto byte = 0xff;
-	auto word = 0xffff;
+	uint8_t byte = 0xff;
+	uint16_t word = 0xffff;
 
 	output << dump_ByteValue(type);
 
@@ -639,54 +637,77 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 		const auto indirect = type & Processor::Bit4;
 		switch (type & Processor::Mask4) {
 		case 0b0000:	// ,R+
-			output << mnemomic << " ," << r << "+";
+			output << "\t" << mnemomic << "\t," << r << "+";
 			break;
 		case 0b0001:	// ,R++
-			output << mnemomic << " ," << r << "++";
+			output << "\t" << mnemomic << "\t," << r << "++";
 			break;
 		case 0b0010:	// ,-R
-			output << mnemomic << " ,-" << r;
+			output << "\t" << mnemomic << "\t,-" << r;
 			break;
 		case 0b0011:	// ,--R
-			output << mnemomic << " ,--" << r;
+			output << "\t" << mnemomic << "\t,--" << r;
 			break;
 		case 0b0100:	// ,R
-			output << mnemomic << " ," << r;
+			output << "\t" << mnemomic << "\t," << r;
 			break;
 		case 0b0101:	// B,R
-			output << mnemomic << " B," << r;
+			output << "\t" << mnemomic << "\tB," << r;
 			break;
 		case 0b0110:	// A,R
-			output << mnemomic << " A," << r;
+			output << "\t" << mnemomic << "\tA," << r;
 			break;
 		case 0b1000:	// n,R (eight-bit)
-			byte = bus.peek(++m_address);
-			output << mnemomic << " " << dump_Byte(byte) << "," << r;
+			byte = getByte(++m_address);
+			output
+				<< dump_ByteValue(byte)
+				<< "\t" << mnemomic << "\t"
+				<< dump_ByteValue(byte) << "," << r;
 			break;
 		case 0b1001:	// n,R (sixteen-bit)
-			word = bus.peekWord(++m_address);
-			output << dump_WordValue(word) << "\t";
-			output << mnemomic << " " << dump_Word(word) << "," << r;
+			word = getWord(++m_address);
+			output
+				<< dump_WordValue(word)
+				<< "\t" << mnemomic << "\t"
+				<< dump_WordValue(word) << "," << r;
 			break;
 		case 0b1011:	// D,R
-			output << mnemomic << " D," << r;
+			output << "\t" << mnemomic << "\tD," << r;
 			break;
 		case 0b1100:	// n,PCR (eight-bit)
-			byte = bus.peek(++m_address);
-			output << dump_ByteValue(byte) << "\t";
-			output << mnemomic << " " << dump_RelativeValue((int8_t)byte) << ",PCR";
+			byte = getByte(++m_address);
+			output
+				<< dump_ByteValue(byte)
+				<< "\t" << mnemomic << "\t"
+				<< dump_RelativeValue((int8_t)byte) << ",PCR";
 			break;
 		case 0b1101:	// n,PCR (sixteen-bit)
-			word = bus.peekWord(++m_address);
-			output << dump_WordValue(word) << "\t";
-			output << mnemomic << " " << dump_Word(word) << ",PCR";
+			word = getWord(++m_address);
+			output
+				<< dump_WordValue(word)
+				<< "\t" << mnemomic << "\t"
+				<< dump_RelativeValue((int16_t)word) << ",PCR";
 			break;
 		}
 	} else {
 		// EA = ,R + 5-bit offset
-		output << mnemomic << dump_Byte(type & Processor::Mask5) << "," << r;
+		output
+			<< "\t" << mnemomic << "\t"
+			<< dump_Byte(type & Processor::Mask5) << "," << r;
 }
 
+	return output.str();
+}
+
+////
+
+std::string EightBit::Disassembly::AM_immediate_word(std::string mnemomic) {
+	std::ostringstream output;
+	const auto word = getWord(++m_address);
+	output
+		<< dump_WordValue(word)
+		<< "\t" << mnemomic << "\t"
+		<< "#" << dump_WordValue(word);
 	return output.str();
 }
 
@@ -697,7 +718,7 @@ uint8_t EightBit::Disassembly::getByte(uint16_t address) {
 }
 
 uint16_t EightBit::Disassembly::getWord(uint16_t address) {
-	return CPU().BUS().peekWord(address);
+	return CPU().peekWord(address).word;
 }
 
 ////
