@@ -244,7 +244,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	//// DEC
 	//case 0x0a:	BUS().write(dec(AM_direct_byte()));					break;		// DEC (direct)
-	//case 0x4a:	A() = dec(A());										break;		// DEC (DECA inherent)
+	case 0x4a:	output << "\tDECA";	break;	// DEC (DECA inherent)
 	//case 0x5a:	B() = dec(B());										break;		// DEC (DECB inherent)
 	//case 0x6a:	BUS().write(dec(AM_indexed_byte()));				break;		// DEC (indexed)
 	//case 0x7a:	BUS().write(dec(AM_extended_byte()));				break;		// DEC (extended)
@@ -286,7 +286,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//// LD
 
 	//// LDA
-	//case 0x86:	A() = ld(AM_immediate_byte());						break;		// LD (LDA immediate)
+	case 0x86:	output << AM_immediate_byte("LDA");	break;	// LD (LDA immediate)
 	//case 0x96:	A() = ld(AM_direct_byte());							break;		// LD (LDA direct)
 	//case 0xa6:	A() = ld(AM_indexed_byte());						break;		// LD (LDA indexed)
 	//case 0xb6:	A() = ld(AM_extended_byte());						break;		// LD (LDA extended)
@@ -298,7 +298,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//case 0xf6:	B() = ld(AM_extended_byte());						break;		// LD (LDB extended)
 
 	//// LDD
-	//case 0xcc:	D() = ld(AM_immediate_word());						break;		// LD (LDD immediate)
+	case 0xcc:	output << AM_immediate_word("LDD");	break;	// LD (LDD immediate)
 	//case 0xdc:	D() = ld(AM_direct_word());							break;		// LD (LDD direct)
 	//case 0xec:	D() = ld(AM_indexed_word());						break;		// LD (LDD indexed)
 	//case 0xfc:	D() = ld(AM_extended_word());						break;		// LD (LDD extended)
@@ -407,12 +407,12 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	//// STA
 	//case 0x97:	BUS().write(Address_direct(), st(A()));				break;		// ST (STA direct)
-	//case 0xa7:	BUS().write(Address_indexed(), st(A()));			break;		// ST (STA indexed)
+	case 0xa7:	output << Address_indexed("STA");	break;	// ST (STA indexed)
 	//case 0xb7:	BUS().write(Address_extended(), st(A()));			break;		// ST (STA extended)
 
 	//// STB
 	//case 0xd7:	BUS().write(Address_direct(), st(B()));				break;		// ST (STB direct)
-	//case 0xe7:	BUS().write(Address_indexed(), st(B()));			break;		// ST (STB indexed)
+	case 0xe7:	output << Address_indexed("STB");	break;	// ST (STB indexed)
 	//case 0xf7:	BUS().write(Address_extended(), st(B()));			break;		// ST (STB extended)
 
 	//// STD
@@ -701,13 +701,23 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 
 ////
 
+std::string EightBit::Disassembly::AM_immediate_byte(std::string mnemomic) {
+	std::ostringstream output;
+	const auto byte = getByte(++m_address);
+	output
+		<< dump_ByteValue(byte)
+		<< "\t" << mnemomic << "\t"
+		<< "#$" << dump_ByteValue(byte);
+	return output.str();
+}
+
 std::string EightBit::Disassembly::AM_immediate_word(std::string mnemomic) {
 	std::ostringstream output;
 	const auto word = getWord(++m_address);
 	output
 		<< dump_WordValue(word)
 		<< "\t" << mnemomic << "\t"
-		<< "#" << dump_WordValue(word);
+		<< "#$" << dump_WordValue(word);
 	return output.str();
 }
 
