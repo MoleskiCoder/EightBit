@@ -103,7 +103,6 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) {
 			|| CPU().lowered(CPU().RESET())
 			|| CPU().lowered(CPU().NMI())
 			|| (CPU().lowered(CPU().FIRQ()) && !(CPU().CC() & mc6809::FF))
-			|| (CPU().lowered(CPU().FIRQ()) && !(CPU().CC() & mc6809::FF))
 			|| (CPU().lowered(CPU().IRQ()) && !(CPU().CC() & mc6809::IF));
 
 		if (!ignore) {
@@ -199,7 +198,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	//case 0xc5:	andr(B(), AM_immediate_byte());						break;		// BIT (BITB immediate)
 	//case 0xd5:	andr(B(), AM_direct_byte());						break;		// BIT (BITB direct)
-	//case 0xe5:	andr(B(), AM_indexed_byte());						break;		// BIT (BITB indexed)
+	case 0xe5:	output << AM_indexed_byte("BITB");	break;	// BIT (BITB indexed)
 	//case 0xf5:	andr(B(), AM_extended_byte());						break;		// BIT (BITB extended)
 
 	//// CLR
@@ -275,7 +274,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	//// JMP
 	//case 0x0e:	jump(Address_direct());								break;		// JMP (direct)
-	//case 0x6e:	jump(Address_indexed());							break;		// JMP (indexed)
+	case 0x6e:	output << Address_indexed("JMP");	break;	// JMP (indexed)
 	//case 0x7e:	jump(Address_extended());							break;		// JMP (extended)
 
 	//// JSR
@@ -477,7 +476,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//case 0x24:	branchShort(!carry());								break;		// BCC (relative)
 	//case 0x25:	branchShort(carry());								break;		// BCS (relative)
 	case 0x26:	output << branchShort("BNE");	break;	// BNE (relative)
-	//case 0x27:	branchShort(zero());								break;		// BEQ (relative)
+	case 0x27:	output << branchShort("BEQ");	break;	// BEQ (relative)
 	//case 0x28: 	branchShort(!overflow());							break;		// BVC (relative)
 	//case 0x29: 	branchShort(overflow());							break;		// BVS (relative)
 	//case 0x2a: 	branchShort(!negative());							break;		// BPL (relative)
@@ -749,10 +748,7 @@ std::string EightBit::Disassembly::AM_direct_byte(std::string mnemomic) {
 }
 
 std::string EightBit::Disassembly::AM_indexed_byte(std::string mnemomic) {
-	std::ostringstream output;
-	output
-		<< "\t**" << mnemomic << "**\t";
-	return output.str();
+	return Address_indexed(mnemomic);
 }
 
 std::string EightBit::Disassembly::AM_extended_byte(std::string mnemomic) {
