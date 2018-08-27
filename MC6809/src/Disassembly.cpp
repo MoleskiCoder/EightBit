@@ -40,16 +40,53 @@ std::string EightBit::Disassembly::dump_RelativeValue(int8_t value) {
 	return output.str();
 }
 
+std::string EightBit::Disassembly::dump_WordValue(register16_t value) {
+	return dump_WordValue(value.word);
+}
+
 std::string EightBit::Disassembly::dump_WordValue(uint16_t value) {
 	std::ostringstream output;
 	dump(output, value, 4);
 	return output.str();
 }
 
+std::string EightBit::Disassembly::dump_RelativeValue(register16_t value) {
+	return dump_RelativeValue((int16_t)value.word);
+}
+
 std::string EightBit::Disassembly::dump_RelativeValue(int16_t value) {
 	std::ostringstream output;
 	output << (int)value;
 	return output.str();
+}
+
+//
+
+std::string EightBit::Disassembly::dumpState() {
+
+	std::ostringstream output;
+
+	output << std::hex;
+	output << "PC=" << dump_WordValue(CPU().PC()) << ":";
+	output << "CC=" << dump_Flags(CPU().CC()) << ",";
+	output << "D=" << dump_WordValue(CPU().D()) << ",";
+	output << "X=" << dump_WordValue(CPU().X()) << ",";
+	output << "Y=" << dump_WordValue(CPU().Y()) << ",";
+	output << "U=" << dump_WordValue(CPU().U()) << ",";
+	output << "S=" << dump_WordValue(CPU().S()) << ",";
+	output << "DP=" << dump_ByteValue(CPU().DP()) << "\t";
+
+	return output.str();
+}
+
+//
+
+std::string EightBit::Disassembly::disassemble() {
+	return disassemble(CPU().PC());
+}
+
+std::string EightBit::Disassembly::disassemble(register16_t current) {
+	return disassemble(current.word);
 }
 
 std::string EightBit::Disassembly::disassemble(uint16_t current) {

@@ -27,26 +27,13 @@ void Board::initialise() {
 	CPU().reset();
 }
 
-void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809& cpu) {
-
-	auto address = cpu.PC().word;
-	auto cell = peek(address);
-
-	const auto disassembled = m_disassembler.disassemble(address);
-	if (!disassembled.empty()) {
-
-		std::cout << std::hex;
-		std::cout << "PC=" << EightBit::Disassembly::dump_WordValue(address) << ":";
-		std::cout << "CC=" << EightBit::Disassembly::dump_Flags(CPU().CC()) << ",";
-		std::cout << "D=" << EightBit::Disassembly::dump_WordValue(CPU().D().word) << ",";
-		std::cout << "X=" << EightBit::Disassembly::dump_WordValue(CPU().X().word) << ",";
-		std::cout << "Y=" << EightBit::Disassembly::dump_WordValue(CPU().Y().word) << ",";
-		std::cout << "U=" << EightBit::Disassembly::dump_WordValue(CPU().U().word) << ",";
-		std::cout << "S=" << EightBit::Disassembly::dump_WordValue(CPU().S().word) << ",";
-		std::cout << "DP=" << EightBit::Disassembly::dump_ByteValue(CPU().DP()) << "\t";
-
-		std::cout << disassembled << std::endl;
-	}
+void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809&) {
+	const auto disassembled = m_disassembler.disassemble();
+	if (!disassembled.empty())
+		std::cout
+			<< m_disassembler.dumpState()
+			<< disassembled
+			<< std::endl;
 }
 
 uint8_t& Board::reference(uint16_t address) {

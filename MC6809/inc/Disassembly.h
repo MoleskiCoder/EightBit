@@ -11,12 +11,18 @@ namespace EightBit {
 		Disassembly(mc6809& processor);
 
 		std::string disassemble(uint16_t current);
+		std::string disassemble(register16_t current);
+		std::string disassemble();
+
+		std::string dumpState();
 
 		static std::string dump_Flags(uint8_t value);
 		static std::string dump_ByteValue(uint8_t value);
 		static std::string dump_RelativeValue(int8_t value);
 		static std::string dump_WordValue(uint16_t value);
+		static std::string dump_WordValue(register16_t value);
 		static std::string dump_RelativeValue(int16_t value);
+		static std::string dump_RelativeValue(register16_t value);
 
 	private:
 		mc6809& m_cpu;
