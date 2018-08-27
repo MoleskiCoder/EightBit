@@ -682,7 +682,7 @@ EightBit::register16_t EightBit::mc6809::Address_indexed() {
 	} else {
 		// EA = ,R + 5-bit offset
 		addCycle();
-		address = r + (type & Mask5);
+		address = r + signExtend(5, type & Mask5);
 	}
 	return address;
 }

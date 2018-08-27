@@ -206,7 +206,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//case 0x0f:	BUS().write(Address_direct(), clr());				break;		// CLR (direct)
 	//case 0x4f:	A() = clr();										break;		// CLR (CLRA implied)
 	//case 0x5f:	B() = clr();										break;		// CLR (CLRB implied)
-	//case 0x6f:	BUS().write(Address_indexed(), clr());				break;		// CLR (indexed)
+	case 0x6f:	output << Address_indexed("CLR");	break;	// CLR (indexed)
 	//case 0x7f:	BUS().write(Address_extended(), clr());				break;		// CLR (extended)
 
 	//// CMP
@@ -693,7 +693,7 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 		// EA = ,R + 5-bit offset
 		output
 			<< "\t" << mnemomic << "\t"
-			<< dump_Byte(type & Processor::Mask5) << "," << r;
+			<< (int)Processor::signExtend(5, type & Processor::Mask5) << "," << r;
 }
 
 	return output.str();

@@ -67,6 +67,10 @@ namespace EightBit {
 		static int promoteNibble(const int value) { return value << 4; }
 		static int demoteNibble(const int value) { return highNibble(value); }
 
+		// b: number of bits representing the number in x
+		// x: sign extend this b-bit number to r
+		static int8_t signExtend(int b, uint8_t x);
+
 		Bus& BUS() { return m_bus; }
 
 		register16_t& PC() { return m_pc; }
