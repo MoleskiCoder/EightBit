@@ -10,24 +10,40 @@ namespace EightBit {
 	public:
 		Disassembly(mc6809& processor);
 
-		std::string disassemble(uint16_t current) const;
+		std::string disassemble(uint16_t current);
 
 		static std::string dump_Flags(uint8_t value);
 		static std::string dump_ByteValue(uint8_t value);
+		static std::string dump_RelativeValue(int8_t value);
 		static std::string dump_WordValue(uint16_t value);
+		static std::string dump_RelativeValue(int16_t value);
 
 	private:
-		mc6809& processor;
+		mc6809& m_cpu;
 
 		mutable uint16_t m_address = 0xffff;
 
+		bool m_prefix10 = false;
+		bool m_prefix11 = false;
+
 		static void dump(std::ostream& out, int value, int width);
 
-		uint8_t getByte(uint16_t address) const;
-		uint16_t getWord(uint16_t address) const;
+		mc6809& CPU() { return m_cpu; }
 
-		std::string dump_Byte(uint16_t address) const;
-		std::string dump_DByte(uint16_t address) const;
-		std::string dump_Word(uint16_t address) const;
+		uint8_t getByte(uint16_t address);
+		uint16_t getWord(uint16_t address);
+
+		std::string disassembleUnprefixed();
+		std::string disassemble10();
+		std::string disassemble11();
+
+		//
+		std::string RR(int which);
+
+		std::string Address_indexed(std::string mnemomic);
+
+		std::string dump_Byte(uint16_t address);
+		std::string dump_DByte(uint16_t address);
+		std::string dump_Word(uint16_t address);
 	};
 }

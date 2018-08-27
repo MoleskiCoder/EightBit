@@ -33,15 +33,14 @@ void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809& cpu) {
 	auto cell = peek(address);
 
 	std::cout << std::hex;
-	std::cout << "PC=" << std::setw(4) << std::setfill('0') << address << ":";
-	std::cout << "CC=" << m_disassembler.dump_Flags(CPU().CC()) << ", ";
-	std::cout << "D=" << (int)CPU().D().word << ", ";
-	std::cout << "X=" << (int)CPU().X().word << ", ";
-	std::cout << "Y=" << (int)CPU().Y().word << ", ";
-	std::cout << "U=" << (int)CPU().U().word << ",";
-	std::cout << "S=" << (int)CPU().S().word << ", ";
-	std::cout << std::setw(2) << std::setfill('0');
-	std::cout << "DP=" << (int)CPU().DP() << "\t";
+	std::cout << "PC=" << EightBit::Disassembly::dump_WordValue(address) << ":";
+	std::cout << "CC=" << EightBit::Disassembly::dump_Flags(CPU().CC()) << ",";
+	std::cout << "D=" << EightBit::Disassembly::dump_WordValue(CPU().D().word) << ",";
+	std::cout << "X=" << EightBit::Disassembly::dump_WordValue(CPU().X().word) << ",";
+	std::cout << "Y=" << EightBit::Disassembly::dump_WordValue(CPU().Y().word) << ",";
+	std::cout << "U=" << EightBit::Disassembly::dump_WordValue(CPU().U().word) << ",";
+	std::cout << "S=" << EightBit::Disassembly::dump_WordValue(CPU().S().word) << ",";
+	std::cout << "DP=" << EightBit::Disassembly::dump_ByteValue(CPU().DP()) << "\t";
 
 	std::cout << m_disassembler.disassemble(address);
 
