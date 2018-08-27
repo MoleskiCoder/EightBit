@@ -46,3 +46,9 @@ EightBit::register16_t EightBit::LittleEndianProcessor::popWord() {
 	const auto high = pop();
 	return register16_t(low, high);
 }
+
+EightBit::register16_t EightBit::LittleEndianProcessor::peekWord(const register16_t address) {
+	const auto low = BUS().peek(address.word);
+	const auto high = BUS().peek(address.word + 1);
+	return register16_t(low, high).word;
+}

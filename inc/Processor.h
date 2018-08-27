@@ -88,6 +88,8 @@ namespace EightBit {
 
 		int cycles() const { return m_cycles; }
 
+		virtual register16_t peekWord(register16_t address) = 0;
+
 	protected:
 		static void clearFlag(uint8_t& f, const int flag) { f &= ~flag; }
 		static void setFlag(uint8_t& f, const int flag) { f |= flag; }

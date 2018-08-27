@@ -473,7 +473,7 @@ uint8_t EightBit::Disassembly::getByte(uint16_t address) const {
 }
 
 uint16_t EightBit::Disassembly::getWord(uint16_t address) const {
-	return processor.BUS().peekWord(address);
+	return processor.peekWord(address).word;
 }
 
 ////

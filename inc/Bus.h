@@ -28,8 +28,6 @@ namespace EightBit {
 		void poke(uint8_t value) { reference() = value; }
 		void poke(uint16_t address, uint8_t value) { reference(address) = value; }
 
-		uint16_t peekWord(uint16_t address);
-
 		uint8_t read();
 		template<class T> uint8_t read(const T address) {
 			ADDRESS() = address;

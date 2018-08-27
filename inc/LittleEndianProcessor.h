@@ -6,6 +6,9 @@
 
 namespace EightBit {
 	class LittleEndianProcessor : public Processor {
+	public:
+		virtual register16_t peekWord(register16_t address) final;
+
 	protected:
 		LittleEndianProcessor(Bus& memory);
 		virtual ~LittleEndianProcessor() = default;

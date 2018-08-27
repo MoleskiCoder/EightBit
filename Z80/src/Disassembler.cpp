@@ -193,7 +193,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 	auto q = decoded.q;
 
 	auto immediate = bus.peek(pc + 1);
-	auto absolute = bus.peekWord(pc + 1);
+	auto absolute = cpu.peekWord(pc + 1).word;
 	auto displacement = (int8_t)immediate;
 	auto relative = pc + displacement + 2;
 	auto indexedImmediate = bus.peek(pc + 1);
