@@ -138,70 +138,70 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	//// ADC
 
 	case 0x89:	output << AM_immediate_byte("ADCA");	break;		// ADC (ADCA immediate)
-	case 0x99:	output << AM_direct_byte("ADCA");		break;		// ADC (ADCA direct)
-	case 0xa9:	output << AM_indexed_byte("ADCA");		break;		// ADC (ADCA indexed)
-	case 0xb9:	output << AM_extended_byte("ADCA");		break;		// ADC (ADCA extended)
+	case 0x99:	output << Address_direct("ADCA");		break;		// ADC (ADCA direct)
+	case 0xa9:	output << Address_indexed("ADCA");		break;		// ADC (ADCA indexed)
+	case 0xb9:	output << Address_extended("ADCA");		break;		// ADC (ADCA extended)
 
 	case 0xc9:	output << AM_immediate_byte("ADCB");	break;		// ADC (ADCB immediate)
-	case 0xd9:	output << AM_direct_byte("ADCB");		break;		// ADC (ADCB direct)
-	case 0xe9:	output << AM_indexed_byte("ADCB");		break;		// ADC (ADCB indexed)
-	case 0xf9:	output << AM_extended_byte("ADCB");		break;		// ADC (ADCB extended)
+	case 0xd9:	output << Address_direct("ADCB");		break;		// ADC (ADCB direct)
+	case 0xe9:	output << Address_indexed("ADCB");		break;		// ADC (ADCB indexed)
+	case 0xf9:	output << Address_extended("ADCB");		break;		// ADC (ADCB extended)
 
 	//// ADD
 
-	case 0x8b: output << AM_extended_byte("ADDA");		break;		// ADD (ADDA immediate)
-	case 0x9b: output << AM_direct_byte("ADDA");		break;		// ADD (ADDA direct)
-	case 0xab: output << AM_indexed_byte("ADDA");		break;		// ADD (ADDA indexed)
-	case 0xbb: output << AM_extended_byte("ADDA");		break;		// ADD (ADDA extended)
+	case 0x8b: output << Address_extended("ADDA");		break;		// ADD (ADDA immediate)
+	case 0x9b: output << Address_direct("ADDA");		break;		// ADD (ADDA direct)
+	case 0xab: output << Address_indexed("ADDA");		break;		// ADD (ADDA indexed)
+	case 0xbb: output << Address_extended("ADDA");		break;		// ADD (ADDA extended)
 
-	case 0xcb: output << AM_extended_byte("ADDB");		break;		// ADD (ADDB immediate)
-	case 0xdb: output << AM_direct_byte("ADDB");		break;		// ADD (ADDB direct)
-	case 0xeb: output << AM_indexed_byte("ADDB");		break;		// ADD (ADDB indexed)
-	case 0xfb: output << AM_extended_byte("ADDB");		break;		// ADD (ADDB extended)
+	case 0xcb: output << Address_extended("ADDB");		break;		// ADD (ADDB immediate)
+	case 0xdb: output << Address_direct("ADDB");		break;		// ADD (ADDB direct)
+	case 0xeb: output << Address_indexed("ADDB");		break;		// ADD (ADDB indexed)
+	case 0xfb: output << Address_extended("ADDB");		break;		// ADD (ADDB extended)
 
 	case 0xc3: output << AM_immediate_word("ADDD");		break;		// ADD (ADDD immediate)
-	case 0xd3: output << AM_direct_word("ADDD");		break;		// ADD (ADDD direct)
-	case 0xe3: output << AM_indexed_word("ADDD");		break;		// ADD (ADDD indexed)
-	case 0xf3: output << AM_extended_word("ADDD");		break;		// ADD (ADDD extended)
+	case 0xd3: output << Address_direct("ADDD");		break;		// ADD (ADDD direct)
+	case 0xe3: output << Address_indexed("ADDD");		break;		// ADD (ADDD indexed)
+	case 0xf3: output << Address_extended("ADDD");		break;		// ADD (ADDD extended)
 
 	//// AND
 
 	case 0x84:	output << AM_immediate_byte("ANDA");	break;		// AND (ANDA immediate)
-	case 0x94:	output << AM_direct_byte("ANDA");		break;		// AND (ANDA direct)
-	case 0xa4:	output << AM_indexed_byte("ANDA");		break;		// AND (ANDA indexed)
-	case 0xb4:	output << AM_extended_byte("ANDA");		break;		// AND (ANDA extended)
+	case 0x94:	output << Address_direct("ANDA");		break;		// AND (ANDA direct)
+	case 0xa4:	output << Address_indexed("ANDA");		break;		// AND (ANDA indexed)
+	case 0xb4:	output << Address_extended("ANDA");		break;		// AND (ANDA extended)
 
 	case 0xc4:	output << AM_immediate_byte("ANDB");	break;		// AND (ANDB immediate)
-	case 0xd4:	output << AM_direct_byte("ANDB");		break;		// AND (ANDB direct)
-	case 0xe4:	output << AM_indexed_byte("ANDB");		break;		// AND (ANDB indexed)
-	case 0xf4:	output << AM_extended_byte("ANDB");		break;		// AND (ANDB extended)
+	case 0xd4:	output << Address_direct("ANDB");		break;		// AND (ANDB direct)
+	case 0xe4:	output << Address_indexed("ANDB");		break;		// AND (ANDB indexed)
+	case 0xf4:	output << Address_extended("ANDB");		break;		// AND (ANDB extended)
 
 	case 0x1c:	output << AM_immediate_byte("ANDCC");	break;		// AND (ANDCC immediate)
 
 	//// ASL/LSL
-	case 0x08:	output << AM_direct_byte("ASL");		break;		// ASL (direct)
+	case 0x08:	output << Address_direct("ASL");		break;		// ASL (direct)
 	case 0x48:	output << "\tASLA";						break;		// ASL (ASLA inherent)
 	case 0x58:	output << "\tASLB";						break;		// ASL (ASLB inherent)
-	case 0x68:	output << AM_indexed_byte("ASL");		break;		// ASL (indexed)
-	case 0x78:	output << AM_extended_byte("ASL");		break;		// ASL (extended)
+	case 0x68:	output << Address_indexed("ASL");		break;		// ASL (indexed)
+	case 0x78:	output << Address_extended("ASL");		break;		// ASL (extended)
 
 	//// ASR
-	case 0x07:	output << AM_direct_byte("ASR");		break;		// ASR (direct)
+	case 0x07:	output << Address_direct("ASR");		break;		// ASR (direct)
 	case 0x47:	output << "\tASRA";						break;		// ASR (ASRA inherent)
 	case 0x57:	output << "\tASRB";						break;		// ASR (ASRB inherent)
-	case 0x67:	output << AM_indexed_byte("ASR");		break;		// ASR (indexed)
-	case 0x77:	output << AM_extended_byte("ASR");		break;		// ASR (extended)
+	case 0x67:	output << Address_indexed("ASR");		break;		// ASR (indexed)
+	case 0x77:	output << Address_extended("ASR");		break;		// ASR (extended)
 
 	//// BIT
 	case 0x85:	output << AM_immediate_byte("BITA");	break;		// BIT (BITA immediate)
-	case 0x95:	output << AM_direct_byte("BITA");		break;		// BIT (BITA direct)
-	case 0xa5:	output << AM_indexed_byte("BITA");		break;		// BIT (BITA indexed)
-	case 0xb5:	output << AM_extended_byte("BITA");		break;		// BIT (BITA extended)
+	case 0x95:	output << Address_direct("BITA");		break;		// BIT (BITA direct)
+	case 0xa5:	output << Address_indexed("BITA");		break;		// BIT (BITA indexed)
+	case 0xb5:	output << Address_extended("BITA");		break;		// BIT (BITA extended)
 
 	case 0xc5:	output << AM_immediate_byte("BITB");	break;		// BIT (BITB immediate)
-	case 0xd5:	output << AM_direct_byte("BITB");		break;		// BIT (BITB direct)
-	case 0xe5:	output << AM_indexed_byte("BITB");		break;		// BIT (BITB indexed)
-	case 0xf5:	output << AM_extended_byte("BITB");		break;		// BIT (BITB extended)
+	case 0xd5:	output << Address_direct("BITB");		break;		// BIT (BITB direct)
+	case 0xe5:	output << Address_indexed("BITB");		break;		// BIT (BITB indexed)
+	case 0xf5:	output << Address_extended("BITB");		break;		// BIT (BITB extended)
 
 	//// CLR
 	case 0x0f:	output << Address_direct("CLR");		break;		// CLR (direct)
@@ -214,65 +214,65 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// CMPA
 	case 0x81:	output << AM_immediate_byte("CMPA");	break;		// CMP (CMPA, immediate)
-	case 0x91:	output << AM_direct_byte("CMPA");		break;		// CMP (CMPA, direct)
-	case 0xa1:	output << AM_indexed_byte("CMPA");		break;		// CMP (CMPA, indexed)
-	case 0xb1:	output << AM_extended_byte("CMPA");		break;		// CMP (CMPA, extended)
+	case 0x91:	output << Address_direct("CMPA");		break;		// CMP (CMPA, direct)
+	case 0xa1:	output << Address_indexed("CMPA");		break;		// CMP (CMPA, indexed)
+	case 0xb1:	output << Address_extended("CMPA");		break;		// CMP (CMPA, extended)
 
 	// CMPB
 	case 0xc1:	output << AM_immediate_byte("CMPB");	break;		// CMP (CMPB, immediate)
-	case 0xd1:	output << AM_direct_byte("CMPB");		break;		// CMP (CMPB, direct)
-	case 0xe1:	output << AM_indexed_byte("CMPB");		break;		// CMP (CMPB, indexed)
-	case 0xf1:	output << AM_extended_byte("CMPB");		break;		// CMP (CMPB, extended)
+	case 0xd1:	output << Address_direct("CMPB");		break;		// CMP (CMPB, direct)
+	case 0xe1:	output << Address_indexed("CMPB");		break;		// CMP (CMPB, indexed)
+	case 0xf1:	output << Address_extended("CMPB");		break;		// CMP (CMPB, extended)
 
 	// CMPX
 	case 0x8c:	output << AM_immediate_word("CMPX");	break;		// CMP (CMPX, immediate)
-	case 0x9c:	output << AM_direct_word("CMPX");		break;		// CMP (CMPX, direct)
-	case 0xac:	output << AM_indexed_word("CMPX");		break;		// CMP (CMPX, indexed)
-	case 0xbc:	output << AM_extended_word("CMPX");		break;		// CMP (CMPX, extended)
+	case 0x9c:	output << Address_direct("CMPX");		break;		// CMP (CMPX, direct)
+	case 0xac:	output << Address_indexed("CMPX");		break;		// CMP (CMPX, indexed)
+	case 0xbc:	output << Address_extended("CMPX");		break;		// CMP (CMPX, extended)
 
 	// COM
-	case 0x03:	output << AM_direct_byte("COM");		break;		// COM (direct)
+	case 0x03:	output << Address_direct("COM");		break;		// COM (direct)
 	case 0x43:	output << "\tCOMA";						break;		// COM (COMA inherent)
 	case 0x53:	output << "\tCOMB";						break;		// COM (COMB inherent)
-	case 0x63:	output << AM_indexed_byte("COM");		break;		// COM (indexed)
-	case 0x73:	output << AM_extended_byte("COM");		break;		// COM (extended)
+	case 0x63:	output << Address_indexed("COM");		break;		// COM (indexed)
+	case 0x73:	output << Address_extended("COM");		break;		// COM (extended)
 
 	// CWAI
-	case 0x3c:	output << AM_direct_byte("CWAI");		break;		// CWAI (direct)
+	case 0x3c:	output << Address_direct("CWAI");		break;		// CWAI (direct)
 
 	// DAA
 	case 0x19:	output << "\tDAA";						break;		// DAA (inherent)
 
 	// DEC
-	case 0x0a:	output << AM_direct_byte("DEC");		break;		// DEC (direct)
+	case 0x0a:	output << Address_direct("DEC");		break;		// DEC (direct)
 	case 0x4a:	output << "\tDECA";						break;		// DEC (DECA inherent)
 	case 0x5a:	output << "\tDECB";						break;		// DEC (DECB inherent)
-	case 0x6a:	output << AM_indexed_byte("DEC");		break;		// DEC (indexed)
-	case 0x7a:	output << AM_extended_byte("DEC");		break;		// DEC (extended)
+	case 0x6a:	output << Address_indexed("DEC");		break;		// DEC (indexed)
+	case 0x7a:	output << Address_extended("DEC");		break;		// DEC (extended)
 
 	// EOR
 
 	// EORA
 	case 0x88:	output << AM_immediate_byte("EORA");	break;		// EOR (EORA immediate)
-	case 0x98:	output << AM_direct_byte("EORA");		break;		// EOR (EORA direct)
-	case 0xa8:	output << AM_indexed_byte("EORA");		break;		// EOR (EORA indexed)
-	case 0xb8:	output << AM_extended_byte("EORA");		break;		// EOR (EORA extended)
+	case 0x98:	output << Address_direct("EORA");		break;		// EOR (EORA direct)
+	case 0xa8:	output << Address_indexed("EORA");		break;		// EOR (EORA indexed)
+	case 0xb8:	output << Address_extended("EORA");		break;		// EOR (EORA extended)
 
 	// EORB
 	case 0xc8:	output << AM_immediate_byte("EORB");	break;		// EOR (EORB immediate)
-	case 0xd8:	output << AM_direct_byte("EORB");		break;		// EOR (EORB direct)
-	case 0xe8:	output << AM_indexed_byte("EORB");		break;		// EOR (EORB indexed)
-	case 0xf8:	output << AM_extended_byte("EORB");		break;		// EOR (EORB extended)
+	case 0xd8:	output << Address_direct("EORB");		break;		// EOR (EORB direct)
+	case 0xe8:	output << Address_indexed("EORB");		break;		// EOR (EORB indexed)
+	case 0xf8:	output << Address_extended("EORB");		break;		// EOR (EORB extended)
 
 	// EXG
 	case 0x1e:	output << tfr("EXG");					break;		// EXG (R1,R2 immediate)
 
 	// INC
-	case 0x0c:	output << AM_direct_byte("INC");		break;		// INC (direct)
+	case 0x0c:	output << Address_direct("INC");		break;		// INC (direct)
 	case 0x4c:	output << "\tINCA";;					break;		// INC (INCA inherent)
 	case 0x5c:	output << "\tINCB";;					break;		// INC (INCB inherent)
-	case 0x6c:	output << AM_indexed_byte("INC");		break;		// INC (indexed)
-	case 0x7c:	output << AM_extended_byte("INC");		break;		// INC (extended)
+	case 0x6c:	output << Address_indexed("INC");		break;		// INC (indexed)
+	case 0x7c:	output << Address_extended("INC");		break;		// INC (extended)
 
 	// JMP
 	case 0x0e:	output << Address_direct("JMP");		break;		// JMP (direct)
@@ -288,33 +288,33 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// LDA
 	case 0x86:	output << AM_immediate_byte("LDA");		break;		// LD (LDA immediate)
-	case 0x96:	output << AM_direct_byte("LDA");		break;		// LD (LDA direct)
-	case 0xa6:	output << AM_indexed_byte("LDA");		break;		// LD (LDA indexed)
-	case 0xb6:	output << AM_extended_byte("LDA");		break;		// LD (LDA extended)
+	case 0x96:	output << Address_direct("LDA");		break;		// LD (LDA direct)
+	case 0xa6:	output << Address_indexed("LDA");		break;		// LD (LDA indexed)
+	case 0xb6:	output << Address_extended("LDA");		break;		// LD (LDA extended)
 
 	// LDB
 	case 0xc6:	output << AM_immediate_byte("LDB");		break;		// LD (LDB immediate)
-	case 0xd6:	output << AM_direct_byte("LDB");		break;		// LD (LDB direct)
-	case 0xe6:	output << AM_indexed_byte("LDB");		break;		// LD (LDB indexed)
-	case 0xf6:	output << AM_extended_byte("LDB");		break;		// LD (LDB extended)
+	case 0xd6:	output << Address_direct("LDB");		break;		// LD (LDB direct)
+	case 0xe6:	output << Address_indexed("LDB");		break;		// LD (LDB indexed)
+	case 0xf6:	output << Address_extended("LDB");		break;		// LD (LDB extended)
 
 	// LDD
 	case 0xcc:	output << AM_immediate_word("LDD");		break;		// LD (LDD immediate)
-	case 0xdc:	output << AM_direct_word("LDD");		break;		// LD (LDD direct)
-	case 0xec:	output << AM_indexed_word("LDD");		break;		// LD (LDD indexed)
-	case 0xfc:	output << AM_extended_word("LDD");		break;		// LD (LDD extended)
+	case 0xdc:	output << Address_direct("LDD");		break;		// LD (LDD direct)
+	case 0xec:	output << Address_indexed("LDD");		break;		// LD (LDD indexed)
+	case 0xfc:	output << Address_extended("LDD");		break;		// LD (LDD extended)
 
 	// LDU
 	case 0xce:	output << AM_immediate_word("LDU");		break;		// LD (LDU immediate)
-	case 0xde:	output << AM_direct_word("LDU");		break;		// LD (LDU direct)
-	case 0xee:	output << AM_indexed_word("LDU");		break;		// LD (LDU indexed)
-	case 0xfe:	output << AM_extended_word("LDU");		break;		// LD (LDU extended)
+	case 0xde:	output << Address_direct("LDU");		break;		// LD (LDU direct)
+	case 0xee:	output << Address_indexed("LDU");		break;		// LD (LDU indexed)
+	case 0xfe:	output << Address_extended("LDU");		break;		// LD (LDU extended)
 
 	// LDX
 	case 0x8e:	output << AM_immediate_word("LDX");		break;		// LD (LDX immediate)
-	case 0x9e:	output << AM_direct_word("LDX");		break;		// LD (LDX direct)
-	case 0xae:	output << AM_indexed_word("LDX");		break;		// LD (LDX indexed)
-	case 0xbe:	output << AM_extended_word("LDX");		break;		// LD (LDX extended)
+	case 0x9e:	output << Address_direct("LDX");		break;		// LD (LDX direct)
+	case 0xae:	output << Address_indexed("LDX");		break;		// LD (LDX indexed)
+	case 0xbe:	output << Address_extended("LDX");		break;		// LD (LDX extended)
 
 	// LEA
 	case 0x30:	output << Address_indexed("LEAX");		break;		// LEA (LEAX indexed)
@@ -323,21 +323,21 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0x33:	output << Address_indexed("LEAU");		break;		// LEA (LEAU indexed)
 
 	// LSR
-	case 0x04:	output << AM_direct_byte("LSR");		break;		// LSR (direct)
+	case 0x04:	output << Address_direct("LSR");		break;		// LSR (direct)
 	case 0x44:	output << "\tLSRA";						break;		// LSR (LSRA inherent)
 	case 0x54:	output << "\tLSRB";;					break;		// LSR (LSRB inherent)
-	case 0x64:	output << AM_indexed_byte("LSR");		break;		// LSR (indexed)
-	case 0x74:	output << AM_extended_byte("LSR");		break;		// LSR (extended)
+	case 0x64:	output << Address_indexed("LSR");		break;		// LSR (indexed)
+	case 0x74:	output << Address_extended("LSR");		break;		// LSR (extended)
 
 	// MUL
 	case 0x3d:	output << "\tMUL";;						break;		// MUL (inherent)
 
 	// NEG
-	case 0x00:	output << AM_direct_byte("NEG");		break;		// NEG (direct)
+	case 0x00:	output << Address_direct("NEG");		break;		// NEG (direct)
 	case 0x40:	output << "\tNEGA";						break;		// NEG (NEGA, inherent)
 	case 0x50:	output << "\tNEGB";						break;		// NEG (NEGB, inherent)
-	case 0x60:	output << AM_indexed_byte("NEG");		break;		// NEG (indexed)
-	case 0x70:	output << AM_extended_byte("NEG");		break;		// NEG (extended)
+	case 0x60:	output << Address_indexed("NEG");		break;		// NEG (indexed)
+	case 0x70:	output << Address_extended("NEG");		break;		// NEG (extended)
 
 	// NOP
 	case 0x12:	output << "\tNOP";						break;		// NOP (inherent)
@@ -346,15 +346,15 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// ORA
 	case 0x8a:	output << AM_immediate_byte("ORA");		break;		// OR (ORA immediate)
-	case 0x9a:	output << AM_direct_byte("ORA");		break;		// OR (ORA direct)
-	case 0xaa:	output << AM_indexed_byte("ORA");		break;		// OR (ORA indexed)
-	case 0xba:	output << AM_extended_byte("ORA");		break;		// OR (ORA extended)
+	case 0x9a:	output << Address_direct("ORA");		break;		// OR (ORA direct)
+	case 0xaa:	output << Address_indexed("ORA");		break;		// OR (ORA indexed)
+	case 0xba:	output << Address_extended("ORA");		break;		// OR (ORA extended)
 
 	// ORB
 	case 0xca:	output << AM_immediate_byte("ORB");		break;		// OR (ORB immediate)
-	case 0xda:	output << AM_direct_byte("ORB");		break;		// OR (ORB direct)
-	case 0xea:	output << AM_indexed_byte("ORB");		break;		// OR (ORB indexed)
-	case 0xfa:	output << AM_extended_byte("ORB");		break;		// OR (ORB extended)
+	case 0xda:	output << Address_direct("ORB");		break;		// OR (ORB direct)
+	case 0xea:	output << Address_indexed("ORB");		break;		// OR (ORB indexed)
+	case 0xfa:	output << Address_extended("ORB");		break;		// OR (ORB extended)
 
 	// ORCC
 	case 0x1a:	output << AM_immediate_byte("ORCC");	break;		// OR (ORCC immediate)
@@ -368,18 +368,18 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0x37:	output << AM_immediate_byte("PULU");	break;		// PUL (PULU immediate)
 
 	// ROL
-	case 0x09:	output << AM_direct_byte("ROL");		break;		// ROL (direct)
+	case 0x09:	output << Address_direct("ROL");		break;		// ROL (direct)
 	case 0x49:	output << "\tROLA";						break;		// ROL (ROLA inherent)
 	case 0x59:	output << "\tROLB";						break;		// ROL (ROLB inherent)
-	case 0x69:	output << AM_indexed_byte("ROL");		break;		// ROL (indexed)
-	case 0x79:	output << AM_extended_byte("ROL");		break;		// ROL (extended)
+	case 0x69:	output << Address_indexed("ROL");		break;		// ROL (indexed)
+	case 0x79:	output << Address_extended("ROL");		break;		// ROL (extended)
 
 	// ROR
-	case 0x06:	output << AM_direct_byte("ROR");		break;		// ROR (direct)
+	case 0x06:	output << Address_direct("ROR");		break;		// ROR (direct)
 	case 0x46:	output << "\tRORA";						break;		// ROR (RORA inherent)
 	case 0x56:	output << "\tRORB";						break;		// ROR (RORB inherent)
-	case 0x66:	output << AM_indexed_byte("ROR");		break;		// ROR (indexed)
-	case 0x76:	output << AM_extended_byte("ROR");		break;		// ROR (extended)
+	case 0x66:	output << Address_indexed("ROR");		break;		// ROR (indexed)
+	case 0x76:	output << Address_extended("ROR");		break;		// ROR (extended)
 
 	// RTI
 	case 0x3B:	output << "\tRTI";						break;		// RTI (inherent)
@@ -391,15 +391,15 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// SBCA
 	case 0x82:	output << AM_immediate_byte("SBCA");	break;		// SBC (SBCA immediate)
-	case 0x92:	output << AM_direct_byte("SBCA");		break;		// SBC (SBCA direct)
-	case 0xa2:	output << AM_indexed_byte("SBCA");		break;		// SBC (SBCA indexed)
-	case 0xb2:	output << AM_extended_byte("SBCA");		break;		// SBC (SBCA extended)
+	case 0x92:	output << Address_direct("SBCA");		break;		// SBC (SBCA direct)
+	case 0xa2:	output << Address_indexed("SBCA");		break;		// SBC (SBCA indexed)
+	case 0xb2:	output << Address_extended("SBCA");		break;		// SBC (SBCA extended)
 
 	// SBCB
 	case 0xc2:	output << AM_immediate_byte("SBCB");	break;		// SBC (SBCB immediate)
-	case 0xd2:	output << AM_direct_byte("SBCB");		break;		// SBC (SBCB direct)
-	case 0xe2:	output << AM_indexed_byte("SBCB");		break;		// SBC (SBCB indexed)
-	case 0xf2:	output << AM_extended_byte("SBCB");		break;		// SBC (SBCB extended)
+	case 0xd2:	output << Address_direct("SBCB");		break;		// SBC (SBCB direct)
+	case 0xe2:	output << Address_indexed("SBCB");		break;		// SBC (SBCB indexed)
+	case 0xf2:	output << Address_extended("SBCB");		break;		// SBC (SBCB extended)
 
 	// SEX
 	case 0x1d:	output << "\tSEX";						break;		// SEX (inherent)
@@ -435,21 +435,21 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// SUBA
 	case 0x80:	output << AM_immediate_byte("SUBA");	break;		// SUB (SUBA immediate)
-	case 0x90:	output << AM_direct_byte("SUBA");		break;		// SUB (SUBA direct)
-	case 0xa0:	output << AM_indexed_byte("SUBA");		break;		// SUB (SUBA indexed)
-	case 0xb0:	output << AM_extended_byte("SUBA");		break;		// SUB (SUBA extended)
+	case 0x90:	output << Address_direct("SUBA");		break;		// SUB (SUBA direct)
+	case 0xa0:	output << Address_indexed("SUBA");		break;		// SUB (SUBA indexed)
+	case 0xb0:	output << Address_extended("SUBA");		break;		// SUB (SUBA extended)
 
 	// SUBB
 	case 0xc0:	output << AM_immediate_byte("SUBB");	break;		// SUB (SUBB immediate)
-	case 0xd0:	output << AM_direct_byte("SUBB");		break;		// SUB (SUBB direct)
-	case 0xe0:	output << AM_indexed_byte("SUBB");		break;		// SUB (SUBB indexed)
-	case 0xf0:	output << AM_extended_byte("SUBB");		break;		// SUB (SUBB extended)
+	case 0xd0:	output << Address_direct("SUBB");		break;		// SUB (SUBB direct)
+	case 0xe0:	output << Address_indexed("SUBB");		break;		// SUB (SUBB indexed)
+	case 0xf0:	output << Address_extended("SUBB");		break;		// SUB (SUBB extended)
 
 	// SUBD
 	case 0x83:	output << AM_immediate_word("SUBD");	break;		// SUB (SUBD immediate)
-	case 0x93:	output << AM_direct_word("SUBD");		break;		// SUB (SUBD direct)
-	case 0xa3:	output << AM_indexed_word("SUBD");		break;		// SUB (SUBD indexed)
-	case 0xb3:	output << AM_extended_word("SUBD");		break;		// SUB (SUBD extended)
+	case 0x93:	output << Address_direct("SUBD");		break;		// SUB (SUBD direct)
+	case 0xa3:	output << Address_indexed("SUBD");		break;		// SUB (SUBD indexed)
+	case 0xb3:	output << Address_extended("SUBD");		break;		// SUB (SUBD extended)
 
 	// SWI
 	case 0x3f:	output << "\tSWI";						break;		// SWI (inherent)
@@ -461,34 +461,34 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0x1f:	output << tfr("tfr");					break;		// TFR (immediate)
 
 	// TST
-	case 0x0d:	output << AM_direct_byte("TST");		break;		// TST (direct)
+	case 0x0d:	output << Address_direct("TST");		break;		// TST (direct)
 	case 0x4d:	output << "\tTSTA";						break;		// TST (TSTA inherent)
 	case 0x5d:	output << "\tTSTB";						break;		// TST (TSTB inherent)
-	case 0x6d:	output << AM_indexed_byte("TST");		break;		// TST (indexed)
-	case 0x7d:	output << AM_extended_byte("TST");		break;		// TST (extended)
+	case 0x6d:	output << Address_indexed("TST");		break;		// TST (indexed)
+	case 0x7d:	output << Address_extended("TST");		break;		// TST (extended)
 
 	// Branching
 
-	case 0x16:	output << Address_relative_word("LBRA");	break;		// BRA (LBRA relative)
-	case 0x17:	output << Address_relative_word("LBSR");	break;		// BSR (LBSR relative)
-	case 0x20:	output << Address_relative_byte("BRA");		break;		// BRA (relative)
-	case 0x21:	output << Address_relative_byte("BRN");		break;		// BRN (relative)
-	case 0x22:	output << branchShort("BHI");				break;		// BHI (relative)
-	case 0x23:	output << branchShort("BLS");				break;		// BLS (relative)
-	case 0x24:	output << branchShort("BCC");				break;		// BCC (relative)
-	case 0x25:	output << branchShort("BCS");				break;		// BCS (relative)
-	case 0x26:	output << branchShort("BNE");				break;		// BNE (relative)
-	case 0x27:	output << branchShort("BEQ");				break;		// BEQ (relative)
-	case 0x28: 	output << branchShort("BVC");				break;		// BVC (relative)
-	case 0x29: 	output << branchShort("BVS");				break;		// BVS (relative)
-	case 0x2a: 	output << branchShort("BPL");				break;		// BPL (relative)
-	case 0x2b: 	output << branchShort("BMI");				break;		// BMI (relative)
-	case 0x2c:	output << branchShort("BGE");				break;		// BGE (relative)
-	case 0x2d:	output << branchShort("BLT");				break;		// BLT (relative)
-	case 0x2e:	output << branchShort("BGT");				break;		// BGT (relative)
-	case 0x2f:	output << branchShort("BLE");				break;		// BLE (relative)
+	case 0x16:	output << branchLong("LBRA");			break;		// BRA (LBRA relative)
+	case 0x17:	output << branchLong("LBSR");			break;		// BSR (LBSR relative)
+	case 0x20:	output << branchShort("BRA");			break;		// BRA (relative)
+	case 0x21:	output << branchShort("BRN");			break;		// BRN (relative)
+	case 0x22:	output << branchShort("BHI");			break;		// BHI (relative)
+	case 0x23:	output << branchShort("BLS");			break;		// BLS (relative)
+	case 0x24:	output << branchShort("BCC");			break;		// BCC (relative)
+	case 0x25:	output << branchShort("BCS");			break;		// BCS (relative)
+	case 0x26:	output << branchShort("BNE");			break;		// BNE (relative)
+	case 0x27:	output << branchShort("BEQ");			break;		// BEQ (relative)
+	case 0x28: 	output << branchShort("BVC");			break;		// BVC (relative)
+	case 0x29: 	output << branchShort("BVS");			break;		// BVS (relative)
+	case 0x2a: 	output << branchShort("BPL");			break;		// BPL (relative)
+	case 0x2b: 	output << branchShort("BMI");			break;		// BMI (relative)
+	case 0x2c:	output << branchShort("BGE");			break;		// BGE (relative)
+	case 0x2d:	output << branchShort("BLT");			break;		// BLT (relative)
+	case 0x2e:	output << branchShort("BGT");			break;		// BGT (relative)
+	case 0x2f:	output << branchShort("BLE");			break;		// BLE (relative)
 
-	case 0x8d:	output << Address_relative_byte("BSR");		break;		// BSR (relative)
+	case 0x8d:	output << branchShort("BSR");			break;		// BSR (relative)
 
 	default:
 		UNREACHABLE;
@@ -509,61 +509,61 @@ std::string EightBit::Disassembly::disassemble10() {
 	// CMP
 
 	// CMPD
-	case 0x83:	output << AM_immediate_word("CMPD");		break;		// CMP (CMPD, immediate)
-	case 0x93:	output << AM_direct_word("CMPD");			break;		// CMP (CMPD, direct)
-	case 0xa3:	output << AM_indexed_word("CMPD");			break;		// CMP (CMPD, indexed)
-	case 0xb3:	output << AM_extended_word("CMPD");			break;		// CMP (CMPD, extended)
+	case 0x83:	output << AM_immediate_word("CMPD");	break;		// CMP (CMPD, immediate)
+	case 0x93:	output << Address_direct("CMPD");		break;		// CMP (CMPD, direct)
+	case 0xa3:	output << Address_indexed("CMPD");		break;		// CMP (CMPD, indexed)
+	case 0xb3:	output << Address_extended("CMPD");		break;		// CMP (CMPD, extended)
 
 	// CMPY
-	case 0x8c:	output << AM_immediate_word("CMPY");		break;		// CMP (CMPY, immediate)
-	case 0x9c:	output << AM_direct_word("CMPY");			break;		// CMP (CMPY, direct)
-	case 0xac:	output << AM_indexed_word("CMPY");			break;		// CMP (CMPY, indexed)
-	case 0xbc:	output << AM_extended_word("CMPY");			break;		// CMP (CMPY, extended)
+	case 0x8c:	output << AM_immediate_word("CMPY");	break;		// CMP (CMPY, immediate)
+	case 0x9c:	output << Address_direct("CMPY");		break;		// CMP (CMPY, direct)
+	case 0xac:	output << Address_indexed("CMPY");		break;		// CMP (CMPY, indexed)
+	case 0xbc:	output << Address_extended("CMPY");		break;		// CMP (CMPY, extended)
 
 	// LD
 
 	// LDS
-	case 0xce:	output << AM_immediate_word("LDS");			break;		// LD (LDS immediate)
-	case 0xde:	output << AM_direct_word("LDS");			break;		// LD (LDS direct)
-	case 0xee:	output << AM_indexed_word("LDS");			break;		// LD (LDS indexed)
-	case 0xfe:	output << AM_extended_word("LDS");			break;		// LD (LDS extended)
+	case 0xce:	output << AM_immediate_word("LDS");		break;		// LD (LDS immediate)
+	case 0xde:	output << Address_direct("LDS");		break;		// LD (LDS direct)
+	case 0xee:	output << Address_indexed("LDS");		break;		// LD (LDS indexed)
+	case 0xfe:	output << Address_extended("LDS");		break;		// LD (LDS extended)
 
 	// LDY
-	case 0x8e:	output << AM_immediate_word("LDY");			break;		// LD (LDY immediate)
-	case 0x9e:	output << AM_direct_word("LDY");			break;		// LD (LDY direct)
-	case 0xae:	output << AM_indexed_word("LDY");			break;		// LD (LDY indexed)
-	case 0xbe:	output << AM_extended_word("LDY");			break;		// LD (LDY extended)
+	case 0x8e:	output << AM_immediate_word("LDY");		break;		// LD (LDY immediate)
+	case 0x9e:	output << Address_direct("LDY");		break;		// LD (LDY direct)
+	case 0xae:	output << Address_indexed("LDY");		break;		// LD (LDY indexed)
+	case 0xbe:	output << Address_extended("LDY");		break;		// LD (LDY extended)
 
 	// Branching
 
-	case 0x21:	output << Address_relative_word("LBRN");	break;		// BRN (LBRN relative)
-	case 0x22:	output << branchLong("LBHI");				break;		// BHI (LBHI relative)
-	case 0x23:	output << branchLong("LBLS");				break;		// BLS (LBLS relative)
-	case 0x24:	output << branchLong("LBCC");				break;		// BCC (LBCC relative)
-	case 0x25:	output << branchLong("LBCS");				break;		// BCS (LBCS relative)
-	case 0x26:	output << branchLong("LBNE");				break;		// BNE (LBNE relative)
-	case 0x27:	output << branchLong("LBEQ");				break;		// BEQ (LBEQ relative)
-	case 0x28:	output << branchLong("LBVC");				break;		// BVC (LBVC relative)
-	case 0x29:	output << branchLong("LBVS");				break;		// BVS (LBVS relative)
-	case 0x2a:	output << branchLong("LBPL");				break;		// BPL (LBPL relative)
-	case 0x2b: 	output << branchLong("LBMI");				break;		// BMI (LBMI relative)
-	case 0x2c:	output << branchLong("LBGE");				break;		// BGE (LBGE relative)
-	case 0x2d:	output << branchLong("LBLT");				break;		// BLT (LBLT relative)
-	case 0x2e:	output << branchLong("LBGT");				break;		// BGT (LBGT relative)
-	case 0x2f:	output << branchLong("LBLE");				break;		// BLE (LBLE relative)
+	case 0x21:	output << branchLong("LBRN");			break;		// BRN (LBRN relative)
+	case 0x22:	output << branchLong("LBHI");			break;		// BHI (LBHI relative)
+	case 0x23:	output << branchLong("LBLS");			break;		// BLS (LBLS relative)
+	case 0x24:	output << branchLong("LBCC");			break;		// BCC (LBCC relative)
+	case 0x25:	output << branchLong("LBCS");			break;		// BCS (LBCS relative)
+	case 0x26:	output << branchLong("LBNE");			break;		// BNE (LBNE relative)
+	case 0x27:	output << branchLong("LBEQ");			break;		// BEQ (LBEQ relative)
+	case 0x28:	output << branchLong("LBVC");			break;		// BVC (LBVC relative)
+	case 0x29:	output << branchLong("LBVS");			break;		// BVS (LBVS relative)
+	case 0x2a:	output << branchLong("LBPL");			break;		// BPL (LBPL relative)
+	case 0x2b: 	output << branchLong("LBMI");			break;		// BMI (LBMI relative)
+	case 0x2c:	output << branchLong("LBGE");			break;		// BGE (LBGE relative)
+	case 0x2d:	output << branchLong("LBLT");			break;		// BLT (LBLT relative)
+	case 0x2e:	output << branchLong("LBGT");			break;		// BGT (LBGT relative)
+	case 0x2f:	output << branchLong("LBLE");			break;		// BLE (LBLE relative)
 
 	// STS
-	case 0xdf:	output << Address_direct("STS");			break;		// ST (STS direct)
-	case 0xef:	output << Address_indexed("STS");			break;		// ST (STS indexed)
-	case 0xff:	output << Address_extended("STS");			break;		// ST (STS extended)
+	case 0xdf:	output << Address_direct("STS");		break;		// ST (STS direct)
+	case 0xef:	output << Address_indexed("STS");		break;		// ST (STS indexed)
+	case 0xff:	output << Address_extended("STS");		break;		// ST (STS extended)
 
 	// STY
-	case 0x9f:	output << Address_extended("STY");			break;		// ST (STY direct)
-	case 0xaf:	output << Address_indexed("STY");			break;		// ST (STY indexed)
-	case 0xbf:	output << Address_extended("STY");			break;		// ST (STY extended)
+	case 0x9f:	output << Address_extended("STY");		break;		// ST (STY direct)
+	case 0xaf:	output << Address_indexed("STY");		break;		// ST (STY indexed)
+	case 0xbf:	output << Address_extended("STY");		break;		// ST (STY extended)
 
 	// SWI
-	case 0x3f:	output << "\tSWI2";;						break;		// SWI (SWI2 inherent)
+	case 0x3f:	output << "\tSWI2";;					break;		// SWI (SWI2 inherent)
 
 	default:
 		UNREACHABLE;
@@ -587,15 +587,15 @@ std::string EightBit::Disassembly::disassemble11() {
 
 	// CMPU
 	case 0x83:	output << AM_immediate_word("CMPU");	break;		// CMP (CMPU, immediate)
-	case 0x93:	output << AM_direct_word("CMPU");		break;		// CMP (CMPU, direct)
-	case 0xa3:	output << AM_indexed_word("CMPU");		break;		// CMP (CMPU, indexed)
-	case 0xb3:	output << AM_extended_word("CMPU");		break;		// CMP (CMPU, extended)
+	case 0x93:	output << Address_direct("CMPU");		break;		// CMP (CMPU, direct)
+	case 0xa3:	output << Address_indexed("CMPU");		break;		// CMP (CMPU, indexed)
+	case 0xb3:	output << Address_extended("CMPU");		break;		// CMP (CMPU, extended)
 
 	// CMPS
 	case 0x8c:	output << AM_immediate_word("CMPS");	break;		// CMP (CMPS, immediate)
-	case 0x9c:	output << AM_direct_word("CMPS");		break;		// CMP (CMPS, direct)
-	case 0xac:	output << AM_indexed_word("CMPS");		break;		// CMP (CMPS, indexed)
-	case 0xbc:	output << AM_extended_word("CMPS");		break;		// CMP (CMPS, extended)
+	case 0x9c:	output << Address_direct("CMPS");		break;		// CMP (CMPS, direct)
+	case 0xac:	output << Address_indexed("CMPS");		break;		// CMP (CMPS, indexed)
+	case 0xbc:	output << Address_extended("CMPS");		break;		// CMP (CMPS, extended)
 
 	// SWI
 	case 0x3f:	output << "\tSWI3";						break;		// SWI (SWI3 inherent)
@@ -766,30 +766,6 @@ std::string EightBit::Disassembly::AM_immediate_word(std::string mnemomic) {
 	return output.str();
 }
 
-std::string EightBit::Disassembly::AM_direct_byte(std::string mnemomic) {
-	return Address_direct(mnemomic);
-}
-
-std::string EightBit::Disassembly::AM_direct_word(std::string mnemomic) {
-	return Address_direct(mnemomic);
-}
-
-std::string EightBit::Disassembly::AM_indexed_byte(std::string mnemomic) {
-	return Address_indexed(mnemomic);
-}
-
-std::string EightBit::Disassembly::AM_indexed_word(std::string mnemomic) {
-	return Address_indexed(mnemomic);
-}
-
-std::string EightBit::Disassembly::AM_extended_byte(std::string mnemomic) {
-	return Address_extended(mnemomic);
-}
-
-std::string EightBit::Disassembly::AM_extended_word(std::string mnemomic) {
-	return Address_direct(mnemomic);
-}
-
 ////
 
 std::string EightBit::Disassembly::branchShort(std::string mnemomic) {
@@ -869,10 +845,6 @@ uint16_t EightBit::Disassembly::getWord(uint16_t address) {
 
 std::string EightBit::Disassembly::dump_Byte(uint16_t address) {
 	return dump_ByteValue(getByte(address));
-}
-
-std::string EightBit::Disassembly::dump_DByte(uint16_t address) {
-	return dump_Byte(address) + " " + dump_Byte(address + 1);
 }
 
 std::string EightBit::Disassembly::dump_Word(uint16_t address) {
