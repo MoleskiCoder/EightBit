@@ -66,7 +66,6 @@ std::string EightBit::Disassembly::dumpState() {
 
 	std::ostringstream output;
 
-	output << std::hex;
 	output << "PC=" << dump_WordValue(CPU().PC()) << ":";
 	output << "CC=" << dump_Flags(CPU().CC()) << ",";
 	output << "D=" << dump_WordValue(CPU().D()) << ",";
@@ -458,7 +457,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0x13:	output << "\tSYNC";						break;		// SYNC (inherent)
 
 	// TFR
-	case 0x1f:	output << tfr("tfr");					break;		// TFR (immediate)
+	case 0x1f:	output << tfr("TFR");					break;		// TFR (immediate)
 
 	// TST
 	case 0x0d:	output << Address_direct("TST");		break;		// TST (direct)

@@ -6,7 +6,7 @@
 #include "mc6809.h"
 
 namespace EightBit {
-	class Disassembly {
+	class Disassembly final {
 	public:
 		Disassembly(mc6809& processor);
 
@@ -16,14 +16,6 @@ namespace EightBit {
 
 		std::string dumpState();
 
-		static std::string dump_Flags(uint8_t value);
-		static std::string dump_ByteValue(uint8_t value);
-		static std::string dump_RelativeValue(int8_t value);
-		static std::string dump_WordValue(uint16_t value);
-		static std::string dump_WordValue(register16_t value);
-		static std::string dump_RelativeValue(int16_t value);
-		static std::string dump_RelativeValue(register16_t value);
-
 	private:
 		mc6809& m_cpu;
 
@@ -31,6 +23,14 @@ namespace EightBit {
 
 		bool m_prefix10 = false;
 		bool m_prefix11 = false;
+
+		static std::string dump_Flags(uint8_t value);
+		static std::string dump_ByteValue(uint8_t value);
+		static std::string dump_RelativeValue(int8_t value);
+		static std::string dump_WordValue(uint16_t value);
+		static std::string dump_WordValue(register16_t value);
+		static std::string dump_RelativeValue(int16_t value);
+		static std::string dump_RelativeValue(register16_t value);
 
 		static void dump(std::ostream& out, int value, int width);
 
