@@ -96,8 +96,6 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) {
 	std::ostringstream output;
 	if (CPU().powered()) {
 
-		m_prefix10 = m_prefix11 = false;
-
 		const bool ignore =
 			CPU().lowered(CPU().HALT())
 			|| CPU().lowered(CPU().RESET())
@@ -286,15 +284,15 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	//// LDA
 	case 0x86:	output << AM_immediate_byte("LDA");	break;	// LD (LDA immediate)
-	//case 0x96:	A() = ld(AM_direct_byte());							break;		// LD (LDA direct)
-	//case 0xa6:	A() = ld(AM_indexed_byte());						break;		// LD (LDA indexed)
-	//case 0xb6:	A() = ld(AM_extended_byte());						break;		// LD (LDA extended)
+	case 0x96:	output << AM_direct_byte("LDA");	break;	// LD (LDA direct)
+	case 0xa6:	output << AM_indexed_byte("LDA");	break;	// LD (LDA indexed)
+	case 0xb6:	output << AM_extended_byte("LDA");	break;	// LD (LDA extended)
 
 	//// LDB
 	case 0xc6:	output << AM_immediate_byte("LDB");	break;	// LD (LDB immediate)
-	//case 0xd6:	B() = ld(AM_direct_byte());							break;		// LD (LDB direct)
-	//case 0xe6:	B() = ld(AM_indexed_byte());						break;		// LD (LDB indexed)
-	//case 0xf6:	B() = ld(AM_extended_byte());						break;		// LD (LDB extended)
+	case 0xd6:	output << AM_direct_byte("LDB");	break;	// LD (LDB direct)
+	case 0xe6:	output << AM_indexed_byte("LDB");	break;	// LD (LDB indexed)
+	case 0xf6:	output << AM_extended_byte("LDB");	break;	// LD (LDB extended)
 
 	//// LDD
 	case 0xcc:	output << AM_immediate_word("LDD");	break;	// LD (LDD immediate)
@@ -567,6 +565,8 @@ std::string EightBit::Disassembly::disassemble10() {
 	//	UNREACHABLE;
 	}
 
+	m_prefix10 = false;
+
 	return output.str();
 }
 
@@ -599,6 +599,8 @@ std::string EightBit::Disassembly::disassemble11() {
 	//default:
 	//	UNREACHABLE;
 	}
+
+	m_prefix11 = false;
 
 	return output.str();
 }
