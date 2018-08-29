@@ -305,6 +305,7 @@ namespace EightBit {
 		uint8_t eor(uint8_t operand, uint8_t data);
 		void exg(uint8_t data);
 		uint8_t inc(uint8_t operand);
+		void jsr(register16_t address);
 		uint8_t ld(uint8_t data);
 		register16_t ld(register16_t data);
 		uint8_t lsr(uint8_t operand);

@@ -256,9 +256,9 @@ void EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x7e:	addCycles(7);	jump(Address_extended());							break;		// JMP (extended)
 
 	// JSR
-	case 0x9d:	addCycles(6);	call(Address_direct());								break;		// JSR (direct)
-	case 0xad:	addCycles(6);	call(Address_indexed());							break;		// JSR (indexed)
-	case 0xbd:	addCycles(7);	call(Address_extended());							break;		// JSR (extended)
+	case 0x9d:	addCycles(6);	jsr(Address_direct());								break;		// JSR (direct)
+	case 0xad:	addCycles(6);	jsr(Address_indexed());								break;		// JSR (indexed)
+	case 0xbd:	addCycles(7);	jsr(Address_extended());							break;		// JSR (extended)
 
 	// LD
 
@@ -446,7 +446,7 @@ void EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	// Branching
 
 	case 0x16:	addCycles(5);	jump(Address_relative_word());						break;		// BRA (LBRA relative)
-	case 0x17:	addCycles(9);	call(Address_relative_word());						break;		// BSR (LBSR relative)
+	case 0x17:	addCycles(9);	jsr(Address_relative_word());						break;		// BSR (LBSR relative)
 	case 0x20:	addCycles(3);	jump(Address_relative_byte());						break;		// BRA (relative)
 	case 0x21:	addCycles(3);	Address_relative_byte();							break;		// BRN (relative)
 	case 0x22:	addCycles(3);	branchShort(BHI());									break;		// BHI (relative)
@@ -464,7 +464,7 @@ void EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	case 0x2e:	addCycles(3);	branchShort(BGT());									break;		// BGT (relative)
 	case 0x2f:	addCycles(3);	branchShort(BLE());									break;		// BLE (relative)
 
-	case 0x8d:	addCycles(7);	call(Address_relative_byte());						break;		// BSR (relative)
+	case 0x8d:	addCycles(7);	jsr(Address_relative_byte());						break;		// BSR (relative)
 
 	default:
 		UNREACHABLE;
@@ -897,6 +897,10 @@ uint8_t EightBit::mc6809::inc(uint8_t operand) {
 	return result;
 }
 
+void EightBit::mc6809::jsr(register16_t address) {
+	call(address);
+}
+
 uint8_t EightBit::mc6809::ld(uint8_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(data);
@@ -1107,7 +1111,7 @@ void EightBit::mc6809::rti() {
 		Y() = popWordS();
 		U() = popWordS();
 	}
-	ret();
+	rts();
 }
 
 void EightBit::mc6809::rts() {
