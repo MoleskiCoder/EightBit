@@ -46,6 +46,7 @@ namespace EightBit {
 		//
 
 		std::string RR(int which);
+		std::string wrapIndirect(std::string what, bool indirect);
 
 		std::string Address_direct(std::string mnemomic);
 		std::string Address_indexed(std::string mnemomic);

@@ -668,16 +668,20 @@ EightBit::register16_t EightBit::mc6809::Address_indexed() {
 			address = PC() + (int8_t)fetchByte();
 			break;
 		case 0b1101:	// n,PCR (sixteen-bit)
-			addCycles(1);
+			addCycles(2);
 			address = PC() + (int16_t)fetchWord().word;
+			break;
+		case 0b1111:	// [n]
+			assert(indirect);
+			addCycles(2);
+			address = fetchWord();
 			break;
 		default:
 			UNREACHABLE;
 		}
 		if (indirect) {
 			addCycles(3);
-			BUS().ADDRESS() = address;
-			address = fetchWord();
+			address = Processor::getWord(address);
 		}
 	} else {
 		// EA = ,R + 5-bit offset

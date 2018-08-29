@@ -635,6 +635,15 @@ std::string EightBit::Disassembly::Address_direct(std::string mnemomic) {
 	return output.str();
 }
 
+std::string EightBit::Disassembly::wrapIndirect(std::string what, bool indirect) {
+	std::ostringstream output;
+	output
+		<< (indirect ? "[" : "")
+		<< what
+		<< (indirect ? "]" : "");
+	return output.str();
+}
+
 std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 
 	std::ostringstream output;
@@ -651,56 +660,83 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 		const auto indirect = type & Processor::Bit4;
 		switch (type & Processor::Mask4) {
 		case 0b0000:	// ,R+
-			output << "\t" << mnemomic << "\t," << r << "+";
+			output
+				<< "\t" << mnemomic << "\t"
+				<< wrapIndirect("," + r + "+", indirect);
 			break;
 		case 0b0001:	// ,R++
-			output << "\t" << mnemomic << "\t," << r << "++";
+			output
+				<< "\t" << mnemomic << "\t"
+				<< wrapIndirect("," + r + "++", indirect);
 			break;
 		case 0b0010:	// ,-R
-			output << "\t" << mnemomic << "\t,-" << r;
+			output
+				<< "\t" << mnemomic << "\t"
+				<< wrapIndirect(",-" + r, indirect);
 			break;
 		case 0b0011:	// ,--R
-			output << "\t" << mnemomic << "\t,--" << r;
+			output
+				<< "\t" << mnemomic << "\t"
+				<< wrapIndirect(",--" + r, indirect);
 			break;
 		case 0b0100:	// ,R
-			output << "\t" << mnemomic << "\t," << r;
+			output
+				<< "\t" << mnemomic << "\t"
+				<< wrapIndirect("," + r, indirect);
 			break;
 		case 0b0101:	// B,R
-			output << "\t" << mnemomic << "\tB," << r;
+			output
+				<< "\t" << mnemomic << "\t"
+				<< wrapIndirect("B," + r, indirect);
 			break;
 		case 0b0110:	// A,R
-			output << "\t" << mnemomic << "\tA," << r;
+			output
+				<< "\t" << mnemomic << "\t"
+				<< wrapIndirect("A," + r, indirect);
 			break;
 		case 0b1000:	// n,R (eight-bit)
 			byte = getByte(++m_address);
 			output
 				<< dump_ByteValue(byte)
 				<< "\t" << mnemomic << "\t"
-				<< dump_ByteValue(byte) << "," << r;
+				<< wrapIndirect(dump_ByteValue(byte) + "," + r, indirect);
 			break;
 		case 0b1001:	// n,R (sixteen-bit)
 			word = getWord(++m_address);
 			output
 				<< dump_WordValue(word)
 				<< "\t" << mnemomic << "\t"
-				<< dump_WordValue(word) << "," << r;
+				<< wrapIndirect(dump_WordValue(word) + "," + r, indirect);
 			break;
 		case 0b1011:	// D,R
-			output << "\t" << mnemomic << "\tD," << r;
+			output
+				<< "\t" << mnemomic << "\t"
+				<< wrapIndirect("D," + r, indirect);
 			break;
 		case 0b1100:	// n,PCR (eight-bit)
 			byte = getByte(++m_address);
 			output
 				<< dump_ByteValue(byte)
 				<< "\t" << mnemomic << "\t"
-				<< dump_RelativeValue((int8_t)byte) << ",PCR";
+				<< wrapIndirect(dump_RelativeValue((int8_t)byte) + ",PCR", indirect);
 			break;
 		case 0b1101:	// n,PCR (sixteen-bit)
 			word = getWord(++m_address);
 			output
 				<< dump_WordValue(word)
 				<< "\t" << mnemomic << "\t"
-				<< dump_RelativeValue((int16_t)word) << ",PCR";
+				<< wrapIndirect(dump_RelativeValue((int16_t)word) + ",PCR", indirect);
+			break;
+		case 0b1111:	// [n]
+			assert(indirect);
+			word = getWord(++m_address);
+			output
+				<< dump_WordValue(word)
+				<< "\t" << mnemomic << "\t"
+				<< wrapIndirect(dump_WordValue(word), indirect);
+			break;
+		default:
+			assert(false);
 			break;
 		}
 	} else {
@@ -708,7 +744,7 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 		output
 			<< "\t" << mnemomic << "\t"
 			<< (int)Processor::signExtend(5, type & Processor::Mask5) << "," << r;
-}
+	}
 
 	return output.str();
 }
