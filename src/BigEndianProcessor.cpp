@@ -48,7 +48,7 @@ EightBit::register16_t EightBit::BigEndianProcessor::popWord() {
 }
 
 EightBit::register16_t EightBit::BigEndianProcessor::peekWord(const register16_t address) {
-	const auto high = BUS().peek(address.word);
-	const auto low = BUS().peek(address.word + 1);
-	return register16_t(low, high).word;
+	const auto high = BUS().peek(address);
+	const auto low = BUS().peek(address + 1);
+	return register16_t(low, high);
 }

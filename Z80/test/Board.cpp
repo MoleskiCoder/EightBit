@@ -76,7 +76,7 @@ void Board::Cpu_ExecutingInstruction_Profile(EightBit::Z80& cpu) {
 	const auto pc = cpu.PC();
 
 	m_profiler.addAddress(pc.word);
-	m_profiler.addInstruction(peek(pc.word));
+	m_profiler.addInstruction(peek(pc));
 }
 
 void Board::Cpu_ExecutingInstruction_Debug(EightBit::Z80& cpu) {

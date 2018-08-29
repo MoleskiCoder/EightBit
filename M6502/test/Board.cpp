@@ -128,6 +128,6 @@ void Board::Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu) {
 void Board::pollKeyboard() {
 #ifdef _MSC_VER
 	if (_kbhit())
-		poke(m_configuration.getInputAddress().word, _getch());
+		poke(m_configuration.getInputAddress(), _getch());
 #endif
 }

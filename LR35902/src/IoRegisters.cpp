@@ -18,7 +18,7 @@ void EightBit::GameBoy::IoRegisters::reset() {
 
 void EightBit::GameBoy::IoRegisters::transferDma() {
 	if (m_dmaTransferActive) {
-		m_bus.OAMRAM().poke(m_dmaAddress.low, m_bus.peek(m_dmaAddress.word));
+		m_bus.OAMRAM().poke(m_dmaAddress.low, m_bus.peek(m_dmaAddress));
 		m_dmaTransferActive = ++m_dmaAddress.low < 0xa0;
 	}
 }
