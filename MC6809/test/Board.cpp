@@ -21,6 +21,7 @@ void Board::initialise() {
 
 	if (m_configuration.isDebugMode()) {
 		CPU().ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
+		CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Debug, this, std::placeholders::_1));
 	}
 
 	CPU().powerOn();
@@ -28,12 +29,13 @@ void Board::initialise() {
 }
 
 void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809&) {
-	const auto disassembled = m_disassembler.disassemble();
-	if (!disassembled.empty())
-		std::cout
-			<< m_disassembler.dumpState()
-			<< disassembled
-			<< std::endl;
+	m_disassembleAt = CPU().PC();
+	m_ignoreDisassembly = m_disassembler.ignore();
+}
+
+void Board::Cpu_ExecutedInstruction_Debug(EightBit::mc6809&) {
+	if (!m_ignoreDisassembly)
+		std::cout << m_disassembler.trace(m_disassembleAt) << std::endl;
 }
 
 uint8_t& Board::reference(uint16_t address) {

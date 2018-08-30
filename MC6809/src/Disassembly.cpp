@@ -25,7 +25,7 @@ std::string EightBit::Disassembly::dump_Flags(uint8_t value) {
 }
 
 void EightBit::Disassembly::dump(std::ostream& out, int value, int width) {
-	out << std::hex << std::uppercase << std::setw(width) << std::setfill('0') << value;
+	out << std::hex << std::nouppercase << std::setw(width) << std::setfill('0') << value;
 }
 
 std::string EightBit::Disassembly::dump_ByteValue(uint8_t value) {
@@ -62,18 +62,30 @@ std::string EightBit::Disassembly::dump_RelativeValue(int16_t value) {
 
 //
 
-std::string EightBit::Disassembly::dumpState() {
+std::string EightBit::Disassembly::trace() {
+	return trace(CPU().PC());
+}
+
+std::string EightBit::Disassembly::trace(register16_t current) {
+	return trace(current.word);
+}
+
+std::string EightBit::Disassembly::trace(uint16_t current) {
 
 	std::ostringstream output;
 
-	output << "PC=" << dump_WordValue(CPU().PC()) << ":";
-	output << "CC=" << dump_Flags(CPU().CC()) << ",";
-	output << "D=" << dump_WordValue(CPU().D()) << ",";
-	output << "X=" << dump_WordValue(CPU().X()) << ",";
-	output << "Y=" << dump_WordValue(CPU().Y()) << ",";
-	output << "U=" << dump_WordValue(CPU().U()) << ",";
-	output << "S=" << dump_WordValue(CPU().S()) << ",";
-	output << "DP=" << dump_ByteValue(CPU().DP()) << "\t";
+	output
+		<< dump_WordValue(current) << "| "
+		<< disassemble(current)
+		<< "\t\t"
+		<< "cc=" << dump_ByteValue(CPU().CC()) << " "
+		<< "a=" << dump_ByteValue(CPU().A()) << " "
+		<< "b=" << dump_ByteValue(CPU().B()) << " "
+		<< "dp=" << dump_ByteValue(CPU().DP()) << " "
+		<< "x=" << dump_WordValue(CPU().X()) << " "
+		<< "y=" << dump_WordValue(CPU().Y()) << " "
+		<< "u=" << dump_WordValue(CPU().U()) << " "
+		<< "s=" << dump_WordValue(CPU().S());
 
 	return output.str();
 }
@@ -88,28 +100,27 @@ std::string EightBit::Disassembly::disassemble(register16_t current) {
 	return disassemble(current.word);
 }
 
+bool EightBit::Disassembly::ignore() {
+	return
+			CPU().lowered(CPU().HALT())
+		||	CPU().lowered(CPU().RESET())
+		||	CPU().lowered(CPU().NMI())
+		|| (CPU().lowered(CPU().FIRQ()) && !(CPU().CC() & mc6809::FF))
+		|| (CPU().lowered(CPU().IRQ()) && !(CPU().CC() & mc6809::IF));
+}
+
 std::string EightBit::Disassembly::disassemble(uint16_t current) {
 
 	m_address = current;
 
 	std::ostringstream output;
 	if (CPU().powered()) {
-
-		const bool ignore =
-			CPU().lowered(CPU().HALT())
-			|| CPU().lowered(CPU().RESET())
-			|| CPU().lowered(CPU().NMI())
-			|| (CPU().lowered(CPU().FIRQ()) && !(CPU().CC() & mc6809::FF))
-			|| (CPU().lowered(CPU().IRQ()) && !(CPU().CC() & mc6809::IF));
-
-		if (!ignore) {
-			if (m_prefix10)
-				output << disassemble10();
-			else if (m_prefix11)
-				output << disassemble11();
-			else
-				output << disassembleUnprefixed();
-		}
+		if (m_prefix10)
+			output << disassemble10();
+		else if (m_prefix11)
+			output << disassemble11();
+		else
+			output << disassembleUnprefixed();
 	}
 
 	return output.str();
@@ -851,11 +862,13 @@ std::string EightBit::Disassembly::tfr(std::string mnemomic) {
 
 	std::ostringstream output;
 
-	output << "\t" << mnemomic << "\t";
-
 	const auto data = getByte(++m_address);
 	const auto reg1 = Processor::highNibble(data);
 	const auto reg2 = Processor::lowNibble(data);
+
+	output
+		<< dump_ByteValue(data)
+		<< "\t" << mnemomic << "\t";
 
 	const bool type8 = !!(reg1 & Processor::Bit3);	// 8 bit?
 	if (type8)

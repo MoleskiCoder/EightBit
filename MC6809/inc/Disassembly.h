@@ -10,11 +10,11 @@ namespace EightBit {
 	public:
 		Disassembly(mc6809& processor);
 
-		std::string disassemble(uint16_t current);
-		std::string disassemble(register16_t current);
-		std::string disassemble();
+		bool ignore();
 
-		std::string dumpState();
+		std::string trace(uint16_t current);
+		std::string trace(register16_t current);
+		std::string trace();
 
 	private:
 		mc6809& m_cpu;
@@ -31,6 +31,10 @@ namespace EightBit {
 		static std::string dump_WordValue(register16_t value);
 		static std::string dump_RelativeValue(int16_t value);
 		static std::string dump_RelativeValue(register16_t value);
+
+		std::string disassemble(uint16_t current);
+		std::string disassemble(register16_t current);
+		std::string disassemble();
 
 		static void dump(std::ostream& out, int value, int width);
 

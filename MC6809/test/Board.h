@@ -33,7 +33,11 @@ private:
 	EightBit::mc6809 m_cpu;
 	EightBit::Disassembly m_disassembler;
 
+	EightBit::register16_t m_disassembleAt = 0x0000;
+	bool m_ignoreDisassembly = false;
+
 	void pollKeyboard();
 
 	void Cpu_ExecutingInstruction_Debug(EightBit::mc6809& cpu);
+	void Cpu_ExecutedInstruction_Debug(EightBit::mc6809& cpu);
 };
