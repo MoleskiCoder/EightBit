@@ -784,7 +784,7 @@ uint8_t EightBit::mc6809::asr(uint8_t operand) {
 }
 
 uint8_t EightBit::mc6809::clr() {
-	clearFlag(CC(), HF | ZF | VF | CF);
+	clearFlag(CC(), NF | VF | CF);
 	setFlag(CC(), ZF);
 	return 0;
 }
