@@ -13,6 +13,7 @@ int main(int argc, char* argv[]) {
 #ifdef _DEBUG
 	configuration.setDebugMode(true);
 #endif
+	configuration.setDebugMode(true);
 
 	EightBit::TestHarness<Configuration, Board> harness(configuration);
 	harness.initialise();

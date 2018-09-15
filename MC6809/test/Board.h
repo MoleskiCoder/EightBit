@@ -18,18 +18,15 @@ public:
 	void initialise();
 
 protected:
-	virtual uint8_t& reference(uint16_t address) final;
+	virtual EightBit::MemoryMapping mapping(uint16_t address) final;
 
 private:
 	const Configuration& m_configuration;
 	EightBit::Ram m_ram = 0x8000;			// 0000 - 7FFF, 32K RAM
-	EightBit::Rom m_extendedBasic = 0x2000;	// 8000 - 9FFF, 8K Extended BASIC ROM
-	EightBit::Rom m_colorBasic = 0x2000;	// A000 - BFFF, 8K Color BASIC ROM
-	EightBit::Rom m_cartridge = 0x2000;		// C000 - DFFF, 8K Cartridge ROM
-	EightBit::Rom m_diskBasic = 0x2000;		// C000 - DFFF, 8K Disk BASIC ROM
-											// E000 - FEFF, Unused
-	EightBit::Ram m_io = 0xf0;				// FF00 - FFEF, I/O Registers
-											// FFF0 - FFFF, Interrupt vectors (mapped from BFF0-BFFF)
+											// 8000 - 9FFF, 8K unused
+	EightBit::Ram m_io = 0x2000;			// A000 - BFFF, 8K serial interface, minimally decoded
+	EightBit::Rom m_rom = 0x4000;			// C000 - FFFF, 16K ROM
+
 	EightBit::mc6809 m_cpu;
 	EightBit::Disassembly m_disassembler;
 

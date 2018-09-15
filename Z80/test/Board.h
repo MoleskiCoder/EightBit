@@ -21,8 +21,8 @@ public:
 	void initialise();
 
 protected:
-	virtual uint8_t& reference(uint16_t address) final {
-		return m_ram.reference(address);
+	virtual EightBit::MemoryMapping mapping(uint16_t address) final {
+		return { m_ram, 0x0000, EightBit::MemoryMapping::ReadWrite };
 	}
 
 private:

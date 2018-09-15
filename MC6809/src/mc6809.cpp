@@ -9,8 +9,6 @@ EightBit::mc6809::mc6809(Bus& bus)
 
 void EightBit::mc6809::powerOn() {
 	Processor::powerOn();
-	raise(NMI());
-	raise(FIRQ());
 	lower(BA());
 	lower(BS());
 }
@@ -50,7 +48,8 @@ void EightBit::mc6809::handleRESET() {
 	lower(BA());
 	raise(BS());
 	DP() = 0;
-	setFlag(CC(), IF | FF);	// Disable all IRQs
+	setFlag(CC(), IF);	// Disable IRQ
+	setFlag(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, RESETvector));
 }
 
@@ -59,7 +58,8 @@ void EightBit::mc6809::handleNMI() {
 	lower(BA());
 	raise(BS());
 	saveEntireRegisterState();
-	setFlag(CC(), IF | FF);	// Disable all IRQs
+	setFlag(CC(), IF);	// Disable IRQ
+	setFlag(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, NMIvector));
 	addCycles(21);
 }
@@ -81,7 +81,8 @@ void EightBit::mc6809::handleFIRQ() {
 	clearFlag(CC(), EF);
 	pushWordS(PC());
 	pushS(CC());
-	setFlag(CC(), IF | FF);		// Disable all IRQs
+	setFlag(CC(), IF);	// Disable IRQ
+	setFlag(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, FIRQvector));
 	addCycles(12);
 }

@@ -15,5 +15,5 @@ public:
 
 private:
 	bool m_debugMode = false;
-	std::string m_romDirectory = "roms\\coco2h";
+	std::string m_romDirectory = "roms\\searle";
 };

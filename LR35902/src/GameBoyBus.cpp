@@ -6,6 +6,18 @@ EightBit::GameBoy::Bus::Bus() noexcept
 : m_cpu(*this),
   m_ioPorts(*this) {
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
+
+	{
+		std::vector<uint8_t> content(m_unmapped2000.size());
+		std::fill(content.begin(), content.end(), 0xff);
+		m_unmapped2000.load(content);
+	}
+
+	{
+		std::vector<uint8_t> content(m_unmapped60.size());
+		std::fill(content.begin(), content.end(), 0xff);
+		m_unmapped60.load(content);
+	}
 }
 
 void EightBit::GameBoy::Bus::reset() {
@@ -149,30 +161,34 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 	}
 }
 
-uint8_t& EightBit::GameBoy::Bus::reference(uint16_t address) {
+EightBit::MemoryMapping EightBit::GameBoy::Bus::mapping(uint16_t address) {
 
 	if ((address < 0x100) && IO().bootRomEnabled())
-		return DATA() = m_bootRom.peek(address);
+		return { m_bootRom, 0x0000, MemoryMapping::ReadOnly };
 	if ((address < 0x4000) && gameRomEnabled())
-		return DATA() = m_gameRomBanks[0].peek(address);
+		return { m_gameRomBanks[0], 0x0000, MemoryMapping::ReadOnly };
 	if ((address < 0x8000) && gameRomEnabled())
-		return DATA() = m_gameRomBanks[m_romBank].peek(address - 0x4000);
+		return { m_gameRomBanks[m_romBank], 0x4000, MemoryMapping::ReadOnly };
 
 	if (address < 0xa000)
-		return VRAM().reference(address - 0x8000);
-	if (address < 0xc000)
-		return m_ramBanks.size() == 0 ? DATA() = 0xff : m_ramBanks[m_ramBank].reference(address - 0xa000);
+		return { VRAM(), 0x8000, MemoryMapping::ReadWrite };
+	if (address < 0xc000) {
+		if (m_ramBanks.size() == 0)
+			return { m_unmapped2000, 0xa000, MemoryMapping::ReadOnly };
+		else
+			return { m_ramBanks[m_ramBank], 0xa000, MemoryMapping::ReadWrite };
+	}
 	if (address < 0xe000)
-		return m_lowInternalRam.reference(address - 0xc000);
+		return { m_lowInternalRam, 0xc000, MemoryMapping::ReadWrite };
 	if (address < 0xfe00)
-		return m_lowInternalRam.reference(address - 0xe000);	// Low internal RAM mirror
+		return { m_lowInternalRam, 0xe000, MemoryMapping::ReadWrite };	// Low internal RAM mirror
 	if (address < 0xfea0)
-		return OAMRAM().reference(address - 0xfe00);
+		return { OAMRAM(), 0xfe00, MemoryMapping::ReadWrite };
 	if (address < IoRegisters::BASE)
-		return DATA() = 0xff;
+		return { m_unmapped60, 0xfea0, MemoryMapping::ReadOnly };
 	if (address < 0xff80)
-		return IO().reference(address - IoRegisters::BASE);
-	return m_highInternalRam.reference(address - 0xff80);
+		return { IO(), IoRegisters::BASE, MemoryMapping::ReadWrite };
+	return { m_highInternalRam, 0xff80, MemoryMapping::ReadWrite };
 }
 
 int EightBit::GameBoy::Bus::runRasterLines() {

@@ -1,10 +1,14 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+#include <map>
+#include <vector>
 
 #include "Signal.h"
 #include "Register.h"
 #include "EventArgs.h"
+#include "MemoryMapping.h"
 
 namespace EightBit {
 	class Bus {
@@ -44,9 +48,13 @@ namespace EightBit {
 		}
 
 	protected:
-		virtual uint8_t& reference(uint16_t address) = 0;
+		virtual MemoryMapping mapping(uint16_t address) = 0;
+		uint8_t& reference(uint16_t address);
 		uint8_t& reference(register16_t address) { return reference(address.word); }
 		uint8_t& reference() { return reference(ADDRESS()); }
+
+		static std::map<uint16_t, std::vector<uint8_t>> parseHexFile(std::string path);
+		void loadHexFile(std::string path);
 
 	private:
 		uint8_t m_data = 0xff;

@@ -144,6 +144,7 @@
     <ClInclude Include="..\inc\IntelProcessor.h" />
     <ClInclude Include="..\inc\LittleEndianProcessor.h" />
     <ClInclude Include="..\inc\Memory.h" />
+    <ClInclude Include="..\inc\MemoryMapping.h" />
     <ClInclude Include="..\inc\Processor.h" />
     <ClInclude Include="..\inc\Ram.h" />
     <ClInclude Include="..\inc\Register.h" />
