@@ -72,7 +72,7 @@ inline void EightBit::assume(int expression) {
 
 #	define PARITY(x)	EightBit::oddParity(x)
 
-#	define UNREACHABLE	ASSUME(0)
+#	define UNREACHABLE	{ ASSUME(0); throw new std::exception("unreachable"); }
 
 #elif defined(__GNUG__)
 

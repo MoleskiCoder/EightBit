@@ -32,7 +32,7 @@ void EightBit::Bus::loadHexFile(const std::string path) {
 		const auto address = chunk.first;
 		const auto content = chunk.second;
 		for (size_t i = 0; i != content.size(); ++i)
-			write(address + i, content[i]);
+			write((uint16_t)(address + i), content[i]);
 		const auto mapped = mapping(address);
 		mapped.memory.load(content, address - mapped.begin);
 	}
