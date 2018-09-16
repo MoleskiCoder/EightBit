@@ -136,17 +136,14 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	output << dump_ByteValue(opcode);
 
 	switch (opcode) {
+
 	case 0x10:	m_prefix10 = true;	output << disassemble(m_address + 1);	break;
 	case 0x11:	m_prefix11 = true;	output << disassemble(m_address + 1);	break;
-	}
-
-	switch (opcode) {
 
 	// ABX
 	case 0x3a:	output << "\tABX";						break;		// ABX (inherent)
 
-	//// ADC
-
+	// ADC
 	case 0x89:	output << AM_immediate_byte("ADCA");	break;		// ADC (ADCA immediate)
 	case 0x99:	output << Address_direct("ADCA");		break;		// ADC (ADCA direct)
 	case 0xa9:	output << Address_indexed("ADCA");		break;		// ADC (ADCA indexed)
@@ -157,8 +154,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0xe9:	output << Address_indexed("ADCB");		break;		// ADC (ADCB indexed)
 	case 0xf9:	output << Address_extended("ADCB");		break;		// ADC (ADCB extended)
 
-	//// ADD
-
+	// ADD
 	case 0x8b: output << Address_extended("ADDA");		break;		// ADD (ADDA immediate)
 	case 0x9b: output << Address_direct("ADDA");		break;		// ADD (ADDA direct)
 	case 0xab: output << Address_indexed("ADDA");		break;		// ADD (ADDA indexed)
@@ -174,8 +170,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0xe3: output << Address_indexed("ADDD");		break;		// ADD (ADDD indexed)
 	case 0xf3: output << Address_extended("ADDD");		break;		// ADD (ADDD extended)
 
-	//// AND
-
+	// AND
 	case 0x84:	output << AM_immediate_byte("ANDA");	break;		// AND (ANDA immediate)
 	case 0x94:	output << Address_direct("ANDA");		break;		// AND (ANDA direct)
 	case 0xa4:	output << Address_indexed("ANDA");		break;		// AND (ANDA indexed)
@@ -188,21 +183,21 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	case 0x1c:	output << AM_immediate_byte("ANDCC");	break;		// AND (ANDCC immediate)
 
-	//// ASL/LSL
+	// ASL/LSL
 	case 0x08:	output << Address_direct("ASL");		break;		// ASL (direct)
 	case 0x48:	output << "\tASLA";						break;		// ASL (ASLA inherent)
 	case 0x58:	output << "\tASLB";						break;		// ASL (ASLB inherent)
 	case 0x68:	output << Address_indexed("ASL");		break;		// ASL (indexed)
 	case 0x78:	output << Address_extended("ASL");		break;		// ASL (extended)
 
-	//// ASR
+	// ASR
 	case 0x07:	output << Address_direct("ASR");		break;		// ASR (direct)
 	case 0x47:	output << "\tASRA";						break;		// ASR (ASRA inherent)
 	case 0x57:	output << "\tASRB";						break;		// ASR (ASRB inherent)
 	case 0x67:	output << Address_indexed("ASR");		break;		// ASR (indexed)
 	case 0x77:	output << Address_extended("ASR");		break;		// ASR (extended)
 
-	//// BIT
+	// BIT
 	case 0x85:	output << AM_immediate_byte("BITA");	break;		// BIT (BITA immediate)
 	case 0x95:	output << Address_direct("BITA");		break;		// BIT (BITA direct)
 	case 0xa5:	output << Address_indexed("BITA");		break;		// BIT (BITA indexed)
@@ -213,7 +208,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0xe5:	output << Address_indexed("BITB");		break;		// BIT (BITB indexed)
 	case 0xf5:	output << Address_extended("BITB");		break;		// BIT (BITB extended)
 
-	//// CLR
+	// CLR
 	case 0x0f:	output << Address_direct("CLR");		break;		// CLR (direct)
 	case 0x4f:	output << "\tCLRA";						break;		// CLR (CLRA implied)
 	case 0x5f:	output << "\tCLRB";						break;		// CLR (CLRB implied)
