@@ -104,14 +104,14 @@ void Board::Cpu_ExecutingInstruction_Debug(EightBit::MOS6502& cpu) {
 }
 
 void Board::Memory_ReadingByte_Input(EightBit::EventArgs) {
-	if (ADDRESS().word == m_configuration.getInputAddress().word) {
+	if (ADDRESS() == m_configuration.getInputAddress()) {
 		if (!!DATA())
 			write(0);
 	}
 }
 
 void Board::Memory_WrittenByte_Output(EightBit::EventArgs) {
-	if (ADDRESS().word == m_configuration.getOutputAddress().word) {
+	if (ADDRESS() == m_configuration.getOutputAddress()) {
 #ifdef _MSC_VER
 		_putch(DATA());
 #endif

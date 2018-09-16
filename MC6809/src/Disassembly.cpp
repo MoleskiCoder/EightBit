@@ -888,14 +888,4 @@ uint8_t EightBit::Disassembly::getByte(uint16_t address) {
 uint16_t EightBit::Disassembly::getWord(uint16_t address) {
 	return CPU().peekWord(address).word;
 }
-
-////
-
-std::string EightBit::Disassembly::dump_Byte(uint16_t address) {
-	return dump_ByteValue(getByte(address));
-}
-
-std::string EightBit::Disassembly::dump_Word(uint16_t address) {
-	return dump_WordValue(getWord(address));
-}
  

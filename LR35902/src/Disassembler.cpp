@@ -34,9 +34,9 @@ std::string EightBit::GameBoy::Disassembler::state(LR35902& cpu) {
 	std::ostringstream output;
 
 	output
-		<< "PC=" << hex(pc.word)
+		<< "PC=" << pc
 		<< " "
-		<< "SP=" << hex(sp.word)
+		<< "SP=" << sp
 		<< " " << "A=" << hex(a) << " " << "F=" << flags(f)
 		<< " " << "B=" << hex(b) << " " << "C=" << hex(c)
 		<< " " << "D=" << hex(d) << " " << "E=" << hex(e)

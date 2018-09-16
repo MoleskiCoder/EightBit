@@ -95,24 +95,24 @@ void Fuse::TestRunner::checkregisters() {
 	const auto& expectedState = m_expected.registerState;
 	const auto& expectedRegisters = expectedState.registers;
 
-	auto af = m_cpu.AF().word == expectedRegisters[Fuse::RegisterState::AF].word;
-	auto bc = m_cpu.BC().word == expectedRegisters[Fuse::RegisterState::BC].word;
-	auto de = m_cpu.DE().word == expectedRegisters[Fuse::RegisterState::DE].word;
-	auto hl = m_cpu.HL().word == expectedRegisters[Fuse::RegisterState::HL].word;
+	auto af = m_cpu.AF() == expectedRegisters[Fuse::RegisterState::AF];
+	auto bc = m_cpu.BC() == expectedRegisters[Fuse::RegisterState::BC];
+	auto de = m_cpu.DE() == expectedRegisters[Fuse::RegisterState::DE];
+	auto hl = m_cpu.HL() == expectedRegisters[Fuse::RegisterState::HL];
 	m_cpu.exx();
 	m_cpu.exxAF();
-	auto af_ = m_cpu.AF().word == expectedRegisters[Fuse::RegisterState::AF_].word;
-	auto bc_ = m_cpu.BC().word == expectedRegisters[Fuse::RegisterState::BC_].word;
-	auto de_ = m_cpu.DE().word == expectedRegisters[Fuse::RegisterState::DE_].word;
-	auto hl_ = m_cpu.HL().word == expectedRegisters[Fuse::RegisterState::HL_].word;
+	auto af_ = m_cpu.AF() == expectedRegisters[Fuse::RegisterState::AF_];
+	auto bc_ = m_cpu.BC() == expectedRegisters[Fuse::RegisterState::BC_];
+	auto de_ = m_cpu.DE() == expectedRegisters[Fuse::RegisterState::DE_];
+	auto hl_ = m_cpu.HL() == expectedRegisters[Fuse::RegisterState::HL_];
 
-	auto ix = m_cpu.IX().word == expectedRegisters[Fuse::RegisterState::IX].word;
-	auto iy = m_cpu.IY().word == expectedRegisters[Fuse::RegisterState::IY].word;
+	auto ix = m_cpu.IX() == expectedRegisters[Fuse::RegisterState::IX];
+	auto iy = m_cpu.IY() == expectedRegisters[Fuse::RegisterState::IY];
 
-	auto sp = m_cpu.SP().word == expectedRegisters[Fuse::RegisterState::SP].word;
-	auto pc = m_cpu.PC().word == expectedRegisters[Fuse::RegisterState::PC].word;
+	auto sp = m_cpu.SP() == expectedRegisters[Fuse::RegisterState::SP];
+	auto pc = m_cpu.PC() == expectedRegisters[Fuse::RegisterState::PC];
 
-	auto memptr = m_cpu.MEMPTR().word == expectedRegisters[Fuse::RegisterState::MEMPTR].word;
+	auto memptr = m_cpu.MEMPTR() == expectedRegisters[Fuse::RegisterState::MEMPTR];
 
 	auto iv = m_cpu.IV() == expectedState.i;
 	auto refresh = m_cpu.REFRESH() == expectedState.r;

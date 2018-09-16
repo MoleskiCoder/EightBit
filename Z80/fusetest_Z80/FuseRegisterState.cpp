@@ -14,7 +14,7 @@ void Fuse::RegisterState::readExternal(std::ifstream& file) {
 	for (int idx = 0; idx < registers.size(); ++idx) {
 		int input;
 		file >> input;
-		registers[idx].word = input;
+		registers[idx] = input;
 	}
 }
 

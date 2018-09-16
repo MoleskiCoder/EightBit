@@ -71,10 +71,5 @@ namespace EightBit {
 		std::string referenceTransfer8(int specifier);
 		std::string referenceTransfer16(int specifier);
 		std::string tfr(std::string mnemomic);
-
-		//
-
-		std::string dump_Byte(uint16_t address);
-		std::string dump_Word(uint16_t address);
 	};
 }

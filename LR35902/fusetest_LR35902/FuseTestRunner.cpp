@@ -82,13 +82,13 @@ void Fuse::TestRunner::checkregisters() {
 	const auto& expectedState = m_expected.registerState;
 	const auto& expectedRegisters = expectedState.registers;
 
-	auto af = m_cpu.AF().word == expectedRegisters[Fuse::RegisterState::AF].word;
-	auto bc = m_cpu.BC().word == expectedRegisters[Fuse::RegisterState::BC].word;
-	auto de = m_cpu.DE().word == expectedRegisters[Fuse::RegisterState::DE].word;
-	auto hl = m_cpu.HL().word == expectedRegisters[Fuse::RegisterState::HL].word;
+	auto af = m_cpu.AF() == expectedRegisters[Fuse::RegisterState::AF];
+	auto bc = m_cpu.BC() == expectedRegisters[Fuse::RegisterState::BC];
+	auto de = m_cpu.DE() == expectedRegisters[Fuse::RegisterState::DE];
+	auto hl = m_cpu.HL() == expectedRegisters[Fuse::RegisterState::HL];
 
-	auto sp = m_cpu.SP().word == expectedRegisters[Fuse::RegisterState::SP].word;
-	auto pc = m_cpu.PC().word == expectedRegisters[Fuse::RegisterState::PC].word;
+	auto sp = m_cpu.SP() == expectedRegisters[Fuse::RegisterState::SP];
+	auto pc = m_cpu.PC() == expectedRegisters[Fuse::RegisterState::PC];
 
 	auto success =
 		af && bc && de && hl

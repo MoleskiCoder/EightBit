@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <iostream>  
+#include <iomanip>
 
 #ifdef __BYTE_ORDER__
 #	if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -67,6 +69,14 @@ namespace EightBit {
 		}
 	};
 
+	inline bool operator==(register16_t lhs, const register16_t rhs) noexcept {
+		return lhs.word == rhs.word;
+	}
+
+	inline bool operator!=(register16_t lhs, const register16_t rhs) noexcept {
+		return !(lhs == rhs);
+	}
+
 	inline register16_t operator+(register16_t lhs, const register16_t rhs) noexcept {
 		lhs += rhs;
 		return lhs;
@@ -75,5 +85,9 @@ namespace EightBit {
 	inline register16_t operator-(register16_t lhs, const register16_t rhs) noexcept {
 		lhs -= rhs;
 		return lhs;
+	}
+
+	inline std::ostream& operator<<(std::ostream& output, register16_t value) {  
+		return output << std::hex << std::setw(4) << std::setfill('0') << value.word;
 	}
 }
