@@ -89,20 +89,24 @@ void EightBit::mc6809::handleFIRQ() {
 
 //
 
-int EightBit::mc6809::execute(uint8_t opcode) {
+int EightBit::mc6809::execute(const uint8_t opcode) {
 	lower(BA());
 	lower(BS());
-	if (UNLIKELY(m_prefix10))
-		execute10(opcode);
-	else if (UNLIKELY(m_prefix11))
-		execute11(opcode);
-	else
+	const bool prefixed = m_prefix10 || m_prefix11;
+	const bool unprefixed = !prefixed;
+	if (unprefixed) {
 		executeUnprefixed(opcode);
+	} else {
+		if (m_prefix10)
+			execute10(opcode);
+		else
+			execute11(opcode);
+	}
 	assert(cycles() > 0);
 	return cycles();
 }
 
-void EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
+void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 
 	assert(!(m_prefix10 || m_prefix11));
 	assert(cycles() == 0);
@@ -472,7 +476,7 @@ void EightBit::mc6809::executeUnprefixed(uint8_t opcode) {
 	}
 }
 
-void EightBit::mc6809::execute10(uint8_t opcode) {
+void EightBit::mc6809::execute10(const uint8_t opcode) {
 
 	assert(m_prefix10 && !m_prefix11);
 	assert(cycles() == 0);
@@ -543,7 +547,7 @@ void EightBit::mc6809::execute10(uint8_t opcode) {
 	}
 }
 
-void EightBit::mc6809::execute11(uint8_t opcode) {
+void EightBit::mc6809::execute11(const uint8_t opcode) {
 
 	assert(!m_prefix10 && m_prefix11);
 	assert(cycles() == 0);
@@ -574,7 +578,7 @@ void EightBit::mc6809::execute11(uint8_t opcode) {
 
 //
 
-void EightBit::mc6809::push(register16_t& stack, uint8_t value) {
+void EightBit::mc6809::push(register16_t& stack, const uint8_t value) {
 	BUS().write(stack--, value);
 }
 
@@ -584,7 +588,7 @@ uint8_t EightBit::mc6809::pop(register16_t& stack) {
 
 //
 
-EightBit::register16_t& EightBit::mc6809::RR(int which) {
+EightBit::register16_t& EightBit::mc6809::RR(const int which) {
 	ASSUME(which >= 0);
 	ASSUME(which <= 3);
 	switch (which) {
@@ -748,23 +752,23 @@ void EightBit::mc6809::saveEntireRegisterState() {
 
 //
 
-uint8_t EightBit::mc6809::adc(uint8_t operand, uint8_t data) {
+uint8_t EightBit::mc6809::adc(const uint8_t operand, const uint8_t data) {
 	return add(operand, data, carry());
 }
 
-uint8_t EightBit::mc6809::add(uint8_t operand, uint8_t data, int carry) {
+uint8_t EightBit::mc6809::add(const uint8_t operand, const uint8_t data, const int carry) {
 	const register16_t addition = operand + data + carry;
 	adjustAddition(operand, data, addition);
 	return addition.low;
 }
 
-EightBit::register16_t EightBit::mc6809::add(register16_t operand, register16_t data) {
+EightBit::register16_t EightBit::mc6809::add(const register16_t operand, const register16_t data) {
 	const uint32_t addition = operand.word + data.word;
 	adjustAddition(operand, data, addition);
 	return addition & Mask16;
 }
 
-uint8_t EightBit::mc6809::andr(uint8_t operand, uint8_t data) {
+uint8_t EightBit::mc6809::andr(uint8_t operand, const uint8_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(operand &= data);
 	return operand;
@@ -794,11 +798,11 @@ void EightBit::mc6809::cmp(const uint8_t operand, const uint8_t data) {
 	sub(operand, data);
 }
 
-void EightBit::mc6809::cmp(register16_t operand, register16_t data) {
+void EightBit::mc6809::cmp(const register16_t operand, const register16_t data) {
 	sub(operand, data);
 }
 
-uint8_t EightBit::mc6809::com(uint8_t operand) {
+uint8_t EightBit::mc6809::com(const uint8_t operand) {
 	const uint8_t result = ~operand;
 	adjustNZ(result);
 	clearFlag(CC(), VF);
@@ -806,7 +810,7 @@ uint8_t EightBit::mc6809::com(uint8_t operand) {
 	return result;
 }
 
-void EightBit::mc6809::cwai(uint8_t data) {
+void EightBit::mc6809::cwai(const uint8_t data) {
 	CC() &= data;
 	saveEntireRegisterState();
 	halt();
@@ -830,20 +834,20 @@ uint8_t EightBit::mc6809::da(uint8_t operand) {
 	return operand;
 }
 
-uint8_t EightBit::mc6809::dec(uint8_t operand) {
+uint8_t EightBit::mc6809::dec(const uint8_t operand) {
 	const uint8_t result = operand - 1;
 	adjustNZ(result);
 	adjustOverflow(operand, 1, result);
 	return result;
 }
 
-uint8_t EightBit::mc6809::eor(uint8_t operand, uint8_t data) {
+uint8_t EightBit::mc6809::eor(uint8_t operand, const uint8_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(operand ^= data);
 	return operand;
 }
 
-uint8_t& EightBit::mc6809::referenceTransfer8(int specifier) {
+uint8_t& EightBit::mc6809::referenceTransfer8(const int specifier) {
 	switch (specifier) {
 	case 0b1000:
 		return A();
@@ -858,7 +862,7 @@ uint8_t& EightBit::mc6809::referenceTransfer8(int specifier) {
 	}
 }
 
-EightBit::register16_t& EightBit::mc6809::referenceTransfer16(int specifier) {
+EightBit::register16_t& EightBit::mc6809::referenceTransfer16(const int specifier) {
 	switch (specifier) {
 	case 0b0000:
 		return D();
@@ -877,7 +881,7 @@ EightBit::register16_t& EightBit::mc6809::referenceTransfer16(int specifier) {
 	}
 }
 
-void EightBit::mc6809::exg(uint8_t data) {
+void EightBit::mc6809::exg(const uint8_t data) {
 
 	const auto reg1 = highNibble(data);
 	const auto reg2 = lowNibble(data);
@@ -898,17 +902,17 @@ uint8_t EightBit::mc6809::inc(uint8_t operand) {
 	return result;
 }
 
-void EightBit::mc6809::jsr(register16_t address) {
+void EightBit::mc6809::jsr(const register16_t address) {
 	call(address);
 }
 
-uint8_t EightBit::mc6809::ld(uint8_t data) {
+uint8_t EightBit::mc6809::ld(const uint8_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(data);
 	return data;
 }
 
-EightBit::register16_t EightBit::mc6809::ld(register16_t data) {
+EightBit::register16_t EightBit::mc6809::ld(const register16_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(data);
 	return data;
@@ -920,7 +924,7 @@ uint8_t EightBit::mc6809::lsr(uint8_t operand) {
 	return operand;
 }
 
-EightBit::register16_t EightBit::mc6809::mul(uint8_t first, uint8_t second) {
+EightBit::register16_t EightBit::mc6809::mul(const uint8_t first, const uint8_t second) {
 	const register16_t result = first * second;
 	adjustZero(result);
 	setFlag(CC(), CF, result.low & Bit7);
@@ -936,13 +940,13 @@ uint8_t EightBit::mc6809::neg(uint8_t operand) {
 	return operand;
 }
 
-uint8_t EightBit::mc6809::orr(uint8_t operand, uint8_t data) {
+uint8_t EightBit::mc6809::orr(uint8_t operand, const uint8_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(operand |= data);
 	return operand;
 }
 
-void EightBit::mc6809::pshs(uint8_t data) {
+void EightBit::mc6809::pshs(const uint8_t data) {
 	if (data & Bit7) {
 		addCycles(2);
 		pushWordS(PC());
@@ -977,7 +981,7 @@ void EightBit::mc6809::pshs(uint8_t data) {
 	}
 }
 
-void EightBit::mc6809::pshu(uint8_t data) {
+void EightBit::mc6809::pshu(const uint8_t data) {
 	if (data & Bit7) {
 		addCycles(2);
 		pushWordU(PC());
@@ -1012,7 +1016,7 @@ void EightBit::mc6809::pshu(uint8_t data) {
 	}
 }
 
-void EightBit::mc6809::puls(uint8_t data) {
+void EightBit::mc6809::puls(const uint8_t data) {
 	if (data & Bit0) {
 		addCycle();
 		CC() = popS();
@@ -1047,7 +1051,7 @@ void EightBit::mc6809::puls(uint8_t data) {
 	}
 }
 
-void EightBit::mc6809::pulu(uint8_t data) {
+void EightBit::mc6809::pulu(const uint8_t data) {
 	if (data & Bit0) {
 		addCycle();
 		CC() = popU();
@@ -1135,12 +1139,12 @@ void EightBit::mc6809::swi3() {
 	jump(getWordPaged(0xff, SWI3vector));
 }
 
-uint8_t EightBit::mc6809::sex(uint8_t from) {
+uint8_t EightBit::mc6809::sex(const uint8_t from) {
 	adjustNZ(from);
 	return from & Bit7 ? Mask8 : 0;
 }
 
-void EightBit::mc6809::tfr(uint8_t data) {
+void EightBit::mc6809::tfr(const uint8_t data) {
 
 	const auto reg1 = highNibble(data);
 	const auto reg2 = lowNibble(data);
@@ -1154,34 +1158,34 @@ void EightBit::mc6809::tfr(uint8_t data) {
 		referenceTransfer16(reg2) = referenceTransfer16(reg1);
 }
 
-uint8_t EightBit::mc6809::st(uint8_t data) {
+uint8_t EightBit::mc6809::st(const uint8_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(data);
 	return data;
 }
 
-EightBit::register16_t EightBit::mc6809::st(register16_t data) {
+EightBit::register16_t EightBit::mc6809::st(const register16_t data) {
 	clearFlag(CC(), VF);
 	adjustNZ(data);
 	return data;
 }
 
-uint8_t EightBit::mc6809::sbc(uint8_t operand, uint8_t data) {
+uint8_t EightBit::mc6809::sbc(const uint8_t operand, const uint8_t data) {
 	return sub(operand, data, carry());
 }
 
-uint8_t EightBit::mc6809::sub(uint8_t operand, uint8_t data, int carry) {
+uint8_t EightBit::mc6809::sub(const uint8_t operand, const uint8_t data, const int carry) {
 	const register16_t subtraction = operand - data - carry;
 	adjustSubtraction(operand, data, subtraction);
 	return subtraction.low;
 }
 
-EightBit::register16_t EightBit::mc6809::sub(register16_t operand, register16_t data) {
+EightBit::register16_t EightBit::mc6809::sub(const register16_t operand, const register16_t data) {
 	const uint32_t subtraction = operand.word - data.word;
 	adjustSubtraction(operand, data, subtraction);
 	return subtraction & Mask16;
 }
 
-void EightBit::mc6809::tst(uint8_t data) {
+void EightBit::mc6809::tst(const uint8_t data) {
 	cmp(data, 0);
 }

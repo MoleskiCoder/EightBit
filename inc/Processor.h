@@ -117,11 +117,11 @@ namespace EightBit {
 		virtual void handleINT();
 		virtual void handleIRQ();
 
-		uint8_t getBytePaged(uint8_t page, uint8_t offset) {
+		uint8_t getBytePaged(const uint8_t page, const uint8_t offset) {
 			return BUS().read(register16_t(offset, page));
 		}
 
-		void setBytePaged(uint8_t page, uint8_t offset, uint8_t value) {
+		void setBytePaged(const uint8_t page, const uint8_t offset, const uint8_t value) {
 			BUS().write(register16_t(offset, page), value);
 		}
 
@@ -143,12 +143,12 @@ namespace EightBit {
 		virtual void pushWord(const register16_t value) = 0;
 		virtual register16_t popWord() = 0;
 
-		register16_t getWord(register16_t address) {
+		register16_t getWord(const register16_t address) {
 			BUS().ADDRESS() = address;
 			return getWord();
 		}
 
-		void setWord(register16_t address, register16_t value) {
+		void setWord(const register16_t address, const register16_t value) {
 			BUS().ADDRESS() = address;
 			return setWord(value);
 		}

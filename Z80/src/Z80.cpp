@@ -474,7 +474,7 @@ void EightBit::Z80::xhtl() {
 	HL2().high = MEMPTR().high;
 }
 
-void EightBit::Z80::blockCompare(register16_t source, register16_t& counter) {
+void EightBit::Z80::blockCompare(const register16_t source, register16_t& counter) {
 
 	const auto value = BUS().read(source);
 	uint8_t result = A() - value;
@@ -539,7 +539,7 @@ bool EightBit::Z80::lddr() {
 	return !!(F() & PF);		// See LDD
 }
 
-void EightBit::Z80::blockIn(register16_t& source, register16_t destination) {
+void EightBit::Z80::blockIn(register16_t& source, const register16_t destination) {
 	MEMPTR() = BUS().ADDRESS() = source;
 	const auto value = readPort();
 	BUS().write(destination, value);

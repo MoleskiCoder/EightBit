@@ -14,7 +14,7 @@ namespace EightBit {
 			return BYTES()[address];
 		}
 
-		void poke(uint16_t address, uint8_t value) {
+		void poke(const uint16_t address, const uint8_t value) {
 			Memory::poke(address, value);
 		}
 	};

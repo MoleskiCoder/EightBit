@@ -33,8 +33,8 @@ namespace EightBit {
 		};
 		uint16_t word;
 		register16_t() noexcept : word(0) {}
-		register16_t(uint16_t w) noexcept : word(w) {}
-		register16_t(uint8_t l, uint8_t h) noexcept : low(l), high(h) {}
+		register16_t(const uint16_t w) noexcept : word(w) {}
+		register16_t(const uint8_t l, const uint8_t h) noexcept : low(l), high(h) {}
 
 		register16_t& operator++() noexcept {
 			++word;
@@ -69,11 +69,11 @@ namespace EightBit {
 		}
 	};
 
-	inline bool operator==(register16_t lhs, const register16_t rhs) noexcept {
+	inline bool operator==(const register16_t lhs, const register16_t rhs) noexcept {
 		return lhs.word == rhs.word;
 	}
 
-	inline bool operator!=(register16_t lhs, const register16_t rhs) noexcept {
+	inline bool operator!=(const register16_t lhs, const register16_t rhs) noexcept {
 		return !(lhs == rhs);
 	}
 
@@ -87,7 +87,7 @@ namespace EightBit {
 		return lhs;
 	}
 
-	inline std::ostream& operator<<(std::ostream& output, register16_t value) {  
+	inline std::ostream& operator<<(std::ostream& output, const register16_t value) {  
 		return output << std::hex << std::setw(4) << std::setfill('0') << value.word;
 	}
 }
