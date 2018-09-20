@@ -21,6 +21,15 @@ protected:
 	virtual EightBit::MemoryMapping mapping(uint16_t address) final;
 
 private:
+
+	enum {
+		Uart = 0xa000,
+		Ustat = Uart,
+		Uctrl = Uart,
+		Recev = Uart + 1,
+		Trans = Uart + 1,
+	};
+
 	const Configuration& m_configuration;
 	EightBit::Ram m_ram = 0x8000;			// 0000 - 7FFF, 32K RAM
 	EightBit::Rom m_unused2000 = 0x2000;	// 8000 - 9FFF, 8K unused
@@ -37,4 +46,9 @@ private:
 
 	void Cpu_ExecutingInstruction_Debug(EightBit::mc6809& cpu);
 	void Cpu_ExecutedInstruction_Debug(EightBit::mc6809& cpu);
+
+	void Cpu_ExecutedInstruction_die(EightBit::mc6809& cpu);
+
+	void Bus_WrittenByte(EightBit::EventArgs&);
+	void Bus_ReadingByte(EightBit::EventArgs&);
 };

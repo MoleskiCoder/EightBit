@@ -21,6 +21,11 @@ void Board::initialise() {
 		CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Debug, this, std::placeholders::_1));
 	}
 
+	CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_die, this, std::placeholders::_1));
+
+	//WrittenByte.connect(std::bind(&Board::Bus_WrittenByte, this, std::placeholders::_1));
+	//ReadingByte.connect(std::bind(&Board::Bus_ReadingByte, this, std::placeholders::_1));
+
 	CPU().powerOn();
 	CPU().raise(CPU().NMI());
 	CPU().raise(CPU().FIRQ());
@@ -35,6 +40,27 @@ void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809&) {
 void Board::Cpu_ExecutedInstruction_Debug(EightBit::mc6809&) {
 	if (!m_ignoreDisassembly)
 		std::cout << m_disassembler.trace(m_disassembleAt) << std::endl;
+}
+
+void Board::Cpu_ExecutedInstruction_die(EightBit::mc6809& cpu) {
+	static uint64_t instructions = 0UL;
+	if (++instructions > 90000000)
+		cpu.powerOff();
+}
+
+void Board::Bus_WrittenByte(EightBit::EventArgs&) {
+	if ((ADDRESS().word > 0x9fff) && (ADDRESS().word < 0xc000))
+		std::cout << std::hex << "** IO wrote " << DATA() << " to " << ADDRESS() << std::endl;
+}
+
+void Board::Bus_ReadingByte(EightBit::EventArgs&) {
+	if ((ADDRESS().word > 0x9fff) && (ADDRESS().word < 0xc000)) {
+		std::cout << std::hex << "** IO reading " << ADDRESS() << std::endl;
+		switch (ADDRESS().word) {
+		case 0xa000:
+			poke(ADDRESS(), 0x03);
+		}
+	}
 }
 
 EightBit::MemoryMapping Board::mapping(uint16_t address) {
