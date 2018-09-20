@@ -312,10 +312,8 @@ namespace EightBit {
 		register16_t mul(uint8_t first, uint8_t second);
 		uint8_t neg(uint8_t operand);
 		uint8_t orr(uint8_t operand, uint8_t data);
-		void pshs(uint8_t data);
-		void pshu(uint8_t data);
-		void puls(uint8_t data);
-		void pulu(uint8_t data);
+		void psh(register16_t& stack, uint8_t data);
+		void pul(register16_t& stack, uint8_t data);
 		uint8_t rol(uint8_t operand);
 		uint8_t ror(uint8_t operand);
 		void rti();

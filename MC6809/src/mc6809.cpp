@@ -341,12 +341,12 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	case 0x1a:	addCycles(3);	CC() |= AM_immediate_byte();						break;		// OR (ORCC immediate)
 
 	// PSH
-	case 0x34:	addCycles(5);	pshs(AM_immediate_byte());							break;		// PSH (PSHS immediate)
-	case 0x36:	addCycles(5);	pshu(AM_immediate_byte());							break;		// PSH (PSHU immediate)
+	case 0x34:	addCycles(5);	psh(S(), AM_immediate_byte());							break;		// PSH (PSHS immediate)
+	case 0x36:	addCycles(5);	psh(U(), AM_immediate_byte());							break;		// PSH (PSHU immediate)
 
 	// PUL
-	case 0x35:	addCycles(5);	puls(AM_immediate_byte());							break;		// PUL (PULS immediate)
-	case 0x37:	addCycles(5);	pulu(AM_immediate_byte());							break;		// PUL (PULU immediate)
+	case 0x35:	addCycles(5);	pul(S(), AM_immediate_byte());							break;		// PUL (PULS immediate)
+	case 0x37:	addCycles(5);	pul(U(), AM_immediate_byte());							break;		// PUL (PULU immediate)
 
 	// ROL
 	case 0x09:	addCycles(6);	BUS().write(rol(AM_direct_byte()));					break;		// ROL (direct)
@@ -946,143 +946,75 @@ uint8_t EightBit::mc6809::orr(uint8_t operand, const uint8_t data) {
 	return operand;
 }
 
-void EightBit::mc6809::pshs(const uint8_t data) {
+void EightBit::mc6809::psh(register16_t& stack, const uint8_t data) {
 	if (data & Bit7) {
 		addCycles(2);
-		pushWordS(PC());
+		pushWord(stack, PC());
 	}
 	if (data & Bit6) {
 		addCycles(2);
-		pushWordS(U());
+		// Pushing to the S stack means we must be pushing U
+		pushWord(stack, &stack == &S() ? U() : S());
 	}
 	if (data & Bit5) {
 		addCycles(2);
-		pushWordS(Y());
+		pushWord(stack, Y());
 	}
 	if (data & Bit4) {
 		addCycles(2);
-		pushWordS(X());
+		pushWord(stack, X());
 	}
 	if (data & Bit3) {
 		addCycle();
-		pushS(DP());
+		push(stack, DP());
 	}
 	if (data & Bit2) {
 		addCycle();
-		pushS(B());
+		push(stack, B());
 	}
 	if (data & Bit1) {
 		addCycle();
-		pushS(A());
+		push(stack, A());
 	}
 	if (data & Bit0) {
 		addCycle();
-		pushS(CC());
+		push(stack, CC());
 	}
 }
 
-void EightBit::mc6809::pshu(const uint8_t data) {
-	if (data & Bit7) {
-		addCycles(2);
-		pushWordU(PC());
-	}
-	if (data & Bit6) {
-		addCycles(2);
-		pushWordU(S());
-	}
-	if (data & Bit5) {
-		addCycles(2);
-		pushWordU(Y());
-	}
-	if (data & Bit4) {
-		addCycles(2);
-		pushWordU(X());
-	}
-	if (data & Bit3) {
+void EightBit::mc6809::pul(register16_t& stack, const uint8_t data) {
+	if (data & Bit0) {
 		addCycle();
-		pushU(DP());
-	}
-	if (data & Bit2) {
-		addCycle();
-		pushU(B());
+		CC() = pop(stack);
 	}
 	if (data & Bit1) {
 		addCycle();
-		pushU(A());
-	}
-	if (data & Bit0) {
-		addCycle();
-		pushU(CC());
-	}
-}
-
-void EightBit::mc6809::puls(const uint8_t data) {
-	if (data & Bit0) {
-		addCycle();
-		CC() = popS();
-	}
-	if (data & Bit1) {
-		addCycle();
-		A() = popS();
+		A() = pop(stack);
 	}
 	if (data & Bit2) {
 		addCycle();
-		B() = popS();
+		B() = pop(stack);
 	}
 	if (data & Bit3) {
 		addCycle();
-		DP() = popS();
+		DP() = pop(stack);
 	}
 	if (data & Bit4) {
 		addCycles(2);
-		X() = popWordS();
+		X() = popWord(stack);
 	}
 	if (data & Bit5) {
 		addCycles(2);
-		Y() = popWordS();
+		Y() = popWord(stack);
 	}
 	if (data & Bit6) {
 		addCycles(2);
-		U() = popWordS();
+		// Pulling from the S stack means we must be pulling U
+		(&stack == &S() ? U() : S()) = popWord(stack);
 	}
 	if (data & Bit7) {
 		addCycles(2);
-		PC() = popWordS();
-	}
-}
-
-void EightBit::mc6809::pulu(const uint8_t data) {
-	if (data & Bit0) {
-		addCycle();
-		CC() = popU();
-	}
-	if (data & Bit1) {
-		addCycle();
-		A() = popU();
-	}
-	if (data & Bit2) {
-		addCycle();
-		B() = popU();
-	}
-	if (data & Bit3) {
-		addCycle();
-		DP() = popU();
-	}
-	if (data & Bit4) {
-		addCycles(2);
-		X() = popWordU();
-	}
-	if (data & Bit5) {
-		addCycles(2);
-		Y() = popWordU();
-	}
-	if (data & Bit6) {
-		addCycles(2);
-		S() = popWordU();
-	}
-	if (data & Bit7) {
-		addCycles(2);
-		PC() = popWordU();
+		PC() = popWord(stack);
 	}
 }
 
