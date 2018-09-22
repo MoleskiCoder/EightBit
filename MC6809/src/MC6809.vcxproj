@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\inc\Disassembly.h" />
     <ClInclude Include="..\inc\mc6809.h" />
-    <ClInclude Include="..\inc\stdafx.h" />
+    <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Disassembly.cpp" />

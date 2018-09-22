@@ -24,9 +24,9 @@ int EightBit::mc6809::step() {
 			handleRESET();
 		else if (UNLIKELY(lowered(NMI())))
 			handleNMI();
-		else if (UNLIKELY(lowered(FIRQ()) && !(CC() & FF)))
+		else if (UNLIKELY(lowered(FIRQ()) && !fastInterruptMasked()))
 			handleFIRQ();
-		else if (UNLIKELY(lowered(IRQ()) && !(CC() & IF)))
+		else if (UNLIKELY(lowered(IRQ()) && !interruptMasked()))
 			handleIRQ();
 		else
 			execute(fetchByte());
@@ -131,20 +131,20 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	case 0xf9:	addCycles(4);	B() = adc(B(), AM_extended_byte());					break;		// ADC (ADCB extended)
 
 	// ADD
-	case 0x8b: addCycles(2);	A() = add(A(), AM_immediate_byte());				break;		// ADD (ADDA immediate)
-	case 0x9b: addCycles(4);	A() = add(A(), AM_direct_byte());					break;		// ADD (ADDA direct)
-	case 0xab: addCycles(4);	A() = add(A(), AM_indexed_byte());					break;		// ADD (ADDA indexed)
-	case 0xbb: addCycles(5);	A() = add(A(), AM_extended_byte());					break;		// ADD (ADDA extended)
+	case 0x8b:	addCycles(2);	A() = add(A(), AM_immediate_byte());				break;		// ADD (ADDA immediate)
+	case 0x9b:	addCycles(4);	A() = add(A(), AM_direct_byte());					break;		// ADD (ADDA direct)
+	case 0xab:	addCycles(4);	A() = add(A(), AM_indexed_byte());					break;		// ADD (ADDA indexed)
+	case 0xbb:	addCycles(5);	A() = add(A(), AM_extended_byte());					break;		// ADD (ADDA extended)
 
-	case 0xcb: addCycles(2);	B() = add(B(), AM_immediate_byte());				break;		// ADD (ADDB immediate)
-	case 0xdb: addCycles(4);	B() = add(B(), AM_direct_byte());					break;		// ADD (ADDB direct)
-	case 0xeb: addCycles(4);	B() = add(B(), AM_indexed_byte());					break;		// ADD (ADDB indexed)
-	case 0xfb: addCycles(5);	B() = add(B(), AM_extended_byte());					break;		// ADD (ADDB extended)
+	case 0xcb:	addCycles(2);	B() = add(B(), AM_immediate_byte());				break;		// ADD (ADDB immediate)
+	case 0xdb:	addCycles(4);	B() = add(B(), AM_direct_byte());					break;		// ADD (ADDB direct)
+	case 0xeb:	addCycles(4);	B() = add(B(), AM_indexed_byte());					break;		// ADD (ADDB indexed)
+	case 0xfb:	addCycles(5);	B() = add(B(), AM_extended_byte());					break;		// ADD (ADDB extended)
 
-	case 0xc3: addCycles(4);	D() = add(D(), AM_immediate_word());				break;		// ADD (ADDD immediate)
-	case 0xd3: addCycles(6);	D() = add(D(), AM_direct_word());					break;		// ADD (ADDD direct)
-	case 0xe3: addCycles(6);	D() = add(D(), AM_indexed_word());					break;		// ADD (ADDD indexed)
-	case 0xf3: addCycles(7);	D() = add(D(), AM_extended_word());					break;		// ADD (ADDD extended)
+	case 0xc3:	addCycles(4);	D() = add(D(), AM_immediate_word());				break;		// ADD (ADDD immediate)
+	case 0xd3:	addCycles(6);	D() = add(D(), AM_direct_word());					break;		// ADD (ADDD direct)
+	case 0xe3:	addCycles(6);	D() = add(D(), AM_indexed_word());					break;		// ADD (ADDD indexed)
+	case 0xf3:	addCycles(7);	D() = add(D(), AM_extended_word());					break;		// ADD (ADDD extended)
 
 	// AND
 	case 0x84:	addCycles(2);	A() = andr(A(), AM_immediate_byte());				break;		// AND (ANDA immediate)
@@ -454,8 +454,8 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	case 0x17:	addCycles(9);	jsr(Address_relative_word());						break;		// BSR (LBSR relative)
 	case 0x20:	addCycles(3);	jump(Address_relative_byte());						break;		// BRA (relative)
 	case 0x21:	addCycles(3);	Address_relative_byte();							break;		// BRN (relative)
-	case 0x22:	addCycles(3);	branchShort(BHI());									break;		// BHI (relative)
-	case 0x23:	addCycles(3);	branchShort(BLS());									break;		// BLS (relative)
+	case 0x22:	addCycles(3);	branchShort(HI());									break;		// BHI (relative)
+	case 0x23:	addCycles(3);	branchShort(LS());									break;		// BLS (relative)
 	case 0x24:	addCycles(3);	branchShort(!carry());								break;		// BCC (relative)
 	case 0x25:	addCycles(3);	branchShort(carry());								break;		// BCS (relative)
 	case 0x26:	addCycles(3);	branchShort(!zero());								break;		// BNE (relative)
@@ -464,10 +464,10 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	case 0x29: 	addCycles(3);	branchShort(overflow());							break;		// BVS (relative)
 	case 0x2a: 	addCycles(3);	branchShort(!negative());							break;		// BPL (relative)
 	case 0x2b: 	addCycles(3);	branchShort(negative());							break;		// BMI (relative)
-	case 0x2c:	addCycles(3);	branchShort(BGE());									break;		// BGE (relative)
-	case 0x2d:	addCycles(3);	branchShort(BLT());									break;		// BLT (relative)
-	case 0x2e:	addCycles(3);	branchShort(BGT());									break;		// BGT (relative)
-	case 0x2f:	addCycles(3);	branchShort(BLE());									break;		// BLE (relative)
+	case 0x2c:	addCycles(3);	branchShort(GE());									break;		// BGE (relative)
+	case 0x2d:	addCycles(3);	branchShort(LT());									break;		// BLT (relative)
+	case 0x2e:	addCycles(3);	branchShort(GT());									break;		// BGT (relative)
+	case 0x2f:	addCycles(3);	branchShort(LE());									break;		// BLE (relative)
 
 	case 0x8d:	addCycles(7);	jsr(Address_relative_byte());						break;		// BSR (relative)
 
@@ -514,20 +514,20 @@ void EightBit::mc6809::execute10(const uint8_t opcode) {
 	// Branching
 
 	case 0x21:	addCycles(5);	Address_relative_word();							break;		// BRN (LBRN relative)
-	case 0x22:	addCycles(5);	if (branchLong(BHI())) addCycle();					break;		// BHI (LBHI relative)
-	case 0x23:	addCycles(5);	if (branchLong(BLS())) addCycle();					break;		// BLS (LBLS relative)
-	case 0x24:	addCycles(5);	if (branchLong(!carry())) addCycle();				break;		// BCC (LBCC relative)
-	case 0x25:	addCycles(5);	if (branchLong(carry())) addCycle();				break;		// BCS (LBCS relative)
-	case 0x26:	addCycles(5);	if (branchLong(!zero())) addCycle();				break;		// BNE (LBNE relative)
-	case 0x27:	addCycles(5);	if (branchLong(zero())) addCycle();					break;		// BEQ (LBEQ relative)
-	case 0x28:	addCycles(5);	if (branchLong(!overflow())) addCycle();			break;		// BVC (LBVC relative)
-	case 0x29:	addCycles(5);	if (branchLong(overflow())) addCycle();				break;		// BVS (LBVS relative)
-	case 0x2a:	addCycles(5);	if (branchLong(!negative())) addCycle();			break;		// BPL (LBPL relative)
-	case 0x2b: 	addCycles(5);	if (branchLong(negative())) addCycle();				break;		// BMI (LBMI relative)
-	case 0x2c:	addCycles(5);	if (branchLong(BGE())) addCycle();					break;		// BGE (LBGE relative)
-	case 0x2d:	addCycles(5);	if (branchLong(BLT())) addCycle();					break;		// BLT (LBLT relative)
-	case 0x2e:	addCycles(5);	if (branchLong(BGT())) addCycle();					break;		// BGT (LBGT relative)
-	case 0x2f:	addCycles(5);	if (branchLong(BLE())) addCycle();					break;		// BLE (LBLE relative)
+	case 0x22:	addCycles(5);	branchLong(HI());									break;		// BHI (LBHI relative)
+	case 0x23:	addCycles(5);	branchLong(LS());									break;		// BLS (LBLS relative)
+	case 0x24:	addCycles(5);	branchLong(!carry());								break;		// BCC (LBCC relative)
+	case 0x25:	addCycles(5);	branchLong(carry());								break;		// BCS (LBCS relative)
+	case 0x26:	addCycles(5);	branchLong(!zero());								break;		// BNE (LBNE relative)
+	case 0x27:	addCycles(5);	branchLong(zero());									break;		// BEQ (LBEQ relative)
+	case 0x28:	addCycles(5);	branchLong(!overflow());							break;		// BVC (LBVC relative)
+	case 0x29:	addCycles(5);	branchLong(overflow());								break;		// BVS (LBVS relative)
+	case 0x2a:	addCycles(5);	branchLong(!negative());							break;		// BPL (LBPL relative)
+	case 0x2b: 	addCycles(5);	branchLong(negative());								break;		// BMI (LBMI relative)
+	case 0x2c:	addCycles(5);	branchLong(GE());									break;		// BGE (LBGE relative)
+	case 0x2d:	addCycles(5);	branchLong(LT());									break;		// BLT (LBLT relative)
+	case 0x2e:	addCycles(5);	branchLong(GT());									break;		// BGT (LBGT relative)
+	case 0x2f:	addCycles(5);	branchLong(LE());									break;		// BLE (LBLE relative)
 
 	// STS
 	case 0xdf:	addCycles(6);	Processor::setWord(Address_direct(), st(S()));		break;		// ST (STS direct)
@@ -1057,7 +1057,8 @@ void EightBit::mc6809::rts() {
 
 void EightBit::mc6809::swi() {
 	saveEntireRegisterState();
-	setFlag(CC(), (IF | FF));
+	setFlag(CC(), IF);	// Disable IRQ
+	setFlag(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, SWIvector));
 }
 

@@ -254,18 +254,21 @@ namespace EightBit {
 
 		// Flag checking
 
+		int fastInterruptMasked() { return CC() & FF; }
+		int interruptMasked() { return CC() & IF; }
+
 		int negative() { return CC() & NF; }
 		int zero() { return CC() & ZF; }
 		int overflow() { return CC() & VF; }
 		int carry() { return CC() & CF; }
 		int halfCarry() { return CC() & HF; }
 
-		bool BLS() { return carry() | (zero() >> 2); }									// (C OR Z)
-		bool BHI() { return !BLS(); }													// !(C OR Z)
-		bool BLT() { return (negative() >> 1) ^ overflow(); }							// (N XOR V)
-		bool BGE() { return !BLT(); }													// !(N XOR V)
-		bool BLE() { return (zero() >> 2) & ((negative() >> 3) ^ (overflow() >> 1)); }	// (Z OR (N XOR V))
-		bool BGT() { return !BLE(); }													// !(Z OR (N XOR V))
+		bool LS() { return carry() | (zero() >> 2); }									// (C OR Z)
+		bool HI() { return !LS(); }														// !(C OR Z)
+		bool LT() { return (negative() >> 1) ^ overflow(); }							// (N XOR V)
+		bool GE() { return !LT(); }														// !(N XOR V)
+		bool LE() { return (zero() >> 2) & ((negative() >> 3) ^ (overflow() >> 1)); }	// (Z OR (N XOR V))
+		bool GT() { return !LE(); }														// !(Z OR (N XOR V))
 
 		// Branching
 
@@ -275,12 +278,13 @@ namespace EightBit {
 			return !!condition;
 		}
 
-		bool branchShort(int condition) {
-			return branch(Address_relative_byte(), condition);
+		void branchShort(int condition) {
+			branch(Address_relative_byte(), condition);
 		}
 
-		bool branchLong(int condition) {
-			return branch(Address_relative_word(), condition);
+		void branchLong(int condition) {
+			if (branch(Address_relative_word(), condition))
+				addCycle();
 		}
 
 		// Miscellaneous
