@@ -11,10 +11,10 @@ namespace EightBit {
 		// |		|								Buffer address									   |
 		// |		+------------------+------------------+--------------------+-----------------------+
 		// |        |			 _	   |			_	  |			   _	   |			   _	   |
-		// | Data	|	  RS * R/W	   |	 RS * R/W	  |		RS * R/W	   |		RS * R/W	   |
+		// |  Data	|	  RS * R/W	   |	 RS * R/W	  |		RS * R/W	   |		RS * R/W	   |
 		// |  Bus	|   (high)(low)	   |   (high)(high)   |	   (low)(low)	   |	   (low)(low)	   |
-		// | Line	|	 Transmit	   |	 Receive	  |					   |					   |
-		// | Number	|	  Data		   |	  Data		  |		 Control	   |		 Control	   |
+		// |  Line	|	 Transmit	   |	 Receive	  |					   |					   |
+		// | Number	|	   Data		   |	  Data		  |		 Control	   |		 Control	   |
 		// |		|	 Register	   |	 Register	  |		 register	   |		 register	   |
 		// |		+------------------+------------------+--------------------+-----------------------+
 		// |		|  (Write only)    +   (Read only)	  +	   (Write only)	   |   (Read only)		   |
@@ -38,7 +38,7 @@ namespace EightBit {
 		// |		|				   |				  |		  (CR5)		   |		(OVRN)		   |
 		// +--------+------------------+------------------+--------------------+-----------------------+
 		// |	6	|	Data bit 6	   |	Data bit 6	  | Transmit control 2 |	Parity error (PE)  |
-		// |		|				   |				  |		  (CR6)		   |					   ||
+		// |		|				   |				  |		  (CR6)		   |					   |
 		// +--------+------------------+------------------+--------------------+-----------------------+
 		// |	7	|	Data bit 7***  |	Data bit 7**  | Receive interrupt  |	Interrupt request  |
 		// |		|				   |				  |   enable (CR7)	   |	  (IRQ active)	   |
