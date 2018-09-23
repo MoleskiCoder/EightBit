@@ -8,12 +8,14 @@
 #include <Bus.h>
 #include <mc6809.h>
 #include <Disassembly.h>
+#include <MC6850.h>
 
 class Board : public EightBit::Bus {
 public:
 	Board(const Configuration& configuration);
 
 	EightBit::mc6809& CPU() { return m_cpu; }
+	EightBit::mc6850& ACIA() { return m_acia; }
 
 	void initialise();
 
@@ -36,6 +38,8 @@ private:
 	EightBit::Ram m_io = 0x2000;			// A000 - BFFF, 8K serial interface, minimally decoded
 	EightBit::Rom m_rom = 0x4000;			// C000 - FFFF, 16K ROM
 
+	EightBit::mc6850 m_acia;
+
 	EightBit::mc6809 m_cpu;
 	EightBit::Disassembly m_disassembler;
 
@@ -47,8 +51,14 @@ private:
 	void Cpu_ExecutingInstruction_Debug(EightBit::mc6809& cpu);
 	void Cpu_ExecutedInstruction_Debug(EightBit::mc6809& cpu);
 
-	void Cpu_ExecutedInstruction_die(EightBit::mc6809& cpu);
+	void Cpu_ExecutedInstruction_die(EightBit::mc6809&);
 
-	void Bus_WrittenByte(EightBit::EventArgs&);
-	void Bus_ReadingByte(EightBit::EventArgs&);
+	// ACIA handling
+
+	void Bus_WritingByte_Acia(EightBit::EventArgs&);
+	void Bus_ReadingByte_Acia(EightBit::EventArgs&);
+
+	void Cpu_ExecutedInstruction_Acia(EightBit::mc6809&);
+
+	void updateAciaPins();
 };

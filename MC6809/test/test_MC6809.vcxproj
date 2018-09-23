@@ -71,19 +71,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\inc;..\..\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\inc;..\..\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\inc;..\..\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\inc;..\..\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;C:\Libraries\boost_1_65_1;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -167,6 +167,9 @@
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\MC6850\src\MC6850.vcxproj">
+      <Project>{a4ada650-55c3-4c00-8dad-e4e4aff86eff}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\EightBit.vcxproj">
       <Project>{a9c24bd9-0cb4-4c84-b09b-46b815f9da47}</Project>
     </ProjectReference>

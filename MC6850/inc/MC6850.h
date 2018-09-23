@@ -2,10 +2,10 @@
 
 #include <cstdint>
 
-#include <Processor.h>
+#include <Chip.h>
 
 namespace EightBit {
-	class mc6850 {
+	class mc6850 : public Chip {
 	public:
 		// +--------+----------------------------------------------------------------------------------+
 		// |		|								Buffer address									   |
@@ -14,10 +14,10 @@ namespace EightBit {
 		// |  Data	|	  RS * R/W	   |	 RS * R/W	  |		RS * R/W	   |		RS * R/W	   |
 		// |  Bus	|   (high)(low)	   |   (high)(high)   |	   (low)(low)	   |	   (low)(low)	   |
 		// |  Line	|	 Transmit	   |	 Receive	  |					   |					   |
-		// | Number	|	   Data		   |	  Data		  |		 Control	   |		 Control	   |
-		// |		|	 Register	   |	 Register	  |		 register	   |		 register	   |
+		// | Number	|	   Data		   |	  Data		  |		 Control	   |		 Status		   |
+		// |		|	 Register	   |	 Register	  |		 register	   |		register	   |
 		// |		+------------------+------------------+--------------------+-----------------------+
-		// |		|  (Write only)    +   (Read only)	  +	   (Write only)	   |   (Read only)		   |
+		// |		|  (Write only)    +   (Read only)	  +	   (Write only)	   |      (Read only)	   |
 		// +--------+------------------+------------------+--------------------+-----------------------+
 		// |	0	|	Data bit 0*	   |	Data bit 0	  |   Counter divide   | Receive data register |
 		// |		|				   |				  |	  select 1 (CR0)   |	  full (RDRF)	   |
@@ -47,49 +47,89 @@ namespace EightBit {
 		//	   ** Data bit will be zero in 7-bit plus parity modes
 		//	  *** Data bit is "don't case" in 7-bit plus parity modes
 
-		Processor::PinLevel& RXDATA() { return m_RXDATA; }	// Receive data, (I) Active high
-		Processor::PinLevel& TXDATA() { return m_TXDATA; }	// Transmit data, (O) Active high
+		enum ControlRegisters {
+			CR0 = 0b1,
+			CR1 = 0b10,
+			CR2 = 0b100,
+			CR3 = 0b1000,
+			CR4 = 0b10000,
+			CR5 = 0b100000,
+			CR6 = 0b1000000,
+			CR7 = 0b10000000
+		};
+		
+		enum StatusRegisters {
+			RDRF	= 0b1,
+			TDRE	= 0b10,
+			kDCD	= 0b100,
+			kCTS	= 0b1000,
+			FE		= 0b10000,
+			OVRN	= 0b100000,
+			PE		= 0b1000000,
+			kIRQ	= 0b10000000,
+		};
 
-		Processor::PinLevel& RTS() { return m_RTS; }		// Request to send, (O) Active low
-		Processor::PinLevel& CTS() { return m_CTS; }		// Clear to send, (I) Active low
-		Processor::PinLevel& DCD() { return m_DCD; }		// Data carrier detect, (I) Active low
+		PinLevel& RXDATA() { return m_RXDATA; }	// Receive data, (I) Active high
+		PinLevel& TXDATA() { return m_TXDATA; }	// Transmit data, (O) Active high
 
-		Processor::PinLevel& RXCLK() { return m_RXCLK; }	// Transmit clock, (I) Active high
-		Processor::PinLevel& TXCLK() { return m_TXCLK; }	// Receive clock, (I) Active high
+		PinLevel& RTS() { return m_RTS; }		// Request to send, (O) Active low
+		PinLevel& CTS() { return m_CTS; }		// Clear to send, (I) Active low
+		PinLevel& DCD() { return m_DCD; }		// Data carrier detect, (I) Active low
 
-		uint8_t& DATA() { return m_data; }					// Data, (I/O)
+		PinLevel& RXCLK() { return m_RXCLK; }	// Transmit clock, (I) Active high
+		PinLevel& TXCLK() { return m_TXCLK; }	// Receive clock, (I) Active high
 
-		Processor::PinLevel& CS0() { return m_CS0; }		// Chip select, bit 0, (I) Active high
-		Processor::PinLevel& CS1() { return m_CS1; }		// Chip select, bit 1, (I) Active high
-		Processor::PinLevel& CS2() { return m_CS2; }		// Chip select, bit 2, (I) Active low
 
-		Processor::PinLevel& RS() { return m_RS; }			// Register select, (I) Active high
-		Processor::PinLevel& RW() { return m_RW; }			// Read/Write, (I) Read high, write low
+		PinLevel& CS0() { return m_CS0; }		// Chip select, bit 0, (I) Active high
+		PinLevel& CS1() { return m_CS1; }		// Chip select, bit 1, (I) Active high
+		PinLevel& CS2() { return m_CS2; }		// Chip select, bit 2, (I) Active low
 
-		Processor::PinLevel& E() { return m_E; }			// ACIA Enable, (I) Active high
-		Processor::PinLevel& IRQ() { return m_IRQ; }		// Interrupt request, (O) Active low
+		PinLevel& RS() { return m_RS; }			// Register select, (I) Active high
+		PinLevel& RW() { return m_RW; }			// Read/Write, (I) Read high, write low
+
+		PinLevel& E() { return m_E; }			// ACIA Enable, (I) Active high
+		PinLevel& IRQ() { return m_IRQ; }		// Interrupt request, (O) Active low
+
+		uint8_t& DATA() { return m_data; }		// Data, (I/O)
+
+		void step(int cycles);
 
 	private:
-		Processor::PinLevel m_RXDATA;
-		Processor::PinLevel m_TXDATA;
+		bool selected();
 
-		Processor::PinLevel m_RTS;
-		Processor::PinLevel m_CTS;
-		Processor::PinLevel m_DCD;
+		void reset();
 
-		Processor::PinLevel m_RXCLK;
-		Processor::PinLevel m_TXCLK;
+		void step();
+
+		PinLevel m_RXDATA;
+		PinLevel m_TXDATA;
+
+		PinLevel m_RTS;
+		PinLevel m_CTS;
+		PinLevel m_DCD;
+
+		PinLevel m_RXCLK;
+		PinLevel m_TXCLK;
+
+		PinLevel m_CS0;
+		PinLevel m_CS1;
+		PinLevel m_CS2;
+
+		PinLevel m_RS;
+		PinLevel m_RW;
+
+		PinLevel m_E;
+		PinLevel m_IRQ;
 
 		uint8_t m_data;
 
-		Processor::PinLevel m_CS0;
-		Processor::PinLevel m_CS1;
-		Processor::PinLevel m_CS2;
+		// Control registers
+		int m_counterDivide;
+		int m_wordConfiguration;
+		int m_transmitterControl;
+		int m_receiveControl;
 
-		Processor::PinLevel m_RS;
-		Processor::PinLevel m_RW;
-
-		Processor::PinLevel m_E;
-		Processor::PinLevel m_IRQ;
+		// Status registers
+		bool m_RDRF;
 	};
 }
