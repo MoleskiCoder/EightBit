@@ -33,6 +33,10 @@ void Board::initialise() {
 	CPU().reset();
 
 	ACIA().powerOn();
+	ACIA().RW() = EightBit::Chip::PinLevel::Low;	// Write
+	ACIA().RS() = EightBit::Chip::PinLevel::Low;	// Registers
+	EightBit::Processor::setFlag(ACIA().DATA(), EightBit::mc6850::CR0 | EightBit::mc6850::CR1);
+	ACIA().step(1);	// Get the reset out of the way...
 }
 
 void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809&) {
@@ -66,16 +70,15 @@ EightBit::MemoryMapping Board::mapping(uint16_t address) {
 }
 
 void Board::Bus_WritingByte_Acia(EightBit::EventArgs&) {
-	ACIA().RW() = EightBit::Chip::Low;
-	updateAciaPins();
+	updateAciaPins(EightBit::Chip::Low);
 }
 
 void Board::Bus_ReadingByte_Acia(EightBit::EventArgs&) {
-	ACIA().RW() = EightBit::Chip::High;
-	updateAciaPins();
+	updateAciaPins(EightBit::Chip::High);
 }
 
-void Board::updateAciaPins() {
+void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
+	ACIA().RW() = rw;
 	ACIA().DATA() = DATA();
 	ACIA().RS() = ADDRESS().word & EightBit::Chip::Bit0 ? EightBit::Chip::PinLevel::High : EightBit::Chip::PinLevel::Low;
 	ACIA().CS0() = ADDRESS().word & EightBit::Chip::Bit15 ? EightBit::Chip::PinLevel::High : EightBit::Chip::PinLevel::Low;

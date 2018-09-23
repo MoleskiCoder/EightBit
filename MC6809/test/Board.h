@@ -48,8 +48,8 @@ private:
 
 	void pollKeyboard();
 
-	void Cpu_ExecutingInstruction_Debug(EightBit::mc6809& cpu);
-	void Cpu_ExecutedInstruction_Debug(EightBit::mc6809& cpu);
+	void Cpu_ExecutingInstruction_Debug(EightBit::mc6809&);
+	void Cpu_ExecutedInstruction_Debug(EightBit::mc6809&);
 
 	void Cpu_ExecutedInstruction_die(EightBit::mc6809&);
 
@@ -60,5 +60,5 @@ private:
 
 	void Cpu_ExecutedInstruction_Acia(EightBit::mc6809&);
 
-	void updateAciaPins();
+	void updateAciaPins(EightBit::Chip::PinLevel rw);
 };

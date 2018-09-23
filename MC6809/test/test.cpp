@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 	Configuration configuration;
 
 #ifdef _DEBUG
-	//configuration.setDebugMode(true);
+	configuration.setDebugMode(true);
 #endif
 	//configuration.setDebugMode(true);
 

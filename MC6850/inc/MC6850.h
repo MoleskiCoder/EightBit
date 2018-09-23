@@ -94,12 +94,24 @@ namespace EightBit {
 
 		void step(int cycles);
 
+		// External access to RDR
+		void fillRDR(uint8_t data);
+
 	private:
+		uint8_t& TDR() { return m_TDR; }	// Transmit data register;
+		uint8_t& RDR() { return m_RDR; }	// Receive data register;
+
+		uint8_t& status() { return m_status; }
+
 		bool selected();
 
 		void reset();
 
 		void step();
+
+		uint8_t drainRDR();				// External (hacked!) access to RDR
+		void fillTDR(uint8_t data);		// External (hacked!) access to TDR
+		uint8_t drainTDR();				// External (hacked!) access to TDR
 
 		PinLevel m_RXDATA;
 		PinLevel m_TXDATA;
@@ -130,6 +142,12 @@ namespace EightBit {
 		int m_receiveControl;
 
 		// Status registers
-		bool m_RDRF;
+		uint8_t m_status;
+
+		// Data registers
+		uint8_t m_TDR;
+		uint8_t m_RDR;
+
+		bool m_firstMasterReset = false;
 	};
 }
