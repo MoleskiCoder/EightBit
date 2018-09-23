@@ -6,10 +6,10 @@ EightBit::Processor::Processor(Bus& bus)
 }
 
 void EightBit::Processor::powerOn() {
+	Chip::powerOn();
 	raise(RESET());
 	raise(HALT());
 	raise(INT());
-	raise(POWER());
 }
 
 void EightBit::Processor::handleRESET() {
