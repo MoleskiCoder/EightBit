@@ -46,7 +46,8 @@ private:
 	EightBit::register16_t m_disassembleAt = 0x0000;
 	bool m_ignoreDisassembly = false;
 
-	void pollKeyboard();
+	uint64_t m_pollCounter = 0UL;
+	uint64_t m_pollInterval = 2000000 / 50;
 
 	void Cpu_ExecutingInstruction_Debug(EightBit::mc6809&);
 	void Cpu_ExecutedInstruction_Debug(EightBit::mc6809&);
@@ -59,6 +60,9 @@ private:
 	void Bus_ReadingByte_Acia(EightBit::EventArgs&);
 
 	void Cpu_ExecutedInstruction_Acia(EightBit::mc6809&);
+
+	void Acia_Accessing(EightBit::EventArgs&);
+	void Acia_Accessed(EightBit::EventArgs&);
 
 	void updateAciaPins(EightBit::Chip::PinLevel rw);
 };

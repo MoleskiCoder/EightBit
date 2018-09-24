@@ -21,11 +21,12 @@ void Board::initialise() {
 		CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Debug, this, std::placeholders::_1));
 	}
 
-	CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_die, this, std::placeholders::_1));
-
 	WritingByte.connect(std::bind(&Board::Bus_WritingByte_Acia, this, std::placeholders::_1));
 	ReadingByte.connect(std::bind(&Board::Bus_ReadingByte_Acia, this, std::placeholders::_1));
 	CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Acia, this, std::placeholders::_1));
+
+	ACIA().Accessing.connect(std::bind(&Board::Acia_Accessing, this, std::placeholders::_1));
+	ACIA().Accessed.connect(std::bind(&Board::Acia_Accessed, this, std::placeholders::_1));
 
 	CPU().powerOn();
 	CPU().raise(CPU().NMI());
@@ -88,4 +89,14 @@ void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
 
 void Board::Cpu_ExecutedInstruction_Acia(EightBit::mc6809&) {
 	ACIA().step(CPU().cycles());
+}
+
+void Board::Acia_Accessing(EightBit::EventArgs&) {
+	if (_kbhit()) {
+		ACIA().DATA() = _getch();
+		ACIA().fillRDR();
+	}
+}
+
+void Board::Acia_Accessed(EightBit::EventArgs&) {
 }

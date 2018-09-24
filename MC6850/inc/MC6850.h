@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include <Chip.h>
+#include <Signal.h>
 
 namespace EightBit {
 	class mc6850 : public Chip {
@@ -94,8 +95,17 @@ namespace EightBit {
 
 		void step(int cycles);
 
-		// External access to RDR
-		void fillRDR(uint8_t data);
+		void fillRDR();
+		void drainTDR();
+
+		Signal<EventArgs> Accessing;
+		Signal<EventArgs> Accessed;
+
+		Signal<EventArgs> Transmitting;
+		Signal<EventArgs> Transmitted;
+
+		Signal<EventArgs> Receiving;
+		Signal<EventArgs> Received;
 
 	private:
 		uint8_t& TDR() { return m_TDR; }	// Transmit data register;
@@ -109,9 +119,8 @@ namespace EightBit {
 
 		void step();
 
-		uint8_t drainRDR();				// External (hacked!) access to RDR
-		void fillTDR(uint8_t data);		// External (hacked!) access to TDR
-		uint8_t drainTDR();				// External (hacked!) access to TDR
+		void drainRDR();
+		void fillTDR();
 
 		PinLevel m_RXDATA;
 		PinLevel m_TXDATA;
@@ -148,6 +157,6 @@ namespace EightBit {
 		uint8_t m_TDR;
 		uint8_t m_RDR;
 
-		bool m_firstMasterReset = false;
+		bool m_powered = false;
 	};
 }
