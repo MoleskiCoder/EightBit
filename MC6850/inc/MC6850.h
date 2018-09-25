@@ -60,14 +60,14 @@ namespace EightBit {
 		};
 		
 		enum StatusRegisters {
-			RDRF	= 0b1,
-			TDRE	= 0b10,
-			kDCD	= 0b100,
-			kCTS	= 0b1000,
-			FE		= 0b10000,
-			OVRN	= 0b100000,
-			PE		= 0b1000000,
-			kIRQ	= 0b10000000,
+			STATUS_RDRF	= 0b1,
+			STATUS_TDRE	= 0b10,
+			STATUS_DCD	= 0b100,
+			STATUS_CTS	= 0b1000,
+			STATUS_FE	= 0b10000,
+			STATUS_OVRN	= 0b100000,
+			STATUS_PE	= 0b1000000,
+			STATUS_IRQ	= 0b10000000,
 		};
 
 		PinLevel& RXDATA() { return m_RXDATA; }	// Receive data, (I) Active high
@@ -93,10 +93,14 @@ namespace EightBit {
 
 		uint8_t& DATA() { return m_data; }		// Data, (I/O)
 
+		// Expose these internal registers, so we can update internal state
+		uint8_t& TDR() { return m_TDR; }		// Transmit data register;
+		uint8_t& RDR() { return m_RDR; }		// Receive data register;
+
 		void step(int cycles);
 
-		void fillRDR();
-		void drainTDR();
+		void markTransmitComplete();
+		void markReceiveStarting();
 
 		Signal<EventArgs> Accessing;
 		Signal<EventArgs> Accessed;
@@ -108,9 +112,6 @@ namespace EightBit {
 		Signal<EventArgs> Received;
 
 	private:
-		uint8_t& TDR() { return m_TDR; }	// Transmit data register;
-		uint8_t& RDR() { return m_RDR; }	// Receive data register;
-
 		uint8_t& status() { return m_status; }
 
 		bool selected();
@@ -119,8 +120,11 @@ namespace EightBit {
 
 		void step();
 
-		void drainRDR();
-		void fillTDR();
+		void startTransmit();
+		void markTransmitStarting();
+
+		void completeReceive();
+		void markReceiveComplete();
 
 		PinLevel m_RXDATA;
 		PinLevel m_TXDATA;
@@ -147,7 +151,7 @@ namespace EightBit {
 		// Control registers
 		int m_counterDivide;
 		int m_wordConfiguration;
-		int m_transmitterControl;
+		int m_transmitControl;
 		int m_receiveControl;
 
 		// Status registers
