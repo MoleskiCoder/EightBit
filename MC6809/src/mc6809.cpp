@@ -341,12 +341,12 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	case 0x1a:	addCycles(3);	CC() |= AM_immediate_byte();						break;		// OR (ORCC immediate)
 
 	// PSH
-	case 0x34:	addCycles(5);	psh(S(), AM_immediate_byte());							break;		// PSH (PSHS immediate)
-	case 0x36:	addCycles(5);	psh(U(), AM_immediate_byte());							break;		// PSH (PSHU immediate)
+	case 0x34:	addCycles(5);	psh(S(), AM_immediate_byte());						break;		// PSH (PSHS immediate)
+	case 0x36:	addCycles(5);	psh(U(), AM_immediate_byte());						break;		// PSH (PSHU immediate)
 
 	// PUL
-	case 0x35:	addCycles(5);	pul(S(), AM_immediate_byte());							break;		// PUL (PULS immediate)
-	case 0x37:	addCycles(5);	pul(U(), AM_immediate_byte());							break;		// PUL (PULU immediate)
+	case 0x35:	addCycles(5);	pul(S(), AM_immediate_byte());						break;		// PUL (PULS immediate)
+	case 0x37:	addCycles(5);	pul(U(), AM_immediate_byte());						break;		// PUL (PULU immediate)
 
 	// ROL
 	case 0x09:	addCycles(6);	BUS().write(rol(AM_direct_byte()));					break;		// ROL (direct)
