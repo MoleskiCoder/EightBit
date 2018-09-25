@@ -28,6 +28,12 @@ void Board::initialise() {
 	ACIA().Accessing.connect(std::bind(&Board::Acia_Accessing, this, std::placeholders::_1));
 	ACIA().Accessed.connect(std::bind(&Board::Acia_Accessed, this, std::placeholders::_1));
 
+	ACIA().Transmitting.connect(std::bind(&Board::Acia_Transmitting, this, std::placeholders::_1));
+	ACIA().Transmitted.connect(std::bind(&Board::Acia_Transmitted, this, std::placeholders::_1));
+
+	ACIA().Receiving.connect(std::bind(&Board::Acia_Receiving, this, std::placeholders::_1));
+	ACIA().Received.connect(std::bind(&Board::Acia_Received, this, std::placeholders::_1));
+
 	CPU().powerOn();
 	CPU().raise(CPU().NMI());
 	CPU().raise(CPU().FIRQ());
@@ -93,10 +99,24 @@ void Board::Cpu_ExecutedInstruction_Acia(EightBit::mc6809&) {
 
 void Board::Acia_Accessing(EightBit::EventArgs&) {
 	if (_kbhit()) {
-		ACIA().DATA() = _getch();
-		ACIA().fillRDR();
+		ACIA().RDR() = _getch();
+		ACIA().markReceiveStarting();
 	}
 }
 
 void Board::Acia_Accessed(EightBit::EventArgs&) {
+}
+
+void Board::Acia_Transmitting(EightBit::EventArgs&) {
+	std::cout << ACIA().TDR();
+	ACIA().markTransmitComplete();
+}
+
+void Board::Acia_Transmitted(EightBit::EventArgs&) {
+}
+
+void Board::Acia_Receiving(EightBit::EventArgs&) {
+}
+
+void Board::Acia_Received(EightBit::EventArgs&) {
 }
