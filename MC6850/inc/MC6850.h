@@ -99,6 +99,8 @@ namespace EightBit {
 
 		void step(int cycles);
 
+		bool selected();
+
 		void markTransmitComplete();
 		void markReceiveStarting();
 
@@ -113,8 +115,6 @@ namespace EightBit {
 
 	private:
 		uint8_t& status() { return m_status; }
-
-		bool selected();
 
 		void reset();
 

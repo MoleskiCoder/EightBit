@@ -78,10 +78,14 @@ EightBit::MemoryMapping Board::mapping(uint16_t address) {
 
 void Board::Bus_WritingByte_Acia(EightBit::EventArgs&) {
 	updateAciaPins(EightBit::Chip::Low);
+	if (ACIA().selected())
+		ACIA().DATA() = DATA();
 }
 
 void Board::Bus_ReadingByte_Acia(EightBit::EventArgs&) {
 	updateAciaPins(EightBit::Chip::High);
+	if (ACIA().selected())
+		poke(ADDRESS(), ACIA().DATA());
 }
 
 void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
