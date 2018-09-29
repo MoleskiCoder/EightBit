@@ -53,7 +53,7 @@ private:
 
 	// ACIA handling
 
-	void Bus_WritingByte_Acia(EightBit::EventArgs&);
+	void Bus_WrittenByte_Acia(EightBit::EventArgs&);
 	void Bus_ReadingByte_Acia(EightBit::EventArgs&);
 
 	void Cpu_ExecutedInstruction_Acia(EightBit::mc6809&);

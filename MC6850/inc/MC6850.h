@@ -49,24 +49,58 @@ namespace EightBit {
 		//	  *** Data bit is "don't case" in 7-bit plus parity modes
 
 		enum ControlRegisters {
-			CR0 = 0b1,
-			CR1 = 0b10,
-			CR2 = 0b100,
-			CR3 = 0b1000,
-			CR4 = 0b10000,
-			CR5 = 0b100000,
-			CR6 = 0b1000000,
-			CR7 = 0b10000000
+			CR0 =        0b1,	// Counter divide
+			CR1 =       0b10,	//		"
+			CR2 =      0b100,	// Word select
+			CR3 =     0b1000,	//		"
+			CR4 =    0b10000,	//		"
+			CR5 =   0b100000,	// Transmit control
+			CR6 =  0b1000000,	//		"
+			CR7 = 0b10000000	// Receive control
 		};
-		
+
+		// CR0 and CR1
+		enum CounterDivideSelect {
+			One			= 0b00,
+			Sixteen		= 0b01,
+			SixtyFour	= 0b10,
+			MasterReset	= 0b11
+		};
+
+		// CR2, CR3 and CR4
+		enum WordSelect {
+			SevenEvenTwo	= 0b000,
+			SevenOddTwo		= 0b001,
+			SevenEvenOne	= 0b010,
+			SevenOddOne		= 0b011,
+			EightTwo		= 0b100,
+			EightOne		= 0b101,
+			EightEvenOne	= 0b110,
+			EightOddOne		= 0b111,
+		};
+
+		// CR5 and CR6
+		enum TransmitterControl {
+			ReadyLowInterruptDisabled				= 0b00,
+			ReadyLowInterruptEnabled				= 0b01,
+			ReadyHighInterruptDisabled				= 0b10,
+			ReadyLowInterruptDisabledTransmitBreak	= 0b11,
+		};
+
+		// CR7
+		enum ReceiveControl {
+			ReceiveInterruptDisable = 0b0,
+			ReceiveInterruptEnable = 0b1,	// Triggers on: RDR full, overrun, DCD low -> high
+		};
+
 		enum StatusRegisters {
-			STATUS_RDRF	= 0b1,
-			STATUS_TDRE	= 0b10,
-			STATUS_DCD	= 0b100,
-			STATUS_CTS	= 0b1000,
-			STATUS_FE	= 0b10000,
-			STATUS_OVRN	= 0b100000,
-			STATUS_PE	= 0b1000000,
+			STATUS_RDRF	=        0b1,
+			STATUS_TDRE	=       0b10,
+			STATUS_DCD	=      0b100,
+			STATUS_CTS	=     0b1000,
+			STATUS_FE	=    0b10000,
+			STATUS_OVRN	=   0b100000,
+			STATUS_PE	=  0b1000000,
 			STATUS_IRQ	= 0b10000000,
 		};
 
@@ -149,10 +183,10 @@ namespace EightBit {
 		uint8_t m_data;
 
 		// Control registers
-		int m_counterDivide;
-		int m_wordConfiguration;
-		int m_transmitControl;
-		int m_receiveControl;
+		CounterDivideSelect m_counterDivide;
+		WordSelect m_wordSelect;
+		TransmitterControl m_transmitControl;
+		ReceiveControl m_receiveControl;
 
 		// Status registers
 		uint8_t m_status;

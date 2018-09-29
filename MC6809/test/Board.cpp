@@ -12,19 +12,29 @@ Board::Board(const Configuration& configuration)
 
 void Board::initialise() {
 
+	// Load our BASIC interpreter
 	const auto directory = m_configuration.getRomDirectory() + "\\";
-
 	loadHexFile(directory + "ExBasROM.hex");
 
-	if (m_configuration.isDebugMode()) {
-		CPU().ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
-		CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Debug, this, std::placeholders::_1));
-	}
+	// Get the CPU ready for action
+	CPU().powerOn();
+	CPU().raise(CPU().NMI());
+	CPU().raise(CPU().FIRQ());
+	CPU().reset();
 
-	WritingByte.connect(std::bind(&Board::Bus_WritingByte_Acia, this, std::placeholders::_1));
-	ReadingByte.connect(std::bind(&Board::Bus_ReadingByte_Acia, this, std::placeholders::_1));
-	CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Acia, this, std::placeholders::_1));
+	// Get the ACIA ready for action
+	ACIA().powerOn();
+	ACIA().lower(ACIA().RW());										// Write
+	ACIA().lower(ACIA().RS());										// Registers
+	ACIA().raise(ACIA().CS0());										// Chip select
+	ACIA().raise(ACIA().CS1());										//		"
+	ACIA().lower(ACIA().CS2());										//		"
+	ACIA().DATA() = EightBit::mc6850::CR0 | EightBit::mc6850::CR1;	// Master reset
 
+	// Get the reset out of the way...
+	ACIA().step(1);
+
+	// Once the reset has completed, we can wire the ACIA event handlers...
 	ACIA().Accessing.connect(std::bind(&Board::Acia_Accessing, this, std::placeholders::_1));
 	ACIA().Accessed.connect(std::bind(&Board::Acia_Accessed, this, std::placeholders::_1));
 
@@ -34,16 +44,16 @@ void Board::initialise() {
 	ACIA().Receiving.connect(std::bind(&Board::Acia_Receiving, this, std::placeholders::_1));
 	ACIA().Received.connect(std::bind(&Board::Acia_Received, this, std::placeholders::_1));
 
-	CPU().powerOn();
-	CPU().raise(CPU().NMI());
-	CPU().raise(CPU().FIRQ());
-	CPU().reset();
+	// Wire bus events...
+	WrittenByte.connect(std::bind(&Board::Bus_WrittenByte_Acia, this, std::placeholders::_1));
+	ReadingByte.connect(std::bind(&Board::Bus_ReadingByte_Acia, this, std::placeholders::_1));
 
-	ACIA().powerOn();
-	ACIA().RW() = EightBit::Chip::PinLevel::Low;	// Write
-	ACIA().RS() = EightBit::Chip::PinLevel::Low;	// Registers
-	EightBit::Processor::setFlag(ACIA().DATA(), EightBit::mc6850::CR0 | EightBit::mc6850::CR1);
-	ACIA().step(1);	// Get the reset out of the way...
+	// Wire CPU events
+	CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Acia, this, std::placeholders::_1));
+	if (m_configuration.isDebugMode()) {
+		CPU().ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
+		CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Debug, this, std::placeholders::_1));
+	}
 }
 
 void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809&) {
@@ -76,10 +86,10 @@ EightBit::MemoryMapping Board::mapping(uint16_t address) {
 	return { m_rom, 0xc000, EightBit::MemoryMapping::ReadOnly };
 }
 
-void Board::Bus_WritingByte_Acia(EightBit::EventArgs&) {
+void Board::Bus_WrittenByte_Acia(EightBit::EventArgs&) {
 	updateAciaPins(EightBit::Chip::Low);
 	if (ACIA().selected())
-		ACIA().DATA() = DATA();
+		ACIA().DATA() = peek(ADDRESS());
 }
 
 void Board::Bus_ReadingByte_Acia(EightBit::EventArgs&) {
@@ -91,10 +101,10 @@ void Board::Bus_ReadingByte_Acia(EightBit::EventArgs&) {
 void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
 	ACIA().RW() = rw;
 	ACIA().DATA() = DATA();
-	ACIA().RS() = ADDRESS().word & EightBit::Chip::Bit0 ? EightBit::Chip::PinLevel::High : EightBit::Chip::PinLevel::Low;
-	ACIA().CS0() = ADDRESS().word & EightBit::Chip::Bit15 ? EightBit::Chip::PinLevel::High : EightBit::Chip::PinLevel::Low;
-	ACIA().CS1() = ADDRESS().word & EightBit::Chip::Bit13 ? EightBit::Chip::PinLevel::High : EightBit::Chip::PinLevel::Low;
-	ACIA().CS2() = ADDRESS().word & EightBit::Chip::Bit14 ? EightBit::Chip::PinLevel::High : EightBit::Chip::PinLevel::Low;
+	ADDRESS().word & EightBit::Chip::Bit0 ? ACIA().raise(ACIA().RS()) : ACIA().lower(ACIA().RS());
+	ADDRESS().word & EightBit::Chip::Bit15 ? ACIA().raise(ACIA().CS0()) : ACIA().lower(ACIA().CS0());
+	ADDRESS().word & EightBit::Chip::Bit13 ? ACIA().raise(ACIA().CS1()) : ACIA().lower(ACIA().CS1());
+	ADDRESS().word & EightBit::Chip::Bit14 ? ACIA().raise(ACIA().CS2()) : ACIA().lower(ACIA().CS2());
 }
 
 void Board::Cpu_ExecutedInstruction_Acia(EightBit::mc6809&) {
