@@ -539,10 +539,10 @@ std::string EightBit::GameBoy::Disassembler::flags(uint8_t value) {
 		<< flag(value, LR35902::NF, "N")
 		<< flag(value, LR35902::HC, "H")
 		<< flag(value, LR35902::CF, "C")
-		<< flag(value, EightBit::Processor::Bit3, "+")
-		<< flag(value, EightBit::Processor::Bit2, "+")
-		<< flag(value, EightBit::Processor::Bit1, "+")
-		<< flag(value, EightBit::Processor::Bit0, "+");
+		<< flag(value, EightBit::Chip::Bit3, "+")
+		<< flag(value, EightBit::Chip::Bit2, "+")
+		<< flag(value, EightBit::Chip::Bit1, "+")
+		<< flag(value, EightBit::Chip::Bit0, "+");
 		return output.str();
 }
 

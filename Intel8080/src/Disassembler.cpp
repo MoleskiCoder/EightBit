@@ -448,11 +448,11 @@ std::string EightBit::Disassembler::flags(uint8_t value) {
 	output
 		<< flag(value, Intel8080::SF, "S")
 		<< flag(value, Intel8080::ZF, "Z")
-		<< flag(value, Processor::Bit5, "1", "0")
+		<< flag(value, Chip::Bit5, "1", "0")
 		<< flag(value, Intel8080::AC, "A")
-		<< flag(value, Processor::Bit3, "1", "0")
+		<< flag(value, Chip::Bit3, "1", "0")
 		<< flag(value, Intel8080::PF, "P")
-		<< flag(value, Processor::Bit1, "1", "0")
+		<< flag(value, Chip::Bit1, "1", "0")
 		<< flag(value, Intel8080::CF, "C");
 	return output.str();
 }

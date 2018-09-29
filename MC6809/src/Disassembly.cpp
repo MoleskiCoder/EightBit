@@ -655,16 +655,16 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 	std::ostringstream output;
 
 	const auto type = getByte(++m_address);
-	const auto r = RR((type & (Processor::Bit6 | Processor::Bit5)) >> 5);
+	const auto r = RR((type & (Chip::Bit6 | Chip::Bit5)) >> 5);
 
 	uint8_t byte = 0xff;
 	uint16_t word = 0xffff;
 
 	output << dump_ByteValue(type);
 
-	if (type & Processor::Bit7) {
-		const auto indirect = type & Processor::Bit4;
-		switch (type & Processor::Mask4) {
+	if (type & Chip::Bit7) {
+		const auto indirect = type & Chip::Bit4;
+		switch (type & Chip::Mask4) {
 		case 0b0000:	// ,R+
 			output
 				<< "\t" << mnemomic << "\t"
@@ -749,7 +749,7 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 		// EA = ,R + 5-bit offset
 		output
 			<< "\t" << mnemomic << "\t"
-			<< (int)Processor::signExtend(5, type & Processor::Mask5) << "," << r;
+			<< (int)Processor::signExtend(5, type & Chip::Mask5) << "," << r;
 	}
 
 	return output.str();
@@ -858,14 +858,14 @@ std::string EightBit::Disassembly::tfr(std::string mnemomic) {
 	std::ostringstream output;
 
 	const auto data = getByte(++m_address);
-	const auto reg1 = Processor::highNibble(data);
-	const auto reg2 = Processor::lowNibble(data);
+	const auto reg1 = Chip::highNibble(data);
+	const auto reg2 = Chip::lowNibble(data);
 
 	output
 		<< dump_ByteValue(data)
 		<< "\t" << mnemomic << "\t";
 
-	const bool type8 = !!(reg1 & Processor::Bit3);	// 8 bit?
+	const bool type8 = !!(reg1 & Chip::Bit3);	// 8 bit?
 	if (type8)
 		output << referenceTransfer8(reg1) << "," << referenceTransfer8(reg2);
 	else

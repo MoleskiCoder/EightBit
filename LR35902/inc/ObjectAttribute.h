@@ -19,13 +19,13 @@ namespace EightBit {
 			uint8_t pattern() const { return m_pattern; }
 			uint8_t flags() const { return m_flags; }
 
-			uint8_t priority() const { return flags() & Processor::Bit7; }
+			uint8_t priority() const { return flags() & Chip::Bit7; }
 
 			bool highPriority() const { return !!priority(); }
 			bool lowPriority() const { return !priority(); }
-			bool flipY() const { return !!(flags() & Processor::Bit6); }
-			bool flipX() const { return !!(flags() & Processor::Bit5); }
-			int palette() const { return (flags() & Processor::Bit4) >> 3; }
+			bool flipY() const { return !!(flags() & Chip::Bit6); }
+			bool flipX() const { return !!(flags() & Chip::Bit5); }
+			int palette() const { return (flags() & Chip::Bit4) >> 3; }
 
 		private:
 			uint8_t m_positionY;

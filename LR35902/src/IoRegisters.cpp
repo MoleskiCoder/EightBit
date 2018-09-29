@@ -44,14 +44,14 @@ void EightBit::GameBoy::IoRegisters::Bus_ReadingByte(EightBit::EventArgs) {
 					| ((int)!p11 << 1)
 					| ((int)!p12 << 2)
 					| ((int)!p13 << 3)
-					| Processor::Bit4 | Processor::Bit5
-					| Processor::Bit6 | Processor::Bit7);
+					| Chip::Bit4 | Chip::Bit5
+					| Chip::Bit6 | Chip::Bit7);
 			}
 			break;
 		case SB:
 			break;
 		case SC:
-			mask(port, Processor::Bit7 | Processor::Bit0);
+			mask(port, Chip::Bit7 | Chip::Bit0);
 			break;
 
 		// Timer control
@@ -60,19 +60,19 @@ void EightBit::GameBoy::IoRegisters::Bus_ReadingByte(EightBit::EventArgs) {
 		case TMA:
 			break;
 		case TAC:
-			mask(port, Processor::Mask3);
+			mask(port, Chip::Mask3);
 			break;
 
 		// Interrupt Flags
 		case IF:
-			mask(port, Processor::Mask5);
+			mask(port, Chip::Mask5);
 			break;
 
 		// LCD Display Registers
 		case LCDC:
 			break;
 		case STAT:
-			mask(port, Processor::Mask7);
+			mask(port, Chip::Mask7);
 			break;
 		case SCY:
 		case SCX:
@@ -102,8 +102,8 @@ void EightBit::GameBoy::IoRegisters::Bus_WrittenByte(EightBit::EventArgs) {
 	switch (port) {
 
 	case P1:
-		m_scanP14 = (value & Processor::Bit4) == 0;
-		m_scanP15 = (value & Processor::Bit5) == 0;
+		m_scanP14 = (value & Chip::Bit4) == 0;
+		m_scanP15 = (value & Chip::Bit5) == 0;
 		break;
 
 	case SB:		// R/W
@@ -181,7 +181,7 @@ int EightBit::GameBoy::IoRegisters::timerClockTicks() {
 }
 
 int EightBit::GameBoy::IoRegisters::timerClock() {
-	return peek(TAC) & Processor::Mask2;
+	return peek(TAC) & Chip::Mask2;
 }
 
 bool EightBit::GameBoy::IoRegisters::timerEnabled() {
@@ -189,7 +189,7 @@ bool EightBit::GameBoy::IoRegisters::timerEnabled() {
 }
 
 bool EightBit::GameBoy::IoRegisters::timerDisabled() {
-	return (peek(TAC) & Processor::Bit2) == 0;
+	return (peek(TAC) & Chip::Bit2) == 0;
 }
 
 void EightBit::GameBoy::IoRegisters::incrementDIV(int cycles) {
@@ -199,11 +199,11 @@ void EightBit::GameBoy::IoRegisters::incrementDIV(int cycles) {
 
 void EightBit::GameBoy::IoRegisters::incrementTIMA() {
 	uint16_t updated = peek(TIMA) + 1;
-	if (updated & Processor::Bit8) {
+	if (updated & Chip::Bit8) {
 		triggerInterrupt(TimerOverflow);
 		updated = peek(TMA);
 	}
-	poke(TIMA, updated & Processor::Mask8);
+	poke(TIMA, updated & Chip::Mask8);
 }
 
 void EightBit::GameBoy::IoRegisters::incrementLY() {
@@ -215,7 +215,7 @@ void EightBit::GameBoy::IoRegisters::resetLY() {
 }
 
 void EightBit::GameBoy::IoRegisters::updateLcdStatusMode(int mode) {
-	const auto current = peek(STAT) & ~Processor::Mask2;
+	const auto current = peek(STAT) & ~Chip::Mask2;
 	poke(STAT, current | mode);
 	DisplayStatusModeUpdated.fire(mode);
 }

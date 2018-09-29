@@ -80,22 +80,22 @@ namespace EightBit {
 
 			// IF and IE flags
 			enum Interrupts {
-				VerticalBlank = Processor::Bit0,			// VBLANK
-				DisplayControlStatus = Processor::Bit1,		// LCDC Status
-				TimerOverflow = Processor::Bit2,			// Timer Overflow
-				SerialTransfer = Processor::Bit3,			// Serial Transfer
-				KeypadPressed = Processor::Bit4				// Hi-Lo transition of P10-P13
+				VerticalBlank = Chip::Bit0,			// VBLANK
+				DisplayControlStatus = Chip::Bit1,	// LCDC Status
+				TimerOverflow = Chip::Bit2,			// Timer Overflow
+				SerialTransfer = Chip::Bit3,		// Serial Transfer
+				KeypadPressed = Chip::Bit4			// Hi-Lo transition of P10-P13
 			};
 
 			enum LcdcControl {
-				DisplayBackground = Processor::Bit0,
-				ObjectEnable = Processor::Bit1,
-				ObjectBlockCompositionSelection = Processor::Bit2,
-				BackgroundCodeAreaSelection = Processor::Bit3,
-				BackgroundCharacterDataSelection = Processor::Bit4,
-				WindowEnable = Processor::Bit5,
-				WindowCodeAreaSelection = Processor::Bit6,
-				LcdEnable = Processor::Bit7
+				DisplayBackground = Chip::Bit0,
+				ObjectEnable = Chip::Bit1,
+				ObjectBlockCompositionSelection = Chip::Bit2,
+				BackgroundCodeAreaSelection = Chip::Bit3,
+				BackgroundCharacterDataSelection = Chip::Bit4,
+				WindowEnable = Chip::Bit5,
+				WindowCodeAreaSelection = Chip::Bit6,
+				LcdEnable = Chip::Bit7
 			};
 
 			enum LcdStatusMode {

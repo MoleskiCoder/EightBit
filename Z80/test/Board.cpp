@@ -39,7 +39,7 @@ void Board::initialise() {
 }
 
 void Board::Cpu_ExecutingInstruction_Cpm(EightBit::Z80& cpu) {
-	if (UNLIKELY(EightBit::Processor::lowered(cpu.HALT())))
+	if (UNLIKELY(EightBit::Chip::lowered(cpu.HALT())))
 		CPU().powerOff();
 	switch (cpu.PC().word) {
 	case 0x0:	// CP/M warm start

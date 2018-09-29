@@ -57,7 +57,7 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(EightBit::EventArgs) {
 		if (m_banked && m_higherRomBank) {
 			assert((address >= 0x2000) && (address < 0x4000));
 			assert((value > 0) && (value < 0x20));
-			m_romBank = value & Processor::Mask5;
+			m_romBank = value & Chip::Mask5;
 		}
 		break;
 	case 0x4000:
@@ -69,7 +69,7 @@ void EightBit::GameBoy::Bus::Bus_WrittenByte(EightBit::EventArgs) {
 	case 0x6000:
 		// Register 3: ROM/RAM change
 		if (m_banked) {
-			switch (value & Processor::Mask1) {
+			switch (value & Chip::Mask1) {
 			case 0:
 				m_higherRomBank = true;
 				m_ramBankSwitching = false;
@@ -236,12 +236,12 @@ int EightBit::GameBoy::Bus::runRasterLine(int limit) {
 	int count = 0;
 	if (m_enabledLCD) {
 
-		if ((IO().peek(IoRegisters::STAT) & Processor::Bit6) && (IO().peek(IoRegisters::LYC) == IO().peek(IoRegisters::LY)))
+		if ((IO().peek(IoRegisters::STAT) & Chip::Bit6) && (IO().peek(IoRegisters::LYC) == IO().peek(IoRegisters::LY)))
 			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
 
 		// Mode 2, OAM unavailable
 		IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::SearchingOamRam);
-		if (IO().peek(IoRegisters::STAT) & Processor::Bit5)
+		if (IO().peek(IoRegisters::STAT) & Chip::Bit5)
 			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
 		count += CPU().run(80);	// ~19us
 
@@ -251,7 +251,7 @@ int EightBit::GameBoy::Bus::runRasterLine(int limit) {
 
 		// Mode 0
 		IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::HBlank);
-		if (IO().peek(IoRegisters::STAT) & Processor::Bit3)
+		if (IO().peek(IoRegisters::STAT) & Chip::Bit3)
 			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
 		count += CPU().run(limit - count);	// ~48.6us
 
@@ -289,7 +289,7 @@ int EightBit::GameBoy::Bus::runVerticalBlankLines(int lines) {
 
 	if (m_enabledLCD) {
 		IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::VBlank);
-		if (IO().peek(IoRegisters::STAT) & Processor::Bit4)
+		if (IO().peek(IoRegisters::STAT) & Chip::Bit4)
 			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
 		IO().triggerInterrupt(IoRegisters::Interrupts::VerticalBlank);
 	}

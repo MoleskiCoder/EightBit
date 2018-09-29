@@ -11,17 +11,6 @@
 namespace EightBit {
 	class Processor : public Chip {
 	public:
-		static void clearFlag(uint8_t& f, const int flag) { f &= ~flag; }
-		static void setFlag(uint8_t& f, const int flag) { f |= flag; }
-
-		static void setFlag(uint8_t& f, const int flag, const int condition) { setFlag(f, flag, !!condition); }
-		static void setFlag(uint8_t& f, const int flag, const uint32_t condition) { setFlag(f, flag, !!condition); }
-		static void setFlag(uint8_t& f, const int flag, const bool condition) { condition ? setFlag(f, flag) : clearFlag(f, flag); }
-
-		static void clearFlag(uint8_t& f, const int flag, const int condition) { clearFlag(f, flag, !!condition); }
-		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) { clearFlag(f, flag, !!condition); }
-		static void clearFlag(uint8_t& f, const int flag, const bool condition) { setFlag(f, flag, !condition); }
-
 		// b: number of bits representing the number in x
 		// x: sign extend this b-bit number to r
 		static int8_t signExtend(int b, uint8_t x);
