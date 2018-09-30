@@ -32,7 +32,7 @@ void Board::initialise() {
 	ACIA().DATA() = EightBit::mc6850::CR0 | EightBit::mc6850::CR1;	// Master reset
 
 	// Get the reset out of the way...
-	ACIA().step(1);
+	ACIA().access();
 
 	// Once the reset has completed, we can wire the ACIA event handlers...
 	ACIA().Accessing.connect(std::bind(&Board::Acia_Accessing, this, std::placeholders::_1));
@@ -63,13 +63,7 @@ void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809&) {
 
 void Board::Cpu_ExecutedInstruction_Debug(EightBit::mc6809&) {
 	if (!m_ignoreDisassembly)
-		std::cout << m_disassembler.trace(m_disassembleAt) << std::endl;
-}
-
-void Board::Cpu_ExecutedInstruction_die(EightBit::mc6809&) {
-	static uint64_t instructions = 0UL;
-	if (++instructions > 90000000)
-		CPU().powerOff();
+		std::cout << m_disassembler.trace(m_disassembleAt) << "	" << ACIA().dumpStatus() << std::endl;
 }
 
 EightBit::MemoryMapping Board::mapping(uint16_t address) {
@@ -88,13 +82,15 @@ EightBit::MemoryMapping Board::mapping(uint16_t address) {
 
 void Board::Bus_WrittenByte_Acia(EightBit::EventArgs&) {
 	updateAciaPins(EightBit::Chip::Low);
-	if (ACIA().selected())
+	if (ACIA().selected()) {
 		ACIA().DATA() = peek(ADDRESS());
+		ACIA().access();
+	}
 }
 
 void Board::Bus_ReadingByte_Acia(EightBit::EventArgs&) {
 	updateAciaPins(EightBit::Chip::High);
-	if (ACIA().selected())
+	if (ACIA().access())
 		poke(ADDRESS(), ACIA().DATA());
 }
 
@@ -108,14 +104,14 @@ void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
 }
 
 void Board::Cpu_ExecutedInstruction_Acia(EightBit::mc6809&) {
-	ACIA().step(CPU().cycles());
+	if (_kbhit()) {
+		ACIA().RDR() = _getch();
+		 _getch();	// XXXX Why do I need the second getch??
+		ACIA().markReceiveStarting();
+	}
 }
 
 void Board::Acia_Accessing(EightBit::EventArgs&) {
-	if (_kbhit()) {
-		ACIA().RDR() = _getch();
-		ACIA().markReceiveStarting();
-	}
 }
 
 void Board::Acia_Accessed(EightBit::EventArgs&) {
