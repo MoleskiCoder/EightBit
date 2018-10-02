@@ -71,5 +71,11 @@ namespace EightBit {
 		std::string referenceTransfer8(int specifier);
 		std::string referenceTransfer16(int specifier);
 		std::string tfr(std::string mnemomic);
+
+		//
+
+		std::string stackS(std::string mnemomic);
+		std::string stackU(std::string mnemomic);
+		std::string stackX(std::string mnemomic, std::string upon);
 	};
 }

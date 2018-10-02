@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Disassembly.h"
 
+#include <vector>
 #include <sstream>
 #include <iomanip>
 #include <functional>
@@ -365,12 +366,12 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0x1a:	output << AM_immediate_byte("ORCC");	break;		// OR (ORCC immediate)
 
 	// PSH
-	case 0x34:	output << AM_immediate_byte("PSHS");	break;		// PSH (PSHS immediate)
-	case 0x36:	output << AM_immediate_byte("PSHU");	break;		// PSH (PSHU immediate)
+	case 0x34:	output << stackS("PSHS");				break;		// PSH (PSHS immediate)
+	case 0x36:	output << stackU("PSHU");				break;		// PSH (PSHU immediate)
 
 	// PUL
-	case 0x35:	output << AM_immediate_byte("PULS");	break;		// PUL (PULS immediate)
-	case 0x37:	output << AM_immediate_byte("PULU");	break;		// PUL (PULU immediate)
+	case 0x35:	output << stackS("PULS");				break;		// PUL (PULS immediate)
+	case 0x37:	output << stackU("PULU");				break;		// PUL (PULU immediate)
 
 	// ROL
 	case 0x09:	output << Address_direct("ROL");		break;		// ROL (direct)
@@ -883,4 +884,45 @@ uint8_t EightBit::Disassembly::getByte(uint16_t address) {
 uint16_t EightBit::Disassembly::getWord(uint16_t address) {
 	return CPU().peekWord(address).word;
 }
- 
+
+//
+
+std::string EightBit::Disassembly::stackS(std::string mnemomic) {
+	return stackX(mnemomic, "U");
+}
+
+std::string EightBit::Disassembly::stackU(std::string mnemomic) {
+	return stackX(mnemomic, "S");
+}
+
+std::string EightBit::Disassembly::stackX(std::string mnemomic, std::string upon) {
+	const auto data = getByte(++m_address);
+	std::ostringstream output;
+	output
+		<< dump_ByteValue(data)
+		<< "\t" << mnemomic << "\t";
+	std::vector<std::string> registers;
+	if (data & Chip::Bit0)
+		registers.push_back("CC");
+	if (data & Chip::Bit1)
+		registers.push_back("A");
+	if (data & Chip::Bit2)
+		registers.push_back("B");
+	if (data & Chip::Bit3)
+		registers.push_back("DP");
+	if (data & Chip::Bit4)
+		registers.push_back("X");
+	if (data & Chip::Bit5)
+		registers.push_back("Y");
+	if (data & Chip::Bit6)
+		registers.push_back(upon);
+	if (data & Chip::Bit7)
+		registers.push_back("PC");
+	for (int i = 0; i < registers.size(); ++i) {
+		const bool last = i == registers.size() - 1;
+		output << registers[i];
+		if (!last)
+			output << ",";
+	}
+	return output.str();
+}
