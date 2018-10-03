@@ -186,15 +186,15 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// ASL/LSL
 	case 0x08:	output << Address_direct("ASL");		break;		// ASL (direct)
-	case 0x48:	output << "\tASLA";						break;		// ASL (ASLA inherent)
-	case 0x58:	output << "\tASLB";						break;		// ASL (ASLB inherent)
+	case 0x48:	output << "\tASLA\t";					break;		// ASL (ASLA inherent)
+	case 0x58:	output << "\tASLB\t";					break;		// ASL (ASLB inherent)
 	case 0x68:	output << Address_indexed("ASL");		break;		// ASL (indexed)
 	case 0x78:	output << Address_extended("ASL");		break;		// ASL (extended)
 
 	// ASR
 	case 0x07:	output << Address_direct("ASR");		break;		// ASR (direct)
-	case 0x47:	output << "\tASRA";						break;		// ASR (ASRA inherent)
-	case 0x57:	output << "\tASRB";						break;		// ASR (ASRB inherent)
+	case 0x47:	output << "\tASRA\t";					break;		// ASR (ASRA inherent)
+	case 0x57:	output << "\tASRB\t";					break;		// ASR (ASRB inherent)
 	case 0x67:	output << Address_indexed("ASR");		break;		// ASR (indexed)
 	case 0x77:	output << Address_extended("ASR");		break;		// ASR (extended)
 
@@ -211,8 +211,8 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// CLR
 	case 0x0f:	output << Address_direct("CLR");		break;		// CLR (direct)
-	case 0x4f:	output << "\tCLRA";						break;		// CLR (CLRA implied)
-	case 0x5f:	output << "\tCLRB";						break;		// CLR (CLRB implied)
+	case 0x4f:	output << "\tCLRA\t";					break;		// CLR (CLRA implied)
+	case 0x5f:	output << "\tCLRB\t";					break;		// CLR (CLRB implied)
 	case 0x6f:	output << Address_indexed("CLR");		break;		// CLR (indexed)
 	case 0x7f:	output << Address_extended("CLR");		break;		// CLR (extended)
 
@@ -238,8 +238,8 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// COM
 	case 0x03:	output << Address_direct("COM");		break;		// COM (direct)
-	case 0x43:	output << "\tCOMA";						break;		// COM (COMA inherent)
-	case 0x53:	output << "\tCOMB";						break;		// COM (COMB inherent)
+	case 0x43:	output << "\tCOMA\t";					break;		// COM (COMA inherent)
+	case 0x53:	output << "\tCOMB\t";					break;		// COM (COMB inherent)
 	case 0x63:	output << Address_indexed("COM");		break;		// COM (indexed)
 	case 0x73:	output << Address_extended("COM");		break;		// COM (extended)
 
@@ -251,8 +251,8 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// DEC
 	case 0x0a:	output << Address_direct("DEC");		break;		// DEC (direct)
-	case 0x4a:	output << "\tDECA";						break;		// DEC (DECA inherent)
-	case 0x5a:	output << "\tDECB";						break;		// DEC (DECB inherent)
+	case 0x4a:	output << "\tDECA\t";					break;		// DEC (DECA inherent)
+	case 0x5a:	output << "\tDECB\t";					break;		// DEC (DECB inherent)
 	case 0x6a:	output << Address_indexed("DEC");		break;		// DEC (indexed)
 	case 0x7a:	output << Address_extended("DEC");		break;		// DEC (extended)
 
@@ -275,8 +275,8 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// INC
 	case 0x0c:	output << Address_direct("INC");		break;		// INC (direct)
-	case 0x4c:	output << "\tINCA";;					break;		// INC (INCA inherent)
-	case 0x5c:	output << "\tINCB";;					break;		// INC (INCB inherent)
+	case 0x4c:	output << "\tINCA\t";;					break;		// INC (INCA inherent)
+	case 0x5c:	output << "\tINCB\t";;					break;		// INC (INCB inherent)
 	case 0x6c:	output << Address_indexed("INC");		break;		// INC (indexed)
 	case 0x7c:	output << Address_extended("INC");		break;		// INC (extended)
 
@@ -330,23 +330,23 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 
 	// LSR
 	case 0x04:	output << Address_direct("LSR");		break;		// LSR (direct)
-	case 0x44:	output << "\tLSRA";						break;		// LSR (LSRA inherent)
-	case 0x54:	output << "\tLSRB";;					break;		// LSR (LSRB inherent)
+	case 0x44:	output << "\tLSRA\t";					break;		// LSR (LSRA inherent)
+	case 0x54:	output << "\tLSRB\t";					break;		// LSR (LSRB inherent)
 	case 0x64:	output << Address_indexed("LSR");		break;		// LSR (indexed)
 	case 0x74:	output << Address_extended("LSR");		break;		// LSR (extended)
 
 	// MUL
-	case 0x3d:	output << "\tMUL";;						break;		// MUL (inherent)
+	case 0x3d:	output << "\tMUL\t";					break;		// MUL (inherent)
 
 	// NEG
 	case 0x00:	output << Address_direct("NEG");		break;		// NEG (direct)
-	case 0x40:	output << "\tNEGA";						break;		// NEG (NEGA, inherent)
-	case 0x50:	output << "\tNEGB";						break;		// NEG (NEGB, inherent)
+	case 0x40:	output << "\tNEGA\t";					break;		// NEG (NEGA, inherent)
+	case 0x50:	output << "\tNEGB\t";					break;		// NEG (NEGB, inherent)
 	case 0x60:	output << Address_indexed("NEG");		break;		// NEG (indexed)
 	case 0x70:	output << Address_extended("NEG");		break;		// NEG (extended)
 
 	// NOP
-	case 0x12:	output << "\tNOP";						break;		// NOP (inherent)
+	case 0x12:	output << "\tNOP\t";					break;		// NOP (inherent)
 
 	// OR
 
@@ -366,32 +366,32 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0x1a:	output << AM_immediate_byte("ORCC");	break;		// OR (ORCC immediate)
 
 	// PSH
-	case 0x34:	output << stackS("PSHS");				break;		// PSH (PSHS immediate)
-	case 0x36:	output << stackU("PSHU");				break;		// PSH (PSHU immediate)
+	case 0x34:	output << pshS();						break;		// PSH (PSHS immediate)
+	case 0x36:	output << pshU();						break;		// PSH (PSHU immediate)
 
 	// PUL
-	case 0x35:	output << stackS("PULS");				break;		// PUL (PULS immediate)
-	case 0x37:	output << stackU("PULU");				break;		// PUL (PULU immediate)
+	case 0x35:	output << pulS();						break;		// PUL (PULS immediate)
+	case 0x37:	output << pulU();						break;		// PUL (PULU immediate)
 
 	// ROL
 	case 0x09:	output << Address_direct("ROL");		break;		// ROL (direct)
-	case 0x49:	output << "\tROLA";						break;		// ROL (ROLA inherent)
-	case 0x59:	output << "\tROLB";						break;		// ROL (ROLB inherent)
+	case 0x49:	output << "\tROLA\t";					break;		// ROL (ROLA inherent)
+	case 0x59:	output << "\tROLB\t";					break;		// ROL (ROLB inherent)
 	case 0x69:	output << Address_indexed("ROL");		break;		// ROL (indexed)
 	case 0x79:	output << Address_extended("ROL");		break;		// ROL (extended)
 
 	// ROR
 	case 0x06:	output << Address_direct("ROR");		break;		// ROR (direct)
-	case 0x46:	output << "\tRORA";						break;		// ROR (RORA inherent)
-	case 0x56:	output << "\tRORB";						break;		// ROR (RORB inherent)
+	case 0x46:	output << "\tRORA\t";					break;		// ROR (RORA inherent)
+	case 0x56:	output << "\tRORB\t";					break;		// ROR (RORB inherent)
 	case 0x66:	output << Address_indexed("ROR");		break;		// ROR (indexed)
 	case 0x76:	output << Address_extended("ROR");		break;		// ROR (extended)
 
 	// RTI
-	case 0x3B:	output << "\tRTI";						break;		// RTI (inherent)
+	case 0x3B:	output << "\tRTI\t";					break;		// RTI (inherent)
 
 	// RTS
-	case 0x39:	output << "\tRTS";;						break;		// RTS (inherent)
+	case 0x39:	output << "\tRTS\t";					break;		// RTS (inherent)
 
 	// SBC
 
@@ -408,7 +408,7 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0xf2:	output << Address_extended("SBCB");		break;		// SBC (SBCB extended)
 
 	// SEX
-	case 0x1d:	output << "\tSEX";						break;		// SEX (inherent)
+	case 0x1d:	output << "\tSEX\t";					break;		// SEX (inherent)
 
 	// ST
 
@@ -458,18 +458,18 @@ std::string EightBit::Disassembly::disassembleUnprefixed() {
 	case 0xb3:	output << Address_extended("SUBD");		break;		// SUB (SUBD extended)
 
 	// SWI
-	case 0x3f:	output << "\tSWI";						break;		// SWI (inherent)
+	case 0x3f:	output << "\tSWI\t";					break;		// SWI (inherent)
 
 	// SYNC
-	case 0x13:	output << "\tSYNC";						break;		// SYNC (inherent)
+	case 0x13:	output << "\tSYNC\t";					break;		// SYNC (inherent)
 
 	// TFR
 	case 0x1f:	output << tfr("TFR");					break;		// TFR (immediate)
 
 	// TST
 	case 0x0d:	output << Address_direct("TST");		break;		// TST (direct)
-	case 0x4d:	output << "\tTSTA";						break;		// TST (TSTA inherent)
-	case 0x5d:	output << "\tTSTB";						break;		// TST (TSTB inherent)
+	case 0x4d:	output << "\tTSTA\t";					break;		// TST (TSTA inherent)
+	case 0x5d:	output << "\tTSTB\t";					break;		// TST (TSTB inherent)
 	case 0x6d:	output << Address_indexed("TST");		break;		// TST (indexed)
 	case 0x7d:	output << Address_extended("TST");		break;		// TST (extended)
 
@@ -569,7 +569,7 @@ std::string EightBit::Disassembly::disassemble10() {
 	case 0xbf:	output << Address_extended("STY");		break;		// ST (STY extended)
 
 	// SWI
-	case 0x3f:	output << "\tSWI2";;					break;		// SWI (SWI2 inherent)
+	case 0x3f:	output << "\tSWI2\t";					break;		// SWI (SWI2 inherent)
 
 	default:
 		UNREACHABLE;
@@ -604,7 +604,7 @@ std::string EightBit::Disassembly::disassemble11() {
 	case 0xbc:	output << Address_extended("CMPS");		break;		// CMP (CMPS, extended)
 
 	// SWI
-	case 0x3f:	output << "\tSWI3";						break;		// SWI (SWI3 inherent)
+	case 0x3f:	output << "\tSWI3\t";					break;		// SWI (SWI3 inherent)
 
 	default:
 		UNREACHABLE;
@@ -887,15 +887,23 @@ uint16_t EightBit::Disassembly::getWord(uint16_t address) {
 
 //
 
-std::string EightBit::Disassembly::stackS(std::string mnemomic) {
-	return stackX(mnemomic, "U");
+std::string EightBit::Disassembly::pulS() {
+	return pulX("PULS", "U");
 }
 
-std::string EightBit::Disassembly::stackU(std::string mnemomic) {
-	return stackX(mnemomic, "S");
+std::string EightBit::Disassembly::pulU() {
+	return pulX("PULU", "S");
 }
 
-std::string EightBit::Disassembly::stackX(std::string mnemomic, std::string upon) {
+std::string EightBit::Disassembly::pshS() {
+	return pshX("PSHS", "U");
+}
+
+std::string EightBit::Disassembly::pshU() {
+	return pshX("PSHU", "S");
+}
+
+std::string EightBit::Disassembly::pulX(std::string mnemomic, std::string upon) {
 	const auto data = getByte(++m_address);
 	std::ostringstream output;
 	output
@@ -918,6 +926,38 @@ std::string EightBit::Disassembly::stackX(std::string mnemomic, std::string upon
 		registers.push_back(upon);
 	if (data & Chip::Bit7)
 		registers.push_back("PC");
+	for (int i = 0; i < registers.size(); ++i) {
+		const bool last = i == registers.size() - 1;
+		output << registers[i];
+		if (!last)
+			output << ",";
+	}
+	return output.str();
+}
+
+std::string EightBit::Disassembly::pshX(std::string mnemomic, std::string upon) {
+	const auto data = getByte(++m_address);
+	std::ostringstream output;
+	output
+		<< dump_ByteValue(data)
+		<< "\t" << mnemomic << "\t";
+	std::vector<std::string> registers;
+	if (data & Chip::Bit7)
+		registers.push_back("PC");
+	if (data & Chip::Bit6)
+		registers.push_back(upon);
+	if (data & Chip::Bit5)
+		registers.push_back("Y");
+	if (data & Chip::Bit4)
+		registers.push_back("X");
+	if (data & Chip::Bit3)
+		registers.push_back("DP");
+	if (data & Chip::Bit2)
+		registers.push_back("B");
+	if (data & Chip::Bit1)
+		registers.push_back("A");
+	if (data & Chip::Bit0)
+		registers.push_back("CC");
 	for (int i = 0; i < registers.size(); ++i) {
 		const bool last = i == registers.size() - 1;
 		output << registers[i];

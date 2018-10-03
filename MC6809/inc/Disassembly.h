@@ -74,8 +74,11 @@ namespace EightBit {
 
 		//
 
-		std::string stackS(std::string mnemomic);
-		std::string stackU(std::string mnemomic);
-		std::string stackX(std::string mnemomic, std::string upon);
+		std::string pulS();
+		std::string pulU();
+		std::string pshS();
+		std::string pshU();
+		std::string pulX(std::string mnemomic, std::string upon);
+		std::string pshX(std::string mnemomic, std::string upon);
 	};
 }
