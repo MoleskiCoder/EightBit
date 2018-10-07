@@ -206,14 +206,19 @@ namespace EightBit {
 		void adjustBorrow(register16_t datum) { adjustBorrow(datum.word); }
 
 		void adjustOverflow(uint8_t before, uint8_t data, uint8_t after) {
-			setFlag(CC(), VF, (before ^ data) & (before ^ after) & Bit7);
+			setFlag(CC(), VF, !!((before ^ data ^ after ^ (after >> 1)) & Bit7));
 		}
 
 		void adjustOverflow(uint16_t before, uint16_t data, uint16_t after) {
-			setFlag(CC(), VF, (before ^ data) & (before ^ after) & Bit15);
+			setFlag(CC(), VF, !!((before ^ data ^ after ^ (after >> 1)) & Bit15));
 		}
+
 		void adjustOverflow(register16_t before, register16_t data, register16_t after) {
 			adjustOverflow(before.word, data.word, after.word);
+		}
+
+		void adjustHalfCarry(uint8_t before, uint8_t data, uint8_t after) {
+			setFlag(CC(), HF, !!((before ^ data ^ after) & Bit4));
 		}
 
 		void adjustAddition(uint8_t before, uint8_t data, register16_t after) {
@@ -221,6 +226,7 @@ namespace EightBit {
 			adjustNZ(result);
 			adjustCarry(after);
 			adjustOverflow(before, data, result);
+			adjustHalfCarry(before, data, result);
 		}
 
 		void adjustAddition(uint16_t before, uint16_t data, uint32_t after) {

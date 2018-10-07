@@ -4,7 +4,7 @@
 // Using examples from 6809 Assembly Language Programming, by Lance A. Leventhal
 // Just test the basics...
 
-TEST_CASE("Add Accumulator B to Index Register X Unsigned ", "[ABX]") {
+TEST_CASE("Add Accumulator B to Index Register X Unsigned", "[ABX]") {
 
 	Board board;
 	board.initialise();
@@ -17,5 +17,29 @@ TEST_CASE("Add Accumulator B to Index Register X Unsigned ", "[ABX]") {
 		cpu.X() = 0x1097;
 		cpu.step();
 		REQUIRE(cpu.X() == 0x111b);
+		REQUIRE(cpu.cycles() == 3);
+    }
+}
+
+TEST_CASE("Add Memory Plus Carry to Accumulator A", "[ADC][ADCA]") {
+
+	Board board;
+	board.initialise();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+    SECTION("Immediate (byte)") {
+		board.poke(0, 0x89);
+		board.poke(1, 0x7c);
+		EightBit::Chip::setFlag(cpu.CC(), EightBit::mc6809::CF);
+		cpu.A() = 0x3a;
+		cpu.step();
+		REQUIRE(cpu.A() == 0xb7);
+		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::HF) != 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
+		REQUIRE(cpu.cycles() == 2);
     }
 }
