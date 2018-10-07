@@ -142,3 +142,23 @@ TEST_CASE("Bit Test", "[BIT][BITA]") {
 		REQUIRE(cpu.cycles() == 2);
     }
 }
+
+TEST_CASE("Clear Accumulator or Memory", "[CLR][CLRA]") {
+
+	Board board;
+	board.initialise();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+    SECTION("Implied") {
+		board.poke(0, 0x4f);
+		cpu.A() = 0x43;
+		cpu.step();
+		REQUIRE(cpu.A() == 0x00);
+		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) != 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
+		REQUIRE(cpu.cycles() == 2);
+    }
+}
