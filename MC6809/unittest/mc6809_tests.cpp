@@ -123,3 +123,22 @@ TEST_CASE("Shift Accumulator or Memory Byte Right", "[ASR][ASRA]") {
 		REQUIRE(cpu.cycles() == 2);
     }
 }
+
+TEST_CASE("Bit Test", "[BIT][BITA]") {
+
+	Board board;
+	board.initialise();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+    SECTION("Immediate (byte)") {
+		board.poke(0, 0x85);
+		board.poke(1, 0xe0);
+		cpu.A() = 0xa6;
+		cpu.step();
+		REQUIRE(cpu.A() == 0xa6);
+		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
+		REQUIRE(cpu.cycles() == 2);
+    }
+}
