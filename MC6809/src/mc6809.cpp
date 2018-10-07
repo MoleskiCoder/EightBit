@@ -783,8 +783,10 @@ uint8_t EightBit::mc6809::asl(uint8_t operand) {
 }
 
 uint8_t EightBit::mc6809::asr(uint8_t operand) {
-	setFlag(CC(), CF, operand & Bit7);
-	adjustNZ(operand >>= 1);
+	setFlag(CC(), CF, operand & Bit0);
+	operand >>= 1;
+	operand |= Bit7;
+	adjustNZ(operand);
 	return operand;
 }
 

@@ -104,3 +104,22 @@ TEST_CASE("Shift Accumulator or Memory Byte Left", "[ASL][ASLA]") {
 		REQUIRE(cpu.cycles() == 2);
     }
 }
+
+TEST_CASE("Shift Accumulator or Memory Byte Right", "[ASR][ASRA]") {
+
+	Board board;
+	board.initialise();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+    SECTION("Inherent") {
+		board.poke(0, 0x47);
+		cpu.A() = 0xcb;
+		cpu.step();
+		REQUIRE(cpu.A() == 0xe5);
+		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
+		REQUIRE(cpu.cycles() == 2);
+    }
+}
