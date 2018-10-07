@@ -85,3 +85,22 @@ TEST_CASE("Logical AND Accumulator", "[AND][ANDA]") {
 		REQUIRE(cpu.cycles() == 2);
     }
 }
+
+TEST_CASE("Shift Accumulator or Memory Byte Left", "[ASL][ASLA]") {
+
+	Board board;
+	board.initialise();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+    SECTION("Inherent") {
+		board.poke(0, 0x48);
+		cpu.A() = 0x7a;
+		cpu.step();
+		REQUIRE(cpu.A() == 0xf4);
+		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
+		REQUIRE(cpu.cycles() == 2);
+    }
+}
