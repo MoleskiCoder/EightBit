@@ -43,3 +43,26 @@ TEST_CASE("Add Memory Plus Carry to Accumulator A", "[ADC][ADCA]") {
 		REQUIRE(cpu.cycles() == 2);
     }
 }
+
+TEST_CASE("Add Memory to Accumulator A", "[ADD][ADDA]") {
+
+	Board board;
+	board.initialise();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+    SECTION("Immediate (byte)") {
+		board.poke(0, 0x8b);
+		board.poke(1, 0x8b);
+		EightBit::Chip::setFlag(cpu.CC(), EightBit::mc6809::CF);
+		cpu.A() = 0x24;
+		cpu.step();
+		REQUIRE(cpu.A() == 0xaf);
+		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::HF) == 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
+		REQUIRE(cpu.cycles() == 2);
+    }
+}
