@@ -205,12 +205,16 @@ namespace EightBit {
 		void adjustBorrow(uint32_t datum) { clearFlag(CC(), CF, datum & Bit16); }	// 16-bit subtraction
 		void adjustBorrow(register16_t datum) { adjustBorrow(datum.word); }
 
-		void adjustOverflow(uint8_t before, uint8_t data, uint8_t after) {
-			setFlag(CC(), VF, ~(before ^ data) & (before ^ after) & Bit7);
+		void adjustOverflow(uint8_t before, uint8_t data, register16_t after) {
+			const uint8_t lowAfter = after.low;
+			const uint8_t highAfter = after.high;
+			setFlag(CC(), VF, (before ^ data ^ lowAfter ^ (highAfter << 7)) & Bit7);
 		}
 
-		void adjustOverflow(uint16_t before, uint16_t data, uint16_t after) {
-			setFlag(CC(), VF, ~(before ^ data) & (before ^ after) & Bit15);
+		void adjustOverflow(uint16_t before, uint16_t data, uint32_t after) {
+			const uint16_t lowAfter = after & Mask16;
+			const uint16_t highAfter = after >> 16;
+			setFlag(CC(), VF, (before ^ data ^ lowAfter ^ (highAfter << 15)) & Bit15);
 		}
 
 		void adjustOverflow(register16_t before, register16_t data, register16_t after) {
@@ -225,7 +229,7 @@ namespace EightBit {
 			const auto result = after.low;
 			adjustNZ(result);
 			adjustCarry(after);
-			adjustOverflow(before, data, result);
+			adjustOverflow(before, data, after);
 			adjustHalfCarry(before, data, result);
 		}
 
@@ -233,7 +237,7 @@ namespace EightBit {
 			const register16_t result = after & Mask16;
 			adjustNZ(result);
 			adjustCarry(after);
-			adjustOverflow(before, data, result);
+			adjustOverflow(before, data, after);
 		}
 
 		void adjustAddition(register16_t before, register16_t data, uint32_t after) {
@@ -244,14 +248,14 @@ namespace EightBit {
 			const auto result = after.low;
 			adjustNZ(result);
 			adjustCarry(after);
-			setFlag(CC(), VF, (before ^ data ^ result ^ (after.high << 7)) & Bit7);
+			adjustOverflow(before, data, after);
 		}
 
 		void adjustSubtraction(uint16_t before, uint16_t data, uint32_t after) {
 			const register16_t result = after & Mask16;
 			adjustNZ(result);
 			adjustCarry(after);
-			adjustOverflow(before, data, result);
+			adjustOverflow(before, data, after);
 		}
 
 		void adjustSubtraction(register16_t before, register16_t data, uint32_t after) {
