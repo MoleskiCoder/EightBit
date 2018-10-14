@@ -106,7 +106,6 @@ void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
 void Board::Cpu_ExecutedInstruction_Acia(EightBit::mc6809&) {
 	if (_kbhit()) {
 		ACIA().RDR() = _getch();
-		 _getch();	// XXXX Why do I need the second getch??
 		ACIA().markReceiveStarting();
 	}
 }
