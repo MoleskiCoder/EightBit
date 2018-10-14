@@ -496,7 +496,7 @@ TEST_CASE("Compare Memory with a Register (8-bit)", "[CMP][CMPA][CMPB]") {
 		REQUIRE(cpu.X() == 0x00);
 		REQUIRE(cpu.Y() == 0x206);
 		REQUIRE(cpu.U() == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
+		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) != 0);
 		REQUIRE(cpu.cycles() == 6);
 	}
 
