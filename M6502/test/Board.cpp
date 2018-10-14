@@ -60,8 +60,7 @@ void Board::initialise() {
 	CPU().powerOn();
 
 	poke(0x00, 0x4c);
-	poke(0x01, m_configuration.getStartAddress().low);
-	poke(0x02, m_configuration.getStartAddress().high);
+	CPU().pokeWord(1, m_configuration.getStartAddress());
 }
 
 void Board::Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu) {

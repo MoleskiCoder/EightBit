@@ -32,8 +32,7 @@ void Board::initialise() {
 	CPU().reset();
 
 	poke(0, 0xc3);	// JMP
-	poke(1, m_configuration.getStartAddress().low);
-	poke(2, m_configuration.getStartAddress().high);
+	CPU().pokeWord(1, m_configuration.getStartAddress());
 
 	poke(5, 0xc9); // ret
 }
