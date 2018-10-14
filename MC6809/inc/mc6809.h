@@ -222,7 +222,7 @@ namespace EightBit {
 		}
 
 		void adjustHalfCarry(uint8_t before, uint8_t data, uint8_t after) {
-			setFlag(CC(), HF, !!((before ^ data ^ after) & Bit4));
+			setFlag(CC(), HF, (before ^ data ^ after) & Bit4);
 		}
 
 		void adjustAddition(uint8_t before, uint8_t data, register16_t after) {
