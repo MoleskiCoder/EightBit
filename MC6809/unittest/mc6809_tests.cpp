@@ -67,7 +67,7 @@ TEST_CASE("Add Accumulator B to Index Register X Unsigned", "[ABX]") {
     }
 }
 
-TEST_CASE("Add Memory Plus Carry to Accumulator A", "[ADC][ADCA]") {
+TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
 
 	Board board;
 	board.initialise();
@@ -150,7 +150,7 @@ TEST_CASE("Add Memory Plus Carry to Accumulator A", "[ADC][ADCA]") {
     }
 }
 
-TEST_CASE("Add Memory to Accumulator A", "[ADD][ADDA]") {
+TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 
 	Board board;
 	board.initialise();
@@ -204,14 +204,6 @@ TEST_CASE("Add Memory to Accumulator A", "[ADD][ADDA]") {
 		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
 		REQUIRE(cpu.cycles() == 2);
     }
-}
-
-TEST_CASE("Add Memory to Accumulator B", "[ADD][ADDB]") {
-
-	Board board;
-	board.initialise();
-	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
 
 	// positive + positive with overflow.
 	// B=0x40 + 0x41 becomes 0x81 or -127
@@ -277,14 +269,6 @@ TEST_CASE("Add Memory to Accumulator B", "[ADD][ADDB]") {
 		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
 		REQUIRE(cpu.cycles() == 2);
     }
-}
-
-TEST_CASE("Add Memory to Accumulator D", "[ADD][ADDD]") {
-
-	Board board;
-	board.initialise();
-	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
 
 	// Add 0x02B0 to D=0x0405 becomes 0x6B5.
 	// positive + positive = positive
@@ -460,7 +444,7 @@ TEST_CASE("Clear Accumulator or Memory", "[CLR][CLRA]") {
     }
 }
 
-TEST_CASE("Compare Memory with a Register (8-bit)", "[CMP][CMPA][CMPB]") {
+TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 
 	Board board;
 	board.initialise();
@@ -541,14 +525,6 @@ TEST_CASE("Compare Memory with a Register (8-bit)", "[CMP][CMPA][CMPB]") {
 		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
 		REQUIRE(cpu.cycles() == 2);
     }
-}
-
-TEST_CASE("Compare Memory with a Register (16-bit)", "[CMP][CMPX]") {
-
-	Board board;
-	board.initialise();
-	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
 
     SECTION("Immediate (word)") {
 		board.poke(0, 0x8c);
@@ -661,7 +637,6 @@ TEST_CASE("Increment Accumulator or Memory Location by 1", "[INC][INCA]") {
     }
 }
 
-
 TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][SBCB]") {
 
 	Board board;
@@ -751,7 +726,7 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
     }
 }
 
-TEST_CASE("Subtract Memory from Register ", "[SUB][SUBA]") {
+TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 
 	Board board;
 	board.initialise();
