@@ -837,7 +837,11 @@ uint8_t EightBit::mc6809::da(uint8_t operand) {
 }
 
 uint8_t EightBit::mc6809::dec(const uint8_t operand) {
-	return sub(operand, 1);
+	const register16_t subtraction = operand - 1;
+	const auto result = subtraction.low;
+	adjustNZ(result);
+	adjustOverflow(operand, 1, subtraction);
+	return result;
 }
 
 uint8_t EightBit::mc6809::eor(uint8_t operand, const uint8_t data) {
@@ -895,7 +899,12 @@ void EightBit::mc6809::exg(const uint8_t data) {
 }
 
 uint8_t EightBit::mc6809::inc(uint8_t operand) {
-	return add(operand, 1);
+	const register16_t addition = operand + 1;
+	const auto result = addition.low;
+	adjustNZ(result);
+	adjustOverflow(operand, 1, addition);
+	adjustHalfCarry(operand, 1, result);
+	return result;
 }
 
 void EightBit::mc6809::jsr(const register16_t address) {
