@@ -27,7 +27,7 @@ EightBit::register16_t EightBit::LittleEndianProcessor::getWordPaged(const uint8
 void EightBit::LittleEndianProcessor::setWordPaged(const uint8_t page, const uint8_t offset, const register16_t value) {
 	setBytePaged(page, offset, value.low);
 	++BUS().ADDRESS().low;
-	BUS().read(value.high);
+	BUS().write(value.high);
 }
 
 EightBit::register16_t EightBit::LittleEndianProcessor::fetchWord() {
@@ -51,4 +51,9 @@ EightBit::register16_t EightBit::LittleEndianProcessor::peekWord(const register1
 	const auto low = BUS().peek(address);
 	const auto high = BUS().peek(address + 1);
 	return register16_t(low, high);
+}
+
+void EightBit::LittleEndianProcessor::pokeWord(const register16_t address, const register16_t value) {
+	BUS().poke(address, value.low);
+	BUS().poke(address + 1, value.high);
 }

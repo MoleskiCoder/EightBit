@@ -34,6 +34,7 @@ namespace EightBit {
 		int cycles() const { return m_cycles; }
 
 		virtual register16_t peekWord(register16_t address) = 0;
+		virtual void pokeWord(register16_t address, register16_t value) = 0;
 
 	protected:
 		Processor(Bus& memory);

@@ -8,6 +8,7 @@ namespace EightBit {
 	class BigEndianProcessor : public Processor {
 	public:
 		virtual register16_t peekWord(register16_t address) final;
+		virtual void pokeWord(register16_t address, register16_t value) final;
 
 	protected:
 		BigEndianProcessor(Bus& memory);
