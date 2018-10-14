@@ -206,11 +206,11 @@ namespace EightBit {
 		void adjustBorrow(register16_t datum) { adjustBorrow(datum.word); }
 
 		void adjustOverflow(uint8_t before, uint8_t data, uint8_t after) {
-			setFlag(CC(), VF, !!((before ^ data ^ after ^ (after >> 1)) & Bit7));
+			setFlag(CC(), VF, ~(before ^ data) & (before ^ after) & Bit7);
 		}
 
 		void adjustOverflow(uint16_t before, uint16_t data, uint16_t after) {
-			setFlag(CC(), VF, !!((before ^ data ^ after ^ (after >> 1)) & Bit15));
+			setFlag(CC(), VF, ~(before ^ data) & (before ^ after) & Bit15);
 		}
 
 		void adjustOverflow(register16_t before, register16_t data, register16_t after) {
@@ -243,14 +243,14 @@ namespace EightBit {
 		void adjustSubtraction(uint8_t before, uint8_t data, register16_t after) {
 			const auto result = after.low;
 			adjustNZ(result);
-			adjustBorrow(after);
-			adjustOverflow(before, data, result);
+			adjustCarry(after);
+			setFlag(CC(), VF, (before ^ data ^ result ^ (after.high << 7)) & Bit7);
 		}
 
 		void adjustSubtraction(uint16_t before, uint16_t data, uint32_t after) {
 			const register16_t result = after & Mask16;
 			adjustNZ(result);
-			adjustBorrow(after);
+			adjustCarry(after);
 			adjustOverflow(before, data, result);
 		}
 
@@ -300,7 +300,7 @@ namespace EightBit {
 		// Instruction implementations
 
 		uint8_t adc(uint8_t operand, uint8_t data);
-		uint8_t add(uint8_t operand, uint8_t data, int carry = 0);
+		uint8_t add(uint8_t operand, uint8_t data, uint8_t carry = 0);
 		register16_t add(register16_t operand, register16_t data);
 		uint8_t andr(uint8_t operand, uint8_t data);
 		uint8_t asl(uint8_t operand);
@@ -329,7 +329,7 @@ namespace EightBit {
 		void rti();
 		void rts();
 		uint8_t sbc(uint8_t operand, uint8_t data);
-		uint8_t sub(uint8_t operand, uint8_t data, int carry = 0);
+		uint8_t sub(uint8_t operand, uint8_t data, uint8_t carry = 0);
 		register16_t sub(register16_t operand, register16_t data);
 		uint8_t sex(uint8_t from);
 		void swi();
