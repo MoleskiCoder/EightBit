@@ -61,7 +61,7 @@ void EightBit::mc6809::handleNMI() {
 	setFlag(CC(), IF);	// Disable IRQ
 	setFlag(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, NMIvector));
-	addCycles(21);
+	addCycles(12);
 }
 
 void EightBit::mc6809::handleIRQ() {
@@ -71,7 +71,7 @@ void EightBit::mc6809::handleIRQ() {
 	saveEntireRegisterState();
 	setFlag(CC(), IF);	// Disable IRQ
 	jump(getWordPaged(0xff, IRQvector));
-	addCycles(21);
+	addCycles(12);
 }
 
 void EightBit::mc6809::handleFIRQ() {
@@ -219,7 +219,7 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	case 0x73:	addCycles(7);	BUS().write(com(AM_extended_byte()));				break;		// COM (extended)
 
 	// CWAI
-	case 0x3c:	addCycles(20);	cwai(AM_direct_byte());								break;		// CWAI (direct)
+	case 0x3c:	addCycles(11);	cwai(AM_direct_byte());								break;		// CWAI (direct)
 
 	// DAA
 	case 0x19:	addCycles(2);	A() = da(A());										break;		// DAA (inherent)
@@ -433,7 +433,7 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	case 0xb3:	addCycles(7);	D() = sub(D(), AM_extended_word());					break;		// SUB (SUBD extended)
 
 	// SWI
-	case 0x3f:	addCycles(19);	swi();												break;		// SWI (inherent)
+	case 0x3f:	addCycles(10);	swi();												break;		// SWI (inherent)
 
 	// SYNC
 	case 0x13:	addCycles(4);	halt();												break;		// SYNC (inherent)
@@ -540,7 +540,7 @@ void EightBit::mc6809::execute10(const uint8_t opcode) {
 	case 0xbf:	addCycles(7);	Processor::setWord(Address_extended(), st(Y()));	break;		// ST (STY extended)
 
 	// SWI
-	case 0x3f:	addCycles(20);	swi2();												break;		// SWI (SWI2 inherent)
+	case 0x3f:	addCycles(11);	swi2();												break;		// SWI (SWI2 inherent)
 
 	default:
 		UNREACHABLE;
@@ -569,7 +569,7 @@ void EightBit::mc6809::execute11(const uint8_t opcode) {
 	case 0xbc:	addCycles(8);	cmp(S(), AM_extended_word());						break;		// CMP (CMPS, extended)
 
 	// SWI
-	case 0x3f:	addCycles(20);	swi3();												break;		// SWI (SWI3 inherent)
+	case 0x3f:	addCycles(11);	swi3();												break;		// SWI (SWI3 inherent)
 
 	default:
 		UNREACHABLE;
@@ -740,14 +740,7 @@ EightBit::register16_t EightBit::mc6809::AM_extended_word() {
 
 void EightBit::mc6809::saveEntireRegisterState() {
 	setFlag(CC(), EF);	// Entire flag set saved
-	pushWordS(PC());
-	pushWordS(U());
-	pushWordS(Y());
-	pushWordS(X());
-	pushS(DP());
-	pushS(B());
-	pushS(A());
-	pushS(CC());
+	psh(S(), 0xff);
 }
 
 //
@@ -1043,17 +1036,7 @@ uint8_t EightBit::mc6809::ror(uint8_t operand) {
 }
 
 void EightBit::mc6809::rti() {
-	CC() = popS();
-	if (CC() & EF) {
-		addCycles(9);	// One cycle per byte
-		A() = popS();
-		B() = popS();
-		DP() = popS();
-		X() = popWordS();
-		Y() = popWordS();
-		U() = popWordS();
-	}
-	rts();
+	pul(S(), CC() & EF ? 0xff : 0b10000001);
 }
 
 void EightBit::mc6809::rts() {
