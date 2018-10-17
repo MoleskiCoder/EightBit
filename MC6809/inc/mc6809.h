@@ -277,7 +277,7 @@ namespace EightBit {
 		bool HI() { return !LS(); }														// !(C OR Z)
 		bool LT() { return (negative() >> 1) ^ overflow(); }							// (N XOR V)
 		bool GE() { return !LT(); }														// !(N XOR V)
-		bool LE() { return (zero() >> 2) & ((negative() >> 3) ^ (overflow() >> 1)); }	// (Z OR (N XOR V))
+		bool LE() { return (zero() >> 2) | ((negative() >> 3) ^ (overflow() >> 1)); }	// (Z OR (N XOR V))
 		bool GT() { return !LE(); }														// !(Z OR (N XOR V))
 
 		// Branching
