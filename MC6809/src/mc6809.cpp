@@ -78,9 +78,7 @@ void EightBit::mc6809::handleFIRQ() {
 	raise(FIRQ());
 	lower(BA());
 	raise(BS());
-	clearFlag(CC(), EF);
-	pushWordS(PC());
-	pushS(CC());
+	savePartialRegisterState();
 	setFlag(CC(), IF);	// Disable IRQ
 	setFlag(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, FIRQvector));
@@ -670,16 +668,16 @@ EightBit::register16_t EightBit::mc6809::Address_indexed() {
 			break;
 		case 0b1100:	// n,PCR (eight-bit)
 			addCycles(1);
-			address = PC() + (int8_t)fetchByte();
+			address = Address_relative_byte();
 			break;
 		case 0b1101:	// n,PCR (sixteen-bit)
 			addCycles(2);
-			address = PC() + (int16_t)fetchWord().word;
+			address = Address_relative_word();
 			break;
 		case 0b1111:	// [n]
 			assert(indirect);
 			addCycles(2);
-			address = fetchWord();
+			address = Address_extended();
 			break;
 		default:
 			UNREACHABLE;
@@ -739,8 +737,21 @@ EightBit::register16_t EightBit::mc6809::AM_extended_word() {
 //
 
 void EightBit::mc6809::saveEntireRegisterState() {
-	setFlag(CC(), EF);	// Entire flag set saved
-	psh(S(), 0xff);
+	setFlag(CC(), EF);
+	saveRegisterState();
+}
+
+void EightBit::mc6809::savePartialRegisterState() {
+	clearFlag(CC(), EF);
+	saveRegisterState();
+}
+
+void EightBit::mc6809::saveRegisterState() {
+	psh(S(), CC() & EF ? 0xff : 0b10000001);
+}
+
+void EightBit::mc6809::restoreRegisterState() {
+	pul(S(), CC() & EF ? 0xff : 0b10000001);
 }
 
 //
@@ -761,10 +772,8 @@ EightBit::register16_t EightBit::mc6809::add(const register16_t operand, const r
 	return addition & Mask16;
 }
 
-uint8_t EightBit::mc6809::andr(uint8_t operand, const uint8_t data) {
-	clearFlag(CC(), VF);
-	adjustNZ(operand &= data);
-	return operand;
+uint8_t EightBit::mc6809::andr(const uint8_t operand, const uint8_t data) {
+	return through((uint8_t)(operand & data));
 }
 
 uint8_t EightBit::mc6809::asl(uint8_t operand) {
@@ -798,11 +807,8 @@ void EightBit::mc6809::cmp(const register16_t operand, const register16_t data) 
 }
 
 uint8_t EightBit::mc6809::com(const uint8_t operand) {
-	const uint8_t result = ~operand;
-	adjustNZ(result);
-	clearFlag(CC(), VF);
 	setFlag(CC(), CF);
-	return result;
+	return through((uint8_t)~operand);
 }
 
 void EightBit::mc6809::cwai(const uint8_t data) {
@@ -813,7 +819,6 @@ void EightBit::mc6809::cwai(const uint8_t data) {
 
 uint8_t EightBit::mc6809::da(uint8_t operand) {
 
-	clearFlag(CC(), VF);
 	setFlag(CC(), CF, operand > 0x99);
 
 	const auto lowAdjust = halfCarry() || (lowNibble(operand) > 9);
@@ -824,9 +829,7 @@ uint8_t EightBit::mc6809::da(uint8_t operand) {
 	if (highAdjust)
 		operand += 0x60;
 
-	adjustNZ(operand);
-
-	return operand;
+	return through(operand);
 }
 
 uint8_t EightBit::mc6809::dec(const uint8_t operand) {
@@ -902,18 +905,6 @@ uint8_t EightBit::mc6809::inc(uint8_t operand) {
 
 void EightBit::mc6809::jsr(const register16_t address) {
 	call(address);
-}
-
-uint8_t EightBit::mc6809::ld(const uint8_t data) {
-	clearFlag(CC(), VF);
-	adjustNZ(data);
-	return data;
-}
-
-EightBit::register16_t EightBit::mc6809::ld(const register16_t data) {
-	clearFlag(CC(), VF);
-	adjustNZ(data);
-	return data;
 }
 
 uint8_t EightBit::mc6809::lsr(uint8_t operand) {
@@ -1036,7 +1027,7 @@ uint8_t EightBit::mc6809::ror(uint8_t operand) {
 }
 
 void EightBit::mc6809::rti() {
-	pul(S(), CC() & EF ? 0xff : 0b10000001);
+	restoreRegisterState();
 }
 
 void EightBit::mc6809::rts() {
@@ -1077,18 +1068,6 @@ void EightBit::mc6809::tfr(const uint8_t data) {
 		referenceTransfer8(reg2) = referenceTransfer8(reg1);
 	else
 		referenceTransfer16(reg2) = referenceTransfer16(reg1);
-}
-
-uint8_t EightBit::mc6809::st(const uint8_t data) {
-	clearFlag(CC(), VF);
-	adjustNZ(data);
-	return data;
-}
-
-EightBit::register16_t EightBit::mc6809::st(const register16_t data) {
-	clearFlag(CC(), VF);
-	adjustNZ(data);
-	return data;
 }
 
 uint8_t EightBit::mc6809::sbc(const uint8_t operand, const uint8_t data) {

@@ -300,8 +300,25 @@ namespace EightBit {
 		// Miscellaneous
 
 		void saveEntireRegisterState();
+		void savePartialRegisterState();
+		void saveRegisterState();
+		void restoreRegisterState();
 
 		// Instruction implementations
+
+		template <class T> T through(const T data) {
+			clearFlag(CC(), VF);
+			adjustNZ(data);
+			return data;
+		}
+
+		template <class T> T ld(const T data) {
+			return through(data);
+		}
+
+		template <class T> T st(const T data) {
+			return through(data);
+		}
 
 		uint8_t adc(uint8_t operand, uint8_t data);
 		uint8_t add(uint8_t operand, uint8_t data, uint8_t carry = 0);
@@ -320,8 +337,6 @@ namespace EightBit {
 		void exg(uint8_t data);
 		uint8_t inc(uint8_t operand);
 		void jsr(register16_t address);
-		uint8_t ld(uint8_t data);
-		register16_t ld(register16_t data);
 		uint8_t lsr(uint8_t operand);
 		register16_t mul(uint8_t first, uint8_t second);
 		uint8_t neg(uint8_t operand);
@@ -339,8 +354,6 @@ namespace EightBit {
 		void swi();
 		void swi2();
 		void swi3();
-		uint8_t st(uint8_t data);
-		register16_t st(register16_t data);
 		void tfr(uint8_t data);
 		void tst(uint8_t data);
 
