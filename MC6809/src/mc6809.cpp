@@ -793,9 +793,8 @@ uint8_t EightBit::mc6809::asr(uint8_t operand) {
 }
 
 uint8_t EightBit::mc6809::clr() {
-	clearFlag(CC(), NF | VF | CF);
-	setFlag(CC(), ZF);
-	return 0;
+	clearFlag(CC(), CF);
+	return through((uint8_t)0U);
 }
 
 void EightBit::mc6809::cmp(const uint8_t operand, const uint8_t data) {
@@ -840,10 +839,8 @@ uint8_t EightBit::mc6809::dec(const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::mc6809::eor(uint8_t operand, const uint8_t data) {
-	clearFlag(CC(), VF);
-	adjustNZ(operand ^= data);
-	return operand;
+uint8_t EightBit::mc6809::eor(const uint8_t operand, const uint8_t data) {
+	return through((uint8_t)(operand ^ data));
 }
 
 uint8_t& EightBit::mc6809::referenceTransfer8(const int specifier) {
@@ -929,10 +926,8 @@ uint8_t EightBit::mc6809::neg(uint8_t operand) {
 	return operand;
 }
 
-uint8_t EightBit::mc6809::orr(uint8_t operand, const uint8_t data) {
-	clearFlag(CC(), VF);
-	adjustNZ(operand |= data);
-	return operand;
+uint8_t EightBit::mc6809::orr(const uint8_t operand, const uint8_t data) {
+	return through((uint8_t)(operand | data));
 }
 
 void EightBit::mc6809::psh(register16_t& stack, const uint8_t data) {
