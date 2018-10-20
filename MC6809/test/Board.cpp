@@ -23,15 +23,10 @@ void Board::initialise() {
 	CPU().reset();
 
 	// Get the ACIA ready for action
-	ACIA().powerOn();
-	ACIA().lower(ACIA().RW());										// Write
-	ACIA().lower(ACIA().RS());										// Registers
-	ACIA().raise(ACIA().CS0());										// Chip select
-	ACIA().raise(ACIA().CS1());										//		"
-	ACIA().lower(ACIA().CS2());										//		"
+	ADDRESS() = 0b1010000000000000;
 	ACIA().DATA() = EightBit::mc6850::CR0 | EightBit::mc6850::CR1;	// Master reset
-
-	// Get the reset out of the way...
+	updateAciaPins(EightBit::Chip::PinLevel::Low);
+	ACIA().powerOn();
 	ACIA().access();
 
 	// Once the reset has completed, we can wire the ACIA event handlers...
