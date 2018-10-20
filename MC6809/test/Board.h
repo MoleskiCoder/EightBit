@@ -34,6 +34,13 @@ private:
 	EightBit::mc6809 m_cpu;
 	EightBit::Disassembly m_disassembler;
 
+	uint64_t m_totalCycleCount = 0UL;
+	int64_t m_frameCycleCount = 0UL;
+	static constexpr uint64_t CyclesPerSecond = 2 * 1024 * 1024;
+	static constexpr uint64_t FrameCycleInterval = CyclesPerSecond / 60;
+	static constexpr uint64_t TerminationCycles = CyclesPerSecond * 10 * 10;
+
+	// The m_disassembleAt and m_ignoreDisassembly are used to skip pin events
 	EightBit::register16_t m_disassembleAt = 0x0000;
 	bool m_ignoreDisassembly = false;
 
@@ -55,14 +62,8 @@ private:
 
 	// ACIA events
 
-	void Acia_Accessing(EightBit::EventArgs&);
-	void Acia_Accessed(EightBit::EventArgs&);
-
+	// Allows us to catch a byte being transmitted
 	void Acia_Transmitting(EightBit::EventArgs&);
-	void Acia_Transmitted(EightBit::EventArgs&);
-
-	void Acia_Receiving(EightBit::EventArgs&);
-	void Acia_Received(EightBit::EventArgs&);
 
 	// Use the bus data to update the ACIA access/address pins
 	void updateAciaPins(EightBit::Chip::PinLevel rw);

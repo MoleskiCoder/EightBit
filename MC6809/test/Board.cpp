@@ -35,14 +35,7 @@ void Board::initialise() {
 	ACIA().access();
 
 	// Once the reset has completed, we can wire the ACIA event handlers...
-	ACIA().Accessing.connect(std::bind(&Board::Acia_Accessing, this, std::placeholders::_1));
-	ACIA().Accessed.connect(std::bind(&Board::Acia_Accessed, this, std::placeholders::_1));
-
 	ACIA().Transmitting.connect(std::bind(&Board::Acia_Transmitting, this, std::placeholders::_1));
-	ACIA().Transmitted.connect(std::bind(&Board::Acia_Transmitted, this, std::placeholders::_1));
-
-	ACIA().Receiving.connect(std::bind(&Board::Acia_Receiving, this, std::placeholders::_1));
-	ACIA().Received.connect(std::bind(&Board::Acia_Received, this, std::placeholders::_1));
 
 	// Wire bus events...
 	WrittenByte.connect(std::bind(&Board::Bus_WrittenByte_Acia, this, std::placeholders::_1));
@@ -104,28 +97,23 @@ void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
 }
 
 void Board::Cpu_ExecutedInstruction_Acia(EightBit::mc6809&) {
-	if (_kbhit()) {
-		ACIA().RDR() = _getch();
-		ACIA().markReceiveStarting();
+	const auto cycles = CPU().cycles();
+	m_totalCycleCount += cycles;
+	if (m_totalCycleCount < TerminationCycles) {
+		m_frameCycleCount -= cycles;
+		if (m_frameCycleCount < 0) {
+			if (_kbhit()) {
+				ACIA().RDR() = _getch();
+				ACIA().markReceiveStarting();
+			}
+			m_frameCycleCount = FrameCycleInterval;
+		}
+	} else {
+		CPU().powerOff();
 	}
-}
-
-void Board::Acia_Accessing(EightBit::EventArgs&) {
-}
-
-void Board::Acia_Accessed(EightBit::EventArgs&) {
 }
 
 void Board::Acia_Transmitting(EightBit::EventArgs&) {
 	std::cout << ACIA().TDR();
 	ACIA().markTransmitComplete();
-}
-
-void Board::Acia_Transmitted(EightBit::EventArgs&) {
-}
-
-void Board::Acia_Receiving(EightBit::EventArgs&) {
-}
-
-void Board::Acia_Received(EightBit::EventArgs&) {
 }
