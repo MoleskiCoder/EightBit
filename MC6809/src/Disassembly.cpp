@@ -8,8 +8,9 @@
 
 using namespace std::placeholders;
 
-EightBit::Disassembly::Disassembly(mc6809& targetProcessor)
-: m_cpu(targetProcessor) {
+EightBit::Disassembly::Disassembly(Bus& bus, mc6809& targetProcessor)
+: m_bus(bus),
+  m_cpu(targetProcessor) {
 }
 
 std::string EightBit::Disassembly::dump_Flags(uint8_t value) {
@@ -878,7 +879,7 @@ std::string EightBit::Disassembly::tfr(std::string mnemomic) {
 ////
 
 uint8_t EightBit::Disassembly::getByte(uint16_t address) {
-	return CPU().BUS().peek(address);
+	return BUS().peek(address);
 }
 
 uint16_t EightBit::Disassembly::getWord(uint16_t address) {

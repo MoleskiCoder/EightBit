@@ -15,8 +15,6 @@ namespace EightBit {
 		// x: sign extend this b-bit number to r
 		static int8_t signExtend(int b, uint8_t x);
 
-		Bus& BUS() { return m_bus; }
-
 		register16_t& PC() { return m_pc; }
 
 		PinLevel& RESET() { return m_resetLine; }
@@ -39,6 +37,8 @@ namespace EightBit {
 	protected:
 		Processor(Bus& memory);
 		virtual ~Processor() = default;
+
+		Bus& BUS() { return m_bus; }
 
 		bool halted() { return lowered(HALT()); }
 		void halt() { --PC();  lower(HALT()); }

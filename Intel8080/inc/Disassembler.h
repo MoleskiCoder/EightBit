@@ -5,12 +5,14 @@
 #include <sstream>
 #include <boost/format.hpp>
 
-#include <Intel8080.h>
+#include <Bus.h>
+
+#include "Intel8080.h"
 
 namespace EightBit {
 	class Disassembler {
 	public:
-		Disassembler() noexcept;
+		Disassembler(Bus& bus) noexcept;
 
 		static std::string state(Intel8080& cpu);
 		std::string disassemble(Intel8080& cpu);
@@ -25,6 +27,7 @@ namespace EightBit {
 
 	private:
 		mutable boost::format m_formatter;
+		Bus& m_bus;
 
 		void disassemble(std::ostringstream& output, Intel8080& cpu, uint16_t pc);
 
@@ -43,5 +46,7 @@ namespace EightBit {
 		static std::string cc(int flag);
 		static std::string alu(int which);
 		static std::string alu2(int which);
+
+		Bus& BUS() { return m_bus; }
 	};
 }

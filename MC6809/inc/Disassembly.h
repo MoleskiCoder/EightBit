@@ -3,12 +3,14 @@
 #include <cstdint>
 #include <string>
 
+#include <Bus.h>
+
 #include "mc6809.h"
 
 namespace EightBit {
 	class Disassembly final {
 	public:
-		Disassembly(mc6809& processor);
+		Disassembly(Bus& bus, mc6809& processor);
 
 		bool ignore();
 
@@ -17,6 +19,7 @@ namespace EightBit {
 		std::string trace();
 
 	private:
+		Bus& m_bus;
 		mc6809& m_cpu;
 
 		mutable uint16_t m_address = 0xffff;
@@ -80,5 +83,7 @@ namespace EightBit {
 		std::string pshU();
 		std::string pulX(std::string mnemomic, std::string upon);
 		std::string pshX(std::string mnemomic, std::string upon);
+
+		Bus& BUS() { return m_bus; }
 	};
 }

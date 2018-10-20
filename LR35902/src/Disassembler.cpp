@@ -9,7 +9,8 @@
 #include "LR35902.h"
 #include "IoRegisters.h"
 
-EightBit::GameBoy::Disassembler::Disassembler() noexcept {
+EightBit::GameBoy::Disassembler::Disassembler(Bus& bus) noexcept
+: m_bus(bus) {
 	// Disable exceptions where too many format arguments are available
 	m_formatter.exceptions(boost::io::all_error_bits ^ boost::io::too_many_args_bit);
 }
@@ -148,8 +149,7 @@ std::string EightBit::GameBoy::Disassembler::disassemble(LR35902& cpu) {
 
 void EightBit::GameBoy::Disassembler::disassemble(std::ostringstream& output, LR35902& cpu, uint16_t pc) {
 
-	auto& bus = cpu.BUS();
-	auto opcode = bus.peek(pc);
+	auto opcode = BUS().peek(pc);
 
 	// hex opcode
 	output << hex(opcode);
@@ -161,11 +161,11 @@ void EightBit::GameBoy::Disassembler::disassemble(std::ostringstream& output, LR
 	auto p = (y & 0b110) >> 1;
 	auto q = (y & 1);
 
-	auto immediate = bus.peek(pc + 1);
+	auto immediate = BUS().peek(pc + 1);
 	auto absolute = cpu.peekWord(pc + 1).word;
 	auto displacement = (int8_t)immediate;
 	auto relative = pc + displacement + 2;
-	auto indexedImmediate = bus.peek(pc + 1);
+	auto indexedImmediate = BUS().peek(pc + 1);
 
 	auto dumpCount = 0;
 	auto ioRegister = IoRegister::Unused;
@@ -184,7 +184,7 @@ void EightBit::GameBoy::Disassembler::disassemble(std::ostringstream& output, LR
 			x, y, z, p, q);
 
 	for (int i = 0; i < dumpCount; ++i)
-		output << hex(bus.peek(pc + i + 1));
+		output << hex(BUS().peek(pc + i + 1));
 
 	output << '\t';
 	m_formatter.parse(specification);

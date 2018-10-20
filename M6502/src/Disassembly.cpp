@@ -7,8 +7,9 @@
 
 using namespace std::placeholders;
 
-EightBit::Disassembly::Disassembly(MOS6502& targetProcessor, const Symbols& targetSymbols)
-:	processor(targetProcessor),
+EightBit::Disassembly::Disassembly(Bus& bus, MOS6502& targetProcessor, const Symbols& targetSymbols)
+:	m_bus(bus),
+	processor(targetProcessor),
 	symbols(targetSymbols) {
 }
 
@@ -41,19 +42,17 @@ std::string EightBit::Disassembly::dump_WordValue(uint16_t value) {
 	return output.str();
 }
 
-std::string EightBit::Disassembly::disassemble(uint16_t current) const {
+std::string EightBit::Disassembly::disassemble(uint16_t current) {
 
 	m_address = current;
 
 	std::ostringstream output;
 
-	auto& bus = processor.BUS();
-
-	auto cell = bus.peek(current);
+	auto cell = BUS().peek(current);
 
 	output << dump_ByteValue(cell) << " ";
 
-	auto byte = bus.peek(current + 1);
+	auto byte = BUS().peek(current + 1);
 	uint16_t relative = processor.PC().word + 2 + (int8_t)byte;
 
 	auto aaa = (cell & 0b11100000) >> 5;
@@ -468,25 +467,25 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) const {
 
 ////
 
-uint8_t EightBit::Disassembly::getByte(uint16_t address) const {
-	return processor.BUS().peek(address);
+uint8_t EightBit::Disassembly::getByte(uint16_t address) {
+	return BUS().peek(address);
 }
 
-uint16_t EightBit::Disassembly::getWord(uint16_t address) const {
+uint16_t EightBit::Disassembly::getWord(uint16_t address) {
 	return processor.peekWord(address).word;
 }
 
 ////
 
-std::string EightBit::Disassembly::dump_Byte(uint16_t address) const {
+std::string EightBit::Disassembly::dump_Byte(uint16_t address) {
 	return dump_ByteValue(getByte(address));
 }
 
-std::string EightBit::Disassembly::dump_DByte(uint16_t address) const {
+std::string EightBit::Disassembly::dump_DByte(uint16_t address) {
 	return dump_Byte(address) + " " + dump_Byte(address + 1);
 }
 
-std::string EightBit::Disassembly::dump_Word(uint16_t address) const {
+std::string EightBit::Disassembly::dump_Word(uint16_t address) {
 	return dump_WordValue(getWord(address));
 }
 
@@ -510,7 +509,7 @@ std::string EightBit::Disassembly::convertAddress(uint8_t address) const {
 	return output.str();
 }
 
-std::string EightBit::Disassembly::convertConstant(uint16_t constant) const {
+std::string EightBit::Disassembly::convertConstant(uint16_t constant) {
 	auto label = symbols.getConstants().find(constant);
 	if (label != symbols.getConstants().end())
 		return label->second;

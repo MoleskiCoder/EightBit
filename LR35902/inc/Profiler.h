@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "Disassembler.h"
+#include "GameBoyBus.h"
 
 namespace EightBit {
 	namespace GameBoy {
@@ -12,7 +13,7 @@ namespace EightBit {
 
 		class Profiler {
 		public:
-			Profiler(LR35902& cpu);
+			Profiler(Bus& bus, LR35902& cpu);
 
 			void add(uint16_t address, uint8_t instruction);
 
@@ -21,8 +22,8 @@ namespace EightBit {
 		private:
 			std::array<uint64_t, 0x100> m_instructions;
 			std::array<uint64_t, 0x10000> m_addresses;
+			Bus& m_bus;
 			LR35902& m_cpu;
-
 			Disassembler m_disassembler;
 
 			void dumpInstructionProfiles() const;

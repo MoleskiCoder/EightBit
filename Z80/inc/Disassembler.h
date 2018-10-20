@@ -2,14 +2,15 @@
 
 #include <string>
 #include <boost/format.hpp>
+#include <Bus.h>
 
 namespace EightBit {
 
 	class Z80;
 
-	class Disassembler {
+	class Disassembler final {
 	public:
-		Disassembler() noexcept;
+		Disassembler(Bus& bus) noexcept;
 
 		static std::string state(Z80& cpu);
 		std::string disassemble(Z80& cpu);
@@ -29,6 +30,7 @@ namespace EightBit {
 		bool m_prefixDD = false;
 		bool m_prefixED = false;
 		bool m_prefixFD = false;
+		Bus& m_bus;
 
 		void disassemble(std::ostringstream& output, Z80& cpu, uint16_t pc);
 
@@ -64,5 +66,7 @@ namespace EightBit {
 		std::string R(int r) const;
 		static std::string cc(int flag);
 		static std::string alu(int which);
+
+		Bus& BUS() { return m_bus; }
 	};
 }

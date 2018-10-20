@@ -10,7 +10,8 @@
 
 #include "Z80.h"
 
-EightBit::Disassembler::Disassembler() noexcept {
+EightBit::Disassembler::Disassembler(Bus& bus) noexcept
+: m_bus(bus) {
 	// Disable exceptions where too many format arguments are available
 	m_formatter.exceptions(boost::io::all_error_bits ^ boost::io::too_many_args_bit);
 }
@@ -180,8 +181,7 @@ std::string EightBit::Disassembler::disassemble(Z80& cpu) {
 
 void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, uint16_t pc) {
 
-	auto& bus = cpu.BUS();
-	auto opcode = bus.peek(pc);
+	auto opcode = BUS().peek(pc);
 
 	const auto& decoded = cpu.getDecodedOpcode(opcode);
 
@@ -192,11 +192,11 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 	auto p = decoded.p;
 	auto q = decoded.q;
 
-	auto immediate = bus.peek(pc + 1);
+	auto immediate = BUS().peek(pc + 1);
 	auto absolute = cpu.peekWord(pc + 1).word;
 	auto displacement = (int8_t)immediate;
 	auto relative = pc + displacement + 2;
-	auto indexedImmediate = bus.peek(pc + 1);
+	auto indexedImmediate = BUS().peek(pc + 1);
 
 	auto dumpCount = 0;
 
@@ -221,7 +221,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 			x, y, z, p, q);
 
 	for (int i = 0; i < dumpCount; ++i)
-		output << hex(bus.peek(pc + i + 1));
+		output << hex(BUS().peek(pc + i + 1));
 
 	auto outputFormatSpecification = !m_prefixDD;
 	if (m_prefixDD) {

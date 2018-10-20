@@ -2,8 +2,10 @@
 #include "Profiler.h"
 #include "LR35902.h"
 
-EightBit::GameBoy::Profiler::Profiler(LR35902& cpu)
-: m_cpu(cpu) {
+EightBit::GameBoy::Profiler::Profiler(Bus& bus, LR35902& cpu)
+: m_bus(bus),
+  m_cpu(cpu),
+  m_disassembler(bus) {
 	std::fill(m_instructions.begin(), m_instructions.end(), 0);
 	std::fill(m_addresses.begin(), m_addresses.end(), 0);
 }

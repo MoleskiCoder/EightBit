@@ -10,7 +10,7 @@
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration),
   m_cpu(EightBit::MOS6502(*this)),
-  m_disassembler(m_cpu, m_symbols),
+  m_disassembler(*this, m_cpu, m_symbols),
   m_profiler(m_cpu, m_disassembler, m_symbols) {}
 
 void Board::initialise() {
@@ -74,12 +74,12 @@ void Board::Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu) {
 void Board::Cpu_ExecutedInstruction_StopLoop(EightBit::MOS6502& cpu) {
 
 	auto pc = cpu.PC().word;
-	if (m_oldPC == pc) {
+	if (m_oldPC != pc) {
+		m_oldPC = pc;
+	} else {
 		CPU().powerOff();
 		auto test = peek(0x0200);
 		std::cout << std::endl << "** Test=" << std::hex << (int)test;
-	} else {
-		m_oldPC = pc;
 	}
 }
 

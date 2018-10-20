@@ -27,7 +27,7 @@ namespace EightBit {
 		std::map<std::string, uint64_t> scopeCycles;
 
 		MOS6502& processor;
-		const Disassembly& disassembler;
+		Disassembly& disassembler;
 		const Symbols& symbols;
 
 		Profiler(MOS6502& processor, Disassembly& disassembler, Symbols& symbols);

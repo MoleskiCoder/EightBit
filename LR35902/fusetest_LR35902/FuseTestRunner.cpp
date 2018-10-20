@@ -157,7 +157,7 @@ void Fuse::TestRunner::checkMemory() {
 		for (int i = 0; i < bytes.size(); ++i) {
 			auto expected = bytes[i];
 			uint16_t address = memoryDatum.address + i;
-			auto actual = m_cpu.BUS().peek(address);
+			auto actual = peek(address);
 			if (expected != actual) {
 				m_failed = true;
 				if (first) {

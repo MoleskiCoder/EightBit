@@ -5,6 +5,8 @@
 #include <sstream>
 #include <boost/format.hpp>
 
+#include "GameBoyBus.h"
+
 namespace EightBit {
 
 	namespace GameBoy {
@@ -13,7 +15,7 @@ namespace EightBit {
 
 		class Disassembler {
 		public:
-			Disassembler() noexcept;
+			Disassembler(Bus& bus) noexcept;
 
 			static std::string state(LR35902& cpu);
 			std::string disassemble(LR35902& cpu);
@@ -35,6 +37,8 @@ namespace EightBit {
 				Register,		// C
 				Unused,			// Unused!
 			};
+
+			Bus& m_bus;
 
 			mutable boost::format m_formatter;
 			bool m_prefixCB = false;
@@ -65,6 +69,8 @@ namespace EightBit {
 			std::string R(int r) const;
 			static std::string cc(int flag);
 			static std::string alu(int which);
+
+			Bus& BUS() { return m_bus; }
 		};
 	}
 }

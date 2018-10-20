@@ -6,7 +6,8 @@
 
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration),
-  m_cpu(EightBit::Intel8080(*this, m_ports)) {
+  m_cpu(EightBit::Intel8080(*this, m_ports)),
+  m_disassembler(*this) {
 }
 
 void Board::initialise() {
