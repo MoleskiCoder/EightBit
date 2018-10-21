@@ -42,6 +42,9 @@ void Board::initialise() {
 		CPU().ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
 		CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Debug, this, std::placeholders::_1));
 	}
+	if (m_configuration.terminatesEarly())
+		CPU().ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Terminator, this, std::placeholders::_1));
+
 }
 
 void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809&) {
@@ -91,20 +94,21 @@ void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
 	ADDRESS().word & EightBit::Chip::Bit14 ? ACIA().raise(ACIA().CS2()) : ACIA().lower(ACIA().CS2());
 }
 
+void Board::Cpu_ExecutedInstruction_Terminator(EightBit::mc6809&) {
+	if (m_totalCycleCount > Configuration::TerminationCycles)
+		CPU().powerOff();
+}
+
 void Board::Cpu_ExecutedInstruction_Acia(EightBit::mc6809&) {
 	const auto cycles = CPU().cycles();
 	m_totalCycleCount += cycles;
-	if (m_totalCycleCount < TerminationCycles) {
-		m_frameCycleCount -= cycles;
-		if (m_frameCycleCount < 0) {
-			if (_kbhit()) {
-				ACIA().RDR() = _getch();
-				ACIA().markReceiveStarting();
-			}
-			m_frameCycleCount = FrameCycleInterval;
+	m_frameCycleCount -= cycles;
+	if (m_frameCycleCount < 0) {
+		if (_kbhit()) {
+			ACIA().RDR() = _getch();
+			ACIA().markReceiveStarting();
 		}
-	} else {
-		CPU().powerOff();
+		m_frameCycleCount = Configuration::FrameCycleInterval;
 	}
 }
 

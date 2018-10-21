@@ -36,9 +36,6 @@ private:
 
 	uint64_t m_totalCycleCount = 0UL;
 	int64_t m_frameCycleCount = 0UL;
-	static constexpr uint64_t CyclesPerSecond = 2 * 1024 * 1024;
-	static constexpr uint64_t FrameCycleInterval = CyclesPerSecond / 60;
-	static constexpr uint64_t TerminationCycles = CyclesPerSecond * 10 * 10;
 
 	// The m_disassembleAt and m_ignoreDisassembly are used to skip pin events
 	EightBit::register16_t m_disassembleAt = 0x0000;
@@ -49,7 +46,7 @@ private:
 	void Cpu_ExecutingInstruction_Debug(EightBit::mc6809&);
 	void Cpu_ExecutedInstruction_Debug(EightBit::mc6809&);
 
-	// Allows us to step the ACIA
+	void Cpu_ExecutedInstruction_Terminator(EightBit::mc6809&);
 	void Cpu_ExecutedInstruction_Acia(EightBit::mc6809&);
 
 	// Bus events
