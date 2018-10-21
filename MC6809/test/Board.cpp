@@ -44,7 +44,6 @@ void Board::initialise() {
 	}
 	if (m_configuration.terminatesEarly())
 		CPU().ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Terminator, this, std::placeholders::_1));
-
 }
 
 void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809&) {
