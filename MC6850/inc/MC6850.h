@@ -266,10 +266,7 @@ namespace EightBit {
 		void reset();
 
 		void startTransmit();
-		void markTransmitStarting();
-
 		void completeReceive();
-		void markReceiveComplete();
 
 		PinLevel m_RXDATA;
 		PinLevel m_TXDATA;
