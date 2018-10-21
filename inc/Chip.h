@@ -64,6 +64,8 @@ namespace EightBit {
 		static bool lowered(const PinLevel line) { return line == Low; }
 		static void lower(PinLevel& line) { line = Low; }
 
+		static void match(PinLevel& line, int value);
+
 		static int highNibble(const int value) { return value >> 4; }
 		static int lowNibble(const int value) { return value & Mask4; }
 

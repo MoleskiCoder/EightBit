@@ -87,10 +87,10 @@ void Board::Bus_ReadingByte_Acia(EightBit::EventArgs&) {
 void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
 	ACIA().RW() = rw;
 	ACIA().DATA() = DATA();
-	ADDRESS().word & EightBit::Chip::Bit0 ? ACIA().raise(ACIA().RS()) : ACIA().lower(ACIA().RS());
-	ADDRESS().word & EightBit::Chip::Bit15 ? ACIA().raise(ACIA().CS0()) : ACIA().lower(ACIA().CS0());
-	ADDRESS().word & EightBit::Chip::Bit13 ? ACIA().raise(ACIA().CS1()) : ACIA().lower(ACIA().CS1());
-	ADDRESS().word & EightBit::Chip::Bit14 ? ACIA().raise(ACIA().CS2()) : ACIA().lower(ACIA().CS2());
+	ACIA().match(ACIA().RS(), ADDRESS().word & EightBit::Chip::Bit0);
+	ACIA().match(ACIA().CS0(), ADDRESS().word & EightBit::Chip::Bit15);
+	ACIA().match(ACIA().CS1(), ADDRESS().word & EightBit::Chip::Bit13);
+	ACIA().match(ACIA().CS2(), ADDRESS().word & EightBit::Chip::Bit14);
 }
 
 void Board::Cpu_ExecutedInstruction_Terminator(EightBit::mc6809&) {
