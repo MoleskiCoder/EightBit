@@ -22,6 +22,6 @@ public:
 
 private:
 	bool m_debugMode = false;
-	bool m_terminatesEarly = true;
+	bool m_terminatesEarly = false;
 	std::string m_romDirectory = "roms\\searle";
 };
