@@ -26,6 +26,7 @@ void Board::initialise() {
 	ADDRESS() = 0b1010000000000000;
 	ACIA().DATA() = EightBit::mc6850::CR0 | EightBit::mc6850::CR1;	// Master reset
 	updateAciaPins(EightBit::Chip::PinLevel::Low);
+	ACIA().lower(ACIA().CTS());
 	ACIA().powerOn();
 	ACIA().access();
 

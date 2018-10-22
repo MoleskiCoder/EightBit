@@ -268,6 +268,10 @@ namespace EightBit {
 		void startTransmit();
 		void completeReceive();
 
+		bool isInterruptRequired() const;
+		bool isTransmitInterruptRequired() const;
+		bool isReceiveInterruptRequired() const;
+
 		PinLevel m_RXDATA;
 		PinLevel m_TXDATA;
 
