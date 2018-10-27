@@ -62,20 +62,21 @@ namespace EightBit {
 
 		virtual void powerOn() final;
 
-		register16_t& D() { return m_d; }
-		uint8_t& A() { return D().high; }
-		uint8_t& B() { return D().low; }
+		auto& D() { return m_d; }
+		auto& A() { return D().high; }
+		auto& B() { return D().low; }
 
-		register16_t& X() { return m_x; }
-		register16_t& Y() { return m_y; }
-		register16_t& U() { return m_u; }
-		register16_t& S() { return m_s; }
+		auto& X() { return m_x; }
+		auto& Y() { return m_y; }
+		auto& U() { return m_u; }
+		auto& S() { return m_s; }
 
-		uint8_t& DP() { return m_dp; }
-		uint8_t& CC() { return m_cc; }
+		auto& DP() { return m_dp; }
+		auto& CC() { return m_cc; }
+		const auto& CC() const { return m_cc; }
 
-		PinLevel& NMI() { return m_nmiLine; }		// In
-		PinLevel& FIRQ() { return m_firqLine; }		// In
+		auto& NMI() { return m_nmiLine; }		// In
+		auto& FIRQ() { return m_firqLine; }		// In
 
 		//	|---------------|-----------------------------------|
 		//	|	MPU State	|									|
@@ -88,13 +89,13 @@ namespace EightBit {
 		//	|	1	|	1	|	HALT Acknowledge				|
 		//	|-------|-------|-----------------------------------|
 
-		PinLevel& BA() { return m_baLine; }			// Out
-		PinLevel& BS() { return m_bsLine; }			// Out
+		auto& BA() { return m_baLine; }			// Out
+		auto& BS() { return m_bsLine; }			// Out
 
 	protected:
 		// Default push/pop handlers
 
-		virtual void push(uint8_t value) final { pushS(value);  }
+		virtual void push(const uint8_t value) final { pushS(value);  }
 		virtual uint8_t pop() final { return popS(); }
 
 		// Interrupt (etc.) handlers
@@ -115,16 +116,16 @@ namespace EightBit {
 		// Stack manipulation
 
 		void push(register16_t& stack, uint8_t value);
-		void pushS(uint8_t value) { push(S(), value); }
-		void pushU(uint8_t value) { push(U(), value); }
+		void pushS(const uint8_t value) { push(S(), value); }
+		void pushU(const uint8_t value) { push(U(), value); }
 
-		void pushWord(register16_t& stack, register16_t value) {
+		void pushWord(register16_t& stack, const register16_t value) {
 			push(stack, value.low);
 			push(stack, value.high);
 		}
 
-		void pushWordS(register16_t value) { pushWord(S(), value); }
-		void pushWordU(register16_t value) { pushWord(U(), value); }
+		void pushWordS(const register16_t value) { pushWord(S(), value); }
+		void pushWordU(const register16_t value) { pushWord(U(), value); }
 
 		uint8_t pop(register16_t& stack);
 		uint8_t popS() { return pop(S()); }
@@ -133,11 +134,11 @@ namespace EightBit {
 		register16_t popWord(register16_t& stack) {
 			const auto high = pop(stack);
 			const auto low = pop(stack);
-			return register16_t(low, high);
+			return { low, high };
 		}
 
-		register16_t popWordS() { return popWord(S()); }
-		register16_t popWordU() { return popWord(U()); }
+		auto popWordS() { return popWord(S()); }
+		auto popWordU() { return popWord(U()); }
 
 		// Interrupt (etc.) handlers
 
@@ -186,46 +187,46 @@ namespace EightBit {
 
 		// Flag adjustment
 
-		template<class T> void adjustZero(T datum) { clearFlag(CC(), ZF, datum); }
-		void adjustZero(register16_t datum) { clearFlag(CC(), ZF, datum.word); }
-		void adjustNegative(uint8_t datum) { setFlag(CC(), NF, datum & Bit7); }
-		void adjustNegative(uint16_t datum) { setFlag(CC(), NF, datum & Bit15); }
-		void adjustNegative(register16_t datum) { adjustNegative(datum.word); }
+		template<class T> void adjustZero(const T datum) { clearFlag(CC(), ZF, datum); }
+		void adjustZero(const register16_t datum) { clearFlag(CC(), ZF, datum.word); }
+		void adjustNegative(const uint8_t datum) { setFlag(CC(), NF, datum & Bit7); }
+		void adjustNegative(const uint16_t datum) { setFlag(CC(), NF, datum & Bit15); }
+		void adjustNegative(const register16_t datum) { adjustNegative(datum.word); }
 
-		template<class T> void adjustNZ(T datum) {
+		template<class T> void adjustNZ(const T datum) {
 			adjustZero(datum);
 			adjustNegative(datum);
 		}
 
-		void adjustCarry(uint16_t datum) { setFlag(CC(), CF, datum & Bit8); }		// 8-bit addition
-		void adjustCarry(uint32_t datum) { setFlag(CC(), CF, datum & Bit16); }		// 16-bit addition
-		void adjustCarry(register16_t datum) { adjustCarry(datum.word); }
+		void adjustCarry(const uint16_t datum) { setFlag(CC(), CF, datum & Bit8); }		// 8-bit addition
+		void adjustCarry(const uint32_t datum) { setFlag(CC(), CF, datum & Bit16); }		// 16-bit addition
+		void adjustCarry(const register16_t datum) { adjustCarry(datum.word); }
 
-		void adjustBorrow(uint16_t datum) { clearFlag(CC(), CF, datum & Bit8); }	// 8-bit subtraction
-		void adjustBorrow(uint32_t datum) { clearFlag(CC(), CF, datum & Bit16); }	// 16-bit subtraction
-		void adjustBorrow(register16_t datum) { adjustBorrow(datum.word); }
+		void adjustBorrow(const uint16_t datum) { clearFlag(CC(), CF, datum & Bit8); }	// 8-bit subtraction
+		void adjustBorrow(const uint32_t datum) { clearFlag(CC(), CF, datum & Bit16); }	// 16-bit subtraction
+		void adjustBorrow(const register16_t datum) { adjustBorrow(datum.word); }
 
-		void adjustOverflow(uint8_t before, uint8_t data, register16_t after) {
+		void adjustOverflow(const uint8_t before, const uint8_t data, const register16_t after) {
 			const uint8_t lowAfter = after.low;
 			const uint8_t highAfter = after.high;
 			setFlag(CC(), VF, (before ^ data ^ lowAfter ^ (highAfter << 7)) & Bit7);
 		}
 
-		void adjustOverflow(uint16_t before, uint16_t data, uint32_t after) {
+		void adjustOverflow(const uint16_t before, const uint16_t data, const uint32_t after) {
 			const uint16_t lowAfter = after & Mask16;
 			const uint16_t highAfter = after >> 16;
 			setFlag(CC(), VF, (before ^ data ^ lowAfter ^ (highAfter << 15)) & Bit15);
 		}
 
-		void adjustOverflow(register16_t before, register16_t data, register16_t after) {
+		void adjustOverflow(const register16_t before, const register16_t data, const register16_t after) {
 			adjustOverflow(before.word, data.word, after.word);
 		}
 
-		void adjustHalfCarry(uint8_t before, uint8_t data, uint8_t after) {
+		void adjustHalfCarry(const uint8_t before, const uint8_t data, const uint8_t after) {
 			setFlag(CC(), HF, (before ^ data ^ after) & Bit4);
 		}
 
-		void adjustAddition(uint8_t before, uint8_t data, register16_t after) {
+		void adjustAddition(const uint8_t before, const uint8_t data, const register16_t after) {
 			const auto result = after.low;
 			adjustNZ(result);
 			adjustCarry(after);
@@ -233,66 +234,66 @@ namespace EightBit {
 			adjustHalfCarry(before, data, result);
 		}
 
-		void adjustAddition(uint16_t before, uint16_t data, uint32_t after) {
+		void adjustAddition(const uint16_t before, const uint16_t data, const uint32_t after) {
 			const register16_t result = after & Mask16;
 			adjustNZ(result);
 			adjustCarry(after);
 			adjustOverflow(before, data, after);
 		}
 
-		void adjustAddition(register16_t before, register16_t data, uint32_t after) {
+		void adjustAddition(const register16_t before, const register16_t data, const uint32_t after) {
 			adjustAddition(before.word, data.word, after);
 		}
 
-		void adjustSubtraction(uint8_t before, uint8_t data, register16_t after) {
+		void adjustSubtraction(const uint8_t before, const uint8_t data, const register16_t after) {
 			const auto result = after.low;
 			adjustNZ(result);
 			adjustCarry(after);
 			adjustOverflow(before, data, after);
 		}
 
-		void adjustSubtraction(uint16_t before, uint16_t data, uint32_t after) {
+		void adjustSubtraction(const uint16_t before, const uint16_t data, const uint32_t after) {
 			const register16_t result = after & Mask16;
 			adjustNZ(result);
 			adjustCarry(after);
 			adjustOverflow(before, data, after);
 		}
 
-		void adjustSubtraction(register16_t before, register16_t data, uint32_t after) {
+		void adjustSubtraction(const register16_t before, const register16_t data, const uint32_t after) {
 			adjustSubtraction(before.word, data.word, after);
 		}
 
 		// Flag checking
 
-		int fastInterruptMasked() { return CC() & FF; }
-		int interruptMasked() { return CC() & IF; }
+		auto fastInterruptMasked() const { return CC() & FF; }
+		auto interruptMasked() const { return CC() & IF; }
 
-		int negative() { return CC() & NF; }
-		int zero() { return CC() & ZF; }
-		int overflow() { return CC() & VF; }
-		int carry() { return CC() & CF; }
-		int halfCarry() { return CC() & HF; }
+		auto negative() const { return CC() & NF; }
+		auto zero() const { return CC() & ZF; }
+		auto overflow() const { return CC() & VF; }
+		auto carry() const { return CC() & CF; }
+		auto halfCarry() const { return CC() & HF; }
 
-		bool LS() { return carry() | (zero() >> 2); }									// (C OR Z)
-		bool HI() { return !LS(); }														// !(C OR Z)
-		bool LT() { return (negative() >> 1) ^ overflow(); }							// (N XOR V)
-		bool GE() { return !LT(); }														// !(N XOR V)
-		bool LE() { return (zero() >> 2) | ((negative() >> 3) ^ (overflow() >> 1)); }	// (Z OR (N XOR V))
-		bool GT() { return !LE(); }														// !(Z OR (N XOR V))
+		auto LS() const { return carry() | (zero() >> 2); }									// (C OR Z)
+		auto HI() const { return !LS(); }													// !(C OR Z)
+		auto LT() const { return (negative() >> 3) ^ (overflow() >> 1); }					// (N XOR V)
+		auto GE() const { return !LT(); }													// !(N XOR V)
+		auto LE() const { return (zero() >> 2) | ((negative() >> 3) ^ (overflow() >> 1)); }	// (Z OR (N XOR V))
+		auto GT() const { return !LE(); }													// !(Z OR (N XOR V))
 
 		// Branching
 
-		bool branch(register16_t destination, int condition) {
+		auto branch(const register16_t destination, const int condition) {
 			if (condition)
 				jump(destination);
 			return !!condition;
 		}
 
-		void branchShort(int condition) {
+		void branchShort(const int condition) {
 			branch(Address_relative_byte(), condition);
 		}
 
-		void branchLong(int condition) {
+		void branchLong(const int condition) {
 			if (branch(Address_relative_word(), condition))
 				addCycle();
 		}
@@ -304,13 +305,13 @@ namespace EightBit {
 		void saveRegisterState();
 		void restoreRegisterState();
 
-		// Instruction implementations
-
 		template <class T> T through(const T data) {
 			clearFlag(CC(), VF);
 			adjustNZ(data);
 			return data;
 		}
+
+		// Instruction implementations
 
 		template <class T> T ld(const T data) {
 			return through(data);
