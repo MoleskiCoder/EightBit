@@ -34,10 +34,10 @@ namespace EightBit {
 
 			Bus() noexcept;
 
-			LR35902& CPU() { return m_cpu; }
-			Ram& VRAM() { return m_videoRam; }
-			Ram& OAMRAM() { return m_oamRam; }
-			IoRegisters& IO() { return m_ioPorts; }
+			auto& CPU() { return m_cpu; }
+			auto& VRAM() { return m_videoRam; }
+			auto& OAMRAM() { return m_oamRam; }
+			auto& IO() { return m_ioPorts; }
 
 			void reset();
 

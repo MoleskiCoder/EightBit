@@ -26,7 +26,7 @@ namespace EightBit {
 			Signal<LR35902> ExecutingInstruction;
 			Signal<LR35902> ExecutedInstruction;
 
-			int clockCycles() const {
+			auto clockCycles() const {
 				return cycles() * 4;
 			}
 
@@ -61,7 +61,7 @@ namespace EightBit {
 
 			bool& IME() { return m_ime; }
 
-			uint8_t R(const int r) {
+			auto R(const int r) {
 				ASSUME(r >= 0);
 				ASSUME(r <= 7);
 				switch (r) {
@@ -119,7 +119,7 @@ namespace EightBit {
 				}
 			}
 
-			register16_t& RP(const int rp) {
+			auto& RP(const int rp) {
 				ASSUME(rp >= 0);
 				ASSUME(rp <= 3);
 				switch (rp) {
@@ -136,7 +136,7 @@ namespace EightBit {
 				}
 			}
 
-			register16_t& RP2(const int rp) {
+			auto& RP2(const int rp) {
 				ASSUME(rp >= 0);
 				ASSUME(rp <= 3);
 				switch (rp) {
@@ -153,11 +153,11 @@ namespace EightBit {
 				}
 			}
 
-			void adjustHalfCarryAdd(uint8_t before, uint8_t value, int calculation) {
+			void adjustHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) {
 				setFlag(F(), HC, calculateHalfCarryAdd(before, value, calculation));
 			}
 
-			void adjustHalfCarrySub(uint8_t before, uint8_t value, int calculation) {
+			void adjustHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) {
 				setFlag(F(), HC, calculateHalfCarrySub(before, value, calculation));
 			}
 

@@ -10,7 +10,7 @@ EightBit::GameBoy::Profiler::Profiler(Bus& bus, LR35902& cpu)
 	std::fill(m_addresses.begin(), m_addresses.end(), 0);
 }
 
-void EightBit::GameBoy::Profiler::add(uint16_t address, uint8_t instruction) {
+void EightBit::GameBoy::Profiler::add(const uint16_t address, const uint8_t instruction) {
 
 	m_instructions[instruction]++;
 

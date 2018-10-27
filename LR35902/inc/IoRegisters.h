@@ -113,7 +113,7 @@ namespace EightBit {
 
 			void transferDma();
 
-			void triggerInterrupt(int cause) {
+			void triggerInterrupt(const int cause) {
 				poke(IF, peek(IF) | cause);
 			}
 
@@ -136,8 +136,8 @@ namespace EightBit {
 			void disableBootRom() { m_disableBootRom = true; }
 			void enableBootRom() { m_disableBootRom = false; }
 
-			bool bootRomDisabled() const { return m_disableBootRom; }
-			bool bootRomEnabled() const { return !bootRomDisabled(); }
+			auto bootRomDisabled() const { return m_disableBootRom; }
+			auto bootRomEnabled() const { return !bootRomDisabled(); }
 
 			void pressRight() { m_p14 = m_p10 = false; triggerKeypadInterrupt(); }
 			void releaseRight() { m_p14 = m_p10 = true; }
@@ -187,7 +187,7 @@ namespace EightBit {
 
 			void checkTimer(int cycles);
 
-			void mask(uint16_t address, uint8_t masking) {
+			void mask(const uint16_t address, const uint8_t masking) {
 				poke(address, peek(address) | ~masking);
 			}
 

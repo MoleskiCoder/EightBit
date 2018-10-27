@@ -18,7 +18,7 @@ namespace EightBit {
 			: m_colours(4) {
 			}
 
-			uint32_t getColour(size_t index) const {
+			auto getColour(size_t index) const {
 				return m_colours[index];
 			}
 
