@@ -14,8 +14,8 @@ class Board : public EightBit::Bus {
 public:
 	Board(const Configuration& configuration);
 
-	EightBit::mc6809& CPU() { return m_cpu; }
-	EightBit::mc6850& ACIA() { return m_acia; }
+	auto& CPU() { return m_cpu; }
+	auto& ACIA() { return m_acia; }
 
 	void initialise();
 
@@ -35,7 +35,7 @@ private:
 	EightBit::Disassembly m_disassembler;
 
 	uint64_t m_totalCycleCount = 0UL;
-	int64_t m_frameCycleCount = 0UL;
+	int64_t m_frameCycleCount = 0L;
 
 	// The m_disassembleAt and m_ignoreDisassembly are used to skip pin events
 	EightBit::register16_t m_disassembleAt = 0x0000;
@@ -64,4 +64,6 @@ private:
 
 	// Use the bus data to update the ACIA access/address pins
 	void updateAciaPins(EightBit::Chip::PinLevel rw);
+
+	bool accessAcia();
 };

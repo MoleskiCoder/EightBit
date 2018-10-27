@@ -190,59 +190,59 @@ namespace EightBit {
 		};
 
 		// Receive data, (I) Active high
-		PinLevel& RXDATA() { return m_RXDATA; }
+		auto& RXDATA() { return m_RXDATA; }
 
 		// Transmit data, (O) Active high
-		PinLevel& TXDATA() { return m_TXDATA; }
+		auto& TXDATA() { return m_TXDATA; }
 
 		// Request to send, (O) Active low
-		PinLevel& RTS() { return m_RTS; }
+		auto& RTS() { return m_RTS; }
 
 		// Clear to send, (I) Active low
-		PinLevel& CTS() { return m_CTS; }
+		auto& CTS() { return m_CTS; }
 
 		// Data carrier detect, (I) Active low
-		PinLevel& DCD() { return m_DCD; }
+		auto& DCD() { return m_DCD; }
 
 		// Transmit clock, (I) Active high
-		PinLevel& RXCLK() { return m_RXCLK; }
+		auto& RXCLK() { return m_RXCLK; }
 
 		// Receive clock, (I) Active high
-		PinLevel& TXCLK() { return m_TXCLK; }
+		auto& TXCLK() { return m_TXCLK; }
 
 		// Chip select, bit 0, (I) Active high
-		PinLevel& CS0() { return m_CS0; }
+		auto& CS0() { return m_CS0; }
 
 		// Chip select, bit 1, (I) Active high
-		PinLevel& CS1() { return m_CS1; }
+		auto& CS1() { return m_CS1; }
 
 		// Chip select, bit 2, (I) Active low
-		PinLevel& CS2() { return m_CS2; }
+		auto& CS2() { return m_CS2; }
 
 		// Register select, (I) Active high
-		PinLevel& RS() { return m_RS; }
+		auto& RS() { return m_RS; }
 
 		// Read/Write, (I) Read high, write low
-		PinLevel& RW() { return m_RW; }
+		auto& RW() { return m_RW; }
 
 		// ACIA Enable, (I) Active high
-		PinLevel& E() { return m_E; }
+		auto& E() { return m_E; }
 
 		// Interrupt request, (O) Active low
-		PinLevel& IRQ() { return m_IRQ; }
+		auto& IRQ() { return m_IRQ; }
 
 		// Data, (I/O)
-		uint8_t& DATA() { return m_data; }
+		auto& DATA() { return m_data; }
 
 		// Expose these internal registers, so we can update internal state
 
 		// Transmit data register;
-		uint8_t& TDR() { return m_TDR; }
+		auto& TDR() { return m_TDR; }
 
 		// Receive data register;
-		uint8_t& RDR() { return m_RDR; }
+		auto& RDR() { return m_RDR; }
 
-		bool access();
+		bool tick();
 
 		bool selected();
 
@@ -272,12 +272,19 @@ namespace EightBit {
 		bool isTransmitInterruptRequired() const;
 		bool isReceiveInterruptRequired() const;
 
+		bool transmitInterruptEnabled() const { return m_transmitControl == ReadyLowInterruptEnabled;  }
+		bool receiveInterruptEnabled() const { return m_receiveControl == ReceiveInterruptEnable;  }
+
+		bool transmitReadyHigh() const { return m_transmitControl == ReadyHighInterruptDisabled; }
+		bool transmitReadyLow() const { return !transmitReadyHigh(); }
+
 		PinLevel m_RXDATA;
 		PinLevel m_TXDATA;
 
 		PinLevel m_RTS;
 		PinLevel m_CTS;
 		PinLevel m_DCD;
+		PinLevel m_oldDCD;	// So we can detect low -> high transition
 
 		PinLevel m_RXCLK;
 		PinLevel m_TXCLK;
@@ -293,6 +300,8 @@ namespace EightBit {
 		PinLevel m_IRQ;
 
 		uint8_t m_data;
+
+		bool m_statusRead = false;
 
 		// Control registers
 		CounterDivideSelect m_counterDivide;

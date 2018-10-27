@@ -28,7 +28,7 @@ void Board::initialise() {
 	updateAciaPins(EightBit::Chip::PinLevel::Low);
 	ACIA().lower(ACIA().CTS());
 	ACIA().powerOn();
-	ACIA().access();
+	accessAcia();
 
 	// Once the reset has completed, we can wire the ACIA event handlers...
 	ACIA().Transmitting.connect(std::bind(&Board::Acia_Transmitting, this, std::placeholders::_1));
@@ -75,13 +75,13 @@ void Board::Bus_WrittenByte_Acia(EightBit::EventArgs&) {
 	updateAciaPins(EightBit::Chip::Low);
 	if (ACIA().selected()) {
 		ACIA().DATA() = peek(ADDRESS());
-		ACIA().access();
+		accessAcia();
 	}
 }
 
 void Board::Bus_ReadingByte_Acia(EightBit::EventArgs&) {
 	updateAciaPins(EightBit::Chip::High);
-	if (ACIA().access())
+	if (accessAcia())
 		poke(ADDRESS(), ACIA().DATA());
 }
 
@@ -115,4 +115,11 @@ void Board::Cpu_ExecutedInstruction_Acia(EightBit::mc6809&) {
 void Board::Acia_Transmitting(EightBit::EventArgs&) {
 	std::cout << ACIA().TDR();
 	ACIA().markTransmitComplete();
+}
+
+bool Board::accessAcia() {
+	ACIA().raise(ACIA().E());
+	const bool accessed = ACIA().tick();
+	ACIA().lower(ACIA().E());
+	return accessed;
 }
