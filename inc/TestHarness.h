@@ -42,15 +42,15 @@ namespace EightBit {
 			return m_finishTime - m_startTime;
 		}
 
-		double getElapsedSeconds() const {
+		auto getElapsedSeconds() const {
 			return std::chrono::duration_cast<std::chrono::duration<double>>(getElapsedTime()).count();
 		}
 
-		double getCyclesPerSecond() const {
+		auto getCyclesPerSecond() const {
 			return (m_totalCycles / 1000000 ) / getElapsedSeconds();
 		}
 
-		long long getInstructionsPerSecond() {
+		auto getInstructionsPerSecond() {
 			auto floating = m_instructions / getElapsedSeconds();
 			return (long long)floating;
 		}
@@ -84,7 +84,7 @@ namespace EightBit {
 		uint64_t m_startHostCycles = 0;
 		uint64_t m_finishHostCycles = 0;
 
-		static std::chrono::steady_clock::time_point now() {
+		static auto now() {
 			return std::chrono::steady_clock::now();
 		}
 

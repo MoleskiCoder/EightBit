@@ -21,21 +21,21 @@ namespace EightBit {
 		Signal<EventArgs> ReadingByte;
 		Signal<EventArgs> ReadByte;
 
-		register16_t ADDRESS() const { return m_address; }
-		register16_t& ADDRESS() { return m_address; }
+		auto ADDRESS() const { return m_address; }
+		auto& ADDRESS() { return m_address; }
 
-		uint8_t DATA() const { return m_data; }
-		uint8_t& DATA() { return m_data; }
+		auto DATA() const { return m_data; }
+		auto& DATA() { return m_data; }
 
-		uint8_t peek() { return reference(); }
-		uint8_t peek(const uint16_t address) { return reference(address); }
-		uint8_t peek(const register16_t address) { return reference(address.word); }
+		auto peek() { return reference(); }
+		auto peek(const uint16_t address) { return reference(address); }
+		auto peek(const register16_t address) { return reference(address.word); }
 		void poke(const uint8_t value) { reference() = value; }
 		void poke(const uint16_t address, const uint8_t value) { reference(address) = value; }
 		void poke(const register16_t address, const uint8_t value) { reference(address.word) = value; }
 
 		uint8_t read();
-		template<class T> uint8_t read(const T address) {
+		template<class T> auto read(const T address) {
 			ADDRESS() = address;
 			return read();
 		}
@@ -50,7 +50,7 @@ namespace EightBit {
 	protected:
 		virtual MemoryMapping mapping(uint16_t address) = 0;
 		uint8_t& reference(uint16_t address);
-		uint8_t& reference(const register16_t address) { return reference(address.word); }
+		auto& reference(const register16_t address) { return reference(address.word); }
 		uint8_t& reference() { return reference(ADDRESS()); }
 
 		static std::map<uint16_t, std::vector<uint8_t>> parseHexFile(std::string path);

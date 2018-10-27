@@ -8,7 +8,7 @@ EightBit::register16_t EightBit::LittleEndianProcessor::getWord() {
 	const auto low = BUS().read();
 	++BUS().ADDRESS();
 	const auto high = BUS().read();
-	return register16_t(low, high);
+	return { low, high };
 }
 
 void EightBit::LittleEndianProcessor::setWord(const register16_t value) {
@@ -21,7 +21,7 @@ EightBit::register16_t EightBit::LittleEndianProcessor::getWordPaged(const uint8
 	const auto low = getBytePaged(page, offset);
 	++BUS().ADDRESS().low;
 	const auto high = BUS().read();
-	return register16_t(low, high);
+	return { low, high };
 }
 
 void EightBit::LittleEndianProcessor::setWordPaged(const uint8_t page, const uint8_t offset, const register16_t value) {
@@ -33,7 +33,7 @@ void EightBit::LittleEndianProcessor::setWordPaged(const uint8_t page, const uin
 EightBit::register16_t EightBit::LittleEndianProcessor::fetchWord() {
 	const auto low = fetchByte();
 	const auto high = fetchByte();
-	return register16_t(low, high);
+	return { low, high };
 }
 
 void EightBit::LittleEndianProcessor::pushWord(const register16_t value) {
@@ -44,13 +44,13 @@ void EightBit::LittleEndianProcessor::pushWord(const register16_t value) {
 EightBit::register16_t EightBit::LittleEndianProcessor::popWord() {
 	const auto low = pop();
 	const auto high = pop();
-	return register16_t(low, high);
+	return { low, high };
 }
 
 EightBit::register16_t EightBit::LittleEndianProcessor::peekWord(const register16_t address) {
 	const auto low = BUS().peek(address);
 	const auto high = BUS().peek(address + 1);
-	return register16_t(low, high);
+	return { low, high };
 }
 
 void EightBit::LittleEndianProcessor::pokeWord(const register16_t address, const register16_t value) {

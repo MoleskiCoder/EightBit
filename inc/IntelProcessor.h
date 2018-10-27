@@ -32,29 +32,29 @@ namespace EightBit {
 			}
 		};
 
-		const opcode_decoded_t& getDecodedOpcode(const int i) const {
+		const auto& getDecodedOpcode(const int i) const {
 			return m_decodedOpcodes[i];
 		}
 
-		register16_t& MEMPTR() { return m_memptr; }
+		auto& MEMPTR() { return m_memptr; }
 
-		register16_t& SP() { return m_sp; }
+		auto& SP() { return m_sp; }
 
 		virtual register16_t& AF() = 0;
-		uint8_t& A() { return AF().high; }
-		uint8_t& F() { return AF().low; }
+		auto& A() { return AF().high; }
+		auto& F() { return AF().low; }
 
 		virtual register16_t& BC() = 0;
-		uint8_t& B() { return BC().high; }
-		uint8_t& C() { return BC().low; }
+		auto& B() { return BC().high; }
+		auto& C() { return BC().low; }
 
 		virtual register16_t& DE() = 0;
-		uint8_t& D() { return DE().high; }
-		uint8_t& E() { return DE().low; }
+		auto& D() { return DE().high; }
+		auto& E() { return DE().low; }
 
 		virtual register16_t& HL() = 0;
-		uint8_t& H() { return HL().high; }
-		uint8_t& L() { return HL().low; }
+		auto& H() { return HL().high; }
+		auto& L() { return HL().low; }
 
 		virtual void powerOn() override;
 
@@ -101,17 +101,17 @@ namespace EightBit {
 
 		//
 
-		static int buildHalfCarryIndex(const uint8_t before, const uint8_t value, const int calculation) {
+		static auto buildHalfCarryIndex(const uint8_t before, const uint8_t value, const int calculation) {
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
-		static bool calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) {
+		static auto calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) {
 			static std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableAdd[index & Mask3];
 		}
 
-		static bool calculateHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) {
+		static auto calculateHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) {
 			std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableSub[index & Mask3];
@@ -128,24 +128,24 @@ namespace EightBit {
 		//
 
 		void restart(const uint8_t address) {
-			call(MEMPTR() = register16_t(address, 0));
+			call(MEMPTR() = { address, 0 });
 		}
 
-		bool callConditional(const int condition) {
+		auto callConditional(const int condition) {
 			MEMPTR() = fetchWord();
 			if (condition)
 				call(MEMPTR());
 			return !!condition;
 		}
 
-		bool jumpConditional(const int condition) {
+		auto jumpConditional(const int condition) {
 			MEMPTR() = fetchWord();
 			if (condition)
 				jump(MEMPTR());
 			return !!condition;
 		}
 
-		bool returnConditional(const int condition) {
+		auto returnConditional(const int condition) {
 			if (condition)
 				ret();
 			return !!condition;
@@ -155,7 +155,7 @@ namespace EightBit {
 			jump(MEMPTR() = PC() + offset);
 		}
 
-		bool jrConditional(const int condition) {
+		auto jrConditional(const int condition) {
 			const auto offset = fetchByte();
 			if (condition)
 				jr(offset);

@@ -10,9 +10,9 @@
 
 uint8_t EightBit::Bus::read() {
 	ReadingByte.fire(EventArgs::empty());
-	DATA() = reference();
+	const auto returned = DATA() = reference();
 	ReadByte.fire(EventArgs::empty());
-	return DATA();
+	return returned;
 }
 
 void EightBit::Bus::write() {

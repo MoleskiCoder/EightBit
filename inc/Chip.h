@@ -59,25 +59,25 @@ namespace EightBit {
 		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) { clearFlag(f, flag, !!condition); }
 		static void clearFlag(uint8_t& f, const int flag, const bool condition) { setFlag(f, flag, !condition); }
 
-		static bool raised(const PinLevel line) { return line == High; }
+		static auto raised(const PinLevel line) { return line == High; }
 		static void raise(PinLevel& line) { line = High; }
-		static bool lowered(const PinLevel line) { return line == Low; }
+		static auto lowered(const PinLevel line) { return line == Low; }
 		static void lower(PinLevel& line) { line = Low; }
 
 		static void match(PinLevel& line, int value);
 
-		static int highNibble(const int value) { return value >> 4; }
-		static int lowNibble(const int value) { return value & Mask4; }
+		static auto highNibble(const int value) { return value >> 4; }
+		static auto lowNibble(const int value) { return value & Mask4; }
 
-		static int higherNibble(const int value) { return value & 0xf0; }
-		static int lowerNibble(const int value) { return lowNibble(value); }
+		static auto higherNibble(const int value) { return value & 0xf0; }
+		static auto lowerNibble(const int value) { return lowNibble(value); }
 
-		static int promoteNibble(const int value) { return value << 4; }
-		static int demoteNibble(const int value) { return highNibble(value); }
+		static auto promoteNibble(const int value) { return value << 4; }
+		static auto demoteNibble(const int value) { return highNibble(value); }
 
-		PinLevel& POWER() { return m_powerLine; }
+		auto& POWER() { return m_powerLine; }
 
-		bool powered() { return raised(POWER()); }
+		auto powered() { return raised(POWER()); }
 		virtual void powerOn();
 		void powerOff() { lower(POWER()); }
 

@@ -36,58 +36,58 @@ namespace EightBit {
 		register16_t(const uint16_t w) noexcept : word(w) {}
 		register16_t(const uint8_t l, const uint8_t h) noexcept : low(l), high(h) {}
 
-		register16_t& operator++() noexcept {
+		auto& operator++() noexcept {
 			++word;
 			return *this;
 		}
 
-		register16_t& operator--() noexcept {
+		auto& operator--() noexcept {
 			--word;
 			return *this;
 		}
 
-		register16_t operator++(int) noexcept {
+		auto operator++(int) noexcept {
 			register16_t temporary(*this);
 			operator++();
 			return temporary;
 		}
 
-		register16_t operator--(int) noexcept {
+		auto operator--(int) noexcept {
 			register16_t temporary(*this);
 			operator--();
 			return temporary;
 		}
 
-		register16_t& operator+=(const register16_t rhs) noexcept {
+		auto& operator+=(const register16_t rhs) noexcept {
 			this->word += rhs.word;
 			return *this;
 		}
 
-		register16_t& operator-=(const register16_t rhs) noexcept {
+		auto& operator-=(const register16_t rhs) noexcept {
 			this->word -= rhs.word;
 			return *this;
 		}
 	};
 
-	inline bool operator==(const register16_t lhs, const register16_t rhs) noexcept {
+	inline auto operator==(const register16_t lhs, const register16_t rhs) noexcept {
 		return lhs.word == rhs.word;
 	}
 
-	inline bool operator!=(const register16_t lhs, const register16_t rhs) noexcept {
+	inline auto operator!=(const register16_t lhs, const register16_t rhs) noexcept {
 		return !(lhs == rhs);
 	}
 
-	inline register16_t operator+(register16_t lhs, const register16_t rhs) noexcept {
+	inline auto operator+(register16_t lhs, const register16_t rhs) noexcept {
 		lhs += rhs;
 		return lhs;
 	}
 
-	inline register16_t operator-(register16_t lhs, const register16_t rhs) noexcept {
+	inline auto operator-(register16_t lhs, const register16_t rhs) noexcept {
 		lhs -= rhs;
 		return lhs;
 	}
 
-	inline std::ostream& operator<<(std::ostream& output, const register16_t value) {  
+	inline auto& operator<<(std::ostream& output, const register16_t value) {  
 		return output << std::hex << std::setw(4) << std::setfill('0') << value.word;
 	}
 }

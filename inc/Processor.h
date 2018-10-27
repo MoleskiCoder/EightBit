@@ -15,12 +15,12 @@ namespace EightBit {
 		// x: sign extend this b-bit number to r
 		static int8_t signExtend(int b, uint8_t x);
 
-		register16_t& PC() { return m_pc; }
+		auto& PC() { return m_pc; }
 
-		PinLevel& RESET() { return m_resetLine; }
-		PinLevel& HALT() { return m_haltLine; }
-		PinLevel& INT() { return m_intLine; }
-		PinLevel& IRQ() { return INT(); }	// Synonym
+		auto& RESET() { return m_resetLine; }
+		auto& HALT() { return m_haltLine; }
+		auto& INT() { return m_intLine; }
+		auto& IRQ() { return INT(); }	// Synonym
 
 		virtual void powerOn();
 		void reset() { lower(RESET()); }
@@ -29,7 +29,7 @@ namespace EightBit {
 		virtual int step() = 0;
 		virtual int execute(uint8_t opcode) = 0;
 
-		int cycles() const { return m_cycles; }
+		auto cycles() const { return m_cycles; }
 
 		virtual register16_t peekWord(register16_t address) = 0;
 		virtual void pokeWord(register16_t address, register16_t value) = 0;
@@ -38,17 +38,17 @@ namespace EightBit {
 		Processor(Bus& memory);
 		virtual ~Processor() = default;
 
-		Bus& BUS() { return m_bus; }
+		auto& BUS() { return m_bus; }
 
-		bool halted() { return lowered(HALT()); }
-		void halt() { --PC();  lower(HALT()); }
-		void proceed() { ++PC(); raise(HALT()); }
+		auto halted() { return lowered(HALT()); }
+		auto halt() { --PC();  lower(HALT()); }
+		auto proceed() { ++PC(); raise(HALT()); }
 
 		virtual void handleRESET();
 		virtual void handleINT();
 		virtual void handleIRQ();
 
-		uint8_t getBytePaged(const uint8_t page, const uint8_t offset) {
+		auto getBytePaged(const uint8_t page, const uint8_t offset) {
 			return BUS().read(register16_t(offset, page));
 		}
 
@@ -56,7 +56,7 @@ namespace EightBit {
 			BUS().write(register16_t(offset, page), value);
 		}
 
-		uint8_t fetchByte() {
+		auto fetchByte() {
 			return BUS().read(PC()++);
 		}
 
@@ -74,7 +74,7 @@ namespace EightBit {
 		virtual void pushWord(const register16_t value) = 0;
 		virtual register16_t popWord() = 0;
 
-		register16_t getWord(const register16_t address) {
+		auto getWord(const register16_t address) {
 			BUS().ADDRESS() = address;
 			return getWord();
 		}

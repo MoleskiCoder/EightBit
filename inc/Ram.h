@@ -10,7 +10,7 @@ namespace EightBit {
 		: Memory(size) {
 		}
 
-		uint8_t& reference(const uint16_t address) {
+		auto& reference(const uint16_t address) {
 			return BYTES()[address];
 		}
 
