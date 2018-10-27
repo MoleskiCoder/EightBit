@@ -49,7 +49,7 @@ namespace EightBit {
 		register16_t de = 0xffff;
 		register16_t hl = 0xffff;
 
-		uint8_t R(int r) {
+		auto R(const int r) {
 			switch (r) {
 			case 0b000:
 				return B();
@@ -72,7 +72,7 @@ namespace EightBit {
 			}
 		}
 
-		void R(int r, uint8_t value) {
+		void R(int r, const uint8_t value) {
 			switch (r) {
 			case 0b000:
 				B() = value;
@@ -103,7 +103,7 @@ namespace EightBit {
 			}
 		}
 
-		register16_t& RP(int rp) {
+		auto& RP(const int rp) {
 			switch (rp) {
 			case 0b00:
 				return BC();
@@ -118,7 +118,7 @@ namespace EightBit {
 			}
 		}
 
-		register16_t& RP2(int rp) {
+		auto& RP2(const int rp) {
 			switch (rp) {
 			case 0b00:
 				return BC();

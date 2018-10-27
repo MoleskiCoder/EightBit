@@ -24,14 +24,14 @@ EightBit::register16_t& EightBit::Intel8080::HL() {
 }
 
 void EightBit::Intel8080::handleRESET() {
-	Processor::handleRESET();
+	IntelProcessor::handleRESET();
 	di();
 	addCycles(3);
 }
 
 
 void EightBit::Intel8080::handleINT() {
-	Processor::handleINT();
+	IntelProcessor::handleINT();
 	raise(HALT());
 	if (m_interruptEnable) {
 		di();
@@ -104,7 +104,7 @@ bool EightBit::Intel8080::returnConditionalFlag(const int flag) {
 	}
 }
 
-bool EightBit::Intel8080::callConditionalFlag(int flag) {
+bool EightBit::Intel8080::callConditionalFlag(const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return callConditional(!(F() & ZF));
@@ -127,13 +127,13 @@ bool EightBit::Intel8080::callConditionalFlag(int flag) {
 	}
 }
 
-void EightBit::Intel8080::add(register16_t value) {
+void EightBit::Intel8080::add(const register16_t value) {
 	const auto result = HL().word + value.word;
 	HL() = result;
 	setFlag(F(), CF, result & Bit16);
 }
 
-void EightBit::Intel8080::add(uint8_t value, int carry) {
+void EightBit::Intel8080::add(const uint8_t value, const int carry) {
 
 	const register16_t result = A() + value + carry;
 
@@ -145,11 +145,11 @@ void EightBit::Intel8080::add(uint8_t value, int carry) {
 	adjustSZP<Intel8080>(F(), A());
 }
 
-void EightBit::Intel8080::adc(uint8_t value) {
+void EightBit::Intel8080::adc(const uint8_t value) {
 	add(value, F() & CF);
 }
 
-void EightBit::Intel8080::subtract(uint8_t& operand, uint8_t value, int carry) {
+void EightBit::Intel8080::subtract(uint8_t& operand, const uint8_t value, const int carry) {
 
 	const register16_t result = operand - value - carry;
 
@@ -161,22 +161,22 @@ void EightBit::Intel8080::subtract(uint8_t& operand, uint8_t value, int carry) {
 	adjustSZP<Intel8080>(F(), operand);
 }
 
-void EightBit::Intel8080::sbb(uint8_t value) {
+void EightBit::Intel8080::sbb(const uint8_t value) {
 	subtract(A(), value, F() & CF);
 }
 
-void EightBit::Intel8080::andr(uint8_t value) {
+void EightBit::Intel8080::andr(const uint8_t value) {
 	setFlag(F(), AC, (A() | value) & Bit3);
 	clearFlag(F(), CF);
 	adjustSZP<Intel8080>(F(), A() &= value);
 }
 
-void EightBit::Intel8080::xorr(uint8_t value) {
+void EightBit::Intel8080::xorr(const uint8_t value) {
 	clearFlag(F(), AC | CF);
 	adjustSZP<Intel8080>(F(), A() ^= value);
 }
 
-void EightBit::Intel8080::orr(uint8_t value) {
+void EightBit::Intel8080::orr(const uint8_t value) {
 	clearFlag(F(), AC | CF);
 	adjustSZP<Intel8080>(F(), A() |= value);
 }
@@ -187,13 +187,13 @@ void EightBit::Intel8080::compare(const uint8_t value) {
 }
 
 void EightBit::Intel8080::rlc() {
-	auto carry = A() & Bit7;
+	const auto carry = A() & Bit7;
 	A() = (A() << 1) | (carry >> 7);
 	setFlag(F(), CF, carry);
 }
 
 void EightBit::Intel8080::rrc() {
-	auto carry = A() & Bit0;
+	const auto carry = A() & Bit0;
 	A() = (A() >> 1) | (carry << 7);
 	setFlag(F(), CF, carry);
 }
@@ -247,8 +247,8 @@ void EightBit::Intel8080::xhtl() {
 	H() = MEMPTR().high;
 }
 
-void EightBit::Intel8080::writePort(uint8_t port) {
-	BUS().ADDRESS() = register16_t(port, A());
+void EightBit::Intel8080::writePort(const uint8_t port) {
+	BUS().ADDRESS() = { port, A() };
 	BUS().DATA() = A();
 	writePort();
 }
@@ -257,8 +257,8 @@ void EightBit::Intel8080::writePort() {
 	m_ports.write(BUS().ADDRESS().low, BUS().DATA());
 }
 
-uint8_t EightBit::Intel8080::readPort(uint8_t port) {
-	BUS().ADDRESS() = register16_t(port, A());
+uint8_t EightBit::Intel8080::readPort(const uint8_t port) {
+	BUS().ADDRESS() = { port, A() };
 	return readPort();
 }
 
@@ -284,7 +284,7 @@ int EightBit::Intel8080::step() {
 	return cycles();
 }
 
-int EightBit::Intel8080::execute(uint8_t opcode) {
+int EightBit::Intel8080::execute(const uint8_t opcode) {
 
 	const auto& decoded = getDecodedOpcode(opcode);
 
@@ -301,7 +301,7 @@ int EightBit::Intel8080::execute(uint8_t opcode) {
 	return cycles();
 }
 
-void EightBit::Intel8080::execute(int x, int y, int z, int p, int q) {
+void EightBit::Intel8080::execute(const int x, const int y, const int z, const int p, const int q) {
 	switch (x) {
 	case 0:
 		switch (z) {
