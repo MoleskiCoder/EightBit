@@ -441,7 +441,7 @@ uint8_t EightBit::MOS6502::SUB_d(const uint8_t operand, const uint8_t data, cons
 	return promoteNibble(high) | lowNibble(low);
 }
 
-void EightBit::MOS6502::CMP(uint8_t first, uint8_t second) {
+void EightBit::MOS6502::CMP(const uint8_t first, const uint8_t second) {
 	const register16_t result = first - second;
 	adjustNZ(result.low);
 	clearFlag(P(), CF, result.high);
@@ -487,7 +487,7 @@ uint8_t EightBit::MOS6502::ADD_d(uint8_t operand, uint8_t data, int carry) {
 
 ////
 
-void EightBit::MOS6502::Branch(int8_t displacement) {
+void EightBit::MOS6502::Branch(const int8_t displacement) {
 	const auto page = PC().high;
 	PC() += displacement;
 	if (UNLIKELY(PC().high != page))
@@ -495,7 +495,7 @@ void EightBit::MOS6502::Branch(int8_t displacement) {
 	addCycle();
 }
 
-void EightBit::MOS6502::Branch(bool flag) {
+void EightBit::MOS6502::Branch(const bool flag) {
 	const int8_t displacement = AM_Immediate();
 	if (UNLIKELY(flag))
 		Branch(displacement);

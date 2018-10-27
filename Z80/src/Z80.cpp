@@ -38,15 +38,16 @@ void EightBit::Z80::powerOn() {
 	IV() = Mask8;
 
 	exxAF();
-	exx();
+	AF() = Mask16;
 
-	IX() = IY() = AF() = BC() = DE() = HL() = Mask16;
+	exx();
+	IX() = IY() = BC() = DE() = HL() = Mask16;
 
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 }
 
 void EightBit::Z80::handleRESET() {
-	Processor::handleRESET();
+	IntelProcessor::handleRESET();
 	di();
 	addCycles(3);
 }
@@ -60,7 +61,7 @@ void EightBit::Z80::handleNMI() {
 }
 
 void EightBit::Z80::handleINT() {
-	Processor::handleINT();
+	IntelProcessor::handleINT();
 	raise(HALT());
 	if (IFF1()) {
 		di();
@@ -73,7 +74,7 @@ void EightBit::Z80::handleINT() {
 			addCycles(13);
 			break;
 		case 2:
-			call(MEMPTR() = register16_t(BUS().DATA(), IV()));
+			call(MEMPTR() = { BUS().DATA(), IV() });
 			addCycles(19);
 			break;
 		default:
@@ -599,8 +600,7 @@ bool EightBit::Z80::otdr() {
 }
 
 void EightBit::Z80::rrd() {
-	MEMPTR() = BUS().ADDRESS() = HL();
-	++MEMPTR();
+	MEMPTR()++ = BUS().ADDRESS() = HL();
 	const auto memory = BUS().read();
 	BUS().write(promoteNibble(A()) | highNibble(memory));
 	A() = higherNibble(A()) | lowerNibble(memory);
@@ -609,8 +609,7 @@ void EightBit::Z80::rrd() {
 }
 
 void EightBit::Z80::rld() {
-	MEMPTR() = BUS().ADDRESS() = HL();
-	++MEMPTR();
+	MEMPTR()++ = BUS().ADDRESS() = HL();
 	const auto memory = BUS().read();
 	BUS().write(promoteNibble(memory) | lowNibble(A()));
 	A() = higherNibble(A()) | highNibble(memory);
@@ -619,7 +618,7 @@ void EightBit::Z80::rld() {
 }
 
 void EightBit::Z80::writePort(const uint8_t port) {
-	MEMPTR() = BUS().ADDRESS() = register16_t(port, A());
+	MEMPTR() = BUS().ADDRESS() = { port, A() };
 	BUS().DATA() = A();
 	writePort();
 	++MEMPTR().low;
@@ -630,7 +629,7 @@ void EightBit::Z80::writePort() {
 }
 
 uint8_t EightBit::Z80::readPort(const uint8_t port) {
-	MEMPTR() = BUS().ADDRESS() = register16_t(port, A());
+	MEMPTR() = BUS().ADDRESS() = { port, A() };
 	++MEMPTR().low;
 	return readPort();
 }
@@ -814,8 +813,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 	case 1:
 		switch (z) {
 		case 0: // Input from port with 16-bit address
-			MEMPTR() = BUS().ADDRESS() = BC();
-			++MEMPTR();
+			MEMPTR()++ = BUS().ADDRESS() = BC();
 			readPort();
 			if (LIKELY(y != 6))	// IN r[y],(C)
 				R(y, BUS().DATA());
@@ -824,8 +822,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			addCycles(12);
 			break;
 		case 1:	// Output to port with 16-bit address
-			MEMPTR() = BUS().ADDRESS() = BC();
-			++MEMPTR();
+			MEMPTR()++ = BUS().ADDRESS() = BC();
 			if (UNLIKELY(y == 6))	// OUT (C),0
 				BUS().DATA() = 0;
 			else		// OUT (C),r[y]
@@ -1105,15 +1102,13 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					MEMPTR() = BUS().ADDRESS() = BC();
-					++MEMPTR();
+					MEMPTR()++ = BUS().ADDRESS() = BC();
 					MEMPTR().high = BUS().DATA() = A();
 					BUS().write();
 					addCycles(7);
 					break;
 				case 1:	// LD (DE),A
-					MEMPTR() = BUS().ADDRESS() = DE();
-					++MEMPTR();
+					MEMPTR()++ = BUS().ADDRESS() = DE();
 					MEMPTR().high = BUS().DATA() = A();
 					BUS().write();
 					addCycles(7);
@@ -1124,8 +1119,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					addCycles(16);
 					break;
 				case 3: // LD (nn),A
-					MEMPTR() = BUS().ADDRESS() = fetchWord();
-					++MEMPTR();
+					MEMPTR()++ = BUS().ADDRESS() = fetchWord();
 					MEMPTR().high = BUS().DATA() = A();
 					BUS().write();
 					addCycles(13);
@@ -1137,14 +1131,12 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					MEMPTR() = BUS().ADDRESS() = BC();
-					++MEMPTR();
+					MEMPTR()++ = BUS().ADDRESS() = BC();
 					A() = BUS().read();
 					addCycles(7);
 					break;
 				case 1:	// LD A,(DE)
-					MEMPTR() = BUS().ADDRESS() = DE();
-					++MEMPTR();
+					MEMPTR()++ = BUS().ADDRESS() = DE();
 					A() = BUS().read();
 					addCycles(7);
 					break;
@@ -1154,8 +1146,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					addCycles(16);
 					break;
 				case 3:	// LD A,(nn)
-					MEMPTR() = BUS().ADDRESS() = fetchWord();
-					++MEMPTR();
+					MEMPTR()++ = BUS().ADDRESS() = fetchWord();
 					A() = BUS().read();
 					addCycles(13);
 					break;

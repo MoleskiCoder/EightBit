@@ -63,10 +63,10 @@ namespace EightBit {
 
 		void interrupt(uint8_t vector);
 
-		void adjustZero(uint8_t datum) { clearFlag(P(), ZF, datum); }
-		void adjustNegative(uint8_t datum) { setFlag(P(), NF, datum & NF); }
+		void adjustZero(const uint8_t datum) { clearFlag(P(), ZF, datum); }
+		void adjustNegative(const uint8_t datum) { setFlag(P(), NF, datum & NF); }
 		
-		void adjustNZ(uint8_t datum) {
+		void adjustNZ(const uint8_t datum) {
 			adjustZero(datum);
 			adjustNegative(datum);
 		}
@@ -76,19 +76,19 @@ namespace EightBit {
 
 		// Address resolution
 
-		register16_t Address_Absolute() {
+		auto Address_Absolute() {
 			return fetchWord();
 		}
 
-		uint8_t Address_ZeroPage() {
+		auto Address_ZeroPage() {
 			return fetchByte();
 		}
 
-		register16_t Address_ZeroPageIndirect() {
+		auto Address_ZeroPageIndirect() {
 			return getWordPaged(0, Address_ZeroPage());
 		}
 
-		register16_t Address_Indirect() {
+		auto Address_Indirect() {
 			const auto address = Address_Absolute();
 			return getWordPaged(address.high, address.low);
 		}
@@ -101,110 +101,113 @@ namespace EightBit {
 			return Address_ZeroPage() + Y();
 		}
 
-		std::tuple<register16_t, bool> Address_AbsoluteX() {
+		auto Address_AbsoluteX() {
 			auto address = Address_Absolute();
 			const auto page = address.high;
 			address += X();
-			return std::tuple<register16_t, bool>(address, address.high != page);
+			return std::make_pair(address, address.high != page);
 		}
 
-		std::tuple<register16_t, bool> Address_AbsoluteY() {
+		auto Address_AbsoluteY() {
 			auto address = Address_Absolute();
 			const auto page = address.high;
 			address += Y();
-			return std::tuple<register16_t, bool>(address, address.high != page);
+			return std::make_pair(address, address.high != page);
 		}
 
-		register16_t Address_IndexedIndirectX() {
+		auto Address_IndexedIndirectX() {
 			return getWordPaged(0, Address_ZeroPageX());
 		}
 
-		std::tuple<register16_t, bool> Address_IndirectIndexedY() {
+		auto Address_IndirectIndexedY() {
 			auto address = Address_ZeroPageIndirect();
 			const auto page = address.high;
 			address += Y();
-			return std::tuple<register16_t, bool>(address, address.high != page);
+			return std::make_pair(address, address.high != page);
 		}
 
 		// Addressing modes, read
 
-		uint8_t AM_Immediate() {
+		auto AM_Immediate() {
 			return fetchByte();
 		}
 
-		uint8_t AM_Absolute() {
+		auto AM_Absolute() {
 			return BUS().read(Address_Absolute());
 		}
 
-		uint8_t AM_ZeroPage() {
+		auto AM_ZeroPage() {
 			return BUS().read(Address_ZeroPage());
 		}
 
-		uint8_t AM_AbsoluteX() {
-			const auto ap = Address_AbsoluteX();
-			if (UNLIKELY(std::get<1>(ap)))
+		auto AM_AbsoluteX() {
+			const auto [address, paged] = Address_AbsoluteX();
+			if (UNLIKELY(paged))
 				addCycle();
-			return BUS().read(std::get<0>(ap));
+			return BUS().read(address);
 		}
 
-		uint8_t AM_AbsoluteY() {
-			const auto ap = Address_AbsoluteY();
-			if (UNLIKELY(std::get<1>(ap)))
+		auto AM_AbsoluteY() {
+			const auto [address, paged] = Address_AbsoluteY();
+			if (UNLIKELY(paged))
 				addCycle();
-			return BUS().read(std::get<0>(ap));
+			return BUS().read(address);
 		}
 
-		uint8_t AM_ZeroPageX() {
+		auto AM_ZeroPageX() {
 			return BUS().read(Address_ZeroPageX());
 		}
 
-		uint8_t AM_ZeroPageY() {
+		auto AM_ZeroPageY() {
 			return BUS().read(Address_ZeroPageY());
 		}
 
-		uint8_t AM_IndexedIndirectX() {
+		auto AM_IndexedIndirectX() {
 			return BUS().read(Address_IndexedIndirectX());
 		}
 
-		uint8_t AM_IndirectIndexedY() {
-			const auto ap = Address_IndirectIndexedY();
-			if (UNLIKELY(std::get<1>(ap)))
+		auto AM_IndirectIndexedY() {
+			const auto [address, paged] = Address_IndirectIndexedY();
+			if (UNLIKELY(paged))
 				addCycle();
-			return BUS().read(std::get<0>(ap));
+			return BUS().read(address);
 		}
 
 		// Addressing modes, write
 
-		void AM_Absolute(uint8_t value) {
+		void AM_Absolute(const uint8_t value) {
 			BUS().write(Address_Absolute(), value);
 		}
 
-		void AM_ZeroPage(uint8_t value) {
+		void AM_ZeroPage(const uint8_t value) {
 			BUS().write(Address_ZeroPage(), value);
 		}
 
-		void AM_AbsoluteX(uint8_t value) {
-			BUS().write(std::get<0>(Address_AbsoluteX()), value);
+		void AM_AbsoluteX(const uint8_t value) {
+			const auto [address, paged] = Address_AbsoluteX();
+			BUS().write(address, value);
 		}
 
-		void AM_AbsoluteY(uint8_t value) {
-			BUS().write(std::get<0>(Address_AbsoluteY()), value);
+		void AM_AbsoluteY(const uint8_t value) {
+			const auto [address, paged] = Address_AbsoluteY();
+			BUS().write(address, value);
 		}
 
-		void AM_ZeroPageX(uint8_t value) {
+		void AM_ZeroPageX(const uint8_t value) {
 			BUS().write(Address_ZeroPageX(), value);
 		}
 
-		void AM_ZeroPageY(uint8_t value) {
+		void AM_ZeroPageY(const uint8_t value) {
 			BUS().write(Address_ZeroPageY(), value);
 		}
 
-		void AM_IndexedIndirectX(uint8_t value) {
+		void AM_IndexedIndirectX(const uint8_t value) {
 			BUS().write(Address_IndexedIndirectX(), value);
 		}
 
-		void AM_IndirectIndexedY(uint8_t value) {
-			BUS().write(std::get<0>(Address_IndirectIndexedY()), value);
+		void AM_IndirectIndexedY(const uint8_t value) {
+			const auto [address, paged] = Address_IndirectIndexedY();
+			BUS().write(address, value);
 		}
 
 		// Operations
@@ -219,77 +222,77 @@ namespace EightBit {
 			A() = SBC(A(), value);
 		}
 
-		void SLO(uint8_t value) {
+		void SLO(const uint8_t value) {
 			const auto result = ASL(value);
 			BUS().write(result);
 			ORA(result);
 		}
 
-		void SRE(uint8_t value) {
+		void SRE(const uint8_t value) {
 			const auto result = LSR(value);
 			BUS().write(result);
 			EORA(result);
 		}
 
-		void RLA(uint8_t value) {
+		void RLA(const uint8_t value) {
 			const auto result = ROL(value);
 			BUS().write(result);
 			ANDA(result);
 		}
 
-		void RRA(uint8_t value) {
+		void RRA(const uint8_t value) {
 			const auto result = ROR(value);
 			BUS().write(result);
 			A() = ADC(A(), result);
 		}
 
-		void LAX(uint8_t value) {
+		void LAX(const uint8_t value) {
 			adjustNZ(X() = A() = value);
 		}
 
-		void AAC(uint8_t value) {
+		void AAC(const uint8_t value) {
 			ANDA(value);
 			setFlag(P(), CF, A() & Bit7);
 		}
 
-		void ASR(uint8_t value) {
+		void ASR(const uint8_t value) {
 			A() = LSR(A() & value);
 		}
 
-		void ARR(uint8_t value) {
+		void ARR(const uint8_t value) {
 		}
 
-		void ATX(uint8_t value) {
+		void ATX(const uint8_t value) {
 			ANDA(value);
 			X() = A();
 		}
 
-		void AXS(uint8_t value) {
+		void AXS(const uint8_t value) {
 		}
 
 		//
 
-		uint8_t DEC(uint8_t value) {
+		auto DEC(uint8_t value) {
 			const auto result = --value;
 			adjustNZ(result);
 			return result;
 		}
 
-		uint8_t INC(uint8_t value) {
+		auto INC(uint8_t value) {
 			const auto result = ++value;
 			adjustNZ(result);
 			return result;
 		}
 
-		void ORA(uint8_t value) {
+		void ORA(const uint8_t value) {
 			adjustNZ(A() |= value);
 		}
 
-		void ANDA(uint8_t value) {
+		void ANDA(const uint8_t value) {
 			adjustNZ(A() &= value);
 		}
 
-		void EORA(uint8_t value) {
+		void EORA(const uint8_t value) {
 			adjustNZ(A() ^= value);
 		}
 

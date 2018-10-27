@@ -28,7 +28,7 @@ namespace EightBit {
 				return (high << 7) | variable;
 			}
 
-			refresh_t& operator++() {
+			auto& operator++() {
 				++variable;
 				return *this;
 			}
@@ -51,8 +51,8 @@ namespace EightBit {
 		Signal<Z80> ExecutingInstruction;
 		Signal<Z80> ExecutedInstruction;
 
-		PinLevel& NMI() { return m_nmiLine; }		// In
-		PinLevel& M1() { return m_m1Line; }			// Out
+		auto& NMI() { return m_nmiLine; }		// In
+		auto& M1() { return m_m1Line; }			// Out
 
 		virtual int execute(uint8_t opcode) final;
 		virtual int step() final;
@@ -63,19 +63,19 @@ namespace EightBit {
 		virtual register16_t& DE() final;
 		virtual register16_t& HL() final;
 
-		register16_t& IX() { return m_ix; }
-		uint8_t& IXH() { return IX().high; }
-		uint8_t& IXL() { return IX().low; }
+		auto& IX() { return m_ix; }
+		auto& IXH() { return IX().high; }
+		auto& IXL() { return IX().low; }
 
-		register16_t& IY() { return m_iy; }
-		uint8_t& IYH() { return IY().high; }
-		uint8_t& IYL() { return IY().low; }
+		auto& IY() { return m_iy; }
+		auto& IYH() { return IY().high; }
+		auto& IYL() { return IY().low; }
 
-		refresh_t& REFRESH() { return m_refresh; }
-		uint8_t& IV() { return iv; }
-		int& IM() { return m_interruptMode; }
-		bool& IFF1() { return m_iff1; }
-		bool& IFF2() { return m_iff2; }
+		auto& REFRESH() { return m_refresh; }
+		auto& IV() { return iv; }
+		auto& IM() { return m_interruptMode; }
+		auto& IFF1() { return m_iff1; }
+		auto& IFF2() { return m_iff2; }
 
 		void exx() {
 			m_registerSet ^= 1;
@@ -132,7 +132,50 @@ namespace EightBit {
 			m_displacement = fetchByte();
 		}
 
-		uint8_t R(const int r) {
+		auto& HL2() {
+			if (LIKELY(!m_displaced))
+				return HL();
+			if (m_prefixDD)
+				return IX();
+			// Must be FD prefix
+			return IY();
+		}
+
+		auto& RP(const int rp) {
+			ASSUME(rp >= 0);
+			ASSUME(rp <= 3);
+			switch (rp) {
+			case 0:
+				return BC();
+			case 1:
+				return DE();
+			case 2:
+				return HL2();
+			case 3:
+				return SP();
+			default:
+				UNREACHABLE;
+			}
+		}
+
+		auto& RP2(const int rp) {
+			ASSUME(rp >= 0);
+			ASSUME(rp <= 3);
+			switch (rp) {
+			case 0:
+				return BC();
+			case 1:
+				return DE();
+			case 2:
+				return HL2();
+			case 3:
+				return AF();
+			default:
+				UNREACHABLE;
+			}
+		}
+
+		auto R(const int r) {
 			ASSUME(r >= 0);
 			ASSUME(r <= 7);
 			switch (r) {
@@ -190,7 +233,7 @@ namespace EightBit {
 			}
 		}
 
-		uint8_t R2(const int r) {
+		auto R2(const int r) {
 			ASSUME(r >= 0);
 			ASSUME(r <= 7);
 			switch (r) {
@@ -243,49 +286,6 @@ namespace EightBit {
 			case 7:
 				A() = value;
 				break;
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		register16_t& RP(const int rp) {
-			ASSUME(rp >= 0);
-			ASSUME(rp <= 3);
-			switch (rp) {
-			case 0:
-				return BC();
-			case 1:
-				return DE();
-			case 2:
-				return HL2();
-			case 3:
-				return SP();
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		register16_t& HL2() {
-			if (LIKELY(!m_displaced))
-				return HL();
-			if (m_prefixDD)
-				return IX();
-			// Must be FD prefix
-			return IY();
-		}
-
-		register16_t& RP2(const int rp) {
-			ASSUME(rp >= 0);
-			ASSUME(rp <= 3);
-			switch (rp) {
-			case 0:
-				return BC();
-			case 1:
-				return DE();
-			case 2:
-				return HL2();
-			case 3:
-				return AF();
 			default:
 				UNREACHABLE;
 			}
@@ -395,7 +395,7 @@ namespace EightBit {
 		void ind();
 		bool indr();
 
-		void blockOut(const register16_t source, register16_t& destination);
+		void blockOut(register16_t source, register16_t& destination);
 
 		void outi();
 		bool otir();
