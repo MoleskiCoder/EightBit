@@ -639,10 +639,10 @@ uint8_t EightBit::Z80::readPort() {
 }
 
 int EightBit::Z80::step() {
-	ExecutingInstruction.fire(*this);
-	m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	resetCycles();
+	ExecutingInstruction.fire(*this);
 	if (LIKELY(powered())) {
+		m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 		lower(M1());
 		if (UNLIKELY(lowered(RESET()))) {
 			handleRESET();
