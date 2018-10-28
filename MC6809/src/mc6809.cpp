@@ -15,9 +15,9 @@ void EightBit::mc6809::powerOn() {
 
 int EightBit::mc6809::step() {
 	resetCycles();
+	ExecutingInstruction.fire(*this);
 	if (LIKELY(powered())) {
 		m_prefix10 = m_prefix11 = false;
-		ExecutingInstruction.fire(*this);
 		if (UNLIKELY(lowered(HALT())))
 			handleHALT();
 		else if (UNLIKELY(lowered(RESET())))
@@ -30,8 +30,8 @@ int EightBit::mc6809::step() {
 			handleIRQ();
 		else
 			execute(fetchByte());
-		ExecutedInstruction.fire(*this);
 	}
+	ExecutedInstruction.fire(*this);
 	return cycles();
 }
 
@@ -51,6 +51,7 @@ void EightBit::mc6809::handleRESET() {
 	setFlag(CC(), IF);	// Disable IRQ
 	setFlag(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, RESETvector));
+	addCycles(10);
 }
 
 void EightBit::mc6809::handleNMI() {

@@ -44,7 +44,7 @@ void Board::initialise() {
 		CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Debug, this, std::placeholders::_1));
 	}
 	if (m_configuration.terminatesEarly())
-		CPU().ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Terminator, this, std::placeholders::_1));
+		CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Terminator, this, std::placeholders::_1));
 }
 
 void Board::Cpu_ExecutingInstruction_Debug(EightBit::mc6809&) {
@@ -95,14 +95,15 @@ void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
 }
 
 void Board::Cpu_ExecutedInstruction_Terminator(EightBit::mc6809&) {
+	assert(CPU().cycles() > 0);
+	m_totalCycleCount += CPU().cycles();
 	if (m_totalCycleCount > Configuration::TerminationCycles)
 		CPU().powerOff();
 }
 
 void Board::Cpu_ExecutedInstruction_Acia(EightBit::mc6809&) {
-	const auto cycles = CPU().cycles();
-	m_totalCycleCount += cycles;
-	m_frameCycleCount -= cycles;
+	assert(CPU().cycles() > 0);
+	m_frameCycleCount -= CPU().cycles();
 	if (m_frameCycleCount < 0) {
 		if (_kbhit()) {
 			ACIA().RDR() = _getch();
