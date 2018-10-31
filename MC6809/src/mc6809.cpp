@@ -8,7 +8,7 @@ EightBit::mc6809::mc6809(Bus& bus)
 : BigEndianProcessor(bus) {}
 
 void EightBit::mc6809::powerOn() {
-	Processor::powerOn();
+	BigEndianProcessor::powerOn();
 	lower(BA());
 	lower(BS());
 }
@@ -43,7 +43,7 @@ void EightBit::mc6809::handleHALT() {
 }
 
 void EightBit::mc6809::handleRESET() {
-	Processor::handleRESET();
+	BigEndianProcessor::handleRESET();
 	raise(NMI());
 	lower(BA());
 	raise(BS());
@@ -66,7 +66,7 @@ void EightBit::mc6809::handleNMI() {
 }
 
 void EightBit::mc6809::handleIRQ() {
-	Processor::handleIRQ();
+	BigEndianProcessor::handleIRQ();
 	lower(BA());
 	raise(BS());
 	saveEntireRegisterState();
@@ -173,15 +173,15 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	case 0x77:	addCycles(7);	BUS().write(asr(AM_extended_byte()));				break;		// ASR (extended)
 
 	// BIT
-	case 0x85:	addCycles(2);	andr(A(), AM_immediate_byte());						break;		// BIT (BITA immediate)
-	case 0x95:	addCycles(4);	andr(A(), AM_direct_byte());						break;		// BIT (BITA direct)
-	case 0xa5:	addCycles(4);	andr(A(), AM_indexed_byte());						break;		// BIT (BITA indexed)
-	case 0xb5:	addCycles(5);	andr(A(), AM_extended_byte());						break;		// BIT (BITA extended)
+	case 0x85:	addCycles(2);	bit(A(), AM_immediate_byte());						break;		// BIT (BITA immediate)
+	case 0x95:	addCycles(4);	bit(A(), AM_direct_byte());							break;		// BIT (BITA direct)
+	case 0xa5:	addCycles(4);	bit(A(), AM_indexed_byte());						break;		// BIT (BITA indexed)
+	case 0xb5:	addCycles(5);	bit(A(), AM_extended_byte());						break;		// BIT (BITA extended)
 
-	case 0xc5:	addCycles(2);	andr(B(), AM_immediate_byte());						break;		// BIT (BITB immediate)
-	case 0xd5:	addCycles(4);	andr(B(), AM_direct_byte());						break;		// BIT (BITB direct)
-	case 0xe5:	addCycles(4);	andr(B(), AM_indexed_byte());						break;		// BIT (BITB indexed)
-	case 0xf5:	addCycles(5);	andr(B(), AM_extended_byte());						break;		// BIT (BITB extended)
+	case 0xc5:	addCycles(2);	bit(B(), AM_immediate_byte());						break;		// BIT (BITB immediate)
+	case 0xd5:	addCycles(4);	bit(B(), AM_direct_byte());							break;		// BIT (BITB direct)
+	case 0xe5:	addCycles(4);	bit(B(), AM_indexed_byte());						break;		// BIT (BITB indexed)
+	case 0xf5:	addCycles(5);	bit(B(), AM_extended_byte());						break;		// BIT (BITB extended)
 
 	// CLR
 	case 0x0f:	addCycles(6);	BUS().write(Address_direct(), clr());				break;		// CLR (direct)
@@ -233,16 +233,16 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	// EOR
 
 	// EORA
-	case 0x88:	addCycles(2);	A() = eor(A(), AM_immediate_byte());				break;		// EOR (EORA immediate)
-	case 0x98:	addCycles(4);	A() = eor(A(), AM_direct_byte());					break;		// EOR (EORA direct)
-	case 0xa8:	addCycles(4);	A() = eor(A(), AM_indexed_byte());					break;		// EOR (EORA indexed)
-	case 0xb8:	addCycles(5);	A() = eor(A(), AM_extended_byte());					break;		// EOR (EORA extended)
+	case 0x88:	addCycles(2);	A() = eorr(A(), AM_immediate_byte());				break;		// EOR (EORA immediate)
+	case 0x98:	addCycles(4);	A() = eorr(A(), AM_direct_byte());					break;		// EOR (EORA direct)
+	case 0xa8:	addCycles(4);	A() = eorr(A(), AM_indexed_byte());					break;		// EOR (EORA indexed)
+	case 0xb8:	addCycles(5);	A() = eorr(A(), AM_extended_byte());				break;		// EOR (EORA extended)
 
 	// EORB
-	case 0xc8:	addCycles(2);	B() = eor(B(), AM_immediate_byte());				break;		// EOR (EORB immediate)
-	case 0xd8:	addCycles(4);	B() = eor(B(), AM_direct_byte());					break;		// EOR (EORB direct)
-	case 0xe8:	addCycles(4);	B() = eor(B(), AM_indexed_byte());					break;		// EOR (EORB indexed)
-	case 0xf8:	addCycles(5);	B() = eor(B(), AM_extended_byte());					break;		// EOR (EORB extended)
+	case 0xc8:	addCycles(2);	B() = eorr(B(), AM_immediate_byte());				break;		// EOR (EORB immediate)
+	case 0xd8:	addCycles(4);	B() = eorr(B(), AM_direct_byte());					break;		// EOR (EORB direct)
+	case 0xe8:	addCycles(4);	B() = eorr(B(), AM_indexed_byte());					break;		// EOR (EORB indexed)
+	case 0xf8:	addCycles(5);	B() = eorr(B(), AM_extended_byte());				break;		// EOR (EORB extended)
 
 	// EXG
 	case 0x1e:	addCycles(8);	exg(AM_immediate_byte());							break;		// EXG (R1,R2 immediate)
@@ -793,6 +793,10 @@ uint8_t EightBit::mc6809::asr(uint8_t operand) {
 	return operand;
 }
 
+void EightBit::mc6809::bit(const uint8_t operand, const uint8_t data) {
+	andr(operand, data);
+}
+
 uint8_t EightBit::mc6809::clr() {
 	clearFlag(CC(), CF);
 	return through((uint8_t)0U);
@@ -840,7 +844,7 @@ uint8_t EightBit::mc6809::dec(const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::mc6809::eor(const uint8_t operand, const uint8_t data) {
+uint8_t EightBit::mc6809::eorr(const uint8_t operand, const uint8_t data) {
 	return through((uint8_t)(operand ^ data));
 }
 

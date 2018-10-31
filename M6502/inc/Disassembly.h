@@ -3,10 +3,14 @@
 #include <cstdint>
 #include <string>
 
-#include "mos6502.h"
-#include "Symbols.h"
+#include <EightBitCompilerDefinitions.h>
 
 namespace EightBit {
+
+	class Bus;
+	class MOS6502;
+	class Symbols;
+
 	class Disassembly {
 	public:
 		Disassembly(Bus& bus, MOS6502& processor, const Symbols& symbols);

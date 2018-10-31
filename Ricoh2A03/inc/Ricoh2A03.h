@@ -11,7 +11,7 @@ namespace EightBit {
 		virtual ~Ricoh2A03() = default;
 
 	protected:
-		virtual uint8_t SUB(uint8_t operand, uint8_t data, int borrow) final;
-		virtual uint8_t ADD(uint8_t operand, uint8_t data, int carry) final;
+		virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow) final;
+		virtual uint8_t add(uint8_t operand, uint8_t data, int carry) final;
 	};
 }

@@ -2,25 +2,24 @@
 #pragma once
 #endif
 
-#include <cstdint>
-#include <functional>
-#include <cassert>
-
-#include <string>
 #include <array>
-#include <map>
-#include <vector>
-
-#include <sstream>
-#include <iomanip>
+#include <cstdint>
 #include <fstream>
+#include <functional>
+#include <iomanip>
+#include <map>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/regex.hpp>
 
-#include <Bus.h>
-#include <LittleEndianProcessor.h>
-#include <Signal.h>
+#include <EightBitCompilerDefinitions.h>
 #include <EventArgs.h>
+#include <LittleEndianProcessor.h>
+#include <Register.h>
+#include <Signal.h>

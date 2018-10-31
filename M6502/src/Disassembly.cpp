@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "Disassembly.h"
 
+#include "mos6502.h"
+#include "Symbols.h"
+
 #include <sstream>
 #include <iomanip>
 #include <functional>

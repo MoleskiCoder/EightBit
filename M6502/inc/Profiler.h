@@ -1,22 +1,21 @@
 #pragma once
 
 #include <array>
-#include <map>
 #include <cstdint>
-#include <functional>
+#include <map>
 
 #include <EventArgs.h>
 #include <Signal.h>
 
-#include "Disassembly.h"
-#include "Symbols.h"
-
 #include "ProfileLineEventArgs.h"
 #include "ProfileScopeEventArgs.h"
 
-#include "mos6502.h"
-
 namespace EightBit {
+
+	class Disassembly;
+	class MOS6502;
+	class Symbols;
+
 	class Profiler {
 	public:
 		std::array<uint64_t, 0x100> instructionCounts;

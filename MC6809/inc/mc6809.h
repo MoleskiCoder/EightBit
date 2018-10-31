@@ -327,6 +327,7 @@ namespace EightBit {
 		uint8_t andr(uint8_t operand, uint8_t data);
 		uint8_t asl(uint8_t operand);
 		uint8_t asr(uint8_t operand);
+		void bit(uint8_t operand, uint8_t data);
 		uint8_t clr();
 		void cmp(uint8_t operand, uint8_t data);
 		void cmp(register16_t operand, register16_t data);
@@ -334,7 +335,7 @@ namespace EightBit {
 		void cwai(uint8_t data);
 		uint8_t da(uint8_t operand);
 		uint8_t dec(uint8_t operand);
-		uint8_t eor(uint8_t operand, uint8_t data);
+		uint8_t eorr(uint8_t operand, uint8_t data);
 		void exg(uint8_t data);
 		uint8_t inc(uint8_t operand);
 		void jsr(register16_t address);
