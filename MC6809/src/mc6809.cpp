@@ -787,10 +787,9 @@ uint8_t EightBit::mc6809::asl(uint8_t operand) {
 
 uint8_t EightBit::mc6809::asr(uint8_t operand) {
 	setFlag(CC(), CF, operand & Bit0);
-	operand >>= 1;
-	operand |= Bit7;
-	adjustNZ(operand);
-	return operand;
+	const uint8_t result = (operand >> 1) | Bit7;
+	adjustNZ(result);
+	return result;
 }
 
 void EightBit::mc6809::bit(const uint8_t operand, const uint8_t data) {
@@ -1007,23 +1006,21 @@ void EightBit::mc6809::pul(register16_t& stack, const uint8_t data) {
 	}
 }
 
-uint8_t EightBit::mc6809::rol(uint8_t operand) {
+uint8_t EightBit::mc6809::rol(const uint8_t operand) {
 	const auto carryIn = carry();
 	setFlag(CC(), CF, operand & Bit7);
 	setFlag(CC(), VF, ((operand & Bit7) >> 7) ^ ((operand & Bit6) >> 6));
-	operand <<= 1;
-	operand |= carryIn;
-	adjustNZ(operand);
-	return operand;
+	const uint8_t result = (operand << 1) | carryIn;
+	adjustNZ(result);
+	return result;
 }
 		
-uint8_t EightBit::mc6809::ror(uint8_t operand) {
+uint8_t EightBit::mc6809::ror(const uint8_t operand) {
 	const auto carryIn = carry();
 	setFlag(CC(), CF, operand & Bit0);
-	operand >>= 1;
-	operand |= (carryIn << 7);
-	adjustNZ(operand);
-	return operand;
+	const uint8_t result = (operand >> 1) | (carryIn << 7);
+	adjustNZ(result);
+	return result;
 }
 
 void EightBit::mc6809::rti() {

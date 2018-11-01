@@ -613,20 +613,18 @@ void EightBit::MOS6502::plp() {
 	P() = (pop() | RF) & ~BF;
 }
 
-uint8_t EightBit::MOS6502::rol(uint8_t operand) {
+uint8_t EightBit::MOS6502::rol(const uint8_t operand) {
 	const auto carryIn = carry();
 	setFlag(P(), CF, operand & Bit7);
-	operand <<= 1;
-	operand |= carryIn;
-	return through(operand);
+	const uint8_t result = (operand << 1) | carryIn;
+	return through(result);
 }
 
-uint8_t EightBit::MOS6502::ror(uint8_t operand) {
+uint8_t EightBit::MOS6502::ror(const uint8_t operand) {
 	const auto carryIn = carry();
 	setFlag(P(), CF, operand & Bit0);
-	operand >>= 1;
-	operand |= (carryIn << 7);
-	return through(operand);
+	const uint8_t result = (operand >> 1) | (carryIn << 7);
+	return through(result);
 }
 
 void EightBit::MOS6502::rti() {
