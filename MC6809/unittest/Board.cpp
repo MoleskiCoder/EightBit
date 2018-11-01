@@ -13,5 +13,5 @@ void Board::initialise() {
 }
 
 EightBit::MemoryMapping Board::mapping(uint16_t) {
-	return { m_ram, 0x0000, EightBit::MemoryMapping::ReadWrite };
+	return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::ReadWrite };
 }

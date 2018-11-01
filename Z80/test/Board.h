@@ -22,7 +22,7 @@ public:
 
 protected:
 	virtual EightBit::MemoryMapping mapping(uint16_t address) final {
-		return { m_ram, 0x0000, EightBit::MemoryMapping::ReadWrite };
+		return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::ReadWrite };
 	}
 
 private:

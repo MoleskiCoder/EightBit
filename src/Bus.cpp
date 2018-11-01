@@ -90,7 +90,7 @@ std::map<uint16_t, std::vector<uint8_t>> EightBit::Bus::parseHexFile(const std::
 
 uint8_t& EightBit::Bus::reference(const uint16_t address) {
 	const auto mapped = mapping(address);
-	const uint16_t offset = address - mapped.begin;
+	const uint16_t offset = (address - mapped.begin) & mapped.mask;
 	if (mapped.access == MemoryMapping::ReadOnly)
 		return DATA() = mapped.memory.peek(offset);
 	Ram& ram = (Ram&)(mapped.memory);

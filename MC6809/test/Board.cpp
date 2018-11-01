@@ -60,15 +60,15 @@ void Board::Cpu_ExecutedInstruction_Debug(EightBit::mc6809&) {
 EightBit::MemoryMapping Board::mapping(uint16_t address) {
 
 	if (address < 0x8000)
-		return { m_ram, 0x0000, EightBit::MemoryMapping::ReadWrite };
+		return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::ReadWrite };
 
 	if (address < 0xa000)
-		return { m_unused2000, 0x8000, EightBit::MemoryMapping::ReadOnly };
+		return { m_unused2000, 0x8000, 0xffff, EightBit::MemoryMapping::ReadOnly };
 
 	if (address < 0xc000)
-		return { m_io, 0xa000, EightBit::MemoryMapping::ReadWrite };
+		return { m_io, 0xa000, 0xffff, EightBit::MemoryMapping::ReadWrite };
 
-	return { m_rom, 0xc000, EightBit::MemoryMapping::ReadOnly };
+	return { m_rom, 0xc000, 0xffff, EightBit::MemoryMapping::ReadOnly };
 }
 
 void Board::Bus_WrittenByte_Acia(EightBit::EventArgs&) {
