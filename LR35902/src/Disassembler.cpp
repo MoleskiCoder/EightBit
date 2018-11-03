@@ -5,7 +5,8 @@
 #include <iomanip>
 #include <bitset>
 
-#include "Memory.h"
+#include <Memory.h>
+
 #include "LR35902.h"
 #include "IoRegisters.h"
 

@@ -10,11 +10,11 @@ namespace EightBit {
 		: Memory(size) {
 		}
 
-		auto& reference(const uint16_t address) {
+		virtual uint8_t& reference(const uint16_t address) final {
 			return BYTES()[address];
 		}
 
-		void poke(const uint16_t address, const uint8_t value) {
+		virtual void poke(const uint16_t address, const uint8_t value) final {
 			Memory::poke(address, value);
 		}
 	};
