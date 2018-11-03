@@ -93,6 +93,5 @@ uint8_t& EightBit::Bus::reference(const uint16_t address) {
 	const uint16_t offset = (address - mapped.begin) & mapped.mask;
 	if (mapped.access == MemoryMapping::ReadOnly)
 		return DATA() = mapped.memory.peek(offset);
-	Ram& ram = (Ram&)(mapped.memory);
-	return ram.reference(offset);
+	return mapped.memory.reference(offset);
 }

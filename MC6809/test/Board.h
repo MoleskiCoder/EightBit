@@ -9,6 +9,7 @@
 #include <mc6809.h>
 #include <Disassembly.h>
 #include <MC6850.h>
+#include <UnusedMemory.h>
 
 class Board : public EightBit::Bus {
 public:
@@ -24,10 +25,10 @@ protected:
 
 private:
 	const Configuration& m_configuration;
-	EightBit::Ram m_ram = 0x8000;			// 0000 - 7FFF, 32K RAM
-	EightBit::Rom m_unused2000 = 0x2000;	// 8000 - 9FFF, 8K unused
-	EightBit::Ram m_io = 0x2000;			// A000 - BFFF, 8K serial interface, minimally decoded
-	EightBit::Rom m_rom = 0x4000;			// C000 - FFFF, 16K ROM
+	EightBit::Ram m_ram = 0x8000;							// 0000 - 7FFF, 32K RAM
+	EightBit::UnusedMemory m_unused2000 = { 0x2000, 0xff };	// 8000 - 9FFF, 8K unused
+	EightBit::Ram m_io = 0x2000;							// A000 - BFFF, 8K serial interface, minimally decoded
+	EightBit::Rom m_rom = 0x4000;							// C000 - FFFF, 16K ROM
 
 	EightBit::mc6850 m_acia;
 

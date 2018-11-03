@@ -6,18 +6,6 @@ EightBit::GameBoy::Bus::Bus() noexcept
 : m_cpu(*this),
   m_ioPorts(*this) {
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
-
-	{
-		std::vector<uint8_t> content(m_unmapped2000.size());
-		std::fill(content.begin(), content.end(), 0xff);
-		m_unmapped2000.load(content);
-	}
-
-	{
-		std::vector<uint8_t> content(m_unmapped60.size());
-		std::fill(content.begin(), content.end(), 0xff);
-		m_unmapped60.load(content);
-	}
 }
 
 void EightBit::GameBoy::Bus::reset() {

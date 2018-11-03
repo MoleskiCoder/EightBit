@@ -156,6 +156,7 @@
     <ClInclude Include="..\inc\Register.h" />
     <ClInclude Include="..\inc\Signal.h" />
     <ClInclude Include="..\inc\TestHarness.h" />
+    <ClInclude Include="..\inc\UnusedMemory.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

@@ -5,9 +5,6 @@ Board::Board(const Configuration& configuration)
 : m_configuration(configuration),
   m_cpu(EightBit::mc6809(*this)),
   m_disassembler(*this, m_cpu) {
-	std::vector<uint8_t> content(m_unused2000.size());
-	std::fill(content.begin(), content.end(), 0xff);
-	m_unused2000.load(content);
 }
 
 void Board::initialise() {
