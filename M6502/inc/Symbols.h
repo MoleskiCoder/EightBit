@@ -10,28 +10,27 @@ namespace EightBit {
 	public:
 		Symbols(std::string path = "") noexcept;
 
-		const std::map<uint16_t, std::string>& getLabels() const { return labels; }
-		const std::map<uint16_t, std::string>& getConstants() const { return constants; }
-		const std::map<std::string, uint16_t>& getScopes() const { return scopes; }
-		const std::map<std::string, uint64_t>& getAddresses() const { return addresses; }
+		const std::map<uint16_t, std::string>& labels() const { return m_labels; }
+		const std::map<uint16_t, std::string>& constants() const { return m_constants; }
+		const std::map<std::string, uint16_t>& scopes() const { return m_scopes; }
+		const std::map<std::string, uint64_t>& addresses() const { return m_addresses; }
 
 	private:
-		void AssignScopes();
-		void AssignSymbols();
+		static std::vector<std::string> split(const std::string& input, const std::string& regex);
 
-		void Parse(std::string path);
+		void assignScopes();
+		void assignSymbols();
 
-		std::map<uint16_t, std::string> labels;
-		std::map<uint16_t, std::string> constants;
-		std::map<std::string, uint16_t> scopes;
-		std::map<std::string, uint64_t> addresses;
+		void parse(std::string path);
+
+		std::map<uint16_t, std::string> m_labels;
+		std::map<uint16_t, std::string> m_constants;
+		std::map<std::string, uint16_t> m_scopes;
+		std::map<std::string, uint64_t> m_addresses;
 
 		struct kv_pair_t {
 			std::map<std::string, std::string> element;
 		};
-
-		static std::vector<std::string> split(const std::string& input, const std::string& regex);
-
-		std::map<std::string, std::map<std::string, kv_pair_t>> parsed;
+		std::map<std::string, std::map<std::string, kv_pair_t>> m_parsed;
 	};
 }

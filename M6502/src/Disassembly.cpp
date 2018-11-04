@@ -495,8 +495,8 @@ std::string EightBit::Disassembly::dump_Word(uint16_t address) {
 ////
 
 std::string EightBit::Disassembly::convertAddress(uint16_t address) const {
-	auto label = symbols.getLabels().find(address);
-	if (label != symbols.getLabels().end())
+	auto label = symbols.labels().find(address);
+	if (label != symbols.labels().end())
 		return label->second;
 	std::ostringstream output;
 	output << "$" << dump_WordValue(address);
@@ -504,8 +504,8 @@ std::string EightBit::Disassembly::convertAddress(uint16_t address) const {
 }
 
 std::string EightBit::Disassembly::convertAddress(uint8_t address) const {
-	auto label = symbols.getLabels().find(address);
-	if (label != symbols.getLabels().end())
+	auto label = symbols.labels().find(address);
+	if (label != symbols.labels().end())
 		return label->second;
 	std::ostringstream output;
 	output << "$" << dump_ByteValue(address);
@@ -513,15 +513,15 @@ std::string EightBit::Disassembly::convertAddress(uint8_t address) const {
 }
 
 std::string EightBit::Disassembly::convertConstant(uint16_t constant) {
-	auto label = symbols.getConstants().find(constant);
-	if (label != symbols.getConstants().end())
+	auto label = symbols.constants().find(constant);
+	if (label != symbols.constants().end())
 		return label->second;
 	return dump_DByte(constant);
 }
 
 std::string EightBit::Disassembly::convertConstant(uint8_t constant) const {
-	auto label = symbols.getConstants().find(constant);
-	if (label != symbols.getConstants().end())
+	auto label = symbols.constants().find(constant);
+	if (label != symbols.constants().end())
 		return label->second;
 	return dump_ByteValue(constant);
 }

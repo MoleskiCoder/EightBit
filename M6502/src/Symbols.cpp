@@ -7,25 +7,25 @@
 
 EightBit::Symbols::Symbols(std::string path) noexcept {
 	if (!path.empty()) {
-		Parse(path);
-		AssignSymbols();
-		AssignScopes();
+		parse(path);
+		assignSymbols();
+		assignScopes();
 	}
 }
 
-void EightBit::Symbols::AssignScopes() {
-	auto parsedScopes = parsed["scope"];
+void EightBit::Symbols::assignScopes() {
+	auto parsedScopes = m_parsed["scope"];
 	for(auto& parsedScopeElement : parsedScopes) {
 		auto& parsedScope = parsedScopeElement.second.element;
 		auto name = parsedScope["name"];
 		auto trimmedName = name.substr(1, name.length() - 2);
 		auto size = parsedScope["size"];
-		scopes[trimmedName] = (uint16_t)std::stoi(size);
+		m_scopes[trimmedName] = (uint16_t)std::stoi(size);
 	}
 }
 
-void EightBit::Symbols::AssignSymbols() {
-	auto symbols = parsed["sym"];
+void EightBit::Symbols::assignSymbols() {
+	auto symbols = m_parsed["sym"];
 	for(auto& symbolElement : symbols) {
 		auto& symbol = symbolElement.second.element;
 		auto name = symbol["name"];
@@ -34,15 +34,15 @@ void EightBit::Symbols::AssignSymbols() {
 		auto number = (uint16_t)std::stoi(value, nullptr, 16);
 		auto symbolType = symbol["type"];
 		if (symbolType == "lab") {
-			labels[number] = trimmedName;
-			addresses[trimmedName] = number;
+			m_labels[number] = trimmedName;
+			m_addresses[trimmedName] = number;
 		} else if (symbolType == "equ") {
-			constants[number] = trimmedName;
+			m_constants[number] = trimmedName;
 		}
 	}
 }
 
-void EightBit::Symbols::Parse(std::string path) {
+void EightBit::Symbols::parse(std::string path) {
 	std::string line;
 	std::ifstream reader(path);
 	while (std::getline(reader, line)) {
@@ -58,11 +58,11 @@ void EightBit::Symbols::Parse(std::string path) {
 			}
 
 			if (data.element.find("id") != data.element.end()) {
-				if (parsed.find(type) == parsed.end())
-					parsed[type] = std::map<std::string, kv_pair_t>();
+				if (m_parsed.find(type) == m_parsed.end())
+					m_parsed[type] = std::map<std::string, kv_pair_t>();
 				auto id = data.element["id"];
 				data.element.erase("id");
-				parsed[type][id] = data;
+				m_parsed[type][id] = data;
 			}
 		}
 	}

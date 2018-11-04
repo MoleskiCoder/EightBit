@@ -44,7 +44,7 @@ void EightBit::Profiler::EmitProfileInformation() {
 		for (auto& scopeCycle : scopeCycles) {
 			auto name = scopeCycle.first;
 			auto cycles = scopeCycle.second;
-			auto namedAddress = (size_t)symbols.getAddresses().find(name)->second;
+			auto namedAddress = (size_t)symbols.addresses().find(name)->second;
 			auto count = addressCounts[namedAddress];
 			EmitScope.fire(ProfileScopeEventArgs(name, cycles, count));
 		}
@@ -70,11 +70,11 @@ void EightBit::Profiler::addAddress(uint16_t address, int cycles) {
 }
 
 void EightBit::Profiler::BuildAddressScopes() {
-	for (auto& label : symbols.getLabels()) {
+	for (auto& label : symbols.labels()) {
 		auto address = label.first;
 		auto key = label.second;
-		auto scope = symbols.getScopes().find(key);
-		if (scope != symbols.getScopes().end()) {
+		auto scope = symbols.scopes().find(key);
+		if (scope != symbols.scopes().end()) {
 			for (uint16_t i = address; i < address + scope->second; ++i) {
 				addressScopes[i] = key;
 			}
