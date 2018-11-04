@@ -30,7 +30,7 @@ namespace EightBit {
 			std::map<std::string, std::string> element;
 		};
 
-		std::vector<std::string> split(const std::string& input, const std::vector<std::string>& delimiters);
+		static std::vector<std::string> split(const std::string& input, const std::string& regex);
 
 		std::map<std::string, std::map<std::string, kv_pair_t>> parsed;
 	};

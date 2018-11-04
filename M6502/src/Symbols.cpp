@@ -1,14 +1,9 @@
 #include "stdafx.h"
 #include "Symbols.h"
 
-#include <string>
-
 #include <fstream>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/regex.hpp>
-#include <boost/regex.hpp>
+#include <regex>
+#include <string>
 
 EightBit::Symbols::Symbols(std::string path) noexcept {
 	if (!path.empty()) {
@@ -51,7 +46,7 @@ void EightBit::Symbols::Parse(std::string path) {
 	std::string line;
 	std::ifstream reader(path);
 	while (std::getline(reader, line)) {
-		auto lineElements = split(line, { " ", "\t" });
+		auto lineElements = split(line, " |\t");
 		if (lineElements.size() == 2) {
 			auto type = lineElements[0];
 			auto dataElements = split(lineElements[1], { "," });
@@ -73,12 +68,10 @@ void EightBit::Symbols::Parse(std::string path) {
 	}
 }
 
-std::vector<std::string> EightBit::Symbols::split(const std::string& input, const std::vector<std::string>& delimiters) {
-	std::vector<std::string> tokens;
-	boost::algorithm::split_regex(
-		tokens,
-		input,
-		boost::regex(boost::join(delimiters, "|"))
-	);
-	return tokens;
+std::vector<std::string> EightBit::Symbols::split(const std::string& input, const std::string& regex) {
+    std::regex re(regex);
+    std::sregex_token_iterator
+        first { input.begin(), input.end(), re, -1 },
+        last;
+    return { first, last };
 }
