@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "Memory.h"
+#include "Rom.h"
 
 #include <iostream>
 
-int EightBit::Memory::load(std::ifstream& file, std::vector<uint8_t>& output, const int writeOffset, const int readOffset, int limit, const int maximumSize) {
+int EightBit::Rom::load(std::ifstream& file, std::vector<uint8_t>& output, const int writeOffset, const int readOffset, int limit, const int maximumSize) {
 
 	file.seekg(0, std::ios::end);
 
@@ -25,7 +25,7 @@ int EightBit::Memory::load(std::ifstream& file, std::vector<uint8_t>& output, co
 	return size;
 }
 
-int EightBit::Memory::load(const std::string& path, std::vector<uint8_t>& output, const int writeOffset, const int readOffset, const int limit, const int maximumSize) {
+int EightBit::Rom::load(const std::string& path, std::vector<uint8_t>& output, const int writeOffset, const int readOffset, const int limit, const int maximumSize) {
 
 	std::ifstream file;
 	file.exceptions(std::ios::failbit | std::ios::badbit);

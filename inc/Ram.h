@@ -1,13 +1,16 @@
 #pragma once
 
 #include <cstdint>
-#include "Memory.h"
+
+#include "Rom.h"
 
 namespace EightBit {
-	class Ram : public Memory {
+	// The RAM class is everything the ROM class is, plus
+	// it's externally 'reference'able and 'poke'able.
+	class Ram : public Rom {
 	public:
 		Ram(const size_t size = 0) noexcept
-		: Memory(size) {
+		: Rom(size) {
 		}
 
 		virtual uint8_t& reference(const uint16_t address) final {
@@ -15,7 +18,7 @@ namespace EightBit {
 		}
 
 		virtual void poke(const uint16_t address, const uint8_t value) final {
-			Memory::poke(address, value);
+			Rom::poke(address, value);
 		}
 	};
 }

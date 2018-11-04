@@ -1,9 +1,12 @@
 #pragma once
 
-#include "MemoryInterface.h"
+#include "Memory.h"
 
 namespace EightBit {
-	class UnusedMemory final : public MemoryInterface {
+	// A read-only Memory implementation that has a fixed size and will
+	// *always* returns the same value, from whichever location
+	// is being read.
+	class UnusedMemory final : public Memory {
 	public:
 		UnusedMemory(const size_t size, const uint8_t value)
 		: m_size(size), m_value(value) {}
@@ -11,10 +14,6 @@ namespace EightBit {
 
 		virtual size_t size() const final { return m_size; }
 		virtual uint8_t peek(uint16_t address) const final { return m_value; }
-
-		virtual uint8_t& reference(uint16_t) {
-			throw new std::logic_error("Reference operation not allowed.");
-		}
 
 		virtual int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final {
 			throw new std::logic_error("load operation not allowed.");

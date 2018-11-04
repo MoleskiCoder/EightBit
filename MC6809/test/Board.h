@@ -5,6 +5,7 @@
 #include <string>
 
 #include <Ram.h>
+#include <Rom.h>
 #include <Bus.h>
 #include <mc6809.h>
 #include <Disassembly.h>

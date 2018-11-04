@@ -148,8 +148,8 @@
     <ClInclude Include="..\inc\InputOutput.h" />
     <ClInclude Include="..\inc\IntelProcessor.h" />
     <ClInclude Include="..\inc\LittleEndianProcessor.h" />
+    <ClInclude Include="..\inc\Rom.h" />
     <ClInclude Include="..\inc\Memory.h" />
-    <ClInclude Include="..\inc\MemoryInterface.h" />
     <ClInclude Include="..\inc\MemoryMapping.h" />
     <ClInclude Include="..\inc\Processor.h" />
     <ClInclude Include="..\inc\Ram.h" />
@@ -167,7 +167,7 @@
     <ClCompile Include="InputOutput.cpp" />
     <ClCompile Include="IntelProcessor.cpp" />
     <ClCompile Include="LittleEndianProcessor.cpp" />
-    <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="Rom.cpp" />
     <ClCompile Include="Processor.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

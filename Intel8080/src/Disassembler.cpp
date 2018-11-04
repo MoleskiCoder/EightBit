@@ -2,8 +2,6 @@
 #include "Disassembler.h"
 #include "Intel8080.h"
 
-#include <Memory.h>
-
 #include <sstream>
 #include <iomanip>
 #include <bitset>

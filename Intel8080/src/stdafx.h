@@ -15,6 +15,5 @@
 
 #include <boost/format.hpp>
 
-#include <Memory.h>
 #include <IntelProcessor.h>
 #include <InputOutput.h>

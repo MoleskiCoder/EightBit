@@ -4,13 +4,13 @@
 
 namespace EightBit {
 
-	class MemoryInterface;
+	class Memory;
 
 	struct MemoryMapping {
 
 		enum AccessLevel { Unknown, ReadOnly, ReadWrite, };
 
-		MemoryInterface& memory;
+		Memory& memory;
 		uint16_t begin = 0xffff;
 		uint16_t mask = 0U;
 		AccessLevel access = Unknown;

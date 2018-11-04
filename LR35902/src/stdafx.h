@@ -25,12 +25,12 @@
 
 #include <boost/format.hpp>
 
-#include <Memory.h>
 #include <Processor.h>
 #include <IntelProcessor.h>
 #include <Register.h>
 #include <Signal.h>
 #include <Ram.h>
+#include <Rom.h>
 #include <Bus.h>
 
 #ifdef _MSC_VER

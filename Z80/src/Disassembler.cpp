@@ -6,8 +6,6 @@
 #include <bitset>
 #include <iostream>
 
-#include <Memory.h>
-
 #include "Z80.h"
 
 EightBit::Disassembler::Disassembler(Bus& bus) noexcept

@@ -17,9 +17,6 @@
     <ClInclude Include="..\inc\EventArgs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\inc\Memory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\inc\Processor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -59,10 +56,13 @@
     <ClInclude Include="..\inc\Chip.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\inc\MemoryInterface.h">
+    <ClInclude Include="..\inc\UnusedMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\inc\UnusedMemory.h">
+    <ClInclude Include="..\inc\Rom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,9 +71,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EventArgs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Memory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Processor.cpp">
@@ -95,6 +92,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Chip.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Rom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
