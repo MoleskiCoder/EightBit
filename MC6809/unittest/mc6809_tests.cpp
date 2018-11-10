@@ -891,3 +891,97 @@ TEST_CASE(" Branch if Greater Than Zero", "[BGT]") {
 		REQUIRE(cpu.A() == 1);
 	}
 }
+
+TEST_CASE(" Branch if Higher", "[BHI]") {
+
+	Board board;
+	board.initialise();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+	board.poke(0, 0x22);	// BHI
+	board.poke(1, 0x03);
+	board.poke(2, 0x86);	// LDA	#1
+	board.poke(3, 0x01);
+	board.poke(4, 0x12);	// NOP
+	board.poke(5, 0x86);	// LDA	#2
+	board.poke(6, 0x02);
+	board.poke(7, 0x12);	// NOP
+
+	SECTION("BHI1") {
+		cpu.A() = 0;
+ 		cpu.CC() = EightBit::mc6809::ZF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+}
+
+TEST_CASE("Branch on Less than or Equal to Zero", "[BLE]") {
+
+	Board board;
+	board.initialise();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+	board.poke(0, 0x2f);	// BLE
+	board.poke(1, 0x03);
+	board.poke(2, 0x86);	// LDA	#1
+	board.poke(3, 0x01);
+	board.poke(4, 0x12);	// NOP
+	board.poke(5, 0x86);	// LDA	#2
+	board.poke(6, 0x02);
+	board.poke(7, 0x12);	// NOP
+
+	SECTION("BLE1") {
+		cpu.A() = 0;
+ 		cpu.CC() = EightBit::mc6809::ZF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 2);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BLE2") {
+		cpu.A() = 0;
+		cpu.CC() = 0;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BLE3") {
+		cpu.A() = 0;
+		cpu.CC() = EightBit::mc6809::NF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 2);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BLE4") {
+		cpu.A() = 0;
+		cpu.CC() = EightBit::mc6809::NF | EightBit::mc6809::VF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BLE5") {
+		cpu.A() = 0;
+		cpu.CC() = EightBit::mc6809::ZF | EightBit::mc6809::NF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 2);
+	}
+}
