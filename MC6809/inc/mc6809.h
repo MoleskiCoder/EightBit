@@ -274,11 +274,11 @@ namespace EightBit {
 		auto carry() const { return CC() & CF; }
 		auto halfCarry() const { return CC() & HF; }
 
-		auto LS() const { return carry() | (zero() >> 2); }									// (C OR Z)
+		auto LS() const { return carry() || zero(); }										// (C OR Z)
 		auto HI() const { return !LS(); }													// !(C OR Z)
 		auto LT() const { return (negative() >> 3) ^ (overflow() >> 1); }					// (N XOR V)
 		auto GE() const { return !LT(); }													// !(N XOR V)
-		auto LE() const { return (zero() >> 2) | ((negative() >> 3) ^ (overflow() >> 1)); }	// (Z OR (N XOR V))
+		auto LE() const { return zero() || LT(); }											// (Z OR (N XOR V))
 		auto GT() const { return !LE(); }													// !(Z OR (N XOR V))
 
 		// Branching
