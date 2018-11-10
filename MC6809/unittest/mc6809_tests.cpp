@@ -822,3 +822,72 @@ TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 		REQUIRE(cpu.cycles() == 4);
     }
 }
+
+TEST_CASE(" Branch if Greater Than Zero", "[BGT]") {
+
+	Board board;
+	board.initialise();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+	board.poke(0, 0x2e);	// BGT
+	board.poke(1, 0x03);
+	board.poke(2, 0x86);	// LDA	#1
+	board.poke(3, 0x01);
+	board.poke(4, 0x12);	// NOP
+	board.poke(5, 0x86);	// LDA	#2
+	board.poke(6, 0x02);
+	board.poke(7, 0x12);	// NOP
+
+	SECTION("BGT1") {
+		cpu.A() = 0;
+ 		cpu.CC() = EightBit::mc6809::ZF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BGT2") {
+		REQUIRE(cpu.PC() == 0);
+ 		cpu.CC() = 0;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 2);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BGT3") {
+		REQUIRE(cpu.PC() == 0);
+ 		cpu.CC() = EightBit::mc6809::NF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BGT4") {
+		REQUIRE(cpu.PC() == 0);
+ 		cpu.CC() = EightBit::mc6809::NF | EightBit::mc6809::VF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 2);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BGT5") {
+		REQUIRE(cpu.PC() == 0);
+ 		cpu.CC() = EightBit::mc6809::ZF | EightBit::mc6809::NF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+}
