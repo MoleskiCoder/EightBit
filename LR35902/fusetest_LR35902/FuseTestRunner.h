@@ -16,11 +16,10 @@ namespace Fuse {
 		const Test& m_test;
 		const ExpectedTestResult& m_expected;
 
-		bool m_failed;
-		bool m_unimplemented;
+		bool m_failed = false;
+		bool m_unimplemented = false;
 
-		EightBit::Ram m_ram;
-		EightBit::GameBoy::LR35902 m_cpu;
+		EightBit::Ram m_ram = 0x10000;
 
 		void initialise();
 		void initialiseRegisters();
@@ -47,5 +46,8 @@ namespace Fuse {
 		void run();
 		bool failed() const { return m_failed; }
 		bool unimplemented() const { return m_unimplemented; }
+
+		virtual void powerOn() final;
+		virtual void powerOff() final;
 	};
 }

@@ -9,7 +9,7 @@
 TEST_CASE("Add Accumulator B to Index Register X Unsigned", "[ABX]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -70,7 +70,7 @@ TEST_CASE("Add Accumulator B to Index Register X Unsigned", "[ABX]") {
 TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -153,7 +153,7 @@ TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
 TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -350,7 +350,7 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 TEST_CASE("Logical AND Accumulator", "[AND][ANDA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -370,7 +370,7 @@ TEST_CASE("Logical AND Accumulator", "[AND][ANDA]") {
 TEST_CASE("Shift Accumulator or Memory Byte Left", "[ASL][ASLA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -389,7 +389,7 @@ TEST_CASE("Shift Accumulator or Memory Byte Left", "[ASL][ASLA]") {
 TEST_CASE("Shift Accumulator or Memory Byte Right", "[ASR][ASRA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -408,7 +408,7 @@ TEST_CASE("Shift Accumulator or Memory Byte Right", "[ASR][ASRA]") {
 TEST_CASE("Bit Test", "[BIT][BITA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -427,7 +427,7 @@ TEST_CASE("Bit Test", "[BIT][BITA]") {
 TEST_CASE("Clear Accumulator or Memory", "[CLR][CLRA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -447,7 +447,7 @@ TEST_CASE("Clear Accumulator or Memory", "[CLR][CLRA]") {
 TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -544,7 +544,7 @@ TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 TEST_CASE("Decrement Accumulator or Memory", "[DEC][DECA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -593,7 +593,7 @@ TEST_CASE("Decrement Accumulator or Memory", "[DEC][DECA]") {
 TEST_CASE("Increment Accumulator or Memory Location by 1", "[INC][INCA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -640,7 +640,7 @@ TEST_CASE("Increment Accumulator or Memory Location by 1", "[INC][INCA]") {
 TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][SBCB]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -729,7 +729,7 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -826,7 +826,7 @@ TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 TEST_CASE(" Branch if Greater Than Zero", "[BGT]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -895,7 +895,7 @@ TEST_CASE(" Branch if Greater Than Zero", "[BGT]") {
 TEST_CASE(" Branch if Higher", "[BHI]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -920,7 +920,7 @@ TEST_CASE(" Branch if Higher", "[BHI]") {
 TEST_CASE("Branch on Less than or Equal to Zero", "[BLE]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 

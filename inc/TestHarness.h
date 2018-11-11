@@ -55,10 +55,12 @@ namespace EightBit {
 			return (long long)floating;
 		}
 
-		void runLoop() {
+		void run() {
 			m_startTime = now();
 			m_totalCycles = m_instructions = 0L;
 			m_startHostCycles = currentHostCycles();
+
+			m_board.powerOn();
 
 			auto& cpu = m_board.CPU();
 
@@ -69,10 +71,6 @@ namespace EightBit {
 
 			m_finishHostCycles = currentHostCycles();
 			m_finishTime = now();
-		}
-
-		void initialise() {
-			m_board.initialise();
 		}
 
 	private:

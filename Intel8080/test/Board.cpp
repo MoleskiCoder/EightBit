@@ -10,6 +10,17 @@ Board::Board(const Configuration& configuration)
   m_disassembler(*this) {
 }
 
+void Board::powerOn() {
+	EightBit::Bus::powerOn();
+	CPU().powerOn();
+	CPU().reset();
+}
+
+void Board::powerOff() {
+	CPU().powerOff();
+	EightBit::Bus::powerOff();
+}
+
 void Board::initialise() {
 
 	auto romDirectory = m_configuration.getRomDirectory();
@@ -29,9 +40,6 @@ void Board::initialise() {
 		m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
 	}
 
-	CPU().powerOn();
-	CPU().reset();
-
 	poke(0, 0xc3);	// JMP
 	CPU().pokeWord(1, m_configuration.getStartAddress());
 
@@ -42,7 +50,7 @@ void Board::Cpu_ExecutingInstruction_Cpm(EightBit::Intel8080& cpu) {
 	switch (cpu.PC().word) {
 	case 0x0:	// CP/M warm start
 		if (++m_warmstartCount == 3) {
-			CPU().powerOff();
+			powerOff();
 			if (m_configuration.isProfileMode()) {
 				m_profiler.dump();
 			}

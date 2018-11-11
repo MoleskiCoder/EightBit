@@ -14,8 +14,7 @@ int main(int, char*[]) {
 #endif
 
 	EightBit::TestHarness<Configuration, Board> harness(configuration);
-	harness.initialise();
-	harness.runLoop();
+	harness.run();
 
 	return 0;
 }

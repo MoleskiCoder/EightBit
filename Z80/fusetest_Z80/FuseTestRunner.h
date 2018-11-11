@@ -21,7 +21,6 @@ namespace Fuse {
 		EightBit::InputOutput m_ports;
 		EightBit::Z80 m_cpu;
 
-		void initialise();
 		void initialiseRegisters();
 		void initialiseMemory();
 
@@ -36,6 +35,7 @@ namespace Fuse {
 			EightBit::register16_t actual, EightBit::register16_t expected) const;
 
 	protected:
+		virtual void initialise() final;
 		virtual EightBit::MemoryMapping mapping(uint16_t address) final {
 			return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::ReadWrite };
 		}
@@ -46,5 +46,8 @@ namespace Fuse {
 		void run();
 		bool failed() const { return m_failed; }
 		bool unimplemented() const { return m_unimplemented; }
+
+		virtual void powerOn() final;
+		virtual void powerOff() final;
 	};
 }

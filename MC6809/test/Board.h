@@ -19,9 +19,11 @@ public:
 	auto& CPU() { return m_cpu; }
 	auto& ACIA() { return m_acia; }
 
-	void initialise();
+	virtual void powerOn() final;
+	virtual void powerOff() final;
 
 protected:
+	virtual void initialise() final;
 	virtual EightBit::MemoryMapping mapping(uint16_t address) final;
 
 private:

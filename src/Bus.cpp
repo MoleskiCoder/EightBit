@@ -8,6 +8,12 @@
 #include <stdexcept>
 #include <cassert>
 
+void EightBit::Bus::powerOn() {
+	initialise();
+}
+
+void EightBit::Bus::powerOff() {}
+
 uint8_t EightBit::Bus::read() {
 	ReadingByte.fire(EventArgs::empty());
 	const auto returned = DATA() = reference();

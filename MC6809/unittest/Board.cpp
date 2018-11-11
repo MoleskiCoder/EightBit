@@ -6,12 +6,20 @@ Board::Board()
   m_disassembler(*this, m_cpu) {
 }
 
-void Board::initialise() {
+void Board::powerOn() {
+	EightBit::Bus::powerOn();
 	CPU().powerOn();
 	CPU().raise(CPU().NMI());
 	CPU().raise(CPU().FIRQ());
 	CPU().reset();
+}
 
+void Board::powerOff() {
+	CPU().powerOff();
+	EightBit::Bus::powerOff();
+}
+
+void Board::initialise() {
 	//CPU().ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
 	//CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Debug, this, std::placeholders::_1));
 }

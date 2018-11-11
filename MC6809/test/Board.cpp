@@ -7,11 +7,9 @@ Board::Board(const Configuration& configuration)
   m_disassembler(*this, m_cpu) {
 }
 
-void Board::initialise() {
+void Board::powerOn() {
 
-	// Load our BASIC interpreter
-	const auto directory = m_configuration.getRomDirectory() + "\\";
-	loadHexFile(directory + "ExBasROM.hex");
+	EightBit::Bus::powerOn();
 
 	// Get the CPU ready for action
 	CPU().powerOn();
@@ -26,6 +24,19 @@ void Board::initialise() {
 	ACIA().lower(ACIA().CTS());
 	ACIA().powerOn();
 	accessAcia();
+}
+
+void Board::powerOff() {
+	ACIA().powerOff();
+	CPU().powerOff();
+	EightBit::Bus::powerOff();
+}
+
+void Board::initialise() {
+
+	// Load our BASIC interpreter
+	const auto directory = m_configuration.getRomDirectory() + "\\";
+	loadHexFile(directory + "ExBasROM.hex");
 
 	// Once the reset has completed, we can wire the ACIA event handlers...
 	ACIA().Transmitting.connect(std::bind(&Board::Acia_Transmitting, this, std::placeholders::_1));
@@ -95,7 +106,7 @@ void Board::Cpu_ExecutedInstruction_Terminator(EightBit::mc6809&) {
 	assert(CPU().cycles() > 0);
 	m_totalCycleCount += CPU().cycles();
 	if (m_totalCycleCount > Configuration::TerminationCycles)
-		CPU().powerOff();
+		powerOff();
 }
 
 void Board::Cpu_ExecutedInstruction_Acia(EightBit::mc6809&) {
