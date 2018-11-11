@@ -46,7 +46,7 @@ namespace EightBit {
 		// +--------+------------------+------------------+--------------------+-----------------------+
 		//		* Leading bit = LSB = Bit 0
 		//	   ** Data bit will be zero in 7-bit plus parity modes
-		//	  *** Data bit is "don't case" in 7-bit plus parity modes
+		//	  *** Data bit is "don't care" in 7-bit plus parity modes
 
 		enum ControlRegisters {
 			CR0 =        0b1,	// Counter divide
