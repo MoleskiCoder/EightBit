@@ -36,6 +36,9 @@ namespace EightBit {
 
 			Bus() noexcept;
 
+			virtual void powerOn() override;
+			virtual void powerOff() override;
+
 			auto& CPU() { return m_cpu; }
 			auto& VRAM() { return m_videoRam; }
 			auto& OAMRAM() { return m_oamRam; }
