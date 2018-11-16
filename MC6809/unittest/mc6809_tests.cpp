@@ -9,7 +9,7 @@
 TEST_CASE("Add Accumulator B to Index Register X Unsigned", "[ABX]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -70,7 +70,7 @@ TEST_CASE("Add Accumulator B to Index Register X Unsigned", "[ABX]") {
 TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -153,7 +153,7 @@ TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
 TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -350,7 +350,7 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 TEST_CASE("Logical AND Accumulator", "[AND][ANDA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -370,7 +370,7 @@ TEST_CASE("Logical AND Accumulator", "[AND][ANDA]") {
 TEST_CASE("Shift Accumulator or Memory Byte Left", "[ASL][ASLA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -389,7 +389,7 @@ TEST_CASE("Shift Accumulator or Memory Byte Left", "[ASL][ASLA]") {
 TEST_CASE("Shift Accumulator or Memory Byte Right", "[ASR][ASRA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -408,7 +408,7 @@ TEST_CASE("Shift Accumulator or Memory Byte Right", "[ASR][ASRA]") {
 TEST_CASE("Bit Test", "[BIT][BITA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -427,7 +427,7 @@ TEST_CASE("Bit Test", "[BIT][BITA]") {
 TEST_CASE("Clear Accumulator or Memory", "[CLR][CLRA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -447,7 +447,7 @@ TEST_CASE("Clear Accumulator or Memory", "[CLR][CLRA]") {
 TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -544,7 +544,7 @@ TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 TEST_CASE("Decrement Accumulator or Memory", "[DEC][DECA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -593,7 +593,7 @@ TEST_CASE("Decrement Accumulator or Memory", "[DEC][DECA]") {
 TEST_CASE("Increment Accumulator or Memory Location by 1", "[INC][INCA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -640,7 +640,7 @@ TEST_CASE("Increment Accumulator or Memory Location by 1", "[INC][INCA]") {
 TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][SBCB]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -729,7 +729,7 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 
 	Board board;
-	board.initialise();
+	board.powerOn();
 	auto& cpu = board.CPU();
 	cpu.step();	// Step over the reset
 
@@ -821,4 +821,167 @@ TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
 		REQUIRE(cpu.cycles() == 4);
     }
+}
+
+TEST_CASE(" Branch if Greater Than Zero", "[BGT]") {
+
+	Board board;
+	board.powerOn();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+	board.poke(0, 0x2e);	// BGT
+	board.poke(1, 0x03);
+	board.poke(2, 0x86);	// LDA	#1
+	board.poke(3, 0x01);
+	board.poke(4, 0x12);	// NOP
+	board.poke(5, 0x86);	// LDA	#2
+	board.poke(6, 0x02);
+	board.poke(7, 0x12);	// NOP
+
+	SECTION("BGT1") {
+		cpu.A() = 0;
+ 		cpu.CC() = EightBit::mc6809::ZF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BGT2") {
+		REQUIRE(cpu.PC() == 0);
+ 		cpu.CC() = 0;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 2);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BGT3") {
+		REQUIRE(cpu.PC() == 0);
+ 		cpu.CC() = EightBit::mc6809::NF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BGT4") {
+		REQUIRE(cpu.PC() == 0);
+ 		cpu.CC() = EightBit::mc6809::NF | EightBit::mc6809::VF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 2);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BGT5") {
+		REQUIRE(cpu.PC() == 0);
+ 		cpu.CC() = EightBit::mc6809::ZF | EightBit::mc6809::NF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+}
+
+TEST_CASE(" Branch if Higher", "[BHI]") {
+
+	Board board;
+	board.powerOn();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+	board.poke(0, 0x22);	// BHI
+	board.poke(1, 0x03);
+	board.poke(2, 0x86);	// LDA	#1
+	board.poke(3, 0x01);
+	board.poke(4, 0x12);	// NOP
+	board.poke(5, 0x86);	// LDA	#2
+	board.poke(6, 0x02);
+	board.poke(7, 0x12);	// NOP
+
+	SECTION("BHI1") {
+		cpu.A() = 0;
+ 		cpu.CC() = EightBit::mc6809::ZF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+}
+
+TEST_CASE("Branch on Less than or Equal to Zero", "[BLE]") {
+
+	Board board;
+	board.powerOn();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
+
+	board.poke(0, 0x2f);	// BLE
+	board.poke(1, 0x03);
+	board.poke(2, 0x86);	// LDA	#1
+	board.poke(3, 0x01);
+	board.poke(4, 0x12);	// NOP
+	board.poke(5, 0x86);	// LDA	#2
+	board.poke(6, 0x02);
+	board.poke(7, 0x12);	// NOP
+
+	SECTION("BLE1") {
+		cpu.A() = 0;
+ 		cpu.CC() = EightBit::mc6809::ZF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 2);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BLE2") {
+		cpu.A() = 0;
+		cpu.CC() = 0;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BLE3") {
+		cpu.A() = 0;
+		cpu.CC() = EightBit::mc6809::NF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 2);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BLE4") {
+		cpu.A() = 0;
+		cpu.CC() = EightBit::mc6809::NF | EightBit::mc6809::VF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 1);
+	}
+
+	cpu.reset();
+	cpu.step();
+
+	SECTION("BLE5") {
+		cpu.A() = 0;
+		cpu.CC() = EightBit::mc6809::ZF | EightBit::mc6809::NF;
+		cpu.step();
+		cpu.step();
+		REQUIRE(cpu.A() == 2);
+	}
 }

@@ -48,7 +48,12 @@ namespace EightBit {
 			write(value);
 		}
 
+		virtual void powerOn();
+		virtual void powerOff();
+
 	protected:
+		virtual void initialise() = 0;
+
 		virtual MemoryMapping mapping(uint16_t address) = 0;
 		uint8_t& reference(uint16_t address);
 		auto& reference(const register16_t address) { return reference(address.word); }
@@ -56,6 +61,8 @@ namespace EightBit {
 
 		static std::map<uint16_t, std::vector<uint8_t>> parseHexFile(std::string path);
 		void loadHexFile(std::string path);
+
+
 
 	private:
 		uint8_t m_data = Chip::Mask8;

@@ -10,9 +10,18 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expecte
 
 //
 
-void Fuse::TestRunner::initialise() {
+void Fuse::TestRunner::powerOn() {
+	EightBit::Bus::powerOn();
 	m_cpu.powerOn();
 	initialiseRegisters();
+}
+
+void Fuse::TestRunner::powerOff() {
+	m_cpu.powerOff();
+	EightBit::Bus::powerOff();
+}
+
+void Fuse::TestRunner::initialise() {
 	initialiseMemory();
 }
 
@@ -319,7 +328,7 @@ void Fuse::TestRunner::checkMemory() {
 
 void Fuse::TestRunner::run() {
 
-	initialise();
+	powerOn();
 	auto allowedCycles = m_test.registerState.tstates;
 	try {
 		m_cpu.run(allowedCycles);

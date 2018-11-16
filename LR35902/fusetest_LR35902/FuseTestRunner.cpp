@@ -4,20 +4,25 @@
 
 Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expected)
 : m_test(test),
-  m_expected(expected),
-  m_ram(0x10000),
-  m_cpu(*this),
-  m_failed(false),
-  m_unimplemented(false) {
+  m_expected(expected) {
 }
 
 //
 
-void Fuse::TestRunner::initialise() {
-	m_cpu.powerOn();
-	disableGameRom();
+void Fuse::TestRunner::powerOn() {
+	EightBit::Bus::powerOn();
+	CPU().powerOn();
 	initialiseRegisters();
 	initialiseMemory();
+}
+
+void Fuse::TestRunner::powerOff() {
+	CPU().powerOff();
+	EightBit::Bus::powerOff();
+}
+
+void Fuse::TestRunner::initialise() {
+	disableGameRom();
 }
 
 void Fuse::TestRunner::initialiseRegisters() {
@@ -25,13 +30,13 @@ void Fuse::TestRunner::initialiseRegisters() {
 	const auto& testState = m_test.registerState;
 	const auto& inputRegisters = testState.registers;
 
-	m_cpu.AF() = inputRegisters[Fuse::RegisterState::AF];
-	m_cpu.BC() = inputRegisters[Fuse::RegisterState::BC];
-	m_cpu.DE() = inputRegisters[Fuse::RegisterState::DE];
-	m_cpu.HL() = inputRegisters[Fuse::RegisterState::HL];
+	CPU().AF() = inputRegisters[Fuse::RegisterState::AF];
+	CPU().BC() = inputRegisters[Fuse::RegisterState::BC];
+	CPU().DE() = inputRegisters[Fuse::RegisterState::DE];
+	CPU().HL() = inputRegisters[Fuse::RegisterState::HL];
 
-	m_cpu.SP() = inputRegisters[Fuse::RegisterState::SP];
-	m_cpu.PC() = inputRegisters[Fuse::RegisterState::PC];
+	CPU().SP() = inputRegisters[Fuse::RegisterState::SP];
+	CPU().PC() = inputRegisters[Fuse::RegisterState::PC];
 }
 
 void Fuse::TestRunner::initialiseMemory() {
@@ -82,13 +87,13 @@ void Fuse::TestRunner::checkregisters() {
 	const auto& expectedState = m_expected.registerState;
 	const auto& expectedRegisters = expectedState.registers;
 
-	auto af = m_cpu.AF() == expectedRegisters[Fuse::RegisterState::AF];
-	auto bc = m_cpu.BC() == expectedRegisters[Fuse::RegisterState::BC];
-	auto de = m_cpu.DE() == expectedRegisters[Fuse::RegisterState::DE];
-	auto hl = m_cpu.HL() == expectedRegisters[Fuse::RegisterState::HL];
+	auto af = CPU().AF() == expectedRegisters[Fuse::RegisterState::AF];
+	auto bc = CPU().BC() == expectedRegisters[Fuse::RegisterState::BC];
+	auto de = CPU().DE() == expectedRegisters[Fuse::RegisterState::DE];
+	auto hl = CPU().HL() == expectedRegisters[Fuse::RegisterState::HL];
 
-	auto sp = m_cpu.SP() == expectedRegisters[Fuse::RegisterState::SP];
-	auto pc = m_cpu.PC() == expectedRegisters[Fuse::RegisterState::PC];
+	auto sp = CPU().SP() == expectedRegisters[Fuse::RegisterState::SP];
+	auto pc = CPU().PC() == expectedRegisters[Fuse::RegisterState::PC];
 
 	auto success =
 		af && bc && de && hl
@@ -100,12 +105,12 @@ void Fuse::TestRunner::checkregisters() {
 
 		if (!af) {
 			auto expectedA = expectedRegisters[Fuse::RegisterState::AF].high;
-			auto gotA = m_cpu.A();
+			auto gotA = CPU().A();
 			if (expectedA != gotA)
 				dumpDifference("A", gotA, expectedA);
 
 			auto expectedF = expectedRegisters[Fuse::RegisterState::AF].low;
-			auto gotF = m_cpu.F();
+			auto gotF = CPU().F();
 			if (expectedF != gotF) {
 				std::cerr
 					<< "**** F, Expected: "
@@ -118,31 +123,31 @@ void Fuse::TestRunner::checkregisters() {
 
 		if (!bc) {
 			auto expectedWord = expectedRegisters[Fuse::RegisterState::BC];
-			auto actualWord = m_cpu.BC();
+			auto actualWord = CPU().BC();
 			dumpDifference("B", "C", actualWord, expectedWord);
 		}
 
 		if (!de) {
 			auto expectedWord = expectedRegisters[Fuse::RegisterState::DE];
-			auto actualWord = m_cpu.DE();
+			auto actualWord = CPU().DE();
 			dumpDifference("D", "E", actualWord, expectedWord);
 		}
 
 		if (!hl) {
 			auto expectedWord = expectedRegisters[Fuse::RegisterState::HL];
-			auto actualWord = m_cpu.HL();
+			auto actualWord = CPU().HL();
 			dumpDifference("H", "L", actualWord, expectedWord);
 		}
 
 		if (!sp) {
 			auto expectedWord = expectedRegisters[Fuse::RegisterState::SP];
-			auto actualWord = m_cpu.SP();
+			auto actualWord = CPU().SP();
 			dumpDifference("SPH", "SPL", actualWord, expectedWord);
 		}
 
 		if (!pc) {
 			auto expectedWord = expectedRegisters[Fuse::RegisterState::PC];
-			auto actualWord = m_cpu.PC();
+			auto actualWord = CPU().PC();
 			dumpDifference("PCH", "PCL", actualWord, expectedWord);
 		}
 	}
@@ -177,10 +182,10 @@ void Fuse::TestRunner::checkMemory() {
 
 void Fuse::TestRunner::run() {
 
-	initialise();
+	powerOn();
 	auto allowedCycles = m_test.registerState.tstates;
 	try {
-		m_cpu.run(allowedCycles);
+		CPU().run(allowedCycles);
 		check();
 	} catch (std::logic_error& error) {
 		m_unimplemented = true;

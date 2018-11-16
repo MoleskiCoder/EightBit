@@ -8,14 +8,12 @@ int main(int, char*[]) {
 	Configuration configuration;
 
 #ifdef _DEBUG
-	//configuration.setDebugMode(true);
+	configuration.setDebugMode(true);
 	configuration.setProfileMode(true);
 #endif
-	//configuration.setDebugMode(true);
 
 	EightBit::TestHarness<Configuration, Board> harness(configuration);
-	harness.initialise();
-	harness.runLoop();
+	harness.run();
 
 	return 0;
 }

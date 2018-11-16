@@ -13,6 +13,16 @@ Board::Board(const Configuration& configuration)
   m_disassembler(*this, m_cpu, m_symbols),
   m_profiler(m_cpu, m_disassembler, m_symbols) {}
 
+void Board::powerOn() {
+	EightBit::Bus::powerOn();
+	CPU().powerOn();
+}
+
+void Board::powerOff() {
+	CPU().powerOff();
+	EightBit::Bus::powerOff();
+}
+
 void Board::initialise() {
 
 	auto programFilename = m_configuration.getProgram();
@@ -57,8 +67,6 @@ void Board::initialise() {
 	m_pollCounter = 0;
 	m_pollInterval = m_configuration.getPollInterval();
 
-	CPU().powerOn();
-
 	poke(0x00, 0x4c);
 	CPU().pokeWord(1, m_configuration.getStartAddress());
 }
@@ -77,7 +85,7 @@ void Board::Cpu_ExecutedInstruction_StopLoop(EightBit::MOS6502& cpu) {
 	if (m_oldPC != pc) {
 		m_oldPC = pc;
 	} else {
-		CPU().powerOff();
+		powerOff();
 		auto test = peek(0x0200);
 		std::cout << std::endl << "** Test=" << std::hex << (int)test;
 	}
