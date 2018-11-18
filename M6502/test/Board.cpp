@@ -8,10 +8,7 @@
 #include <assert.h>
 
 Board::Board(const Configuration& configuration)
-: m_configuration(configuration),
-  m_cpu(EightBit::MOS6502(*this)),
-  m_disassembler(*this, m_cpu, m_symbols),
-  m_profiler(m_cpu, m_disassembler, m_symbols) {}
+: m_configuration(configuration) {}
 
 void Board::powerOn() {
 	EightBit::Bus::powerOn();
@@ -28,113 +25,40 @@ void Board::initialise() {
 	auto programFilename = m_configuration.getProgram();
 	auto programPath = m_configuration.getRomDirectory() + "/" + m_configuration.getProgram();
 	auto loadAddress = m_configuration.getLoadAddress();
+	m_ram.load(programPath, loadAddress.word);
 
-	switch (m_configuration.getLoadMethod()) {
-	case Configuration::LoadMethod::Ram:
-		m_ram.load(programPath, loadAddress.word);
-		break;
-	case Configuration::LoadMethod::Rom:
-		// m_rom.load(programPath, loadAddress);
-		break;
-	}
+	// Disassembly output
+	if (m_configuration.isDebugMode())
+		CPU().ExecutingInstruction.connect([this] (EightBit::MOS6502& cpu) {
+			const auto address = cpu.PC();
+			const auto cell = peek(address);
 
-	if (m_configuration.isProfileMode()) {
-		CPU().ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Profile, this, std::placeholders::_1));
-	}
+			std::cout << std::hex;
+			std::cout << "PC=" << std::setw(4) << std::setfill('0') << address << ":";
+			std::cout << "P=" << m_disassembler.dump_Flags(CPU().P()) << ", ";
+			std::cout << std::setw(2) << std::setfill('0');
+			std::cout << "A=" << (int)CPU().A() << ", ";
+			std::cout << "X=" << (int)CPU().X() << ", ";
+			std::cout << "Y=" << (int)CPU().Y() << ", ";
+			std::cout << "S=" << (int)CPU().S() << "\t";
 
-	if (m_configuration.isDebugMode()) {
-		CPU().ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Debug, this, std::placeholders::_1));
-	}
+			std::cout << m_disassembler.disassemble(address.word);
 
-	switch (m_configuration.getStopCondition()) {
-	case Configuration::StopCondition::Loop:
-		CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_StopLoop, this, std::placeholders::_1));
-		break;
-	case Configuration::StopCondition::Halt:
-		break;
-	default:
-		throw std::domain_error("Unknown stop condition");
-	}
+			std::cout << "\n";
+		});
 
-	if (m_configuration.allowInput()) {
-		ReadingByte.connect(std::bind(&Board::Memory_ReadingByte_Input, this, std::placeholders::_1));
-		CPU().ExecutedInstruction.connect(std::bind(&Board::Cpu_ExecutedInstruction_Poll, this, std::placeholders::_1));
-	}
-
-	if (m_configuration.allowOutput())
-		WrittenByte.connect(std::bind(&Board::Memory_WrittenByte_Output, this, std::placeholders::_1));
-
-	m_pollCounter = 0;
-	m_pollInterval = m_configuration.getPollInterval();
+	// Loop detected stop condition
+	CPU().ExecutedInstruction.connect([this] (EightBit::MOS6502& cpu) {
+		const auto pc = cpu.PC();
+		if (m_oldPC != pc) {
+			m_oldPC = pc;
+		} else {
+			powerOff();
+			auto test = peek(0x0200);
+			std::cout << std::endl << "** Test=" << std::hex << (int)test;
+		}
+	});
 
 	poke(0x00, 0x4c);
 	CPU().pokeWord(1, m_configuration.getStartAddress());
-}
-
-void Board::Cpu_ExecutingInstruction_Profile(const EightBit::MOS6502& cpu) {
-
-	const auto pc = CPU().PC();
-
-	//m_profiler.addAddress(pc.word, m_cpu.);
-	//m_profiler.addInstruction(m_memory.peek(pc.word));
-}
-
-void Board::Cpu_ExecutedInstruction_StopLoop(EightBit::MOS6502& cpu) {
-
-	auto pc = cpu.PC().word;
-	if (m_oldPC != pc) {
-		m_oldPC = pc;
-	} else {
-		powerOff();
-		auto test = peek(0x0200);
-		std::cout << std::endl << "** Test=" << std::hex << (int)test;
-	}
-}
-
-void Board::Cpu_ExecutingInstruction_Debug(EightBit::MOS6502& cpu) {
-
-	auto address = cpu.PC().word;
-	auto cell = peek(address);
-
-	std::cout << std::hex;
-	std::cout << "PC=" << std::setw(4) << std::setfill('0') << address << ":";
-	std::cout << "P=" << m_disassembler.dump_Flags(CPU().P()) << ", ";
-	std::cout << std::setw(2) << std::setfill('0');
-	std::cout << "A=" << (int)CPU().A() << ", ";
-	std::cout << "X=" << (int)CPU().X() << ", ";
-	std::cout << "Y=" << (int)CPU().Y() << ", ";
-	std::cout << "S=" << (int)CPU().S() << "\t";
-
-	std::cout << m_disassembler.disassemble(address);
-
-	std::cout << "\n";
-}
-
-void Board::Memory_ReadingByte_Input(EightBit::EventArgs) {
-	if (ADDRESS() == m_configuration.getInputAddress()) {
-		if (!!DATA())
-			write(0);
-	}
-}
-
-void Board::Memory_WrittenByte_Output(EightBit::EventArgs) {
-	if (ADDRESS() == m_configuration.getOutputAddress()) {
-#ifdef _MSC_VER
-		_putch(DATA());
-#endif
-	}
-}
-
-void Board::Cpu_ExecutedInstruction_Poll(const EightBit::MOS6502& cpu) {
-	if (++m_pollCounter == m_pollInterval) {
-		m_pollCounter = 0;
-		pollKeyboard();
-	}
-}
-
-void Board::pollKeyboard() {
-#ifdef _MSC_VER
-	if (_kbhit())
-		poke(m_configuration.getInputAddress(), _getch());
-#endif
 }
