@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 
+#include "Chip.h"
 #include "Signal.h"
 #include "Register.h"
 #include "EventArgs.h"
@@ -64,7 +65,7 @@ namespace EightBit {
 
 
 	private:
-		uint8_t m_data = 0xff;
-		register16_t m_address = 0xffff;
+		uint8_t m_data = Chip::Mask8;
+		register16_t m_address = Chip::Mask16;
 	};
 }

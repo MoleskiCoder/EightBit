@@ -45,9 +45,9 @@ namespace EightBit {
 		InputOutput& m_ports;
 
 		register16_t af;
-		register16_t bc = 0xffff;
-		register16_t de = 0xffff;
-		register16_t hl = 0xffff;
+		register16_t bc = Mask16;
+		register16_t de = Mask16;
+		register16_t hl = Mask16;
 
 		auto R(const int r) {
 			switch (r) {
