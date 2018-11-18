@@ -35,8 +35,8 @@ private:
 
 	EightBit::mc6850 m_acia;
 
-	EightBit::mc6809 m_cpu;
-	EightBit::Disassembly m_disassembler;
+	EightBit::mc6809 m_cpu = *this;
+	EightBit::Disassembly m_disassembler = { *this, m_cpu };
 
 	uint64_t m_totalCycleCount = 0UL;
 	int64_t m_frameCycleCount = 0L;
@@ -45,28 +45,9 @@ private:
 	EightBit::register16_t m_disassembleAt = 0x0000;
 	bool m_ignoreDisassembly = false;
 
-	// CPU events
-
-	void Cpu_ExecutingInstruction_Debug(EightBit::mc6809&);
-	void Cpu_ExecutedInstruction_Debug(EightBit::mc6809&);
-
-	void Cpu_ExecutedInstruction_Terminator(EightBit::mc6809&);
-	void Cpu_ExecutedInstruction_Acia(EightBit::mc6809&);
-
-	// Bus events
-
-	// Allows us to marshal data from memory -> ACIA
-	void Bus_WrittenByte_Acia(EightBit::EventArgs&);
-
-	// Allows us to marshal data from ACIA -> memory
-	void Bus_ReadingByte_Acia(EightBit::EventArgs&);
-
-	// ACIA events
-
-	// Allows us to catch a byte being transmitted
-	void Acia_Transmitting(EightBit::EventArgs&);
-
 	// Use the bus data to update the ACIA access/address pins
+	void updateAciaPinsRead() { updateAciaPins(EightBit::Chip::PinLevel::High); }
+	void updateAciaPinsWrite() { updateAciaPins(EightBit::Chip::PinLevel::Low); }
 	void updateAciaPins(EightBit::Chip::PinLevel rw);
 
 	bool accessAcia();

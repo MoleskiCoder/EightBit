@@ -2,9 +2,8 @@
 
 #include <cstdint>
 #include <string>
-#include <Register.h>
 
-class Configuration {
+class Configuration final {
 public:
 	static constexpr uint64_t CyclesPerSecond = 2 * 1024 * 1024;
 	static constexpr uint64_t FrameCycleInterval = CyclesPerSecond / 60;
