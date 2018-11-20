@@ -331,10 +331,10 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	case 0xba:	addCycles(5);	A() = orr(A(), AM_extended_byte());					break;		// OR (ORA extended)
 
 	// ORB
-	case 0xca:	addCycles(2);	A() = orr(A(), AM_immediate_byte());				break;		// OR (ORB immediate)
-	case 0xda:	addCycles(4);	A() = orr(A(), AM_direct_byte());					break;		// OR (ORB direct)
-	case 0xea:	addCycles(4);	A() = orr(A(), AM_indexed_byte());					break;		// OR (ORB indexed)
-	case 0xfa:	addCycles(5);	A() = orr(A(), AM_extended_byte());					break;		// OR (ORB extended)
+	case 0xca:	addCycles(2);	B() = orr(B(), AM_immediate_byte());				break;		// OR (ORB immediate)
+	case 0xda:	addCycles(4);	B() = orr(B(), AM_direct_byte());					break;		// OR (ORB direct)
+	case 0xea:	addCycles(4);	B() = orr(B(), AM_indexed_byte());					break;		// OR (ORB indexed)
+	case 0xfa:	addCycles(5);	B() = orr(B(), AM_extended_byte());					break;		// OR (ORB extended)
 
 	// ORCC
 	case 0x1a:	addCycles(3);	CC() |= AM_immediate_byte();						break;		// OR (ORCC immediate)
@@ -534,7 +534,7 @@ void EightBit::mc6809::execute10(const uint8_t opcode) {
 	case 0xff:	addCycles(7);	Processor::setWord(Address_extended(), st(S()));	break;		// ST (STS extended)
 
 	// STY
-	case 0x9f:	addCycles(6);	Processor::setWord(Address_extended(), st(Y()));	break;		// ST (STY direct)
+	case 0x9f:	addCycles(6);	Processor::setWord(Address_direct(), st(Y()));		break;		// ST (STY direct)
 	case 0xaf:	addCycles(6);	Processor::setWord(Address_indexed(), st(Y()));		break;		// ST (STY indexed)
 	case 0xbf:	addCycles(7);	Processor::setWord(Address_extended(), st(Y()));	break;		// ST (STY extended)
 
