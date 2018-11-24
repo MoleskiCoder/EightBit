@@ -62,8 +62,6 @@ namespace EightBit {
 		static std::map<uint16_t, std::vector<uint8_t>> parseHexFile(std::string path);
 		void loadHexFile(std::string path);
 
-
-
 	private:
 		uint8_t m_data = Chip::Mask8;
 		register16_t m_address = Chip::Mask16;
