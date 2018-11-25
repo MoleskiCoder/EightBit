@@ -97,5 +97,14 @@
     <ClCompile Include="Rom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UnusedMemory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Ram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

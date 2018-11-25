@@ -167,6 +167,8 @@
     <ClCompile Include="InputOutput.cpp" />
     <ClCompile Include="IntelProcessor.cpp" />
     <ClCompile Include="LittleEndianProcessor.cpp" />
+    <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="Ram.cpp" />
     <ClCompile Include="Rom.cpp" />
     <ClCompile Include="Processor.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -175,6 +177,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="UnusedMemory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
