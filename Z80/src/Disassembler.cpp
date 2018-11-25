@@ -236,13 +236,13 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 }
 
 void EightBit::Disassembler::disassembleCB(
-	std::ostringstream& output,
-	const Z80& cpu,
-	uint16_t pc,
+	std::ostringstream&,
+	const Z80&,
+	uint16_t,
 	std::string& specification,
-	int& dumpCount,
+	int&,
 	int x, int y, int z,
-	int p, int q) const {
+	int, int) const {
 
 	switch (x) {
 	case 0:	// rot[y] r[z]
@@ -286,9 +286,9 @@ void EightBit::Disassembler::disassembleCB(
 }
 
 void EightBit::Disassembler::disassembleED(
-		std::ostringstream& output,
-		const Z80& cpu,
-		uint16_t pc,
+		std::ostringstream&,
+		const Z80&,
+		uint16_t,
 		std::string& specification,
 		int& dumpCount,
 		int x, int y, int z,

@@ -577,6 +577,14 @@ void EightBit::mc6809::execute11(const uint8_t opcode) {
 
 //
 
+void EightBit::mc6809::push(const uint8_t value) {
+	pushS(value);
+}
+
+uint8_t EightBit::mc6809::pop() {
+	return popS();
+}
+
 void EightBit::mc6809::push(register16_t& stack, const uint8_t value) {
 	BUS().write(--stack, value);
 }

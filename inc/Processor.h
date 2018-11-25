@@ -22,7 +22,7 @@ namespace EightBit {
 		auto& INT() { return m_intLine; }
 		auto& IRQ() { return INT(); }	// Synonym
 
-		virtual void powerOn();
+		virtual void powerOn() override;
 		void reset() { lower(RESET()); }
 
 		int run(int limit);

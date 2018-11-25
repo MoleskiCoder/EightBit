@@ -9,6 +9,23 @@ EightBit::GameBoy::LR35902::LR35902(Bus& memory)
   m_bus(memory) {
 }
 
+EightBit::register16_t& EightBit::GameBoy::LR35902::AF() {
+	af.low = higherNibble(af.low);
+	return af;
+}
+
+EightBit::register16_t& EightBit::GameBoy::LR35902::BC() {
+	return bc;
+}
+
+EightBit::register16_t& EightBit::GameBoy::LR35902::DE() {
+	return de;
+}
+
+EightBit::register16_t& EightBit::GameBoy::LR35902::HL() {
+	return hl;
+}
+
 void EightBit::GameBoy::LR35902::handleRESET() {
 	IntelProcessor::handleRESET();
 	di();
@@ -57,7 +74,6 @@ bool EightBit::GameBoy::LR35902::jrConditionalFlag(const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled JR conditional");
 }
 
 bool EightBit::GameBoy::LR35902::jumpConditionalFlag(const int flag) {
@@ -73,7 +89,6 @@ bool EightBit::GameBoy::LR35902::jumpConditionalFlag(const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled JP conditional");
 }
 
 void EightBit::GameBoy::LR35902::reti() {
@@ -94,7 +109,6 @@ bool EightBit::GameBoy::LR35902::returnConditionalFlag(const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled RET conditional");
 }
 
 bool EightBit::GameBoy::LR35902::callConditionalFlag(const int flag) {
@@ -110,7 +124,6 @@ bool EightBit::GameBoy::LR35902::callConditionalFlag(const int flag) {
 	default:
 		UNREACHABLE;
 	}
-	throw std::logic_error("Unhandled CALL conditional");
 }
 
 void EightBit::GameBoy::LR35902::add(register16_t& operand, const register16_t value) {
@@ -348,7 +361,7 @@ int EightBit::GameBoy::LR35902::execute(const uint8_t opcode) {
 	return clockCycles();
 }
 
-void EightBit::GameBoy::LR35902::executeCB(const int x, const int y, const int z, const int p, const int q) {
+void EightBit::GameBoy::LR35902::executeCB(const int x, const int y, const int z, int, int) {
 	switch (x) {
 	case 0:	{ // rot[y] r[z]
 		auto operand = R(z);

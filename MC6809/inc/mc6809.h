@@ -95,8 +95,8 @@ namespace EightBit {
 	protected:
 		// Default push/pop handlers
 
-		virtual void push(const uint8_t value) final { pushS(value);  }
-		virtual uint8_t pop() final { return popS(); }
+		virtual void push(uint8_t value) final;
+		virtual uint8_t pop() final;
 
 		// Interrupt (etc.) handlers
 

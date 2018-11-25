@@ -207,13 +207,13 @@ void EightBit::GameBoy::Disassembler::disassemble(std::ostringstream& output, LR
 }
 
 void EightBit::GameBoy::Disassembler::disassembleCB(
-	std::ostringstream& output,
-	LR35902& cpu,
-	uint16_t pc,
+	std::ostringstream&,
+	LR35902&,
+	uint16_t,
 	std::string& specification,
-	int& dumpCount,
+	int&,
 	int x, int y, int z,
-	int p, int q) {
+	int, int) {
 
 	switch (x) {
 	case 0:	// rot[y] r[z]

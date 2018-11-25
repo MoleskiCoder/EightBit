@@ -202,9 +202,9 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Intel8080& 
 }
 
 void EightBit::Disassembler::disassemble(
-	std::ostringstream& output,
-	const Intel8080& cpu,
-	uint16_t pc,
+	std::ostringstream&,
+	const Intel8080&,
+	uint16_t,
 	std::string& specification,
 	int& dumpCount,
 	int x, int y, int z,

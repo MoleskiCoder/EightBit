@@ -32,7 +32,7 @@ namespace EightBit {
 			}
 		};
 
-		const auto& getDecodedOpcode(const int i) const {
+		const auto& getDecodedOpcode(const size_t i) const {
 			return m_decodedOpcodes[i];
 		}
 
@@ -156,7 +156,7 @@ namespace EightBit {
 		}
 
 		auto jrConditional(const int condition) {
-			const auto offset = fetchByte();
+			const int8_t offset = fetchByte();
 			if (condition)
 				jr(offset);
 			return !!condition;

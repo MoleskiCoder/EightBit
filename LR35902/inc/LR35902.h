@@ -30,14 +30,10 @@ namespace EightBit {
 				return cycles() * 4;
 			}
 
-			virtual register16_t& AF() final {
-				af.low = higherNibble(af.low);
-				return af;
-			}
-
-			virtual register16_t& BC() final { return bc; }
-			virtual register16_t& DE() final { return de; }
-			virtual register16_t& HL() final { return hl; }
+			virtual register16_t& AF() final;
+			virtual register16_t& BC() final;
+			virtual register16_t& DE() final;
+			virtual register16_t& HL() final;
 
 		protected:
 			virtual int execute(uint8_t opcode) final;
