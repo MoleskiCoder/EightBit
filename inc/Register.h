@@ -20,7 +20,7 @@
 #endif
 
 namespace EightBit {
-	union register16_t {
+	union register16_t final {
 		struct {
 #ifdef HOST_LITTLE_ENDIAN
 			uint8_t low;

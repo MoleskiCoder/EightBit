@@ -39,3 +39,7 @@ int8_t EightBit::Processor::signExtend(const int b, uint8_t x) {
 	const auto result = (x ^ m) - m;
 	return result;
 }
+
+void EightBit::Processor::ret() {
+	jump(popWord());
+}

@@ -19,39 +19,20 @@ namespace EightBit {
 		const auto& BYTES() const { return m_bytes; }
 		auto& BYTES() { return m_bytes; }
 
-		virtual void poke(const uint16_t address, const uint8_t value) override {
-			BYTES()[address] = value;
-		}
+		virtual void poke(uint16_t address, uint8_t value) override;
 
 	public:
 		static int load(std::ifstream& file, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
 		static int load(const std::string& path, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
 
-		Rom(const size_t size = 0) noexcept
-		: m_bytes(size) {
-		}
+		Rom(size_t size = 0) noexcept;
 
-		virtual size_t size() const final { return m_bytes.size();  }
+		virtual size_t size() const final;
 
-		virtual int load(std::ifstream& file, const int writeOffset = 0, const int readOffset = 0, const int limit = -1) final {
-			const auto maximumSize = (int)size() - writeOffset;
-			return load(file, m_bytes, writeOffset, readOffset, limit, maximumSize);
-		}
+		virtual int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
+		virtual int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
+		virtual int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 
-		virtual int load(const std::string& path, const int writeOffset = 0, const int readOffset = 0, const int limit = -1) final {
-			const auto maximumSize = (int)size() - writeOffset;
-			return load(path, m_bytes, writeOffset, readOffset, limit, maximumSize);
-		}
-
-		virtual int load(const std::vector<uint8_t>& bytes, const int writeOffset = 0, const int readOffset = 0, int limit = -1) final {
-			if (limit < 0)
-				limit = (int)bytes.size() - readOffset;
-			std::copy(bytes.cbegin() + readOffset, bytes.cbegin() + limit, m_bytes.begin() + writeOffset);
-			return limit;
-		}
-
-		virtual uint8_t peek(const uint16_t address) const final {
-			return BYTES()[address];
-		}
+		virtual uint8_t peek(uint16_t address) const final;
 	};
 }

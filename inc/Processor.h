@@ -71,7 +71,7 @@ namespace EightBit {
 		virtual void push(uint8_t value) = 0;
 		virtual uint8_t pop() = 0;
 
-		virtual void pushWord(const register16_t value) = 0;
+		virtual void pushWord(register16_t value) = 0;
 		virtual register16_t popWord() = 0;
 
 		auto getWord(const register16_t address) {
@@ -93,9 +93,7 @@ namespace EightBit {
 			jump(destination);
 		}
 
-		virtual void ret() {
-			jump(popWord());
-		}
+		virtual void ret();
 
 		void resetCycles() { m_cycles = 0; }
 		void addCycles(const int extra) { m_cycles += extra; }

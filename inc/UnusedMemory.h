@@ -1,5 +1,10 @@
 #pragma once
 
+#include <cstdint>
+#include <fstream>
+#include <string>
+#include <vector>
+
 #include "Memory.h"
 
 namespace EightBit {
@@ -8,29 +13,18 @@ namespace EightBit {
 	// is being read.
 	class UnusedMemory final : public Memory {
 	public:
-		UnusedMemory(const size_t size, const uint8_t value)
-		: m_size(size), m_value(value) {}
+		UnusedMemory(size_t size, uint8_t value);
 		virtual ~UnusedMemory() = default;
 
-		virtual size_t size() const final { return m_size; }
-		virtual uint8_t peek(uint16_t address) const final { return m_value; }
+		virtual size_t size() const final;
+		virtual uint8_t peek(uint16_t address) const final;
 
-		virtual int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final {
-			throw new std::logic_error("load operation not allowed.");
-		}
-
-		virtual int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) final {
-			throw new std::logic_error("load operation not allowed.");
-		}
-		
-		virtual int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) final {
-			throw new std::logic_error("load operation not allowed.");
-		}
+		virtual int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
+		virtual int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
+		virtual int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 
 	protected:
-		virtual void poke(uint16_t address, uint8_t value) {
-			throw new std::logic_error("Poke operation not allowed.");
-		}
+		virtual void poke(uint16_t address, uint8_t value) final;
 
 	private:
 		size_t m_size;

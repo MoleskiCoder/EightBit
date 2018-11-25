@@ -30,3 +30,8 @@ void EightBit::IntelProcessor::setWord(const register16_t value) {
 	LittleEndianProcessor::setWord(value);
 	MEMPTR() = BUS().ADDRESS();
 }
+
+void EightBit::IntelProcessor::ret() {
+	Processor::ret();
+	MEMPTR() = PC();
+}

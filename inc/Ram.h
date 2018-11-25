@@ -9,16 +9,9 @@ namespace EightBit {
 	// it's externally 'reference'able and 'poke'able.
 	class Ram : public Rom {
 	public:
-		Ram(const size_t size = 0) noexcept
-		: Rom(size) {
-		}
+		Ram(size_t size = 0) noexcept;
 
-		virtual uint8_t& reference(const uint16_t address) final {
-			return BYTES()[address];
-		}
-
-		virtual void poke(const uint16_t address, const uint8_t value) final {
-			Rom::poke(address, value);
-		}
+		virtual uint8_t& reference(uint16_t address) final;
+		virtual void poke(uint16_t address, uint8_t value) final;
 	};
 }

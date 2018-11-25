@@ -162,10 +162,7 @@ namespace EightBit {
 			return !!condition;
 		}
 
-		virtual void ret() final {
-			Processor::ret();
-			MEMPTR() = PC();
-		}
+		virtual void ret() final;
 
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
