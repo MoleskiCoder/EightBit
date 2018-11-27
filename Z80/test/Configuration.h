@@ -4,9 +4,9 @@
 
 #include <Register.h>
 
-class Configuration {
+class Configuration final {
 public:
-	Configuration() noexcept;
+	Configuration() noexcept = default;
 
 	bool isDebugMode() const {
 		return m_debugMode;
@@ -24,7 +24,7 @@ public:
 		m_profileMode = value;
 	}
 
-	std::string getRomDirectory() const {
+	const std::string& getRomDirectory() const {
 		return m_romDirectory;
 	}
 
@@ -33,8 +33,7 @@ public:
 	}
 
 private:
-	bool m_debugMode;
-	bool m_profileMode;
-
-	std::string m_romDirectory;
+	bool m_debugMode = false;
+	bool m_profileMode = false;
+	std::string m_romDirectory = "roms";
 };

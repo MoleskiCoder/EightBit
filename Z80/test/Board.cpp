@@ -10,7 +10,7 @@ void Board::powerOn() {
 	CPU().reset();
 }
 
-void Board::powerOff() {
+void Board::powerOff() noexcept {
 	CPU().powerOff();
 	EightBit::Bus::powerOff();
 }

@@ -16,14 +16,14 @@ class Board : public EightBit::Bus {
 public:
 	Board(const Configuration& configuration);
 
-	EightBit::Z80& CPU() { return m_cpu; }
+	EightBit::Z80& CPU() noexcept { return m_cpu; }
 
-	virtual void powerOn() final;
-	virtual void powerOff() final;
+	void powerOn() final;
+	void powerOff() noexcept final;
 
 protected:
-	virtual void initialise() final;
-	virtual EightBit::MemoryMapping mapping(uint16_t address) final {
+	void initialise() final;
+	EightBit::MemoryMapping mapping(uint16_t address) noexcept final {
 		return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::ReadWrite };
 	}
 
