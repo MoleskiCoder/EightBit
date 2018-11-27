@@ -6,7 +6,7 @@
 
 class Configuration {
 public:
-	Configuration();
+	Configuration() = default;
 
 	bool isDebugMode() const {
 		return m_debugMode;
@@ -33,8 +33,7 @@ public:
 	}
 
 private:
-	bool m_debugMode;
-	bool m_profileMode;
-
-	std::string m_romDirectory;
+	bool m_debugMode = false;
+	bool m_profileMode = false;
+	std::string m_romDirectory = "roms";
 };
