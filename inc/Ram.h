@@ -11,7 +11,7 @@ namespace EightBit {
 	public:
 		Ram(size_t size = 0) noexcept;
 
-		virtual uint8_t& reference(uint16_t address) final;
-		virtual void poke(uint16_t address, uint8_t value) final;
+		uint8_t& reference(uint16_t address) final;
+		void poke(uint16_t address, uint8_t value) final;
 	};
 }

@@ -19,20 +19,20 @@ namespace EightBit {
 		const auto& BYTES() const { return m_bytes; }
 		auto& BYTES() { return m_bytes; }
 
-		virtual void poke(uint16_t address, uint8_t value) override;
+		void poke(uint16_t address, uint8_t value) override;
 
 	public:
 		static int load(std::ifstream& file, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
 		static int load(const std::string& path, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
 
-		Rom(size_t size = 0) noexcept;
+		Rom(size_t size = 0);
 
-		virtual size_t size() const final;
+		size_t size() const final;
 
-		virtual int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
-		virtual int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
-		virtual int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
+		int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
+		int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
+		int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 
-		virtual uint8_t peek(uint16_t address) const final;
+		uint8_t peek(uint16_t address) const final;
 	};
 }

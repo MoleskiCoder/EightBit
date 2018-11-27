@@ -41,7 +41,7 @@ void EightBit::Rom::poke(const uint16_t address, const uint8_t value) {
 	BYTES()[address] = value;
 }
 
-EightBit::Rom::Rom(const size_t size) noexcept
+EightBit::Rom::Rom(const size_t size)
 : m_bytes(size) {}
 
 size_t EightBit::Rom::size() const {
@@ -49,18 +49,18 @@ size_t EightBit::Rom::size() const {
 }
 
 int EightBit::Rom::load(std::ifstream& file, const int writeOffset, const int readOffset, const int limit) {
-	const auto maximumSize = (int)size() - writeOffset;
+	const auto maximumSize = size() - writeOffset;
 	return load(file, m_bytes, writeOffset, readOffset, limit, maximumSize);
 }
 
 int EightBit::Rom::load(const std::string& path, const int writeOffset, const int readOffset, const int limit) {
-	const auto maximumSize = (int)size() - writeOffset;
+	const auto maximumSize = size() - writeOffset;
 	return load(path, m_bytes, writeOffset, readOffset, limit, maximumSize);
 }
 
 int EightBit::Rom::load(const std::vector<uint8_t>& bytes, const int writeOffset, const int readOffset, int limit) {
 	if (limit < 0)
-		limit = (int)bytes.size() - readOffset;
+		limit = bytes.size() - readOffset;
 	std::copy(bytes.cbegin() + readOffset, bytes.cbegin() + limit, m_bytes.begin() + writeOffset);
 	return limit;
 }

@@ -12,7 +12,7 @@ namespace EightBit {
 	int countBits(uint8_t value);
 	bool oddParity(uint8_t value);
 	int findFirstSet(int value);
-	void assume(int expression);
+	constexpr void assume(int expression);
 }
 
 inline int EightBit::countBits(const uint8_t value) {
@@ -52,7 +52,7 @@ inline int EightBit::findFirstSet(const int value) {
 #endif
 }
 
-inline void EightBit::assume(const int expression) {
+inline constexpr void EightBit::assume(const int expression) {
 #ifdef _MSC_VER
 	__assume(expression);
 #elif defined(__GNUG__)
@@ -72,7 +72,7 @@ inline void EightBit::assume(const int expression) {
 
 #	define PARITY(x)	EightBit::oddParity(x)
 
-#	define UNREACHABLE	{ ASSUME(0); throw new std::exception("unreachable"); }
+#	define UNREACHABLE	{ ASSUME(0); throw std::exception("unreachable"); }
 
 #elif defined(__GNUG__)
 

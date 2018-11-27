@@ -10,8 +10,7 @@
 #include "EightBitCompilerDefinitions.h"
 
 namespace EightBit {
-	class IntelProcessor : public LittleEndianProcessor
-	{
+	class IntelProcessor : public LittleEndianProcessor {
 	public:
 		struct opcode_decoded_t {
 
@@ -21,7 +20,7 @@ namespace EightBit {
 			int p = 0;
 			int q = 0;
 
-			opcode_decoded_t() noexcept {}
+			opcode_decoded_t() {}
 
 			opcode_decoded_t(const uint8_t opcode) {
 				x = (opcode & 0b11000000) >> 6;	// 0 - 3
@@ -31,6 +30,8 @@ namespace EightBit {
 				q = (y & 1);					// 0 - 1
 			}
 		};
+
+		~IntelProcessor() = default;
 
 		const auto& getDecodedOpcode(const size_t i) const {
 			return m_decodedOpcodes[i];
@@ -56,11 +57,10 @@ namespace EightBit {
 		auto& H() { return HL().high; }
 		auto& L() { return HL().low; }
 
-		virtual void powerOn() override;
+		void powerOn() override;
 
 	protected:
 		IntelProcessor(Bus& bus);
-		virtual ~IntelProcessor() = default;
 
 		template<class T> static void adjustSign(uint8_t& f, const uint8_t value) {
 			setFlag(f, T::SF, value & T::SF);
@@ -101,7 +101,7 @@ namespace EightBit {
 
 		//
 
-		static auto buildHalfCarryIndex(const uint8_t before, const uint8_t value, const int calculation) {
+		static constexpr auto buildHalfCarryIndex(const uint8_t before, const uint8_t value, const int calculation) {
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
@@ -117,13 +117,13 @@ namespace EightBit {
 			return m_halfCarryTableSub[index & Mask3];
 		}
 
-		virtual void push(uint8_t value) final;
-		virtual uint8_t pop() final;
+		void push(uint8_t value) final;
+		uint8_t pop() final;
 
 		//
 
-		virtual register16_t getWord() final;
-		virtual void setWord(register16_t value) final;
+		register16_t getWord() final;
+		void setWord(register16_t value) final;
 
 		//
 
@@ -162,7 +162,7 @@ namespace EightBit {
 			return !!condition;
 		}
 
-		virtual void ret() final;
+		void ret() final;
 
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;

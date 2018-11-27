@@ -15,6 +15,8 @@ namespace EightBit {
 		// x: sign extend this b-bit number to r
 		static int8_t signExtend(int b, uint8_t x);
 
+		~Processor() {};
+
 		auto& PC() { return m_pc; }
 
 		auto& RESET() { return m_resetLine; }
@@ -22,7 +24,7 @@ namespace EightBit {
 		auto& INT() { return m_intLine; }
 		auto& IRQ() { return INT(); }	// Synonym
 
-		virtual void powerOn() override;
+		void powerOn() override;
 		void reset() { lower(RESET()); }
 
 		int run(int limit);
@@ -36,7 +38,6 @@ namespace EightBit {
 
 	protected:
 		Processor(Bus& memory);
-		virtual ~Processor() = default;
 
 		auto& BUS() { return m_bus; }
 

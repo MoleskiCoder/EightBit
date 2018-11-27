@@ -54,14 +54,14 @@ namespace EightBit {
 		auto& NMI() { return m_nmiLine; }		// In
 		auto& M1() { return m_m1Line; }			// Out
 
-		virtual int execute(uint8_t opcode) final;
-		virtual int step() final;
-		virtual void powerOn() final;
+		int execute(uint8_t opcode) final;
+		int step() final;
+		void powerOn() final;
 
-		virtual register16_t& AF() final;
-		virtual register16_t& BC() final;
-		virtual register16_t& DE() final;
-		virtual register16_t& HL() final;
+		register16_t& AF() final;
+		register16_t& BC() final;
+		register16_t& DE() final;
+		register16_t& HL() final;
 
 		auto& IX() { return m_ix; }
 		auto& IXH() { return IX().high; }
@@ -86,8 +86,8 @@ namespace EightBit {
 		}
 
 	protected:
-		virtual void handleRESET() final;
-		virtual void handleINT() final;
+		void handleRESET() final;
+		void handleINT() final;
 
 	private:
 		PinLevel m_nmiLine = Low;
@@ -304,7 +304,7 @@ namespace EightBit {
 		}
 
 		static void adjustOverflowAdd(uint8_t& f, const int beforeNegative, const int valueNegative, const int afterNegative) {
-			auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
+			const auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
 			setFlag(f, VF, overflow);
 		}
 
@@ -313,7 +313,7 @@ namespace EightBit {
 		}
 
 		static void adjustOverflowSub(uint8_t& f, const int beforeNegative, const int valueNegative, const int afterNegative) {
-			auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
+			const auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
 			setFlag(f, VF, overflow);
 		}
 

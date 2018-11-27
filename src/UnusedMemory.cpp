@@ -13,17 +13,17 @@ uint8_t EightBit::UnusedMemory::peek(uint16_t) const {
 }
 
 int EightBit::UnusedMemory::load(std::ifstream&, int, int, int) {
-	throw new std::logic_error("load operation not allowed.");
+	throw std::logic_error("load operation not allowed.");
 }
 
 int EightBit::UnusedMemory::load(const std::string&, int, int, int) {
-	throw new std::logic_error("load operation not allowed.");
+	throw std::logic_error("load operation not allowed.");
 }
 		
 int EightBit::UnusedMemory::load(const std::vector<uint8_t>&, int, int, int) {
-	throw new std::logic_error("load operation not allowed.");
+	throw std::logic_error("load operation not allowed.");
 }
 
 void EightBit::UnusedMemory::poke(uint16_t, uint8_t) {
-	throw new std::logic_error("Poke operation not allowed.");
+	throw std::logic_error("Poke operation not allowed.");
 }

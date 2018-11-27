@@ -14,9 +14,9 @@ namespace EightBit {
 		void write(const uint8_t port, const uint8_t value) { return writeOutputPort(port, value); }
 
 		uint8_t readInputPort(uint8_t port);
-		void writeInputPort(const uint8_t port, const uint8_t value) { m_input[port] = value; }
+		void writeInputPort(const uint8_t port, const uint8_t value) noexcept { m_input[port] = value; }
 
-		auto readOutputPort(const uint8_t port) { return m_output[port]; }
+		auto readOutputPort(const uint8_t port) noexcept { return m_output[port]; }
 		void writeOutputPort(uint8_t port, uint8_t value);
 
 		Signal<uint8_t> ReadingPort;
