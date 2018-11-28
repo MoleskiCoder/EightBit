@@ -48,21 +48,21 @@ namespace EightBit {
 			Low, High
 		};
 
-		static void clearFlag(uint8_t& f, const int flag) { f &= ~flag; }
-		static void setFlag(uint8_t& f, const int flag) { f |= flag; }
+		static void clearFlag(uint8_t& f, const int flag) noexcept { f &= ~flag; }
+		static void setFlag(uint8_t& f, const int flag) noexcept { f |= flag; }
 
-		static void setFlag(uint8_t& f, const int flag, const int condition) { setFlag(f, flag, !!condition); }
-		static void setFlag(uint8_t& f, const int flag, const uint32_t condition) { setFlag(f, flag, !!condition); }
-		static void setFlag(uint8_t& f, const int flag, const bool condition) { condition ? setFlag(f, flag) : clearFlag(f, flag); }
+		static void setFlag(uint8_t& f, const int flag, const int condition) noexcept { setFlag(f, flag, !!condition); }
+		static void setFlag(uint8_t& f, const int flag, const uint32_t condition) noexcept { setFlag(f, flag, !!condition); }
+		static void setFlag(uint8_t& f, const int flag, const bool condition) noexcept { condition ? setFlag(f, flag) : clearFlag(f, flag); }
 
-		static void clearFlag(uint8_t& f, const int flag, const int condition) { clearFlag(f, flag, !!condition); }
-		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) { clearFlag(f, flag, !!condition); }
-		static void clearFlag(uint8_t& f, const int flag, const bool condition) { setFlag(f, flag, !condition); }
+		static void clearFlag(uint8_t& f, const int flag, const int condition) noexcept { clearFlag(f, flag, !!condition); }
+		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) noexcept { clearFlag(f, flag, !!condition); }
+		static void clearFlag(uint8_t& f, const int flag, const bool condition) noexcept { setFlag(f, flag, !condition); }
 
 		static constexpr auto raised(const PinLevel line) { return line == High; }
-		static void raise(PinLevel& line) { line = High; }
+		static void raise(PinLevel& line) noexcept { line = High; }
 		static constexpr auto lowered(const PinLevel line) { return line == Low; }
-		static void lower(PinLevel& line) { line = Low; }
+		static void lower(PinLevel& line) noexcept { line = Low; }
 
 		static void match(PinLevel& line, int value);
 
@@ -77,11 +77,11 @@ namespace EightBit {
 
 		virtual ~Chip() {};
 
-		auto& POWER() { return m_powerLine; }
+		auto& POWER() noexcept { return m_powerLine; }
 
-		auto powered() { return raised(POWER()); }
+		auto powered() noexcept { return raised(POWER()); }
 		virtual void powerOn();
-		void powerOff() { lower(POWER()); }
+		void powerOff() noexcept { lower(POWER()); }
 
 	protected:
 		Chip() = default;

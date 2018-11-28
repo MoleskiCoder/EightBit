@@ -16,8 +16,8 @@ namespace EightBit {
 		std::vector<uint8_t> m_bytes;
 
 	protected:
-		const auto& BYTES() const { return m_bytes; }
-		auto& BYTES() { return m_bytes; }
+		const auto& BYTES() const noexcept { return m_bytes; }
+		auto& BYTES() noexcept { return m_bytes; }
 
 		void poke(uint16_t address, uint8_t value) override;
 

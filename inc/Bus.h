@@ -22,11 +22,11 @@ namespace EightBit {
 		Signal<EventArgs> ReadingByte;
 		Signal<EventArgs> ReadByte;
 
-		auto ADDRESS() const { return m_address; }
-		auto& ADDRESS() { return m_address; }
+		auto ADDRESS() const noexcept { return m_address; }
+		auto& ADDRESS() noexcept { return m_address; }
 
-		auto DATA() const { return m_data; }
-		auto& DATA() { return m_data; }
+		auto DATA() const noexcept { return m_data; }
+		auto& DATA() noexcept { return m_data; }
 
 		auto peek() { return reference(); }
 		auto peek(const uint16_t address) { return reference(address); }

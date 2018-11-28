@@ -365,8 +365,8 @@ namespace EightBit {
 		register16_t m_u;
 		register16_t m_s;
 
-		uint8_t m_dp;
-		uint8_t m_cc;
+		uint8_t m_dp = 0;
+		uint8_t m_cc = 0;
 
 		PinLevel m_nmiLine = Low;
 		PinLevel m_firqLine = Low;

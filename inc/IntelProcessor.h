@@ -33,13 +33,13 @@ namespace EightBit {
 
 		~IntelProcessor() = default;
 
-		const auto& getDecodedOpcode(const size_t i) const {
+		const auto& getDecodedOpcode(const size_t i) const noexcept {
 			return m_decodedOpcodes[i];
 		}
 
-		auto& MEMPTR() { return m_memptr; }
+		auto& MEMPTR() noexcept { return m_memptr; }
 
-		auto& SP() { return m_sp; }
+		auto& SP() noexcept { return m_sp; }
 
 		virtual register16_t& AF() = 0;
 		auto& A() { return AF().high; }
@@ -105,13 +105,13 @@ namespace EightBit {
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
-		static auto calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) {
+		static auto calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) noexcept {
 			static std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableAdd[index & Mask3];
 		}
 
-		static auto calculateHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) {
+		static auto calculateHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) noexcept {
 			std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableSub[index & Mask3];

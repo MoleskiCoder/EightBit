@@ -17,21 +17,21 @@ namespace EightBit {
 
 		~Processor() {};
 
-		auto& PC() { return m_pc; }
+		auto& PC() noexcept { return m_pc; }
 
-		auto& RESET() { return m_resetLine; }
-		auto& HALT() { return m_haltLine; }
-		auto& INT() { return m_intLine; }
-		auto& IRQ() { return INT(); }	// Synonym
+		auto& RESET() noexcept { return m_resetLine; }
+		auto& HALT() noexcept { return m_haltLine; }
+		auto& INT() noexcept { return m_intLine; }
+		auto& IRQ() noexcept { return INT(); }	// Synonym
 
 		void powerOn() override;
-		void reset() { lower(RESET()); }
+		void reset() noexcept { lower(RESET()); }
 
 		int run(int limit);
 		virtual int step() = 0;
 		virtual int execute(uint8_t opcode) = 0;
 
-		auto cycles() const { return m_cycles; }
+		auto cycles() const noexcept { return m_cycles; }
 
 		virtual register16_t peekWord(register16_t address) = 0;
 		virtual void pokeWord(register16_t address, register16_t value) = 0;
@@ -39,11 +39,11 @@ namespace EightBit {
 	protected:
 		Processor(Bus& memory);
 
-		auto& BUS() { return m_bus; }
+		auto& BUS() noexcept { return m_bus; }
 
-		auto halted() { return lowered(HALT()); }
-		auto halt() { --PC();  lower(HALT()); }
-		auto proceed() { ++PC(); raise(HALT()); }
+		auto halted() noexcept { return lowered(HALT()); }
+		auto halt() noexcept { --PC();  lower(HALT()); }
+		auto proceed() noexcept { ++PC(); raise(HALT()); }
 
 		virtual void handleRESET();
 		virtual void handleINT();
@@ -85,7 +85,7 @@ namespace EightBit {
 			return setWord(value);
 		}
 
-		void jump(const register16_t destination) {
+		void jump(const register16_t destination) noexcept {
 			PC() = destination;
 		}
 
@@ -96,9 +96,9 @@ namespace EightBit {
 
 		virtual void ret();
 
-		void resetCycles() { m_cycles = 0; }
-		void addCycles(const int extra) { m_cycles += extra; }
-		void addCycle() { ++m_cycles;  }
+		void resetCycles() noexcept { m_cycles = 0; }
+		void addCycles(const int extra) noexcept { m_cycles += extra; }
+		void addCycle() noexcept { ++m_cycles;  }
 
 	private:
 		Bus& m_bus;

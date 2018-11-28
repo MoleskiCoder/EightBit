@@ -278,36 +278,36 @@ namespace EightBit {
 		bool transmitReadyHigh() const { return m_transmitControl == ReadyHighInterruptDisabled; }
 		bool transmitReadyLow() const { return !transmitReadyHigh(); }
 
-		PinLevel m_RXDATA;
-		PinLevel m_TXDATA;
+		PinLevel m_RXDATA = Low;
+		PinLevel m_TXDATA = Low;
 
-		PinLevel m_RTS;
-		PinLevel m_CTS;
-		PinLevel m_DCD;
-		PinLevel m_oldDCD;	// So we can detect low -> high transition
+		PinLevel m_RTS = Low;
+		PinLevel m_CTS = Low;
+		PinLevel m_DCD = Low;
+		PinLevel m_oldDCD = Low;	// So we can detect low -> high transition
 
-		PinLevel m_RXCLK;
-		PinLevel m_TXCLK;
+		PinLevel m_RXCLK = Low;
+		PinLevel m_TXCLK = Low;
 
-		PinLevel m_CS0;
-		PinLevel m_CS1;
-		PinLevel m_CS2;
+		PinLevel m_CS0 = Low;;
+		PinLevel m_CS1 = Low;;
+		PinLevel m_CS2 = Low;;
 
-		PinLevel m_RS;
-		PinLevel m_RW;
+		PinLevel m_RS = Low;;
+		PinLevel m_RW = Low;;
 
-		PinLevel m_E;
-		PinLevel m_IRQ;
+		PinLevel m_E = Low;;
+		PinLevel m_IRQ = Low;;
 
-		uint8_t m_data;
+		uint8_t m_data = 0;
 
 		bool m_statusRead = false;
 
 		// Control registers
-		CounterDivideSelect m_counterDivide;
-		WordSelect m_wordSelect;
-		TransmitterControl m_transmitControl;
-		ReceiveControl m_receiveControl;
+		CounterDivideSelect m_counterDivide = One;
+		WordSelect m_wordSelect = SevenEvenTwo;
+		TransmitterControl m_transmitControl = ReadyLowInterruptDisabled;
+		ReceiveControl m_receiveControl = ReceiveInterruptDisable;
 
 		// Status registers
 		bool m_statusRDRF = false;
@@ -315,8 +315,8 @@ namespace EightBit {
 		bool m_statusOVRN = false;
 
 		// Data registers
-		uint8_t m_TDR;
-		uint8_t m_RDR;
+		uint8_t m_TDR = 0;
+		uint8_t m_RDR = 0;
 
 		bool m_powered = false;
 	};

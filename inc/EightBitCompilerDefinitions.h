@@ -9,13 +9,13 @@
 #endif
 
 namespace EightBit {
-	int countBits(uint8_t value);
-	bool oddParity(uint8_t value);
-	int findFirstSet(int value);
+	int countBits(uint8_t value) noexcept ;
+	bool oddParity(uint8_t value) noexcept ;
+	int findFirstSet(int value) noexcept ;
 	constexpr void assume(int expression);
 }
 
-inline int EightBit::countBits(const uint8_t value) {
+inline int EightBit::countBits(const uint8_t value) noexcept {
 #ifdef _MSC_VER
 	return __popcnt(value);
 #else
@@ -35,11 +35,11 @@ inline int EightBit::countBits(const uint8_t value) {
 #endif
 }
 
-inline bool EightBit::oddParity(const uint8_t value) {
+inline bool EightBit::oddParity(const uint8_t value) noexcept {
 	return countBits(value) % 2;
 }
 
-inline int EightBit::findFirstSet(const int value) {
+inline int EightBit::findFirstSet(const int value) noexcept {
 #ifdef _MSC_VER
 	unsigned long index;
 	if (_BitScanForward(&index, value))

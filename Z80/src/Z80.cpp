@@ -276,7 +276,7 @@ void EightBit::Z80::add(const uint8_t value, const int carry) {
 	adjustOverflowAdd(F(), A(), value, result.low);
 
 	clearFlag(F(), NF);
-	setFlag(F(), CF, result.word & Bit8);
+	setFlag(F(), CF, result.high & CF);
 	adjustSZXY<Z80>(F(), A() = result.low);
 }
 
@@ -292,7 +292,7 @@ void EightBit::Z80::subtract(uint8_t& operand, const uint8_t value, const int ca
 	adjustOverflowSub(F(), operand, value, result.low);
 
 	setFlag(F(), NF);
-	setFlag(F(), CF, result.word & Bit8);
+	setFlag(F(), CF, result.high & CF);
 	adjustSZ<Z80>(F(), operand = result.low);
 }
 
@@ -516,8 +516,8 @@ void EightBit::Z80::blockLoad(const register16_t source, const register16_t dest
 	const auto value = BUS().read(source);
 	BUS().write(destination, value);
 	const auto xy = A() + value;
-	setFlag(F(), XF, xy & 8);
-	setFlag(F(), YF, xy & 2);
+	setFlag(F(), XF, xy & Bit3);
+	setFlag(F(), YF, xy & Bit1);
 	clearFlag(F(), NF | HC);
 	setFlag(F(), PF, --counter.word);
 }
@@ -576,7 +576,7 @@ void EightBit::Z80::blockOut(const register16_t source, register16_t& destinatio
 	MEMPTR() = destination;
 	setFlag(F(), NF, value & Bit7);
 	setFlag(F(), HC | CF, (L() + value) > 0xff);
-	adjustParity<Z80>(F(), ((value + L()) & 7) ^ B());
+	adjustParity<Z80>(F(), ((value + L()) & Mask3) ^ B());
 }
 
 void EightBit::Z80::outi() {
