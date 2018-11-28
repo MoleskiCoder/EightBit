@@ -87,10 +87,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -105,6 +105,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -117,6 +118,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -128,10 +130,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
