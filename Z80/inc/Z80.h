@@ -359,7 +359,7 @@ namespace EightBit {
 		[[nodiscard]] uint8_t sll(uint8_t operand);
 		[[nodiscard]] uint8_t srl(uint8_t operand);
 
-		[[nodiscard]] uint8_t bit(int n, uint8_t operand);
+		uint8_t bit(int n, uint8_t operand);
 		[[nodiscard]] static uint8_t res(int n, uint8_t operand);
 		[[nodiscard]] static uint8_t set(int n, uint8_t operand);
 
