@@ -91,18 +91,22 @@ void EightBit::Z80::ei() {
 	IFF1() = IFF2() = true;
 }
 
-void EightBit::Z80::increment(uint8_t& operand) {
+uint8_t EightBit::Z80::increment(const uint8_t operand) {
 	clearFlag(F(), NF);
-	adjustSZXY<Z80>(F(), ++operand);
-	setFlag(F(), VF, operand == Bit7);
-	clearFlag(F(), HC, lowNibble(operand));
+	const uint8_t result = operand + 1;
+	adjustSZXY<Z80>(F(), result);
+	setFlag(F(), VF, result == Bit7);
+	clearFlag(F(), HC, lowNibble(result));
+	return result;
 }
 
-void EightBit::Z80::decrement(uint8_t& operand) {
+uint8_t EightBit::Z80::decrement(const uint8_t operand) {
 	setFlag(F(), NF);
 	clearFlag(F(), HC, lowNibble(operand));
-	adjustSZXY<Z80>(F(), --operand);
-	setFlag(F(), VF, operand == Mask7);
+	const uint8_t result = operand - 1;
+	adjustSZXY<Z80>(F(), result);
+	setFlag(F(), VF, result == Mask7);
+	return result;
 }
 
 bool EightBit::Z80::jrConditionalFlag(const int flag) {
@@ -284,20 +288,23 @@ void EightBit::Z80::adc(const uint8_t value) {
 	add(value, F() & CF);
 }
 
-void EightBit::Z80::subtract(uint8_t& operand, const uint8_t value, const int carry) {
+uint8_t EightBit::Z80::subtract(const uint8_t operand, const uint8_t value, const int carry) {
 
-	const register16_t result = operand - value - carry;
+	const register16_t subtraction = operand - value - carry;
+	const auto result = subtraction.low;
 
-	adjustHalfCarrySub(F(), operand, value, result.low);
-	adjustOverflowSub(F(), operand, value, result.low);
+	adjustHalfCarrySub(F(), operand, value, result);
+	adjustOverflowSub(F(), operand, value, result);
 
 	setFlag(F(), NF);
-	setFlag(F(), CF, result.high & CF);
-	adjustSZ<Z80>(F(), operand = result.low);
+	setFlag(F(), CF, subtraction.high & CF);
+	adjustSZ<Z80>(F(), result);
+
+	return result;
 }
 
 void EightBit::Z80::sub(const uint8_t value, const int carry) {
-	subtract(A(), value, carry);
+	A() = subtract(A(), value, carry);
 	adjustXY<Z80>(F(), A());
 }
 
@@ -322,65 +329,79 @@ void EightBit::Z80::orr(const uint8_t value) {
 }
 
 void EightBit::Z80::compare(const uint8_t value) {
-	auto original = A();
-	subtract(original, value);
+	subtract(A(), value);
 	adjustXY<Z80>(F(), value);
 }
 
-void EightBit::Z80::rlc(uint8_t& operand) {
+uint8_t EightBit::Z80::rlc(const uint8_t operand) {
 	clearFlag(F(), NF | HC);
 	const auto carry = operand & Bit7;
 	setFlag(F(), CF, carry);
-	adjustXY<Z80>(F(), operand = (operand << 1) | (carry >> 7));
+	const uint8_t result = (operand << 1) | (carry >> 7);
+	adjustXY<Z80>(F(), result);
+	return result;
 }
 
-void EightBit::Z80::rrc(uint8_t& operand) {
+uint8_t EightBit::Z80::rrc(const uint8_t operand) {
 	clearFlag(F(), NF | HC);
 	const auto carry = operand & Bit0;
 	setFlag(F(), CF, carry);
-	adjustXY<Z80>(F(), operand = (operand >> 1) | (carry << 7));
+	const uint8_t result = (operand >> 1) | (carry << 7);
+	adjustXY<Z80>(F(), result);
+	return result;
 }
 
-void EightBit::Z80::rl(uint8_t& operand) {
+uint8_t EightBit::Z80::rl(const uint8_t operand) {
 	clearFlag(F(), NF | HC);
 	const auto carry = F() & CF;
 	setFlag(F(), CF, operand & Bit7);
-	adjustXY<Z80>(F(), operand = (operand << 1) | carry);
+	const uint8_t result = (operand << 1) | carry;
+	adjustXY<Z80>(F(), result);
+	return result;
 }
 
-void EightBit::Z80::rr(uint8_t& operand) {
+uint8_t EightBit::Z80::rr(const uint8_t operand) {
 	clearFlag(F(), NF | HC);
 	const auto carry = F() & CF;
 	setFlag(F(), CF, operand & Bit0);
-	adjustXY<Z80>(F(), operand = (operand >> 1) | (carry << 7));
+	const uint8_t result = (operand >> 1) | (carry << 7);
+	adjustXY<Z80>(F(), result);
+	return result;
 }
 
 //
 
-void EightBit::Z80::sla(uint8_t& operand) {
+uint8_t EightBit::Z80::sla(const uint8_t operand) {
 	clearFlag(F(), NF | HC);
 	setFlag(F(), CF, operand & Bit7);
-	adjustXY<Z80>(F(), operand <<= 1);
+	const uint8_t result = operand << 1;
+	adjustXY<Z80>(F(), result);
+	return result;
 }
 
-void EightBit::Z80::sra(uint8_t& operand) {
+uint8_t EightBit::Z80::sra(const uint8_t operand) {
 	clearFlag(F(), NF | HC);
 	setFlag(F(), CF, operand & Bit0);
-	adjustXY<Z80>(F(), operand = (operand >> 1) | (operand & Bit7));
+	const uint8_t result = (operand >> 1) | (operand & Bit7);
+	adjustXY<Z80>(F(), result);
+	return result;
 }
 
-void EightBit::Z80::sll(uint8_t& operand) {
+uint8_t EightBit::Z80::sll(const uint8_t operand) {
 	clearFlag(F(), NF | HC);
 	setFlag(F(), CF, operand & Bit7);
-	adjustXY<Z80>(F(), operand = (operand << 1) | Bit0);
+	const uint8_t result = (operand << 1) | Bit0;
+	adjustXY<Z80>(F(), result);
+	return result;
 }
 
-void EightBit::Z80::srl(uint8_t& operand) {
+uint8_t EightBit::Z80::srl(const uint8_t operand) {
 	clearFlag(F(), NF | HC);
 	setFlag(F(), CF, operand & Bit0);
-	operand = (operand >> 1) & ~Bit7;
-	adjustXY<Z80>(F(), operand);
-	setFlag(F(), ZF, operand);
+	const uint8_t result = (operand >> 1) & ~Bit7;
+	adjustXY<Z80>(F(), result);
+	setFlag(F(), ZF, result);
+	return result;
 }
 
 uint8_t EightBit::Z80::bit(const int n, const uint8_t operand) {
@@ -544,7 +565,7 @@ void EightBit::Z80::blockIn(register16_t& source, const register16_t destination
 	MEMPTR() = BUS().ADDRESS() = source;
 	const auto value = readPort();
 	BUS().write(destination, value);
-	decrement(source.high);
+	source.high = decrement(source.high);
 	setFlag(F(), NF);
 }
 
@@ -572,7 +593,7 @@ void EightBit::Z80::blockOut(const register16_t source, register16_t& destinatio
 	const auto value = BUS().read(source);
 	BUS().ADDRESS() = destination;
 	writePort();
-	decrement(destination.high);
+	destination.high = decrement(destination.high);
 	MEMPTR() = destination;
 	setFlag(F(), NF, value & Bit7);
 	setFlag(F(), HC | CF, (L() + value) > 0xff);
@@ -708,28 +729,28 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		auto operand = LIKELY(!m_displaced) ? R(z) : BUS().read(displacedAddress());
 		switch (y) {
 		case 0:
-			rlc(operand);
+			operand = rlc(operand);
 			break;
 		case 1:
-			rrc(operand);
+			operand = rrc(operand);
 			break;
 		case 2:
-			rl(operand);
+			operand = rl(operand);
 			break;
 		case 3:
-			rr(operand);
+			operand = rr(operand);
 			break;
 		case 4:
-			sla(operand);
+			operand = sla(operand);
 			break;
 		case 5:
-			sra(operand);
+			operand = sra(operand);
 			break;
 		case 6:
-			sll(operand);
+			operand = sll(operand);
 			break;
 		case 7:
-			srl(operand);
+			operand = srl(operand);
 			break;
 		default:
 			UNREACHABLE;
@@ -1177,26 +1198,22 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			}
 			addCycles(6);
 			break;
-		case 4: { // 8-bit INC
+		case 4:	// 8-bit INC
 			if (UNLIKELY(m_displaced && memoryY))
 				fetchDisplacement();
-			auto operand = R(y);
-			increment(operand);
-			R(y, operand);
+			R(y, increment(R(y)));
 			addCycles(4);
 			break;
-		} case 5: {	// 8-bit DEC
+		case 5:	// 8-bit DEC
 			if (UNLIKELY(memoryY)) {
 				addCycles(7);
 				if (UNLIKELY(m_displaced))
 					fetchDisplacement();
 			}
-			auto operand = R(y);
-			decrement(operand);
-			R(y, operand);
+			R(y, decrement(R(y)));
 			addCycles(4);
 			break;
-		} case 6:	// 8-bit load immediate
+		case 6:	// 8-bit load immediate
 			if (UNLIKELY(memoryY)) {
 				addCycles(3);
 				if (UNLIKELY(m_displaced))
@@ -1208,16 +1225,16 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
 			case 0:
-				rlc(A());
+				A() = rlc(A());
 				break;
 			case 1:
-				rrc(A());
+				A() = rrc(A());
 				break;
 			case 2:
-				rl(A());
+				A() = rl(A());
 				break;
 			case 3:
-				rr(A());
+				A() = rr(A());
 				break;
 			case 4:
 				daa();

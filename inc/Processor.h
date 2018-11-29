@@ -13,16 +13,16 @@ namespace EightBit {
 	public:
 		// b: number of bits representing the number in x
 		// x: sign extend this b-bit number to r
-		static int8_t signExtend(int b, uint8_t x);
+		[[nodiscard]] static int8_t signExtend(int b, uint8_t x);
 
 		~Processor() {};
 
-		auto& PC() noexcept { return m_pc; }
+		[[nodiscard]] auto& PC() noexcept { return m_pc; }
 
-		auto& RESET() noexcept { return m_resetLine; }
-		auto& HALT() noexcept { return m_haltLine; }
-		auto& INT() noexcept { return m_intLine; }
-		auto& IRQ() noexcept { return INT(); }	// Synonym
+		[[nodiscard]] auto& RESET() noexcept { return m_resetLine; }
+		[[nodiscard]] auto& HALT() noexcept { return m_haltLine; }
+		[[nodiscard]] auto& INT() noexcept { return m_intLine; }
+		[[nodiscard]] auto& IRQ() noexcept { return INT(); }	// Synonym
 
 		void powerOn() override;
 		void reset() noexcept { lower(RESET()); }
@@ -31,25 +31,25 @@ namespace EightBit {
 		virtual int step() = 0;
 		virtual int execute(uint8_t opcode) = 0;
 
-		auto cycles() const noexcept { return m_cycles; }
+		[[nodiscard]] auto cycles() const noexcept { return m_cycles; }
 
-		virtual register16_t peekWord(register16_t address) = 0;
+		[[nodiscard]] virtual register16_t peekWord(register16_t address) = 0;
 		virtual void pokeWord(register16_t address, register16_t value) = 0;
 
 	protected:
 		Processor(Bus& memory);
 
-		auto& BUS() noexcept { return m_bus; }
+		[[nodiscard]] auto& BUS() noexcept { return m_bus; }
 
-		auto halted() noexcept { return lowered(HALT()); }
-		auto halt() noexcept { --PC();  lower(HALT()); }
-		auto proceed() noexcept { ++PC(); raise(HALT()); }
+		[[nodiscard]] auto halted() noexcept { return lowered(HALT()); }
+		void halt() noexcept { --PC();  lower(HALT()); }
+		void proceed() noexcept { ++PC(); raise(HALT()); }
 
 		virtual void handleRESET();
 		virtual void handleINT();
 		virtual void handleIRQ();
 
-		auto getBytePaged(const uint8_t page, const uint8_t offset) {
+		[[nodiscard]] auto getBytePaged(const uint8_t page, const uint8_t offset) {
 			return BUS().read(register16_t(offset, page));
 		}
 
@@ -57,25 +57,25 @@ namespace EightBit {
 			BUS().write(register16_t(offset, page), value);
 		}
 
-		auto fetchByte() {
+		[[nodiscard]] auto fetchByte() {
 			return BUS().read(PC()++);
 		}
 
-		virtual register16_t getWord() = 0;
+		[[nodiscard]] virtual register16_t getWord() = 0;
 		virtual void setWord(register16_t value) = 0;
 
-		virtual register16_t getWordPaged(uint8_t page, uint8_t offset) = 0;
+		[[nodiscard]] virtual register16_t getWordPaged(uint8_t page, uint8_t offset) = 0;
 		virtual void setWordPaged(uint8_t page, uint8_t offset, register16_t value) = 0;
 
-		virtual register16_t fetchWord() = 0;
+		[[nodiscard]] virtual register16_t fetchWord() = 0;
 
 		virtual void push(uint8_t value) = 0;
-		virtual uint8_t pop() = 0;
+		[[nodiscard]] virtual uint8_t pop() = 0;
 
 		virtual void pushWord(register16_t value) = 0;
-		virtual register16_t popWord() = 0;
+		[[nodiscard]] virtual register16_t popWord() = 0;
 
-		auto getWord(const register16_t address) {
+		[[nodiscard]] auto getWord(const register16_t address) {
 			BUS().ADDRESS() = address;
 			return getWord();
 		}

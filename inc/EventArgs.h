@@ -6,6 +6,6 @@ namespace EightBit {
 		static EventArgs m_empty;
 
 	public:
-		static auto& empty() noexcept { return m_empty; }
+		[[nodiscard]] static auto& empty() noexcept { return m_empty; }
 	};
 }

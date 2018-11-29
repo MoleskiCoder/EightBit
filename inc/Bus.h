@@ -22,21 +22,21 @@ namespace EightBit {
 		Signal<EventArgs> ReadingByte;
 		Signal<EventArgs> ReadByte;
 
-		auto ADDRESS() const noexcept { return m_address; }
-		auto& ADDRESS() noexcept { return m_address; }
+		[[nodiscard]] auto ADDRESS() const noexcept { return m_address; }
+		[[nodiscard]] auto& ADDRESS() noexcept { return m_address; }
 
-		auto DATA() const noexcept { return m_data; }
-		auto& DATA() noexcept { return m_data; }
+		[[nodiscard]] auto DATA() const noexcept { return m_data; }
+		[[nodiscard]] auto& DATA() noexcept { return m_data; }
 
-		auto peek() { return reference(); }
-		auto peek(const uint16_t address) { return reference(address); }
-		auto peek(const register16_t address) { return reference(address.word); }
+		[[nodiscard]] auto peek() { return reference(); }
+		[[nodiscard]] auto peek(const uint16_t address) { return reference(address); }
+		[[nodiscard]] auto peek(const register16_t address) { return reference(address.word); }
 		void poke(const uint8_t value) { reference() = value; }
 		void poke(const uint16_t address, const uint8_t value) { reference(address) = value; }
 		void poke(const register16_t address, const uint8_t value) { reference(address.word) = value; }
 
-		uint8_t read();
-		template<class T> auto read(const T address) {
+		[[nodiscard]] uint8_t read();
+		template<class T> [[nodiscard]] auto read(const T address) {
 			ADDRESS() = address;
 			return read();
 		}
@@ -54,12 +54,12 @@ namespace EightBit {
 	protected:
 		virtual void initialise() = 0;
 
-		virtual MemoryMapping mapping(uint16_t address) = 0;
-		uint8_t& reference(uint16_t address);
-		auto& reference(const register16_t address) { return reference(address.word); }
-		uint8_t& reference() { return reference(ADDRESS()); }
+		[[nodiscard]] virtual MemoryMapping mapping(uint16_t address) = 0;
+		[[nodiscard]] uint8_t& reference(uint16_t address);
+		[[nodiscard]] auto& reference(const register16_t address) { return reference(address.word); }
+		[[nodiscard]] uint8_t& reference() { return reference(ADDRESS()); }
 
-		static std::map<uint16_t, std::vector<uint8_t>> parseHexFile(std::string path);
+		[[nodiscard]] static std::map<uint16_t, std::vector<uint8_t>> parseHexFile(std::string path);
 		void loadHexFile(std::string path);
 
 	private:

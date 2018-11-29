@@ -38,19 +38,19 @@ namespace EightBit {
 			std::cout << "Efficiency = " << efficiency << std::endl;
 		}
 
-		std::chrono::steady_clock::duration getElapsedTime() const {
+		[[nodiscard]] std::chrono::steady_clock::duration getElapsedTime() const {
 			return m_finishTime - m_startTime;
 		}
 
-		auto getElapsedSeconds() const {
+		[[nodiscard]] auto getElapsedSeconds() const {
 			return std::chrono::duration_cast<std::chrono::duration<double>>(getElapsedTime()).count();
 		}
 
-		auto getCyclesPerSecond() const {
+		[[nodiscard]] auto getCyclesPerSecond() const {
 			return (m_totalCycles / 1000000 ) / getElapsedSeconds();
 		}
 
-		auto getInstructionsPerSecond() {
+		[[nodiscard]] auto getInstructionsPerSecond() {
 			auto floating = m_instructions / getElapsedSeconds();
 			return (long long)floating;
 		}
@@ -82,11 +82,11 @@ namespace EightBit {
 		uint64_t m_startHostCycles = 0;
 		uint64_t m_finishHostCycles = 0;
 
-		static auto now() {
+		static [[nodiscard]] auto now() {
 			return std::chrono::steady_clock::now();
 		}
 
-		static uint64_t currentHostCycles() {
+		static [[nodiscard]] uint64_t currentHostCycles() {
 			return __rdtsc();
 		}
 	};

@@ -16,10 +16,10 @@ namespace EightBit {
 	public:
 		virtual ~Memory() = default;
 
-		virtual size_t size() const = 0;
-		virtual uint8_t peek(uint16_t address) const = 0;
+		[[nodiscard]] virtual size_t size() const = 0;
+		[[nodiscard]] virtual uint8_t peek(uint16_t address) const = 0;
 
-		virtual uint8_t& reference(uint16_t);
+		[[nodiscard]] virtual uint8_t& reference(uint16_t);
 
 		virtual int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) = 0;
 		virtual int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) = 0;

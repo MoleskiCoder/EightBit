@@ -51,31 +51,31 @@ namespace EightBit {
 		Signal<Z80> ExecutingInstruction;
 		Signal<Z80> ExecutedInstruction;
 
-		auto& NMI() { return m_nmiLine; }		// In
-		auto& M1() { return m_m1Line; }			// Out
+		[[nodiscard]] auto& NMI() { return m_nmiLine; }		// In
+		[[nodiscard]] auto& M1() { return m_m1Line; }		// Out
 
 		int execute(uint8_t opcode) final;
 		int step() final;
 		void powerOn() final;
 
-		register16_t& AF() final;
-		register16_t& BC() final;
-		register16_t& DE() final;
-		register16_t& HL() final;
+		[[nodiscard]] register16_t& AF() final;
+		[[nodiscard]] register16_t& BC() final;
+		[[nodiscard]] register16_t& DE() final;
+		[[nodiscard]] register16_t& HL() final;
 
-		auto& IX() { return m_ix; }
-		auto& IXH() { return IX().high; }
-		auto& IXL() { return IX().low; }
+		[[nodiscard]] auto& IX() { return m_ix; }
+		[[nodiscard]] auto& IXH() { return IX().high; }
+		[[nodiscard]] auto& IXL() { return IX().low; }
 
-		auto& IY() { return m_iy; }
-		auto& IYH() { return IY().high; }
-		auto& IYL() { return IY().low; }
+		[[nodiscard]] auto& IY() { return m_iy; }
+		[[nodiscard]] auto& IYH() { return IY().high; }
+		[[nodiscard]] auto& IYL() { return IY().low; }
 
-		auto& REFRESH() { return m_refresh; }
-		auto& IV() { return iv; }
-		auto& IM() { return m_interruptMode; }
-		auto& IFF1() { return m_iff1; }
-		auto& IFF2() { return m_iff2; }
+		[[nodiscard]] auto& REFRESH() { return m_refresh; }
+		[[nodiscard]] auto& IV() { return iv; }
+		[[nodiscard]] auto& IM() { return m_interruptMode; }
+		[[nodiscard]] auto& IFF1() { return m_iff1; }
+		[[nodiscard]] auto& IFF2() { return m_iff2; }
 
 		void exx() {
 			m_registerSet ^= 1;
@@ -123,7 +123,7 @@ namespace EightBit {
 
 		void handleNMI();
 
-		uint16_t displacedAddress() {
+		[[nodiscard]] uint16_t displacedAddress() {
 			assert(m_displaced);
 			return MEMPTR().word = (m_prefixDD ? IX() : IY()).word + m_displacement;
 		}
@@ -132,7 +132,7 @@ namespace EightBit {
 			m_displacement = fetchByte();
 		}
 
-		auto& HL2() {
+		[[nodiscard]] auto& HL2() {
 			if (LIKELY(!m_displaced))
 				return HL();
 			if (m_prefixDD)
@@ -141,7 +141,7 @@ namespace EightBit {
 			return IY();
 		}
 
-		auto& RP(const int rp) {
+		[[nodiscard]] auto& RP(const int rp) {
 			ASSUME(rp >= 0);
 			ASSUME(rp <= 3);
 			switch (rp) {
@@ -158,7 +158,7 @@ namespace EightBit {
 			}
 		}
 
-		auto& RP2(const int rp) {
+		[[nodiscard]] auto& RP2(const int rp) {
 			ASSUME(rp >= 0);
 			ASSUME(rp <= 3);
 			switch (rp) {
@@ -175,7 +175,7 @@ namespace EightBit {
 			}
 		}
 
-		auto R(const int r) {
+		[[nodiscard]] auto R(const int r) {
 			ASSUME(r >= 0);
 			ASSUME(r <= 7);
 			switch (r) {
@@ -233,7 +233,7 @@ namespace EightBit {
 			}
 		}
 
-		auto R2(const int r) {
+		[[nodiscard]] auto R2(const int r) {
 			ASSUME(r >= 0);
 			ASSUME(r <= 7);
 			switch (r) {
@@ -317,14 +317,14 @@ namespace EightBit {
 			setFlag(f, VF, overflow);
 		}
 
-		void subtract(uint8_t& operand, uint8_t value, int carry = 0);
+		uint8_t subtract(uint8_t operand, uint8_t value, int carry = 0);
 
 		void executeCB(int x, int y, int z);
 		void executeED(int x, int y, int z, int p, int q);
 		void executeOther(int x, int y, int z, int p, int q);
 
-		void increment(uint8_t& operand);
-		void decrement(uint8_t& operand);
+		[[nodiscard]] uint8_t increment(uint8_t operand);
+		[[nodiscard]] uint8_t decrement(uint8_t operand);
 
 		void di();
 		void ei();
@@ -350,18 +350,18 @@ namespace EightBit {
 		void orr(uint8_t value);
 		void compare(uint8_t value);
 
-		void rlc(uint8_t& operand);
-		void rrc(uint8_t& operand);
-		void rl(uint8_t& operand);
-		void rr(uint8_t& operand);
-		void sla(uint8_t& operand);
-		void sra(uint8_t& operand);
-		void sll(uint8_t& operand);
-		void srl(uint8_t& operand);
+		[[nodiscard]] uint8_t rlc(uint8_t operand);
+		[[nodiscard]] uint8_t rrc(uint8_t operand);
+		[[nodiscard]] uint8_t rl(uint8_t operand);
+		[[nodiscard]] uint8_t rr(uint8_t operand);
+		[[nodiscard]] uint8_t sla(uint8_t operand);
+		[[nodiscard]] uint8_t sra(uint8_t operand);
+		[[nodiscard]] uint8_t sll(uint8_t operand);
+		[[nodiscard]] uint8_t srl(uint8_t operand);
 
-		uint8_t bit(int n, uint8_t operand);
-		static uint8_t res(int n, uint8_t operand);
-		static uint8_t set(int n, uint8_t operand);
+		[[nodiscard]] uint8_t bit(int n, uint8_t operand);
+		[[nodiscard]] static uint8_t res(int n, uint8_t operand);
+		[[nodiscard]] static uint8_t set(int n, uint8_t operand);
 
 		void daa();
 

@@ -9,9 +9,9 @@
 #endif
 
 namespace EightBit {
-	int countBits(uint8_t value) noexcept ;
-	bool oddParity(uint8_t value) noexcept ;
-	int findFirstSet(int value) noexcept ;
+	[[nodiscard]] int countBits(uint8_t value) noexcept ;
+	[[nodiscard]] bool oddParity(uint8_t value) noexcept ;
+	[[nodiscard]] int findFirstSet(int value) noexcept ;
 	constexpr void assume(int expression);
 }
 

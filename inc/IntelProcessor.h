@@ -33,29 +33,29 @@ namespace EightBit {
 
 		~IntelProcessor() = default;
 
-		const auto& getDecodedOpcode(const size_t i) const noexcept {
+		[[nodiscard]] const auto& getDecodedOpcode(const size_t i) const noexcept {
 			return m_decodedOpcodes[i];
 		}
 
-		auto& MEMPTR() noexcept { return m_memptr; }
+		[[nodiscard]] auto& MEMPTR() noexcept { return m_memptr; }
 
-		auto& SP() noexcept { return m_sp; }
+		[[nodiscard]] auto& SP() noexcept { return m_sp; }
 
-		virtual register16_t& AF() = 0;
-		auto& A() { return AF().high; }
-		auto& F() { return AF().low; }
+		[[nodiscard]] virtual register16_t& AF() = 0;
+		[[nodiscard]] auto& A() { return AF().high; }
+		[[nodiscard]] auto& F() { return AF().low; }
 
-		virtual register16_t& BC() = 0;
-		auto& B() { return BC().high; }
-		auto& C() { return BC().low; }
+		[[nodiscard]] virtual register16_t& BC() = 0;
+		[[nodiscard]] auto& B() { return BC().high; }
+		[[nodiscard]] auto& C() { return BC().low; }
 
-		virtual register16_t& DE() = 0;
-		auto& D() { return DE().high; }
-		auto& E() { return DE().low; }
+		[[nodiscard]] virtual register16_t& DE() = 0;
+		[[nodiscard]] auto& D() { return DE().high; }
+		[[nodiscard]] auto& E() { return DE().low; }
 
-		virtual register16_t& HL() = 0;
-		auto& H() { return HL().high; }
-		auto& L() { return HL().low; }
+		[[nodiscard]] virtual register16_t& HL() = 0;
+		[[nodiscard]] auto& H() { return HL().high; }
+		[[nodiscard]] auto& L() { return HL().low; }
 
 		void powerOn() override;
 
@@ -105,24 +105,24 @@ namespace EightBit {
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
-		static auto calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) noexcept {
+		[[nodiscard]] static auto calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) noexcept {
 			static std::array<bool, 8> m_halfCarryTableAdd = { { false, false, true, false, true, false, true, true } };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableAdd[index & Mask3];
 		}
 
-		static auto calculateHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) noexcept {
+		[[nodiscard]] static auto calculateHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) noexcept {
 			std::array<bool, 8> m_halfCarryTableSub = { { false, true, true, true, false, false, false, true } };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
 			return m_halfCarryTableSub[index & Mask3];
 		}
 
 		void push(uint8_t value) final;
-		uint8_t pop() final;
+		[[nodiscard]] uint8_t pop() final;
 
 		//
 
-		register16_t getWord() final;
+		[[nodiscard]] register16_t getWord() final;
 		void setWord(register16_t value) final;
 
 		//

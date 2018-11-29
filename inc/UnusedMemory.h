@@ -16,8 +16,8 @@ namespace EightBit {
 		UnusedMemory(size_t size, uint8_t value);
 		~UnusedMemory() {};
 
-		size_t size() const final;
-		uint8_t peek(uint16_t address) const final;
+		[[nodiscard]] size_t size() const final;
+		[[nodiscard]] uint8_t peek(uint16_t address) const final;
 
 		int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 		int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;

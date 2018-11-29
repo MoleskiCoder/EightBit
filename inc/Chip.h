@@ -77,9 +77,9 @@ namespace EightBit {
 
 		virtual ~Chip() {};
 
-		auto& POWER() noexcept { return m_powerLine; }
+		[[nodiscard]] auto& POWER() noexcept { return m_powerLine; }
 
-		auto powered() noexcept { return raised(POWER()); }
+		[[nodiscard]] auto powered() noexcept { return raised(POWER()); }
 		virtual void powerOn();
 		void powerOff() noexcept { lower(POWER()); }
 
