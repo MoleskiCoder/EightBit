@@ -4,12 +4,12 @@
 
 #include <string>
 
-#include <Ram.h>
 #include <Bus.h>
 #include <Disassembly.h>
 #include <mos6502.h>
-#include <Symbols.h>
+#include <Ram.h>
 #include <Register.h>
+#include <Symbols.h>
 
 class Board : public EightBit::Bus {
 public:

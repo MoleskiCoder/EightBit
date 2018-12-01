@@ -1,4 +1,4 @@
-CXXFLAGS += -g -Wall -std=c++14 -pipe
+CXXFLAGS += -g -Wall -std=c++17 -pipe
 
 CXXFLAGS_OPT = -DNDEBUG -march=native -Ofast -flto
 CXXFLAGS_DEBUG = -D_DEBUG

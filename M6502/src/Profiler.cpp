@@ -33,7 +33,8 @@ void EightBit::Profiler::EmitProfileInformation() {
 			if (cycles > 0) {
 				// Dump a profile/disassembly line
 				auto source = disassembler.disassemble(address);
-				EmitLine.fire(ProfileLineEventArgs(source, cycles));
+				ProfileLineEventArgs event(source, cycles);
+				EmitLine.fire(event);
 			}
 		}
 		FinishedLineOutput.fire(EventArgs::empty());
@@ -46,7 +47,8 @@ void EightBit::Profiler::EmitProfileInformation() {
 			auto cycles = scopeCycle.second;
 			auto namedAddress = (size_t)symbols.addresses().find(name)->second;
 			auto count = addressCounts[namedAddress];
-			EmitScope.fire(ProfileScopeEventArgs(name, cycles, count));
+			ProfileScopeEventArgs event(name, cycles, count);
+			EmitScope.fire(event);
 		}
 		FinishedScopeOutput.fire(EventArgs::empty());
 	}

@@ -15,7 +15,7 @@ namespace EightBit {
 	constexpr void assume(int expression);
 }
 
-inline int EightBit::countBits(const uint8_t value) noexcept {
+inline int EightBit::countBits(uint8_t value) noexcept {
 #ifdef _MSC_VER
 	return __popcnt(value);
 #else

@@ -6,7 +6,7 @@
 
 class Configuration final {
 public:
-	Configuration() noexcept = default;
+	Configuration() = default;
 
 	bool isDebugMode() const {
 		return m_debugMode;
