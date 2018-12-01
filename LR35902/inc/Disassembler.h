@@ -31,7 +31,7 @@ namespace EightBit {
 			static std::string invalid(uint8_t value);
 
 		private:
-			enum IoRegister {
+			enum class IoRegister {
 				Abbreviated,	// FF00 + dd
 				Absolute,		// FFdd
 				Register,		// C

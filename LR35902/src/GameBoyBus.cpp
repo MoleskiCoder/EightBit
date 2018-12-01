@@ -163,31 +163,31 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 EightBit::MemoryMapping EightBit::GameBoy::Bus::mapping(uint16_t address) {
 
 	if ((address < 0x100) && IO().bootRomEnabled())
-		return { m_bootRom, 0x0000, 0xffff, MemoryMapping::ReadOnly };
+		return { m_bootRom, 0x0000, 0xffff, MemoryMapping::AccessLevel::ReadOnly };
 	if ((address < 0x4000) && gameRomEnabled())
-		return { m_gameRomBanks[0], 0x0000, 0xffff, MemoryMapping::ReadOnly };
+		return { m_gameRomBanks[0], 0x0000, 0xffff, MemoryMapping::AccessLevel::ReadOnly };
 	if ((address < 0x8000) && gameRomEnabled())
-		return { m_gameRomBanks[m_romBank], 0x4000, 0xffff, MemoryMapping::ReadOnly };
+		return { m_gameRomBanks[m_romBank], 0x4000, 0xffff, MemoryMapping::AccessLevel::ReadOnly };
 
 	if (address < 0xa000)
-		return { VRAM(), 0x8000, 0xffff, MemoryMapping::ReadWrite };
+		return { VRAM(), 0x8000, 0xffff, MemoryMapping::AccessLevel::ReadWrite };
 	if (address < 0xc000) {
 		if (m_ramBanks.size() == 0)
-			return { m_unmapped2000, 0xa000, 0xffff, MemoryMapping::ReadOnly };
+			return { m_unmapped2000, 0xa000, 0xffff, MemoryMapping::AccessLevel::ReadOnly };
 		else
-			return { m_ramBanks[m_ramBank], 0xa000, 0xffff, MemoryMapping::ReadWrite };
+			return { m_ramBanks[m_ramBank], 0xa000, 0xffff, MemoryMapping::AccessLevel::ReadWrite };
 	}
 	if (address < 0xe000)
-		return { m_lowInternalRam, 0xc000, 0xffff, MemoryMapping::ReadWrite };
+		return { m_lowInternalRam, 0xc000, 0xffff, MemoryMapping::AccessLevel::ReadWrite };
 	if (address < 0xfe00)
-		return { m_lowInternalRam, 0xe000, 0xffff, MemoryMapping::ReadWrite };	// Low internal RAM mirror
+		return { m_lowInternalRam, 0xe000, 0xffff, MemoryMapping::AccessLevel::ReadWrite };	// Low internal RAM mirror
 	if (address < 0xfea0)
-		return { OAMRAM(), 0xfe00, 0xffff, MemoryMapping::ReadWrite };
+		return { OAMRAM(), 0xfe00, 0xffff, MemoryMapping::AccessLevel::ReadWrite };
 	if (address < IoRegisters::BASE)
-		return { m_unmapped60, 0xfea0, 0xffff, MemoryMapping::ReadOnly };
+		return { m_unmapped60, 0xfea0, 0xffff, MemoryMapping::AccessLevel::ReadOnly };
 	if (address < 0xff80)
-		return { IO(), IoRegisters::BASE, 0xffff, MemoryMapping::ReadWrite };
-	return { m_highInternalRam, 0xff80, 0xffff, MemoryMapping::ReadWrite };
+		return { IO(), IoRegisters::BASE, 0xffff, MemoryMapping::AccessLevel::ReadWrite };
+	return { m_highInternalRam, 0xff80, 0xffff, MemoryMapping::AccessLevel::ReadWrite };
 }
 
 int EightBit::GameBoy::Bus::runRasterLines() {

@@ -44,7 +44,7 @@ namespace EightBit {
 			Mask16 = Bit16 - 1
 		};
 
-		enum PinLevel {
+		enum class PinLevel {
 			Low, High
 		};
 
@@ -59,10 +59,10 @@ namespace EightBit {
 		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) noexcept { clearFlag(f, flag, !!condition); }
 		static void clearFlag(uint8_t& f, const int flag, const bool condition) noexcept { setFlag(f, flag, !condition); }
 
-		static constexpr auto raised(const PinLevel line) { return line == High; }
-		static void raise(PinLevel& line) noexcept { line = High; }
-		static constexpr auto lowered(const PinLevel line) { return line == Low; }
-		static void lower(PinLevel& line) noexcept { line = Low; }
+		static constexpr auto raised(const PinLevel line) { return line == PinLevel::High; }
+		static void raise(PinLevel& line) noexcept { line = PinLevel::High; }
+		static constexpr auto lowered(const PinLevel line) { return line == PinLevel::Low; }
+		static void lower(PinLevel& line) noexcept { line = PinLevel::Low; }
 
 		static void match(PinLevel& line, int value);
 
@@ -87,6 +87,6 @@ namespace EightBit {
 		Chip() = default;
 
 	private:
-		PinLevel m_powerLine = Low;
+		PinLevel m_powerLine = PinLevel::Low;
 	};
 }

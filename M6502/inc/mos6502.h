@@ -169,8 +169,8 @@ namespace EightBit {
 		uint8_t s = 0;		// stack pointer
 		uint8_t p = 0;		// processor status
 
-		PinLevel m_nmiLine = Low;
-		PinLevel m_soLine = Low;
+		PinLevel m_nmiLine = PinLevel::Low;
+		PinLevel m_soLine = PinLevel::Low;
 
 		register16_t m_intermediate;
 	};

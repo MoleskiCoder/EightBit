@@ -44,7 +44,7 @@ void Board::initialise() {
 	// Marshal data from memory -> ACIA
 	WrittenByte.connect([this] (EightBit::EventArgs&) {
 		updateAciaPinsWrite();
-		if (accessAcia()) {
+		if (ACIA().selected()) {
 			ACIA().DATA() = DATA();
 			accessAcia();
 		}
@@ -96,15 +96,15 @@ void Board::initialise() {
 EightBit::MemoryMapping Board::mapping(uint16_t address) {
 
 	if (address < 0x8000)
-		return { m_ram, 0x0000, EightBit::Chip::Mask16, EightBit::MemoryMapping::ReadWrite };
+		return { m_ram, 0x0000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 
 	if (address < 0xa000)
-		return { m_unused2000, 0x8000, EightBit::Chip::Mask16, EightBit::MemoryMapping::ReadOnly };
+		return { m_unused2000, 0x8000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
 
 	if (address < 0xc000)
-		return { m_io, 0xa000, EightBit::Chip::Mask16, EightBit::MemoryMapping::ReadWrite };
+		return { m_io, 0xa000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 
-	return { m_rom, 0xc000, EightBit::Chip::Mask16, EightBit::MemoryMapping::ReadOnly };
+	return { m_rom, 0xc000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
 }
 
 void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {

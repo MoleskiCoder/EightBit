@@ -190,16 +190,16 @@ void EightBit::GameBoy::Disassembler::disassemble(std::ostringstream& output, LR
 	output << m_formatter % (int)immediate % (int)absolute % relative % (int)displacement % indexedImmediate;
 
 	switch (ioRegister) {
-	case Abbreviated:
+	case IoRegister::Abbreviated:
 		output << "; register " << io(immediate);
 		break;
-	case Absolute:
+	case IoRegister::Absolute:
 		output << "; register (Absolute)";
 		break;
-	case Register:
+	case IoRegister::Register:
 		output << "; register C:" << io(cpu.C());
 		break;
-	case Unused:
+	case IoRegister::Unused:
 		break;
 	default:
 		UNREACHABLE;

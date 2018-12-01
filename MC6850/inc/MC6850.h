@@ -278,26 +278,26 @@ namespace EightBit {
 		bool transmitReadyHigh() const { return m_transmitControl == ReadyHighInterruptDisabled; }
 		bool transmitReadyLow() const { return !transmitReadyHigh(); }
 
-		PinLevel m_RXDATA = Low;
-		PinLevel m_TXDATA = Low;
+		PinLevel m_RXDATA = PinLevel::Low;
+		PinLevel m_TXDATA = PinLevel::Low;
 
-		PinLevel m_RTS = Low;
-		PinLevel m_CTS = Low;
-		PinLevel m_DCD = Low;
-		PinLevel m_oldDCD = Low;	// So we can detect low -> high transition
+		PinLevel m_RTS = PinLevel::Low;
+		PinLevel m_CTS = PinLevel::Low;
+		PinLevel m_DCD = PinLevel::Low;
+		PinLevel m_oldDCD = PinLevel::Low;	// So we can detect low -> high transition
 
-		PinLevel m_RXCLK = Low;
-		PinLevel m_TXCLK = Low;
+		PinLevel m_RXCLK = PinLevel::Low;
+		PinLevel m_TXCLK = PinLevel::Low;
 
-		PinLevel m_CS0 = Low;;
-		PinLevel m_CS1 = Low;;
-		PinLevel m_CS2 = Low;;
+		PinLevel m_CS0 = PinLevel::Low;;
+		PinLevel m_CS1 = PinLevel::Low;;
+		PinLevel m_CS2 = PinLevel::Low;;
 
-		PinLevel m_RS = Low;;
-		PinLevel m_RW = Low;;
+		PinLevel m_RS = PinLevel::Low;;
+		PinLevel m_RW = PinLevel::Low;;
 
-		PinLevel m_E = Low;;
-		PinLevel m_IRQ = Low;;
+		PinLevel m_E = PinLevel::Low;;
+		PinLevel m_IRQ = PinLevel::Low;;
 
 		uint8_t m_data = 0;
 

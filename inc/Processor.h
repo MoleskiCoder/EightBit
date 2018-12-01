@@ -105,8 +105,8 @@ namespace EightBit {
 		int m_cycles = 0;
 		register16_t m_pc;
 
-		PinLevel m_intLine = Low;
-		PinLevel m_haltLine = Low;
-		PinLevel m_resetLine = Low;
+		PinLevel m_intLine = PinLevel::Low;
+		PinLevel m_haltLine = PinLevel::Low;
+		PinLevel m_resetLine = PinLevel::Low;
 	};
 }

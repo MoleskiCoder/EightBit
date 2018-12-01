@@ -368,11 +368,11 @@ namespace EightBit {
 		uint8_t m_dp = 0;
 		uint8_t m_cc = 0;
 
-		PinLevel m_nmiLine = Low;
-		PinLevel m_firqLine = Low;
+		PinLevel m_nmiLine = PinLevel::Low;
+		PinLevel m_firqLine = PinLevel::Low;
 
-		PinLevel m_baLine = Low;
-		PinLevel m_bsLine = Low;
+		PinLevel m_baLine = PinLevel::Low;
+		PinLevel m_bsLine = PinLevel::Low;
 
 		bool m_prefix10 = false;
 		bool m_prefix11 = false;

@@ -90,8 +90,8 @@ namespace EightBit {
 		void handleINT() final;
 
 	private:
-		PinLevel m_nmiLine = Low;
-		PinLevel m_m1Line = Low;
+		PinLevel m_nmiLine = PinLevel::Low;
+		PinLevel m_m1Line = PinLevel::Low;
 
 		InputOutput& m_ports;
 
