@@ -404,15 +404,14 @@ uint8_t EightBit::Z80::srl(const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::Z80::bit(const int n, const uint8_t operand) {
+void EightBit::Z80::bit(const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
 	setFlag(F(), HC);
 	clearFlag(F(), NF);
 	const auto discarded = operand & (1 << n);
-	adjustSZXY<Z80>(F(), discarded);
+	adjustSZ<Z80>(F(), discarded);
 	clearFlag(F(), PF, discarded);
-	return operand;
 }
 
 uint8_t EightBit::Z80::res(const int n, const uint8_t operand) {
@@ -724,9 +723,12 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 	ASSUME(z <= 7);
 	const bool memoryY = y == 6;
 	const bool memoryZ = z == 6;
+	const bool indirect = (!m_displaced && memoryZ) || m_displaced;
+	const bool direct = !indirect;
+	auto operand = LIKELY(!m_displaced) ? R(z) : BUS().read(displacedAddress());
+	const bool update = x != 1; // BIT does not update
 	switch (x) {
 	case 0:	{ // rot[y] r[z]
-		auto operand = LIKELY(!m_displaced) ? R(z) : BUS().read(displacedAddress());
 		switch (y) {
 		case 0:
 			operand = rlc(operand);
@@ -756,64 +758,39 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 			UNREACHABLE;
 		}
 		adjustSZP<Z80>(F(), operand);
+		addCycles(8);
+		break;
+	} case 1:	// BIT y, r[z]
+		addCycles(8);
+		bit(y, operand);
+		if (LIKELY(direct)) {
+			adjustXY<Z80>(F(), operand);
+		} else {
+			adjustXY<Z80>(F(), MEMPTR().high);
+			addCycles(4);
+		}
+		break;
+	case 2:	// RES y, r[z]
+		addCycles(8);
+		operand = res(y, operand);
+		break;
+	case 3:	// SET y, r[z]
+		addCycles(8);
+		operand = set(y, operand);
+		break;
+	default:
+		UNREACHABLE;
+	}
+	if (LIKELY(update)) {
 		if (LIKELY(!m_displaced)) {
 			R(z, operand);
 			if (UNLIKELY(memoryZ))
 				addCycles(7);
 		} else {
-			if (LIKELY(z != 6))
-				R2(z, operand);
-			BUS().write(operand);
-			addCycles(15);
-		}
-		addCycles(8);
-		break;
-	} case 1:	// BIT y, r[z]
-		addCycles(8);
-		if (LIKELY(!m_displaced)) {
-			const auto operand = bit(y, R(z));
-			if (LIKELY(z != 6)) {
-				adjustXY<Z80>(F(), operand);
-			} else {
-				adjustXY<Z80>(F(), MEMPTR().high);
-				addCycles(4);
-			}
-		} else {
-			bit(y, BUS().read(displacedAddress()));
-			adjustXY<Z80>(F(), MEMPTR().high);
-			addCycles(12);
-		}
-		break;
-	case 2:	// RES y, r[z]
-		addCycles(8);
-		if (LIKELY(!m_displaced)) {
-			R(z, res(y, R(z)));
-			if (UNLIKELY(memoryZ))
-				addCycles(7);
-		} else {
-			auto operand = BUS().read(displacedAddress());
-			operand = res(y, operand);
 			BUS().write(operand);
 			R2(z, operand);
 			addCycles(15);
 		}
-		break;
-	case 3:	// SET y, r[z]
-		addCycles(8);
-		if (LIKELY(!m_displaced)) {
-			R(z, set(y, R(z)));
-			if (UNLIKELY(memoryZ))
-				addCycles(7);
-		} else {
-			auto operand = BUS().read(displacedAddress());
-			operand = set(y, operand);
-			BUS().write(operand);
-			R2(z, operand);
-			addCycles(15);
-		}
-		break;
-	default:
-		UNREACHABLE;
 	}
 }
 
@@ -900,7 +877,9 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 		case 6:	// Set interrupt mode
 			switch (y) {
 			case 0:
+			case 1:
 			case 4:
+			case 5:
 				IM() = 0;
 				break;
 			case 2:
@@ -910,10 +889,6 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			case 3:
 			case 7:
 				IM() = 2;
-				break;
-			case 1:
-			case 5:
-				IM() = 0;
 				break;
 			default:
 				UNREACHABLE;
