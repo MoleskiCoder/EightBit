@@ -2,7 +2,7 @@ LIB = libeightbit.a
 
 CXXFLAGS = -I ../inc
 
-CXXFILES = Bus.cpp EventArgs.cpp InputOutput.cpp IntelProcessor.cpp Memory.cpp Processor.cpp
+CXXFILES = BigEndianProcessor.cpp Bus.cpp Chip.cpp EventArgs.cpp InputOutput.cpp IntelProcessor.cpp LittleEndianProcessor.cpp Memory.cpp Processor.cpp Ram.cpp Rom.cpp UnusedMemory.cpp
 
 include ../compile.mk
 include ../lib_build.mk

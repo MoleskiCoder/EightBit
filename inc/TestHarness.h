@@ -82,11 +82,11 @@ namespace EightBit {
 		uint64_t m_startHostCycles = 0;
 		uint64_t m_finishHostCycles = 0;
 
-		static [[nodiscard]] auto now() {
+		[[nodiscard]] static auto now() {
 			return std::chrono::steady_clock::now();
 		}
 
-		static [[nodiscard]] uint64_t currentHostCycles() {
+		[[nodiscard]] static uint64_t currentHostCycles() {
 			return __rdtsc();
 		}
 	};
