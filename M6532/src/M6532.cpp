@@ -6,40 +6,6 @@
 EightBit::M6532::M6532() noexcept {
 }
 
-
-/*
-RAM—128 Bytes (1024 Bits)
-The 128 x 8 Read/Write memory acts as a conventional static RAM. Data can be written into the RAM from
-the microprocessor by selecting the chip (CS1 = 1, CS2 = 0) and by setting RS to a logic 0 (0.4v). Address
-lines AO through A6 are then used to select the desired byte of storage.
-*/
-
-/*
-					__
-					RS	R/W	A4	A3	A2	A1	A0
-Write RAM			0	0	-	-	-	-	-
-Read RAM			0	1	-	-	-	-	-
-Write DDRA			1	0	-	-	0	0	1
-Read DDRA			1	1	-	-	0	0	1
-Write DDRB			1	0	-	-	0	1	1
-Read DDRB			1	1	-	-	0	1	1
-Write Output Reg A	1	0	-	-	0	0	0
-Read Output Reg A	1	1	-	-	0	0	0
-Write Output Reg B	1	0	-	-	0	1	0
-Read Output Reg B
-Write Timer
-1 1 0 1 0
-+ 1T 1 0 1 (a) 1 0 0
-+ 8T 1 0 1 (a) 1 0 1
-+ 64T t 0 1 (a) 1 1 0
-+ 1024T 1 0 1 (a) 1 1 1
-Read Timer 1 1 _ (a) 1 — 0
-Read Interrupt Flag(s) 1 1 — — 1 — 1
-Write Edge Detect Control 1 0 0 — 1 (b) (0)
-
-*/
-
-
 void EightBit::M6532::tick() {
 
 	if (selected()) {
