@@ -30,7 +30,7 @@ namespace EightBit {
 		Signal<MOS6502> ExecutingInstruction;
 		Signal<MOS6502> ExecutedInstruction;
 
-		virtual int execute(uint8_t opcode) final;
+		virtual int execute() final;
 		virtual int step() final;
 		virtual void powerOn() final;
 
