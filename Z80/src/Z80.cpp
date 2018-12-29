@@ -67,7 +67,7 @@ void EightBit::Z80::handleINT() {
 		di();
 		switch (IM()) {
 		case 0:		// i8080 equivalent
-			execute(BUS().DATA());
+			Processor::execute(BUS().DATA());
 			break;
 		case 1:
 			restart(7 << 3);
@@ -671,16 +671,16 @@ int EightBit::Z80::step() {
 		} else if (UNLIKELY(lowered(INT()))) {
 			handleINT();
 		} else if (UNLIKELY(lowered(HALT()))) {
-			execute(0);	// NOP
+			Processor::execute(0);	// NOP
 		} else {
-			execute(fetchByte());
+			Processor::execute(fetchByte());
 		}
 	}
 	ExecutedInstruction.fire(*this);
 	return cycles();
 }
 
-int EightBit::Z80::execute(const uint8_t opcode) {
+int EightBit::Z80::execute() {
 
 	ASSUME(lowered(M1()));
 
@@ -689,7 +689,7 @@ int EightBit::Z80::execute(const uint8_t opcode) {
 		raise(M1());
 	}
 
-	const auto& decoded = getDecodedOpcode(opcode);
+	const auto& decoded = getDecodedOpcode(opcode());
 
 	const auto x = decoded.x;
 	const auto y = decoded.y;
@@ -1364,7 +1364,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				if (UNLIKELY(m_displaced))
 					fetchDisplacement();
 				lower(M1());
-				execute(fetchByte());
+				Processor::execute(fetchByte());
 				break;
 			case 2:	// OUT (n),A
 				writePort(fetchByte());
@@ -1414,17 +1414,17 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				case 1:	// DD prefix
 					m_displaced = m_prefixDD = true;
 					lower(M1());
-					execute(fetchByte());
+					Processor::execute(fetchByte());
 					break;
 				case 2:	// ED prefix
 					m_prefixED = true;
 					lower(M1());
-					execute(fetchByte());
+					Processor::execute(fetchByte());
 					break;
 				case 3:	// FD prefix
 					m_displaced = m_prefixFD = true;
 					lower(M1());
-					execute(fetchByte());
+					Processor::execute(fetchByte());
 					break;
 				default:
 					UNREACHABLE;

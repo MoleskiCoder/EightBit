@@ -57,7 +57,7 @@ namespace EightBit {
 		Signal<mc6809> ExecutingInstruction;
 		Signal<mc6809> ExecutedInstruction;
 
-		virtual int execute(uint8_t opcode) final;
+		virtual int execute() final;
 		virtual int step() final;
 
 		virtual void powerOn() final;
@@ -148,9 +148,9 @@ namespace EightBit {
 
 		// Execution helpers
 
-		void executeUnprefixed(uint8_t opcode);
-		void execute10(uint8_t opcode);
-		void execute11(uint8_t opcode);
+		void executeUnprefixed();
+		void execute10();
+		void execute11();
 
 		// Register selection for "indexed"
 		register16_t& RR(int which);

@@ -54,7 +54,7 @@ namespace EightBit {
 		[[nodiscard]] auto& NMI() { return m_nmiLine; }		// In
 		[[nodiscard]] auto& M1() { return m_m1Line; }		// Out
 
-		int execute(uint8_t opcode) final;
+		int execute() final;
 		int step() final;
 		void powerOn() final;
 

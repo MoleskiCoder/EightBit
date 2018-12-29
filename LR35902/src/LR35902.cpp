@@ -326,9 +326,9 @@ int EightBit::GameBoy::LR35902::step() {
 		} else if (UNLIKELY(lowered(INT()))) {
 			handleINT();
 		} else if (UNLIKELY(lowered(HALT()))) {
-			execute(0);	// NOP
+			Processor::execute(0);	// NOP
 		} else {
-			execute(fetchByte());
+			Processor::execute(fetchByte());
 		}
 
 		m_bus.IO().checkTimers(clockCycles());
@@ -339,9 +339,9 @@ int EightBit::GameBoy::LR35902::step() {
 	return clockCycles();
 }
 
-int EightBit::GameBoy::LR35902::execute(const uint8_t opcode) {
+int EightBit::GameBoy::LR35902::execute() {
 
-	const auto& decoded = getDecodedOpcode(opcode);
+	const auto& decoded = getDecodedOpcode(opcode());
 
 	const auto x = decoded.x;
 	const auto y = decoded.y;
@@ -750,7 +750,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
-				execute(fetchByte());
+				Processor::execute(fetchByte());
 				break;
 			case 6:	// DI
 				di();

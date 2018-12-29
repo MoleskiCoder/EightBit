@@ -5,29 +5,29 @@ EightBit::BigEndianProcessor::BigEndianProcessor(Bus& memory)
 : Processor(memory) {}
 
 EightBit::register16_t EightBit::BigEndianProcessor::getWord() {
-	const auto high = BUS().read();
+	const auto high = busRead();
 	++BUS().ADDRESS();
-	const auto low = BUS().read();
+	const auto low = busRead();
 	return { low, high };
 }
 
 void EightBit::BigEndianProcessor::setWord(const register16_t value) {
-	BUS().write(value.high);
+	busWrite(value.high);
 	++BUS().ADDRESS();
-	BUS().write(value.low);
+	busWrite(value.low);
 }
 
 EightBit::register16_t EightBit::BigEndianProcessor::getWordPaged(const uint8_t page, const uint8_t offset) {
 	const auto high = getBytePaged(page, offset);
 	++BUS().ADDRESS().low;
-	const auto low = BUS().read();
+	const auto low = busRead();
 	return { low, high };
 }
 
 void EightBit::BigEndianProcessor::setWordPaged(const uint8_t page, const uint8_t offset, const register16_t value) {
 	setBytePaged(page, offset, value.high);
 	++BUS().ADDRESS().low;
-	BUS().write(value.low);
+	busWrite(value.low);
 }
 
 EightBit::register16_t EightBit::BigEndianProcessor::fetchWord() {

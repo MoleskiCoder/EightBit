@@ -36,7 +36,7 @@ namespace EightBit {
 			virtual register16_t& HL() final;
 
 		protected:
-			virtual int execute(uint8_t opcode) final;
+			virtual int execute() final;
 			virtual int step() final;
 
 			virtual void handleRESET() final;

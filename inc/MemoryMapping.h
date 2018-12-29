@@ -9,7 +9,7 @@ namespace EightBit {
 
 	struct MemoryMapping {
 
-		enum class AccessLevel { Unknown, ReadOnly, ReadWrite, };
+		enum class AccessLevel { Unknown, ReadOnly, WriteOnly, ReadWrite };
 
 		Memory& memory;
 		uint16_t begin = Chip::Mask16;

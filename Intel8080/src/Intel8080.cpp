@@ -35,7 +35,7 @@ void EightBit::Intel8080::handleINT() {
 	raise(HALT());
 	if (m_interruptEnable) {
 		di();
-		execute(BUS().DATA());
+		Processor::execute(BUS().DATA());
 	}
 	addCycles(3);
 }
@@ -275,18 +275,18 @@ int EightBit::Intel8080::step() {
 		} else if (UNLIKELY(lowered(INT()))) {
 			handleINT();
 		} else if (UNLIKELY(lowered(HALT()))) {
-			execute(0);	// NOP
+			Processor::execute(0);	// NOP
 		} else {
-			execute(fetchByte());
+			Processor::execute(fetchByte());
 		}
 	}
 	ExecutedInstruction.fire(*this);
 	return cycles();
 }
 
-int EightBit::Intel8080::execute(const uint8_t opcode) {
+int EightBit::Intel8080::execute() {
 
-	const auto& decoded = getDecodedOpcode(opcode);
+	const auto& decoded = getDecodedOpcode(opcode());
 
 	const auto x = decoded.x;
 	const auto y = decoded.y;

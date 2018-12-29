@@ -27,7 +27,7 @@ namespace EightBit {
 		Signal<Intel8080> ExecutingInstruction;
 		Signal<Intel8080> ExecutedInstruction;
 
-		virtual int execute(uint8_t opcode) final;
+		virtual int execute() final;
 		virtual int step() final;
 
 		virtual register16_t& AF() final;

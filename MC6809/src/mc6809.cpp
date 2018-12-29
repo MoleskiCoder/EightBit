@@ -29,7 +29,7 @@ int EightBit::mc6809::step() {
 		else if (UNLIKELY(lowered(IRQ()) && !interruptMasked()))
 			handleIRQ();
 		else
-			execute(fetchByte());
+			Processor::execute(fetchByte());
 	}
 	ExecutedInstruction.fire(*this);
 	return cycles();
@@ -88,32 +88,32 @@ void EightBit::mc6809::handleFIRQ() {
 
 //
 
-int EightBit::mc6809::execute(const uint8_t opcode) {
+int EightBit::mc6809::execute() {
 	lower(BA());
 	lower(BS());
 	const bool prefixed = m_prefix10 || m_prefix11;
 	const bool unprefixed = !prefixed;
 	if (unprefixed) {
-		executeUnprefixed(opcode);
+		executeUnprefixed();
 	} else {
 		if (m_prefix10)
-			execute10(opcode);
+			execute10();
 		else
-			execute11(opcode);
+			execute11();
 	}
 	assert(cycles() > 0);
 	return cycles();
 }
 
-void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
+void EightBit::mc6809::executeUnprefixed() {
 
 	assert(!(m_prefix10 || m_prefix11));
 	assert(cycles() == 0);
 
-	switch (opcode) {
+	switch (opcode()) {
 
-	case 0x10:	m_prefix10 = true;	execute(fetchByte());	break;
-	case 0x11:	m_prefix11 = true;	execute(fetchByte());	break;
+	case 0x10:	m_prefix10 = true;	Processor::execute(fetchByte());	break;
+	case 0x11:	m_prefix11 = true;	Processor::execute(fetchByte());	break;
 
 	// ABX
 	case 0x3a:	addCycles(3);	X() += B();											break;		// ABX (inherent)
@@ -475,12 +475,12 @@ void EightBit::mc6809::executeUnprefixed(const uint8_t opcode) {
 	}
 }
 
-void EightBit::mc6809::execute10(const uint8_t opcode) {
+void EightBit::mc6809::execute10() {
 
 	assert(m_prefix10 && !m_prefix11);
 	assert(cycles() == 0);
 
-	switch (opcode) {
+	switch (opcode()) {
 
 	// CMP
 
@@ -546,12 +546,12 @@ void EightBit::mc6809::execute10(const uint8_t opcode) {
 	}
 }
 
-void EightBit::mc6809::execute11(const uint8_t opcode) {
+void EightBit::mc6809::execute11() {
 
 	assert(!m_prefix10 && m_prefix11);
 	assert(cycles() == 0);
 
-	switch (opcode) {
+	switch (opcode()) {
 
 	// CMP
 

@@ -9,10 +9,10 @@
 #include "Signal.h"
 #include "Register.h"
 #include "EventArgs.h"
-#include "MemoryMapping.h"
+#include "Mapper.h"
 
 namespace EightBit {
-	class Bus {
+	class Bus : public Mapper {
 	public:
 		virtual ~Bus() = default;
 
@@ -54,7 +54,6 @@ namespace EightBit {
 	protected:
 		virtual void initialise() = 0;
 
-		[[nodiscard]] virtual MemoryMapping mapping(uint16_t address) = 0;
 		[[nodiscard]] uint8_t& reference(uint16_t address);
 		[[nodiscard]] auto& reference(const register16_t address) { return reference(address.word); }
 		[[nodiscard]] uint8_t& reference() { return reference(ADDRESS()); }

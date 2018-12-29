@@ -29,7 +29,8 @@ namespace EightBit {
 
 		int run(int limit);
 		virtual int step() = 0;
-		virtual int execute(uint8_t opcode) = 0;
+		virtual int execute() = 0;
+		int execute(uint8_t value);
 
 		[[nodiscard]] auto cycles() const noexcept { return m_cycles; }
 
@@ -39,6 +40,7 @@ namespace EightBit {
 	protected:
 		Processor(Bus& memory);
 
+		[[nodiscard]] auto& opcode() noexcept { return m_opcode; }
 		[[nodiscard]] auto& BUS() noexcept { return m_bus; }
 
 		[[nodiscard]] auto halted() noexcept { return lowered(HALT()); }
@@ -49,16 +51,23 @@ namespace EightBit {
 		virtual void handleINT();
 		virtual void handleIRQ();
 
+		void busWrite(register16_t address, uint8_t data);
+		void busWrite(uint8_t data);
+		virtual void busWrite();
+
+		[[nodiscard]] uint8_t busRead(register16_t address);
+		[[nodiscard]] virtual uint8_t busRead();
+
 		[[nodiscard]] auto getBytePaged(const uint8_t page, const uint8_t offset) {
-			return BUS().read(register16_t(offset, page));
+			return busRead(register16_t(offset, page));
 		}
 
 		void setBytePaged(const uint8_t page, const uint8_t offset, const uint8_t value) {
-			BUS().write(register16_t(offset, page), value);
+			busWrite(register16_t(offset, page), value);
 		}
 
 		[[nodiscard]] auto fetchByte() {
-			return BUS().read(PC()++);
+			return busRead(PC()++);
 		}
 
 		[[nodiscard]] virtual register16_t getWord() = 0;
@@ -102,6 +111,7 @@ namespace EightBit {
 
 	private:
 		Bus& m_bus;
+		uint8_t m_opcode = Mask8;
 		int m_cycles = 0;
 		register16_t m_pc;
 
