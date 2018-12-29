@@ -59,9 +59,16 @@ int EightBit::Rom::load(const std::string& path, const int writeOffset, const in
 }
 
 int EightBit::Rom::load(const std::vector<uint8_t>& bytes, const int writeOffset, const int readOffset, int limit) {
+
 	if (limit < 0)
 		limit = bytes.size() - readOffset;
-	std::copy(bytes.cbegin() + readOffset, bytes.cbegin() + limit, m_bytes.begin() + writeOffset);
+
+	const size_t extent = limit + writeOffset;
+	if (m_bytes.size() < extent)
+		m_bytes.resize(extent);
+
+	std::copy(bytes.cbegin() + readOffset, bytes.cbegin() + readOffset + limit, m_bytes.begin() + writeOffset);
+
 	return limit;
 }
 
