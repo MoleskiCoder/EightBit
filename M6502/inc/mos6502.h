@@ -49,6 +49,9 @@ namespace EightBit {
 		virtual void handleRESET() final;
 		virtual void handleIRQ() final;
 
+		virtual void busWrite() final;
+		[[nodiscard]] virtual uint8_t busRead() final;
+
 		virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow = 0);
 		uint8_t sbc(uint8_t operand, uint8_t data);
 		uint8_t sub_b(uint8_t operand, uint8_t data, int borrow);
