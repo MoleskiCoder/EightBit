@@ -166,6 +166,15 @@ namespace EightBit {
 		void rti();
 		void rts();
 
+		// Undocumented compound instructions
+
+		void dcp(uint8_t value);
+		void isb(uint8_t value);
+		void rla(uint8_t value);
+		void rra(uint8_t value);
+		void slo(uint8_t value);
+		void sre(uint8_t value);
+
 		uint8_t x = 0;		// index register X
 		uint8_t y = 0;		// index register Y
 		uint8_t a = 0;		// accumulator
