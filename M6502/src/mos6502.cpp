@@ -107,7 +107,7 @@ int EightBit::MOS6502::execute() {
 	case 0x08:	addCycle(); php();														break;	// PHP
 	case 0x09:	A() = orr(A(), AM_Immediate());											break;	// ORA (immediate)
 	case 0x0a:	addCycle(); A() = asl(A());												break;	// ASL A
-	case 0x0b:																			break;
+	case 0x0b:	addCycle(); anc(AM_Immediate());										break;	// *ANC (immediate)
 	case 0x0c:	AM_Absolute();															break;	// *NOP (absolute)
 	case 0x0d:	A() = orr(A(), AM_Absolute());											break;	// ORA (absolute)
 	case 0x0e:	addCycle(); Processor::busWrite(asl(AM_Absolute()));					break;	// ASL (absolute)
@@ -141,7 +141,7 @@ int EightBit::MOS6502::execute() {
 	case 0x28:	addCycles(2); plp();													break;	// PLP
 	case 0x29:	A() = andr(A(), AM_Immediate());										break;	// AND (immediate)
 	case 0x2a:	addCycle(); A() = rol(A());												break;	// ROL A
-	case 0x2b:																			break;
+	case 0x2b:	addCycle(); anc(AM_Immediate());										break;	// *ANC (immediate)
 	case 0x2c:	bit(A(), AM_Absolute());												break;	// BIT (absolute)
 	case 0x2d:	A() = andr(A(), AM_Absolute());											break;	// AND (absolute)
 	case 0x2e:	addCycle(); Processor::busWrite(rol(AM_Absolute()));					break;	// ROL (absolute)
@@ -175,7 +175,7 @@ int EightBit::MOS6502::execute() {
 	case 0x48:	addCycle(); push(A());													break;	// PHA
 	case 0x49:	A() = eorr(A(), AM_Immediate());										break;	// EOR (immediate)
 	case 0x4a:	addCycle(); A() = lsr(A());												break;	// LSR A
-	case 0x4b:																			break;
+	case 0x4b:	asr(AM_Immediate());													break;	// *ASR (immediate)
 	case 0x4c:	jump(Address_Absolute());												break;	// JMP (absolute)
 	case 0x4d:	A() = eorr(A(), AM_Absolute());											break;	// EOR (absolute)
 	case 0x4e:	addCycle(); Processor::busWrite(lsr(AM_Absolute()));					break;	// LSR (absolute)
@@ -209,7 +209,7 @@ int EightBit::MOS6502::execute() {
 	case 0x68:	addCycles(2); A() = through(pop());										break;	// PLA
 	case 0x69:	A() = adc(A(), AM_Immediate());											break;	// ADC (immediate)
 	case 0x6a:	addCycle(); A() = ror(A());												break;	// ROR A
-	case 0x6b:																			break;
+	case 0x6b:	addCycle(); arr(AM_Immediate());										break;	// *ARR (immediate)
 	case 0x6c:	jump(Address_Indirect());												break;	// JMP (indirect)
 	case 0x6d:	A() = adc(A(), AM_Absolute());											break;	// ADC (absolute)
 	case 0x6e:	addCycle(); Processor::busWrite(ror(AM_Absolute()));					break;	// ROR (absolute)
@@ -234,14 +234,14 @@ int EightBit::MOS6502::execute() {
 
 	case 0x80:	AM_Immediate();															break;	// *NOP (immediate)
 	case 0x81:	addCycle(); Processor::busWrite(Address_IndexedIndirectX(), A());		break;	// STA (indexed indirect X)
-	case 0x82:																			break;
+	case 0x82:	AM_Immediate();															break;	// *NOP (immediate)
 	case 0x83:	addCycle(); Processor::busWrite(Address_IndexedIndirectX(), A() & X());	break;	// *SAX (indexed indirect X)
 	case 0x84:	Processor::busWrite(Address_ZeroPage(), Y());							break;	// STY (zero page)
 	case 0x85:	Processor::busWrite(Address_ZeroPage(), A());							break;	// STA (zero page)
 	case 0x86:	Processor::busWrite(Address_ZeroPage(), X());							break;	// STX (zero page)
 	case 0x87:	Processor::busWrite(Address_ZeroPage(), A() & X());						break;	// *SAX (zero page)
 	case 0x88:	addCycle(); Y() = dec(Y());												break;	// DEY
-	case 0x89:																			break;
+	case 0x89:	AM_Immediate();															break;	// *NOP (immediate)
 	case 0x8a:	addCycle(); A() = through(X());											break;	// TXA
 	case 0x8b:																			break;
 	case 0x8c:	Processor::busWrite(Address_Absolute(), Y());							break;	// STY (absolute)
@@ -277,7 +277,7 @@ int EightBit::MOS6502::execute() {
 	case 0xa8:	addCycle(); Y() = through(A());											break;	// TAY
 	case 0xa9:	A() = through(AM_Immediate());											break;	// LDA (immediate)
 	case 0xaa:	addCycle(); X() = through(A());											break;	// TAX
-	case 0xab:																			break;
+	case 0xab:																			break;	// *ATX (immediate)
 	case 0xac:	Y() = through(AM_Absolute());											break;	// LDY (absolute)
 	case 0xad:	A() = through(AM_Absolute());											break;	// LDA (absolute)
 	case 0xae:	X() = through(AM_Absolute());											break;	// LDX (absolute)
@@ -302,7 +302,7 @@ int EightBit::MOS6502::execute() {
 
 	case 0xc0:	cmp(Y(), AM_Immediate());												break;	// CPY (immediate)
 	case 0xc1:	addCycle(); cmp(A(), AM_IndexedIndirectX());							break;	// CMP (indexed indirect X)
-	case 0xc2:																			break;
+	case 0xc2:	AM_Immediate();															break;	// *NOP (immediate)
 	case 0xc3:	addCycles(2); dcp(AM_IndexedIndirectX());								break;	// *DCP (indexed indirect X)
 	case 0xc4:	cmp(Y(), AM_ZeroPage());												break;	// CPY (zero page)
 	case 0xc5:	cmp(A(), AM_ZeroPage());												break;	// CMP (zero page)
@@ -311,7 +311,7 @@ int EightBit::MOS6502::execute() {
 	case 0xc8:	addCycle(); Y() = inc(Y());												break;	// INY
 	case 0xc9:	cmp(A(), AM_Immediate());												break;	// CMP (immediate)
 	case 0xca:	addCycle(); X() = dec(X());												break;	// DEX
-	case 0xcb:																			break;
+	case 0xcb:	axs(AM_Immediate());													break;	// *AXS (immediate)
 	case 0xcc:	cmp(Y(), AM_Absolute());												break;	// CPY (absolute)
 	case 0xcd:	cmp(A(), AM_Absolute());												break;	// CMP (absolute)
 	case 0xce:	addCycle(); Processor::busWrite(dec(AM_Absolute()));					break;	// DEC (absolute)
@@ -336,7 +336,7 @@ int EightBit::MOS6502::execute() {
 
 	case 0xe0:	cmp(X(), AM_Immediate());												break;	// CPX (immediate)
 	case 0xe1:	addCycle(); A() = sbc(A(), AM_IndexedIndirectX());						break;	// SBC (indexed indirect X)
-	case 0xe2:																			break;
+	case 0xe2:	AM_Immediate();															break;	// *NOP (immediate)
 	case 0xe3:	addCycles(2); isb(AM_IndexedIndirectX());								break;	// *ISB (indexed indirect X)
 	case 0xe4:	cmp(X(), AM_ZeroPage());												break;	// CPX (zero page)
 	case 0xe5:	A() = sbc(A(), AM_ZeroPage());											break;	// SBC (zero page)
@@ -568,7 +568,7 @@ uint8_t EightBit::MOS6502::andr(const uint8_t operand, const uint8_t data) {
 }
 
 uint8_t EightBit::MOS6502::asl(const uint8_t value) {
-	setFlag(P(), CF, (value & Bit7) >> 7);
+	setFlag(P(), CF, value & Bit7);
 	return through(value << 1);
 }
 
@@ -650,6 +650,28 @@ void EightBit::MOS6502::rts() {
 }
 
 // Undocumented compound instructions
+
+void EightBit::MOS6502::anc(const uint8_t value) {
+	A() = andr(A(), value);
+	setFlag(P(), CF, A() & Bit7);
+}
+
+void EightBit::MOS6502::arr(const uint8_t value) {
+	A() = andr(A(), value);
+	A() = ror(A());
+	setFlag(P(), CF, A() & Bit6);
+	setFlag(P(), VF, ((A() & Bit6) >> 6) ^((A() & Bit5) >> 5));
+}
+
+void EightBit::MOS6502::asr(const uint8_t value) {
+	A() = andr(A(), value);
+	A() = lsr(A());
+}
+
+void EightBit::MOS6502::axs(const uint8_t value) {
+	X() = through(sub(A() & X(), value));
+	clearFlag(P(), CF, m_intermediate.high);
+}
 
 void EightBit::MOS6502::dcp(const uint8_t value) {
 	Processor::busWrite(dec(value));

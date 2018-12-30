@@ -168,6 +168,10 @@ namespace EightBit {
 
 		// Undocumented compound instructions
 
+		void anc(uint8_t value);
+		void arr(uint8_t value);
+		void asr(uint8_t value);
+		void axs(uint8_t value);
 		void dcp(uint8_t value);
 		void isb(uint8_t value);
 		void rla(uint8_t value);
