@@ -277,7 +277,7 @@ int EightBit::MOS6502::execute() {
 	case 0xa8:	addCycle(); Y() = through(A());											break;	// TAY
 	case 0xa9:	A() = through(AM_Immediate());											break;	// LDA (immediate)
 	case 0xaa:	addCycle(); X() = through(A());											break;	// TAX
-	case 0xab:																			break;	// *ATX (immediate)
+	case 0xab:	A() = X() = through(AM_Immediate());									break;	// *ATX (immediate)
 	case 0xac:	Y() = through(AM_Absolute());											break;	// LDY (absolute)
 	case 0xad:	A() = through(AM_Absolute());											break;	// LDA (absolute)
 	case 0xae:	X() = through(AM_Absolute());											break;	// LDX (absolute)
