@@ -55,8 +55,8 @@ namespace EightBit {
 		void busWrite(uint8_t data);
 		virtual void busWrite();
 
-		[[nodiscard]] uint8_t busRead(register16_t address);
-		[[nodiscard]] virtual uint8_t busRead();
+		uint8_t busRead(register16_t address);
+		virtual uint8_t busRead();
 
 		[[nodiscard]] auto getBytePaged(const uint8_t page, const uint8_t offset) {
 			return busRead(register16_t(offset, page));

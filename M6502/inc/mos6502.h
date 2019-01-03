@@ -129,7 +129,7 @@ namespace EightBit {
 			if (condition) {
 				jump(destination);
 				if (UNLIKELY(PC().high != page))
-					addCycle();
+					Processor::busRead({ PC().low, page });
 			}
 			return !!condition;
 		}
@@ -144,6 +144,12 @@ namespace EightBit {
 		auto through(const uint8_t data) {
 			adjustNZ(data);
 			return data;
+		}
+
+		void busReadModifyWrite(const uint8_t data) {
+			// The read will have already taken place...
+			busWrite();
+			Processor::busWrite(data);
 		}
 
 		// Instruction implementations
