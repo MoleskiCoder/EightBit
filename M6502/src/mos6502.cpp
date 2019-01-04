@@ -233,9 +233,9 @@ int EightBit::MOS6502::execute() {
 	case 0x7f:	rra(AM_AbsoluteX());													break;	// *RRA (absolute, X)
 
 	case 0x80:	AM_Immediate();															break;	// *NOP (immediate)
-	case 0x81:	addCycle(); Processor::busWrite(Address_IndexedIndirectX(), A());		break;	// STA (indexed indirect X)
+	case 0x81:	Processor::busWrite(Address_IndexedIndirectX(), A());					break;	// STA (indexed indirect X)
 	case 0x82:	AM_Immediate();															break;	// *NOP (immediate)
-	case 0x83:	addCycle(); Processor::busWrite(Address_IndexedIndirectX(), A() & X());	break;	// *SAX (indexed indirect X)
+	case 0x83:	Processor::busWrite(Address_IndexedIndirectX(), A() & X());				break;	// *SAX (indexed indirect X)
 	case 0x84:	Processor::busWrite(Address_ZeroPage(), Y());							break;	// STY (zero page)
 	case 0x85:	Processor::busWrite(Address_ZeroPage(), A());							break;	// STA (zero page)
 	case 0x86:	Processor::busWrite(Address_ZeroPage(), X());							break;	// STX (zero page)
@@ -253,10 +253,10 @@ int EightBit::MOS6502::execute() {
 	case 0x91:	addCycle(); Processor::busWrite(Address_IndirectIndexedY().first, A());	break;	// STA (indirect indexed Y)
 	case 0x92:																			break;
 	case 0x93:																			break;
-	case 0x94:	addCycle(); Processor::busWrite(Address_ZeroPageX(), Y());				break;	// STY (zero page, X)
-	case 0x95:	addCycle(); Processor::busWrite(Address_ZeroPageX(), A());				break;	// STA (zero page, X)
-	case 0x96:	addCycle(); Processor::busWrite(Address_ZeroPageY(), X());				break;	// STX (zero page, Y)
-	case 0x97:	addCycle(); Processor::busWrite(Address_ZeroPageY(), A() & X());		break;	// *SAX (zero page, Y)
+	case 0x94:	Processor::busWrite(Address_ZeroPageX(), Y());							break;	// STY (zero page, X)
+	case 0x95:	Processor::busWrite(Address_ZeroPageX(), A());							break;	// STA (zero page, X)
+	case 0x96:	Processor::busWrite(Address_ZeroPageY(), X());							break;	// STX (zero page, Y)
+	case 0x97:	Processor::busWrite(Address_ZeroPageY(), A() & X());					break;	// *SAX (zero page, Y)
 	case 0x98:	addCycle(); A() = through(Y());											break;	// TYA (implied)
 	case 0x99:	addCycle(); Processor::busWrite(Address_AbsoluteY().first, A());		break;	// STA (absolute, Y)
 	case 0x9a:	addCycle(); S() = X();													break;	// TXS (implied)
@@ -289,8 +289,8 @@ int EightBit::MOS6502::execute() {
 	case 0xb3:	A() = X() = through(AM_IndirectIndexedY());								break;	// *LAX (indirect indexed Y)
 	case 0xb4:	Y() = through(AM_ZeroPageX());											break;	// LDY (zero page, X)
 	case 0xb5:	A() = through(AM_ZeroPageX());											break;	// LDA (zero page, X)
-	case 0xb6:	addCycle(); X() = through(AM_ZeroPageY());								break;	// LDX (zero page, Y)
-	case 0xb7:	addCycle(); A() = X() = through(AM_ZeroPageY());						break;	// *LAX (zero page, Y)
+	case 0xb6:	X() = through(AM_ZeroPageY());											break;	// LDX (zero page, Y)
+	case 0xb7:	A() = X() = through(AM_ZeroPageY());									break;	// *LAX (zero page, Y)
 	case 0xb8:	addCycle(); clearFlag(P(), VF);											break;	// CLV (implied)
 	case 0xb9:	A() = through(AM_AbsoluteY());											break;	// LDA (absolute, Y)
 	case 0xba:	addCycle(); X() = through(S());											break;	// TSX (implied)
@@ -403,10 +403,12 @@ EightBit::register16_t EightBit::MOS6502::Address_Indirect() {
 }
 
 uint8_t EightBit::MOS6502::Address_ZeroPageX() {
+	addCycle();
 	return Address_ZeroPage() + X();
 }
 
 uint8_t EightBit::MOS6502::Address_ZeroPageY() {
+	addCycle();
 	return Address_ZeroPage() + Y();
 }
 
@@ -468,7 +470,6 @@ uint8_t EightBit::MOS6502::AM_AbsoluteY() {
 }
 
 uint8_t EightBit::MOS6502::AM_ZeroPageX() {
-	addCycle();
 	return Processor::busRead(Address_ZeroPageX());
 }
 
@@ -477,7 +478,6 @@ uint8_t EightBit::MOS6502::AM_ZeroPageY() {
 }
 
 uint8_t EightBit::MOS6502::AM_IndexedIndirectX() {
-	addCycle();
 	return Processor::busRead(Address_IndexedIndirectX());
 }
 
