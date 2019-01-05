@@ -50,7 +50,7 @@ namespace EightBit {
 		virtual void handleIRQ() final;
 
 		virtual void busWrite() final;
-		[[nodiscard]] virtual uint8_t busRead() final;
+		virtual uint8_t busRead() final;
 
 		virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow = 0);
 		uint8_t sbc(uint8_t operand, uint8_t data);
@@ -122,24 +122,9 @@ namespace EightBit {
 		auto overflow() const { return P() & VF; }
 		auto carry() const { return P() & CF; }
 
-		// Branching
-
-		auto branch(const register16_t destination, const int condition) {
-			const auto page = PC().high;
-			if (condition) {
-				jump(destination);
-				if (UNLIKELY(PC().high != page))
-					Processor::busRead({ PC().low, page });
-			}
-			return !!condition;
-		}
-
-		void branch(const int condition) {
-			if (branch(Address_relative_byte(), condition))
-				addCycle();
-		}
-
 		// Miscellaneous
+
+		void branch(int condition);
 
 		auto through(const uint8_t data) {
 			adjustNZ(data);
