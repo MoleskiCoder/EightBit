@@ -147,7 +147,7 @@ namespace EightBit {
 		uint8_t dec(uint8_t value);
 		uint8_t eorr(uint8_t operand, uint8_t data);
 		uint8_t inc(uint8_t value);
-		void jsr(register16_t destination);
+		void jsr();
 		uint8_t lsr(uint8_t value);
 		uint8_t orr(uint8_t operand, uint8_t data);
 		void php();

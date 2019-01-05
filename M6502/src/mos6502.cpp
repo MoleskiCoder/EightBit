@@ -104,7 +104,7 @@ int EightBit::MOS6502::execute() {
 	case 0x05:	A() = orr(A(), AM_ZeroPage());											break;	// ORA (zero page)
 	case 0x06:	busReadModifyWrite(asl(AM_ZeroPage()));									break;	// ASL (zero page)
 	case 0x07:	slo(AM_ZeroPage());														break;	// *SLO (zero page)
-	case 0x08:	addCycle(); php();														break;	// PHP (implied)
+	case 0x08:	busRead(); php();														break;	// PHP (implied)
 	case 0x09:	A() = orr(A(), AM_Immediate());											break;	// ORA (immediate)
 	case 0x0a:	busRead(); A() = asl(A());												break;	// ASL A (implied)
 	case 0x0b:	addCycle(); anc(AM_Immediate());										break;	// *ANC (immediate)
@@ -130,7 +130,7 @@ int EightBit::MOS6502::execute() {
 	case 0x1e:	addCycle(); busReadModifyWrite(asl(AM_AbsoluteX()));					break;	// ASL (absolute, X)
 	case 0x1f:	slo(AM_AbsoluteX());													break;	// *SLO (absolute, X)
 
-	case 0x20:	addCycle();  jsr(Address_Absolute());									break;	// JSR (absolute)
+	case 0x20:	jsr();																	break;	// JSR (absolute)
 	case 0x21:	A() = andr(A(), AM_IndexedIndirectX());									break;	// AND (indexed indirect X)
 	case 0x22:																			break;
 	case 0x23:	rla(AM_IndexedIndirectX());												break;	// *RLA (indexed indirect X)
@@ -138,7 +138,7 @@ int EightBit::MOS6502::execute() {
 	case 0x25:	A() = andr(A(), AM_ZeroPage());											break;	// AND (zero page)
 	case 0x26:	busReadModifyWrite(rol(AM_ZeroPage()));									break;	// ROL (zero page)
 	case 0x27:	rla(AM_ZeroPage());														break;	// *RLA (zero page)
-	case 0x28:	addCycles(2); plp();													break;	// PLP (implied)
+	case 0x28:	busRead(); getBytePaged(1, S());  plp();								break;	// PLP (implied)
 	case 0x29:	A() = andr(A(), AM_Immediate());										break;	// AND (immediate)
 	case 0x2a:	busRead(); A() = rol(A());												break;	// ROL A (implied)
 	case 0x2b:	addCycle(); anc(AM_Immediate());										break;	// *ANC (immediate)
@@ -172,7 +172,7 @@ int EightBit::MOS6502::execute() {
 	case 0x45:	A() = eorr(A(), AM_ZeroPage());											break;	// EOR (zero page)
 	case 0x46:	busReadModifyWrite(lsr(AM_ZeroPage()));									break;	// LSR (zero page)
 	case 0x47:	sre(AM_ZeroPage());														break;	// *SRE (zero page)
-	case 0x48:	addCycle(); push(A());													break;	// PHA (implied)
+	case 0x48:	busRead(); push(A());													break;	// PHA (implied)
 	case 0x49:	A() = eorr(A(), AM_Immediate());										break;	// EOR (immediate)
 	case 0x4a:	busRead(); A() = lsr(A());												break;	// LSR A (implied)
 	case 0x4b:	asr(AM_Immediate());													break;	// *ASR (immediate)
@@ -198,7 +198,7 @@ int EightBit::MOS6502::execute() {
 	case 0x5e:	addCycle(); busReadModifyWrite(lsr(AM_AbsoluteX()));					break;	// LSR (absolute, X)
 	case 0x5f:	sre(AM_AbsoluteX());													break;	// *SRE (absolute, X)
 
-	case 0x60:	addCycles(3); rts();													break;	// RTS (implied)
+	case 0x60:	busRead(); rts();														break;	// RTS (implied)
 	case 0x61:	A() = adc(A(), AM_IndexedIndirectX());									break;	// ADC (indexed indirect X)
 	case 0x62:																			break;
 	case 0x63:	rra(AM_IndexedIndirectX());												break;	// *RRA (indexed indirect X)
@@ -206,7 +206,7 @@ int EightBit::MOS6502::execute() {
 	case 0x65:	A() = adc(A(), AM_ZeroPage());											break;	// ADC (zero page)
 	case 0x66:	busReadModifyWrite(ror(AM_ZeroPage()));									break;	// ROR (zero page)
 	case 0x67:	rra(AM_ZeroPage());														break;	// *RRA (zero page)
-	case 0x68:	addCycles(2); A() = through(pop());										break;	// PLA (implied)
+	case 0x68:	busRead(); getBytePaged(1, S()); A() = through(pop());					break;	// PLA (implied)
 	case 0x69:	A() = adc(A(), AM_Immediate());											break;	// ADC (immediate)
 	case 0x6a:	busRead(); A() = ror(A());												break;	// ROR A (implied)
 	case 0x6b:	addCycle(); arr(AM_Immediate());										break;	// *ARR (immediate)
@@ -618,9 +618,12 @@ uint8_t EightBit::MOS6502::inc(const uint8_t value) {
 	return through(value + 1);
 }
 
-void EightBit::MOS6502::jsr(const register16_t destination) {
-	--PC();
-	call(destination);
+void EightBit::MOS6502::jsr() {
+	const auto low = fetchByte();
+	getBytePaged(1, S()); // dummy read
+	pushWord(PC());
+	PC().high = fetchByte();
+	PC().low = low;
 }
 
 uint8_t EightBit::MOS6502::lsr(const uint8_t value) {
@@ -660,8 +663,9 @@ void EightBit::MOS6502::rti() {
 }
 
 void EightBit::MOS6502::rts() {
+	getBytePaged(1, S()); // dummy read
 	ret();
-	++PC();
+	fetchByte();
 }
 
 // Undocumented compound instructions
