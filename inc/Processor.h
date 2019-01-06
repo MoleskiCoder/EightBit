@@ -58,7 +58,7 @@ namespace EightBit {
 		uint8_t busRead(register16_t address);
 		virtual uint8_t busRead();
 
-		[[nodiscard]] auto getBytePaged(const uint8_t page, const uint8_t offset) {
+		auto getBytePaged(const uint8_t page, const uint8_t offset) {
 			return busRead(register16_t(offset, page));
 		}
 
@@ -66,7 +66,7 @@ namespace EightBit {
 			busWrite(register16_t(offset, page), value);
 		}
 
-		[[nodiscard]] auto fetchByte() {
+		auto fetchByte() {
 			return busRead(PC()++);
 		}
 
