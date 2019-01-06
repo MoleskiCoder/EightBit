@@ -250,7 +250,7 @@ int EightBit::MOS6502::execute() {
 	case 0x8f:	Processor::busWrite(Address_Absolute(), A() & X());						break;	// *SAX (absolute)
 
 	case 0x90:	branch(!carry());														break;	// BCC (relative)
-	case 0x91:	addCycle(); Processor::busWrite(Address_IndirectIndexedY().first, A());	break;	// STA (indirect indexed Y)
+	case 0x91:	AM_IndirectIndexedY(); Processor::busWrite(A());						break;	// STA (indirect indexed Y)
 	case 0x92:																			break;
 	case 0x93:																			break;
 	case 0x94:	Processor::busWrite(Address_ZeroPageX(), Y());							break;	// STY (zero page, X)
@@ -258,11 +258,11 @@ int EightBit::MOS6502::execute() {
 	case 0x96:	Processor::busWrite(Address_ZeroPageY(), X());							break;	// STX (zero page, Y)
 	case 0x97:	Processor::busWrite(Address_ZeroPageY(), A() & X());					break;	// *SAX (zero page, Y)
 	case 0x98:	busRead(); A() = through(Y());											break;	// TYA (implied)
-	case 0x99:	addCycle(); Processor::busWrite(Address_AbsoluteY().first, A());		break;	// STA (absolute, Y)
+	case 0x99:	sta_AbsoluteY();														break;	// STA (absolute, Y)
 	case 0x9a:	busRead(); S() = X();													break;	// TXS (implied)
 	case 0x9b:																			break;
 	case 0x9c:																			break;
-	case 0x9d:	addCycle(); Processor::busWrite(Address_AbsoluteX().first, A());		break;	// STA (absolute, X)
+	case 0x9d:	sta_AbsoluteX();														break;	// STA (absolute, X)
 	case 0x9e:																			break;
 	case 0x9f:																			break;
 
@@ -726,4 +726,18 @@ void EightBit::MOS6502::slo(const uint8_t value) {
 void EightBit::MOS6502::sre(const uint8_t value) {
 	busReadModifyWrite(lsr(value));
 	A() = eorr(A(), BUS().DATA());
+}
+
+//
+
+void EightBit::MOS6502::sta_AbsoluteX() {
+	const auto [address, page] = Address_AbsoluteX();
+	getBytePaged(page, address.low);
+	Processor::busWrite(address, A());
+}
+
+void EightBit::MOS6502::sta_AbsoluteY() {
+	const auto [address, page] = Address_AbsoluteY();
+	getBytePaged(page, address.low);
+	Processor::busWrite(address, A());
 }

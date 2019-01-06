@@ -172,6 +172,11 @@ namespace EightBit {
 		void slo(uint8_t value);
 		void sre(uint8_t value);
 
+		// Complicated addressing mode implementations
+
+		void sta_AbsoluteX();
+		void sta_AbsoluteY();
+
 		uint8_t x = 0;		// index register X
 		uint8_t y = 0;		// index register Y
 		uint8_t a = 0;		// accumulator
