@@ -127,7 +127,7 @@ int EightBit::MOS6502::execute() {
 	case 0x1b:	slo(AM_AbsoluteY());													break;	// *SLO (absolute, Y)
 	case 0x1c:	AM_AbsoluteX();															break;	// *NOP (absolute, X)
 	case 0x1d:	A() = orr(A(), AM_AbsoluteX());											break;	// ORA (absolute, X)
-	case 0x1e:	addCycle(); busReadModifyWrite(asl(AM_AbsoluteX()));					break;	// ASL (absolute, X)
+	case 0x1e:	busReadModifyWrite(asl(AM_AbsoluteX(AlwaysReadTwice)));					break;	// ASL (absolute, X)
 	case 0x1f:	slo(AM_AbsoluteX());													break;	// *SLO (absolute, X)
 
 	case 0x20:	jsr();																	break;	// JSR (absolute)
@@ -161,7 +161,7 @@ int EightBit::MOS6502::execute() {
 	case 0x3b:	rla(AM_AbsoluteY());													break;	// *RLA (absolute, Y)
 	case 0x3c:	AM_AbsoluteX();															break;	// *NOP (absolute, X)
 	case 0x3d:	A() = andr(A(), AM_AbsoluteX());										break;	// AND (absolute, X)
-	case 0x3e:	addCycle(); busReadModifyWrite(rol(AM_AbsoluteX()));					break;	// ROL (absolute, X)
+	case 0x3e:	busReadModifyWrite(rol(AM_AbsoluteX(AlwaysReadTwice)));					break;	// ROL (absolute, X)
 	case 0x3f:	rla(AM_AbsoluteX());													break;	// *RLA (absolute, X)
 
 	case 0x40:	busRead(); rti();														break;	// RTI (implied)
@@ -195,7 +195,7 @@ int EightBit::MOS6502::execute() {
 	case 0x5b:	sre(AM_AbsoluteY());													break;	// *SRE (absolute, Y)
 	case 0x5c:	AM_AbsoluteX();															break;	// *NOP (absolute, X)
 	case 0x5d:	A() = eorr(A(), AM_AbsoluteX());										break;	// EOR (absolute, X)
-	case 0x5e:	addCycle(); busReadModifyWrite(lsr(AM_AbsoluteX()));					break;	// LSR (absolute, X)
+	case 0x5e:	busReadModifyWrite(lsr(AM_AbsoluteX(AlwaysReadTwice)));					break;	// LSR (absolute, X)
 	case 0x5f:	sre(AM_AbsoluteX());													break;	// *SRE (absolute, X)
 
 	case 0x60:	busRead(); rts();														break;	// RTS (implied)
@@ -229,7 +229,7 @@ int EightBit::MOS6502::execute() {
 	case 0x7b:	rra(AM_AbsoluteY());													break;	// *RRA (absolute, Y)
 	case 0x7c:	AM_AbsoluteX();															break;	// *NOP (absolute, X)
 	case 0x7d:	A() = adc(A(), AM_AbsoluteX());											break;	// ADC (absolute, X)
-	case 0x7e:	addCycle(); busReadModifyWrite(ror(AM_AbsoluteX()));					break;	// ROR (absolute, X)
+	case 0x7e:	busReadModifyWrite(ror(AM_AbsoluteX(AlwaysReadTwice)));					break;	// ROR (absolute, X)
 	case 0x7f:	rra(AM_AbsoluteX());													break;	// *RRA (absolute, X)
 
 	case 0x80:	AM_Immediate();															break;	// *NOP (immediate)
@@ -331,7 +331,7 @@ int EightBit::MOS6502::execute() {
 	case 0xdb:	dcp(AM_AbsoluteY());													break;	// *DCP (absolute, Y)
 	case 0xdc:	AM_AbsoluteX();															break;	// *NOP (absolute, X)
 	case 0xdd:	cmp(A(), AM_AbsoluteX());												break;	// CMP (absolute, X)
-	case 0xde:	addCycle(); busReadModifyWrite(dec(AM_AbsoluteX()));					break;	// DEC (absolute, X)
+	case 0xde:	busReadModifyWrite(dec(AM_AbsoluteX(AlwaysReadTwice)));					break;	// DEC (absolute, X)
 	case 0xdf:	dcp(AM_AbsoluteX());													break;	// *DCP (absolute, X)
 
 	case 0xe0:	cmp(X(), AM_Immediate());												break;	// CPX (immediate)
@@ -365,7 +365,7 @@ int EightBit::MOS6502::execute() {
 	case 0xfb:	isb(AM_AbsoluteY());													break;	// *ISB (absolute, Y)
 	case 0xfc:	AM_AbsoluteX();															break;	// *NOP (absolute, X)
 	case 0xfd:	A() = sbc(A(), AM_AbsoluteX());											break;	// SBC (absolute, X)
-	case 0xfe:	addCycle(); busReadModifyWrite(inc(AM_AbsoluteX()));					break;	// INC (absolute, X)
+	case 0xfe:	busReadModifyWrite(inc(AM_AbsoluteX(AlwaysReadTwice)));					break;	// INC (absolute, X)
 	case 0xff:	isb(AM_AbsoluteX());													break;	// *ISB (absolute, X)
 	}
 
@@ -457,10 +457,10 @@ uint8_t EightBit::MOS6502::AM_ZeroPage() {
 	return Processor::busRead(Address_ZeroPage());
 }
 
-uint8_t EightBit::MOS6502::AM_AbsoluteX() {
+uint8_t EightBit::MOS6502::AM_AbsoluteX(const PageCrossingBehavior behaviour) {
 	const auto [address, page] = Address_AbsoluteX();
 	auto possible = getBytePaged(page, address.low);
-	if (UNLIKELY(page != address.high))
+	if ((behaviour == AlwaysReadTwice) || UNLIKELY(page != address.high))
 		possible = Processor::busRead(address);
 	return possible;
 }

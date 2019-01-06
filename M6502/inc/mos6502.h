@@ -92,10 +92,12 @@ namespace EightBit {
 
 		// Addressing modes, read
 
+		enum PageCrossingBehavior { AlwaysReadTwice, MaybeReadTwice };
+
 		uint8_t AM_Immediate();
 		uint8_t AM_Absolute();
 		uint8_t AM_ZeroPage();
-		uint8_t AM_AbsoluteX();
+		uint8_t AM_AbsoluteX(PageCrossingBehavior behaviour = MaybeReadTwice);
 		uint8_t AM_AbsoluteY();
 		uint8_t AM_ZeroPageX();
 		uint8_t AM_ZeroPageY();
