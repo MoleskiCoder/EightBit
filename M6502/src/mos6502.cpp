@@ -96,7 +96,7 @@ int EightBit::MOS6502::execute() {
 
 	switch (opcode()) {
 
-	case 0x00:	brk();																	break;	// BRK (implied)
+	case 0x00:	fetchByte(); brk();														break;	// BRK (implied)
 	case 0x01:	A() = orr(A(), AM_IndexedIndirectX());									break;	// ORA (indexed indirect X)
 	case 0x02:																			break;
 	case 0x03:	slo(AM_IndexedIndirectX());												break;	// *SLO (indexed indirect X)
@@ -164,7 +164,7 @@ int EightBit::MOS6502::execute() {
 	case 0x3e:	addCycle(); busReadModifyWrite(rol(AM_AbsoluteX()));					break;	// ROL (absolute, X)
 	case 0x3f:	rla(AM_AbsoluteX());													break;	// *RLA (absolute, X)
 
-	case 0x40:	addCycles(2); rti();													break;	// RTI (implied)
+	case 0x40:	busRead(); rti();														break;	// RTI (implied)
 	case 0x41:	A() = eorr(A(), AM_IndexedIndirectX());									break;	// EOR (indexed indirect X)
 	case 0x42:																			break;
 	case 0x43:	sre(AM_IndexedIndirectX());												break;	// *SRE (indexed indirect X)
@@ -403,13 +403,15 @@ EightBit::register16_t EightBit::MOS6502::Address_Indirect() {
 }
 
 uint8_t EightBit::MOS6502::Address_ZeroPageX() {
-	addCycle();
-	return Address_ZeroPage() + X();
+	const auto address = Address_ZeroPage();
+	Processor::busRead(address);
+	return address + X();
 }
 
 uint8_t EightBit::MOS6502::Address_ZeroPageY() {
-	addCycle();
-	return Address_ZeroPage() + Y();
+	const auto address = Address_ZeroPage();
+	Processor::busRead(address);
+	return address + Y();
 }
 
 std::pair<EightBit::register16_t, bool> EightBit::MOS6502::Address_AbsoluteX() {
@@ -594,7 +596,7 @@ void EightBit::MOS6502::bit(const uint8_t operand, const uint8_t data) {
 }
 
 void EightBit::MOS6502::brk() {
-	pushWord(++PC());
+	pushWord(PC());
 	php();
 	setFlag(P(), IF);
 	jump(getWordPaged(0xff, IRQvector));
@@ -658,6 +660,7 @@ uint8_t EightBit::MOS6502::ror(const uint8_t operand) {
 }
 
 void EightBit::MOS6502::rti() {
+	getBytePaged(1, S()); // dummy read
 	plp();
 	ret();
 }
