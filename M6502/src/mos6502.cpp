@@ -414,29 +414,29 @@ uint8_t EightBit::MOS6502::Address_ZeroPageY() {
 	return address + Y();
 }
 
-std::pair<EightBit::register16_t, bool> EightBit::MOS6502::Address_AbsoluteX() {
+std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteX() {
 	auto address = Address_Absolute();
 	const auto page = address.high;
 	address += X();
-	return { address, address.high != page };
+	return { address, page };
 }
 
-std::pair<EightBit::register16_t, bool> EightBit::MOS6502::Address_AbsoluteY() {
+std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteY() {
 	auto address = Address_Absolute();
 	const auto page = address.high;
 	address += Y();
-	return { address, address.high != page };
+	return { address, page };
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() {
 	return getWordPaged(0, Address_ZeroPageX());
 }
 
-std::pair<EightBit::register16_t, bool> EightBit::MOS6502::Address_IndirectIndexedY() {
+std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_IndirectIndexedY() {
 	auto address = Address_ZeroPageIndirect();
 	const auto page = address.high;
 	address += Y();
-	return { address, address.high != page };
+	return { address, page };
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_relative_byte() {
@@ -458,17 +458,19 @@ uint8_t EightBit::MOS6502::AM_ZeroPage() {
 }
 
 uint8_t EightBit::MOS6502::AM_AbsoluteX() {
-	const auto [address, paged] = Address_AbsoluteX();
-	if (UNLIKELY(paged))
-		addCycle();
-	return Processor::busRead(address);
+	const auto [address, page] = Address_AbsoluteX();
+	auto possible = getBytePaged(page, address.low);
+	if (UNLIKELY(page != address.high))
+		possible = Processor::busRead(address);
+	return possible;
 }
 
 uint8_t EightBit::MOS6502::AM_AbsoluteY() {
-	const auto [address, paged] = Address_AbsoluteY();
-	if (UNLIKELY(paged))
-		addCycle();
-	return Processor::busRead(address);
+	const auto[address, page] = Address_AbsoluteY();
+	auto possible = getBytePaged(page, address.low);
+	if (UNLIKELY(page != address.high))
+		possible = Processor::busRead(address);
+	return possible;
 }
 
 uint8_t EightBit::MOS6502::AM_ZeroPageX() {
@@ -484,10 +486,11 @@ uint8_t EightBit::MOS6502::AM_IndexedIndirectX() {
 }
 
 uint8_t EightBit::MOS6502::AM_IndirectIndexedY() {
-	const auto [address, paged] = Address_IndirectIndexedY();
-	if (UNLIKELY(paged))
-		addCycle();
-	return Processor::busRead(address);
+	const auto [address, page] = Address_IndirectIndexedY();
+	auto possible = getBytePaged(page, address.low);
+	if (page != address.high)
+		possible = Processor::busRead(address);
+	return possible;
 }
 
 ////

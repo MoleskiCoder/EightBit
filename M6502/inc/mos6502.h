@@ -84,10 +84,10 @@ namespace EightBit {
 		register16_t Address_Indirect();
 		uint8_t Address_ZeroPageX();
 		uint8_t Address_ZeroPageY();
-		std::pair<register16_t, bool> Address_AbsoluteX();
-		std::pair<register16_t, bool> Address_AbsoluteY();
+		std::pair<register16_t, uint8_t> Address_AbsoluteX();
+		std::pair<register16_t, uint8_t> Address_AbsoluteY();
 		register16_t Address_IndexedIndirectX();
-		std::pair<register16_t, bool> Address_IndirectIndexedY();
+		std::pair<register16_t, uint8_t> Address_IndirectIndexedY();
 		register16_t Address_relative_byte();
 
 		// Addressing modes, read
