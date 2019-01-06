@@ -134,7 +134,7 @@ namespace EightBit {
 		register16_t popWord(register16_t& stack) {
 			const auto high = pop(stack);
 			const auto low = pop(stack);
-			return { low, high };
+			return register16_t(low, high);
 		}
 
 		auto popWordS() { return popWord(S()); }

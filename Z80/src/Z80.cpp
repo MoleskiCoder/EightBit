@@ -74,7 +74,7 @@ void EightBit::Z80::handleINT() {
 			addCycles(13);
 			break;
 		case 2:
-			call(MEMPTR() = { BUS().DATA(), IV() });
+			call(MEMPTR() = register16_t(BUS().DATA(), IV()));
 			addCycles(19);
 			break;
 		default:
@@ -638,7 +638,7 @@ void EightBit::Z80::rld() {
 }
 
 void EightBit::Z80::writePort(const uint8_t port) {
-	MEMPTR() = BUS().ADDRESS() = { port, A() };
+	MEMPTR() = BUS().ADDRESS() = register16_t(port, A());
 	BUS().DATA() = A();
 	writePort();
 	++MEMPTR().low;
@@ -649,7 +649,7 @@ void EightBit::Z80::writePort() {
 }
 
 uint8_t EightBit::Z80::readPort(const uint8_t port) {
-	MEMPTR() = BUS().ADDRESS() = { port, A() };
+	MEMPTR() = BUS().ADDRESS() = register16_t(port, A());
 	++MEMPTR().low;
 	return readPort();
 }

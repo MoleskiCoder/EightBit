@@ -8,7 +8,7 @@ EightBit::register16_t EightBit::BigEndianProcessor::getWord() {
 	const auto high = busRead();
 	++BUS().ADDRESS();
 	const auto low = busRead();
-	return { low, high };
+	return register16_t(low, high);
 }
 
 void EightBit::BigEndianProcessor::setWord(const register16_t value) {
@@ -21,7 +21,7 @@ EightBit::register16_t EightBit::BigEndianProcessor::getWordPaged(const uint8_t 
 	const auto high = getBytePaged(page, offset);
 	++BUS().ADDRESS().low;
 	const auto low = busRead();
-	return { low, high };
+	return register16_t(low, high);
 }
 
 void EightBit::BigEndianProcessor::setWordPaged(const uint8_t page, const uint8_t offset, const register16_t value) {
@@ -33,7 +33,7 @@ void EightBit::BigEndianProcessor::setWordPaged(const uint8_t page, const uint8_
 EightBit::register16_t EightBit::BigEndianProcessor::fetchWord() {
 	const auto high = fetchByte();
 	const auto low = fetchByte();
-	return { low, high };
+	return register16_t(low, high);
 }
 
 void EightBit::BigEndianProcessor::pushWord(const register16_t value) {
@@ -44,13 +44,13 @@ void EightBit::BigEndianProcessor::pushWord(const register16_t value) {
 EightBit::register16_t EightBit::BigEndianProcessor::popWord() {
 	const auto high = pop();
 	const auto low = pop();
-	return { low, high };
+	return register16_t(low, high);
 }
 
 EightBit::register16_t EightBit::BigEndianProcessor::peekWord(const register16_t address) {
 	const auto high = BUS().peek(address);
 	const auto low = BUS().peek(address + 1);
-	return { low, high };
+	return register16_t(low, high);
 }
 
 void EightBit::BigEndianProcessor::pokeWord(const register16_t address, const register16_t value) {

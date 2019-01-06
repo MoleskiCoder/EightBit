@@ -499,7 +499,7 @@ void EightBit::MOS6502::branch(const int condition) {
 		const auto page = PC().high;
 		jump(destination);
 		if (UNLIKELY(PC().high != page))
-			Processor::busRead({ PC().low, page });
+			Processor::busRead(register16_t(PC().low, page));
 	}
 }
 

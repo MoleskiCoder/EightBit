@@ -621,7 +621,7 @@ EightBit::register16_t EightBit::mc6809::Address_relative_word() {
 }
 
 EightBit::register16_t EightBit::mc6809::Address_direct() {
-	return { fetchByte(), DP() };
+	return register16_t(fetchByte(), DP());
 }
 
 EightBit::register16_t EightBit::mc6809::Address_indexed() {

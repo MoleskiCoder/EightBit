@@ -248,7 +248,7 @@ void EightBit::Intel8080::xhtl() {
 }
 
 void EightBit::Intel8080::writePort(const uint8_t port) {
-	BUS().ADDRESS() = { port, A() };
+	BUS().ADDRESS() = register16_t(port, A());
 	BUS().DATA() = A();
 	writePort();
 }
@@ -258,7 +258,7 @@ void EightBit::Intel8080::writePort() {
 }
 
 uint8_t EightBit::Intel8080::readPort(const uint8_t port) {
-	BUS().ADDRESS() = { port, A() };
+	BUS().ADDRESS() = register16_t(port, A());
 	return readPort();
 }
 

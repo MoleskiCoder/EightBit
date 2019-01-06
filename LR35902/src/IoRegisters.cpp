@@ -130,7 +130,7 @@ void EightBit::GameBoy::IoRegisters::Bus_WrittenByte(EightBit::EventArgs) {
 	case SCX:
 		break;
 	case DMA:
-		m_dmaAddress = { 0, value };
+		m_dmaAddress = register16_t(0, value);
 		m_dmaTransferActive = true;
 		break;
 	case LY:		// R/O
