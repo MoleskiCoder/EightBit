@@ -58,13 +58,13 @@ void EightBit::MOS6502::handleRESET() {
 
 void EightBit::MOS6502::handleNMI() {
 	raise(HALT());
-	interrupt();
+	Processor::execute(0);
 	raise(NMI());
 }
 
 void EightBit::MOS6502::handleIRQ() {
 	raise(HALT());
-	interrupt();
+	Processor::execute(0);
 	raise(INT());
 }
 
@@ -97,7 +97,7 @@ int EightBit::MOS6502::execute() {
 
 	switch (opcode()) {
 
-	case 0x00:	fetchByte(); interrupt();											break;	// BRK (implied)
+	case 0x00:	fetchByte(); interrupt();									break;	// BRK (implied)
 	case 0x01:	A() = orr(A(), AM_IndexedIndirectX());						break;	// ORA (indexed indirect X)
 	case 0x02:																break;
 	case 0x03:	slo(AM_IndexedIndirectX());									break;	// *SLO (indexed indirect X)
