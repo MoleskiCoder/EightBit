@@ -71,7 +71,7 @@ namespace EightBit {
 		void handleSO();
 		void handleHALT();
 
-		void interrupt(uint8_t vector);
+		void interrupt();
 
 		virtual void push(uint8_t value) final;
 		virtual uint8_t pop() final;
@@ -144,7 +144,6 @@ namespace EightBit {
 		uint8_t andr(uint8_t operand, uint8_t data);
 		uint8_t asl(uint8_t value);
 		void bit(uint8_t operand, uint8_t data);
-		void brk();
 		void cmp(uint8_t first, uint8_t second);
 		uint8_t dec(uint8_t value);
 		uint8_t eorr(uint8_t operand, uint8_t data);

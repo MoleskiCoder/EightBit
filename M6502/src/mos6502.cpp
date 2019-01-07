@@ -48,34 +48,35 @@ void EightBit::MOS6502::handleSO() {
 
 void EightBit::MOS6502::handleHALT() {
 	Processor::execute(0xea);	// NOP
-	addCycles(2);
 }
 
 void EightBit::MOS6502::handleRESET() {
-	LittleEndianProcessor::handleRESET();
 	jump(getWordPaged(0xff, RSTvector));
-	addCycles(4);	// ?? TBC
+	raise(RESET());
 }
 
 
 void EightBit::MOS6502::handleNMI() {
+	raise(HALT());
+	interrupt();
 	raise(NMI());
-	interrupt(NMIvector);
-	addCycles(4);	// ?? TBC
 }
 
 void EightBit::MOS6502::handleIRQ() {
-	LittleEndianProcessor::handleIRQ();
-	interrupt(IRQvector);
-	addCycles(4);	// ?? TBC
+	raise(HALT());
+	interrupt();
+	raise(INT());
 }
 
-void EightBit::MOS6502::interrupt(uint8_t vector) {
-	raise(HALT());
+void EightBit::MOS6502::interrupt() {
+	const bool nmi = lowered(NMI());
+	const bool irq = lowered(IRQ());
+	const bool hardware = nmi || irq;
+	const bool software = !hardware;
 	pushWord(PC());
-	push(P());
+	push(P() | (software ? BF : 0));
 	setFlag(P(), IF);	// Disable IRQ
-	jump(getWordPaged(0xff, vector));
+	jump(getWordPaged(0xff, nmi ? NMIvector : IRQvector));
 }
 
 //
@@ -96,7 +97,7 @@ int EightBit::MOS6502::execute() {
 
 	switch (opcode()) {
 
-	case 0x00:	fetchByte(); brk();											break;	// BRK (implied)
+	case 0x00:	fetchByte(); interrupt();											break;	// BRK (implied)
 	case 0x01:	A() = orr(A(), AM_IndexedIndirectX());						break;	// ORA (indexed indirect X)
 	case 0x02:																break;
 	case 0x03:	slo(AM_IndexedIndirectX());									break;	// *SLO (indexed indirect X)
@@ -596,13 +597,6 @@ void EightBit::MOS6502::bit(const uint8_t operand, const uint8_t data) {
 	setFlag(P(), VF, data & VF);
 	adjustZero(operand & data);
 	adjustNegative(data);
-}
-
-void EightBit::MOS6502::brk() {
-	pushWord(PC());
-	php();
-	setFlag(P(), IF);
-	jump(getWordPaged(0xff, IRQvector));
 }
 
 void EightBit::MOS6502::cmp(const uint8_t first, const uint8_t second) {
