@@ -12,7 +12,6 @@ int main(int argc, char* argv[]) {
 
 #ifdef _DEBUG
 	configuration.setDebugMode(true);
-	configuration.setProfileMode(true);
 #endif
 
 	EightBit::TestHarness<Configuration, Board> harness(configuration);
