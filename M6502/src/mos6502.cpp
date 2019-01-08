@@ -21,13 +21,12 @@ void EightBit::MOS6502::powerOn() {
 int EightBit::MOS6502::step() {
 	resetCycles();
 	ExecutingInstruction.fire(*this);
-	if (LIKELY(powered())) {
+	if (LIKELY(powered() && raised(RDY()))) {
 		if (UNLIKELY(lowered(SO())))
 			handleSO();
+		lower(SYNC());	// Instruction fetch beginning
 		opcode() = fetchByte();
-		if (UNLIKELY(lowered(HALT())))
-			handleHALT();
-		else if (UNLIKELY(lowered(RESET())))
+		if (UNLIKELY(lowered(RESET())))
 			handleRESET();
 		else if (UNLIKELY(lowered(NMI())))
 			handleNMI();
@@ -46,10 +45,6 @@ void EightBit::MOS6502::handleSO() {
 	P() |= VF;
 }
 
-void EightBit::MOS6502::handleHALT() {
-	opcode() = 0xea;	// NOP
-}
-
 void EightBit::MOS6502::handleRESET() {
 	raise(RESET());
 	m_handlingRESET = true;
@@ -58,14 +53,12 @@ void EightBit::MOS6502::handleRESET() {
 
 
 void EightBit::MOS6502::handleNMI() {
-	raise(HALT());
 	raise(NMI());
 	m_handlingNMI = true;
 	opcode() = 0x00;	// BRK
 }
 
 void EightBit::MOS6502::handleIRQ() {
-	raise(HALT());
 	raise(INT());
 	m_handlingIRQ = true;
 	opcode() = 0x00;	// BRK
@@ -106,6 +99,8 @@ uint8_t EightBit::MOS6502::busRead() {
 //
 
 int EightBit::MOS6502::execute() { 
+
+	raise(SYNC());	// Instruction fetch has now completed
 
 	switch (opcode()) {
 

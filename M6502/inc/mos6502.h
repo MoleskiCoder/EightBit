@@ -43,7 +43,9 @@ namespace EightBit {
 		const auto& P() const { return p; }
 
 		auto& NMI() { return m_nmiLine; }	// In
-		auto& SO() { return m_soLine;  }	// In
+		auto& SO() { return m_soLine; }		// In
+		auto& SYNC() { return m_syncLine; }	// Out
+		auto& RDY() { return m_rdyLine; }	// In
 
 	protected:
 		virtual void handleRESET() final;
@@ -185,8 +187,10 @@ namespace EightBit {
 		uint8_t s = 0;		// stack pointer
 		uint8_t p = 0;		// processor status
 
-		PinLevel m_nmiLine = PinLevel::Low;
-		PinLevel m_soLine = PinLevel::Low;
+		PinLevel m_nmiLine = PinLevel::Low;		// Active low
+		PinLevel m_soLine = PinLevel::Low;		// Active low
+		PinLevel m_syncLine = PinLevel::Low;	// Active high
+		PinLevel m_rdyLine = PinLevel::Low;		// Active high
 
 		register16_t m_intermediate;
 
