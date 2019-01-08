@@ -76,6 +76,9 @@ namespace EightBit {
 		virtual void push(uint8_t value) final;
 		virtual uint8_t pop() final;
 
+		// Dummy stack push, used during RESET
+		void dummyPush(uint8_t value);
+
 		// Addressing modes
 
 		register16_t Address_Absolute();

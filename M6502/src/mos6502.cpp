@@ -72,17 +72,21 @@ void EightBit::MOS6502::handleIRQ() {
 }
 
 void EightBit::MOS6502::interrupt() {
-	uint8_t vector = RSTvector;
-	if (!m_handlingRESET) {
-		const bool nmi = m_handlingNMI;
-		const bool irq = m_handlingIRQ;
-		const bool hardware = nmi || irq;
-		const bool software = !hardware;
+	const bool reset = m_handlingRESET;
+	const bool nmi = m_handlingNMI;
+	const bool irq = m_handlingIRQ;
+	const bool hardware = nmi || irq || reset;
+	const bool software = !hardware;
+	if (reset) {
+		dummyPush(PC().high);
+		dummyPush(PC().low);
+		dummyPush(P());
+	} else {
 		pushWord(PC());
 		push(P() | (software ? BF : 0));
-		setFlag(P(), IF);	// Disable IRQ
-		vector = nmi ? NMIvector : IRQvector;
 	}
+	setFlag(P(), IF);	// Disable IRQ
+	const uint8_t vector = reset ? RSTvector : (nmi ? NMIvector : IRQvector);
 	jump(getWordPaged(0xff, vector));
 	m_handlingRESET = m_handlingNMI = m_handlingIRQ = false;
 }
@@ -390,6 +394,12 @@ void EightBit::MOS6502::push(uint8_t value) {
 
 uint8_t EightBit::MOS6502::pop() {
 	return getBytePaged(1, ++S());
+}
+
+void EightBit::MOS6502::dummyPush(const uint8_t value) {
+	addCycle();
+	BUS().DATA() = value;
+	BUS().ADDRESS() = register16_t(S()--, 1);
 }
 
 ////
