@@ -186,5 +186,9 @@ namespace EightBit {
 		PinLevel m_soLine = PinLevel::Low;
 
 		register16_t m_intermediate;
+
+		bool m_handlingRESET = false;
+		bool m_handlingNMI = false;
+		bool m_handlingIRQ = false;
 	};
 }

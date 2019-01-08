@@ -24,6 +24,7 @@ int EightBit::MOS6502::step() {
 	if (LIKELY(powered())) {
 		if (UNLIKELY(lowered(SO())))
 			handleSO();
+		opcode() = fetchByte();
 		if (UNLIKELY(lowered(HALT())))
 			handleHALT();
 		else if (UNLIKELY(lowered(RESET())))
@@ -32,8 +33,7 @@ int EightBit::MOS6502::step() {
 			handleNMI();
 		else if (UNLIKELY(lowered(IRQ()) && !interruptMasked()))
 			handleIRQ();
-		else
-			Processor::execute(fetchByte());
+		execute();
 	}
 	ExecutedInstruction.fire(*this);
 	return cycles();
@@ -47,36 +47,44 @@ void EightBit::MOS6502::handleSO() {
 }
 
 void EightBit::MOS6502::handleHALT() {
-	Processor::execute(0xea);	// NOP
+	opcode() = 0xea;	// NOP
 }
 
 void EightBit::MOS6502::handleRESET() {
-	jump(getWordPaged(0xff, RSTvector));
 	raise(RESET());
+	m_handlingRESET = true;
+	opcode() = 0x00;	// BRK
 }
 
 
 void EightBit::MOS6502::handleNMI() {
 	raise(HALT());
-	Processor::execute(0);
 	raise(NMI());
+	m_handlingNMI = true;
+	opcode() = 0x00;	// BRK
 }
 
 void EightBit::MOS6502::handleIRQ() {
 	raise(HALT());
-	Processor::execute(0);
 	raise(INT());
+	m_handlingIRQ = true;
+	opcode() = 0x00;	// BRK
 }
 
 void EightBit::MOS6502::interrupt() {
-	const bool nmi = lowered(NMI());
-	const bool irq = lowered(IRQ());
-	const bool hardware = nmi || irq;
-	const bool software = !hardware;
-	pushWord(PC());
-	push(P() | (software ? BF : 0));
-	setFlag(P(), IF);	// Disable IRQ
-	jump(getWordPaged(0xff, nmi ? NMIvector : IRQvector));
+	uint8_t vector = RSTvector;
+	if (!m_handlingRESET) {
+		const bool nmi = m_handlingNMI;
+		const bool irq = m_handlingIRQ;
+		const bool hardware = nmi || irq;
+		const bool software = !hardware;
+		pushWord(PC());
+		push(P() | (software ? BF : 0));
+		setFlag(P(), IF);	// Disable IRQ
+		vector = nmi ? NMIvector : IRQvector;
+	}
+	jump(getWordPaged(0xff, vector));
+	m_handlingRESET = m_handlingNMI = m_handlingIRQ = false;
 }
 
 //
