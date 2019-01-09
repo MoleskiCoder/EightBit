@@ -26,7 +26,7 @@ EightBit::register16_t& EightBit::Intel8080::HL() {
 void EightBit::Intel8080::handleRESET() {
 	IntelProcessor::handleRESET();
 	di();
-	addCycles(3);
+	tick(3);
 }
 
 
@@ -37,7 +37,7 @@ void EightBit::Intel8080::handleINT() {
 		di();
 		Processor::execute(BUS().DATA());
 	}
-	addCycles(3);
+	tick(3);
 }
 
 void EightBit::Intel8080::di() {
@@ -308,7 +308,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 		case 0:	// Relative jumps and assorted ops
 			switch (y) {
 			case 0:	// NOP
-				addCycles(4);
+				tick(4);
 				break;
 			}
 			break;
@@ -316,11 +316,11 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			switch (q) {
 			case 0: // LD rp,nn
 				RP(p) = fetchWord();
-				addCycles(10);
+				tick(10);
 				break;
 			case 1:	// ADD HL,rp
 				add(RP(p));
-				addCycles(11);
+				tick(11);
 				break;
 			default:
 				UNREACHABLE;
@@ -332,21 +332,21 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 				switch (p) {
 				case 0:	// LD (BC),A
 					BUS().write(BC(), A());
-					addCycles(7);
+					tick(7);
 					break;
 				case 1:	// LD (DE),A
 					BUS().write(DE(), A());
-					addCycles(7);
+					tick(7);
 					break;
 				case 2:	// LD (nn),HL
 					BUS().ADDRESS() = fetchWord();
 					setWord(HL());
-					addCycles(16);
+					tick(16);
 					break;
 				case 3: // LD (nn),A
 					BUS().ADDRESS() = fetchWord();
 					BUS().write(A());
-					addCycles(13);
+					tick(13);
 					break;
 				default:
 					UNREACHABLE;
@@ -356,21 +356,21 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 				switch (p) {
 				case 0:	// LD A,(BC)
 					A() = BUS().read(BC());
-					addCycles(7);
+					tick(7);
 					break;
 				case 1:	// LD A,(DE)
 					A() = BUS().read(DE());
-					addCycles(7);
+					tick(7);
 					break;
 				case 2:	// LD HL,(nn)
 					BUS().ADDRESS() = fetchWord();
 					HL() = getWord();
-					addCycles(16);
+					tick(16);
 					break;
 				case 3:	// LD A,(nn)
 					BUS().ADDRESS() = fetchWord();
 					A() = BUS().read();
-					addCycles(13);
+					tick(13);
 					break;
 				default:
 					UNREACHABLE;
@@ -391,27 +391,27 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			default:
 				UNREACHABLE;
 			}
-			addCycles(6);
+			tick(6);
 			break;
 		case 4: { // 8-bit INC
 			auto operand = R(y);
 			increment(operand);
 			R(y, operand);
-			addCycles(4);
+			tick(4);
 			break;
 		} case 5: {	// 8-bit DEC
 			auto operand = R(y);
 			decrement(operand);
 			R(y, operand);
-			addCycles(4);
+			tick(4);
 			if (UNLIKELY(y == 6))
-				addCycles(7);
+				tick(7);
 			break;
 		} case 6:	// 8-bit load immediate
 			R(y, fetchByte());
-			addCycles(7);
+			tick(7);
 			if (UNLIKELY(y == 6))
-				addCycles(3);
+				tick(3);
 			break;
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
@@ -442,7 +442,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			default:
 				UNREACHABLE;
 			}
-			addCycles(4);
+			tick(4);
 			break;
 		default:
 			UNREACHABLE;
@@ -454,9 +454,9 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 		} else {
 			R(y, R(z));
 			if (UNLIKELY((y == 6) || (z == 6)))	// M operations
-				addCycles(3);
+				tick(3);
 		}
-		addCycles(4);
+		tick(4);
 		break;
 	case 2:	// Operate on accumulator and register/memory location
 		switch (y) {
@@ -487,36 +487,36 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 		default:
 			UNREACHABLE;
 		}
-		addCycles(4);
+		tick(4);
 		if (UNLIKELY(z == 6))
-			addCycles(3);
+			tick(3);
 		break;
 	case 3:
 		switch (z) {
 		case 0:	// Conditional return
 			if (returnConditionalFlag(y))
-				addCycles(6);
-			addCycles(5);
+				tick(6);
+			tick(5);
 			break;
 		case 1:	// POP & various ops
 			switch (q) {
 			case 0:	// POP rp2[p]
 				RP2(p) = popWord();
-				addCycles(10);
+				tick(10);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// RET
 					ret();
-					addCycles(10);
+					tick(10);
 					break;
 				case 2:	// JP HL
 					jump(HL());
-					addCycles(4);
+					tick(4);
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL();
-					addCycles(4);
+					tick(4);
 					break;
 				}
 				break;
@@ -526,56 +526,56 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			break;
 		case 2:	// Conditional jump
 			jumpConditionalFlag(y);
-			addCycles(10);
+			tick(10);
 			break;
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0: // JP nn
 				jump(fetchWord());
-				addCycles(10);
+				tick(10);
 				break;
 			case 2:	// OUT (n),A
 				writePort(fetchByte());
-				addCycles(11);
+				tick(11);
 				break;
 			case 3:	// IN A,(n)
 				A() = readPort(fetchByte());
-				addCycles(11);
+				tick(11);
 				break;
 			case 4:	// EX (SP),HL
 				xhtl();
-				addCycles(19);
+				tick(19);
 				break;
 			case 5:	// EX DE,HL
 				std::swap(DE(), HL());
-				addCycles(4);
+				tick(4);
 				break;
 			case 6:	// DI
 				di();
-				addCycles(4);
+				tick(4);
 				break;
 			case 7:	// EI
 				ei();
-				addCycles(4);
+				tick(4);
 				break;
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
 			if (callConditionalFlag(y))
-				addCycles(7);
-			addCycles(10);
+				tick(7);
+			tick(10);
 			break;
 		case 5:	// PUSH & various ops
 			switch (q) {
 			case 0:	// PUSH rp2[p]
 				pushWord(RP2(p));
-				addCycles(11);
+				tick(11);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
 					call(fetchWord());
-					addCycles(17);
+					tick(17);
 					break;
 				}
 				break;
@@ -612,11 +612,11 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			default:
 				UNREACHABLE;
 			}
-			addCycles(7);
+			tick(7);
 			break;
 		case 7:	// Restart: RST y * 8
 			restart(y << 3);
-			addCycles(11);
+			tick(11);
 			break;
 		default:
 			UNREACHABLE;

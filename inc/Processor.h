@@ -5,6 +5,7 @@
 #include "Chip.h"
 #include "Bus.h"
 #include "Register.h"
+#include "Signal.h"
 
 #include "EightBitCompilerDefinitions.h"
 
@@ -16,6 +17,8 @@ namespace EightBit {
 		[[nodiscard]] static int8_t signExtend(int b, uint8_t x);
 
 		~Processor() {};
+
+		Signal<EventArgs> Ticked;
 
 		[[nodiscard]] auto& PC() noexcept { return m_pc; }
 
@@ -106,8 +109,8 @@ namespace EightBit {
 		virtual void ret();
 
 		void resetCycles() noexcept { m_cycles = 0; }
-		void addCycles(const int extra) noexcept { m_cycles += extra; }
-		void addCycle() noexcept { ++m_cycles;  }
+		void tick(const int extra) { for (int i = 0; i < extra; ++i) tick(); }
+		void tick() { ++m_cycles;  	Ticked.fire(EventArgs::empty()); }
 
 	private:
 		Bus& m_bus;

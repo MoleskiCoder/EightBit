@@ -49,7 +49,7 @@ void EightBit::Z80::powerOn() {
 void EightBit::Z80::handleRESET() {
 	IntelProcessor::handleRESET();
 	di();
-	addCycles(3);
+	tick(3);
 }
 
 void EightBit::Z80::handleNMI() {
@@ -57,7 +57,7 @@ void EightBit::Z80::handleNMI() {
 	raise(HALT());
 	IFF1() = false;
 	restart(0x66);
-	addCycles(13);
+	tick(13);
 }
 
 void EightBit::Z80::handleINT() {
@@ -71,11 +71,11 @@ void EightBit::Z80::handleINT() {
 			break;
 		case 1:
 			restart(7 << 3);
-			addCycles(13);
+			tick(13);
 			break;
 		case 2:
 			call(MEMPTR() = register16_t(BUS().DATA(), IV()));
-			addCycles(19);
+			tick(19);
 			break;
 		default:
 			UNREACHABLE;
@@ -758,24 +758,24 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 			UNREACHABLE;
 		}
 		adjustSZP<Z80>(F(), operand);
-		addCycles(8);
+		tick(8);
 		break;
 	} case 1:	// BIT y, r[z]
-		addCycles(8);
+		tick(8);
 		bit(y, operand);
 		if (LIKELY(direct)) {
 			adjustXY<Z80>(F(), operand);
 		} else {
 			adjustXY<Z80>(F(), MEMPTR().high);
-			addCycles(4);
+			tick(4);
 		}
 		break;
 	case 2:	// RES y, r[z]
-		addCycles(8);
+		tick(8);
 		operand = res(y, operand);
 		break;
 	case 3:	// SET y, r[z]
-		addCycles(8);
+		tick(8);
 		operand = set(y, operand);
 		break;
 	default:
@@ -785,11 +785,11 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		if (LIKELY(!m_displaced)) {
 			R(z, operand);
 			if (UNLIKELY(memoryZ))
-				addCycles(7);
+				tick(7);
 		} else {
 			BUS().write(operand);
 			R2(z, operand);
-			addCycles(15);
+			tick(15);
 		}
 	}
 }
@@ -810,7 +810,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 	switch (x) {
 	case 0:
 	case 3:	// Invalid instruction, equivalent to NONI followed by NOP
-		addCycles(8);
+		tick(8);
 		break;
 	case 1:
 		switch (z) {
@@ -821,7 +821,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				R(y, BUS().DATA());
 			adjustSZPXY<Z80>(F(), BUS().DATA());
 			clearFlag(F(), NF | HC);
-			addCycles(12);
+			tick(12);
 			break;
 		case 1:	// Output to port with 16-bit address
 			(MEMPTR() = BUS().ADDRESS() = BC())++;
@@ -830,7 +830,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			else				// OUT (C),0
 				BUS().DATA() = 0;
 			writePort();
-			addCycles(12);
+			tick(12);
 			break;
 		case 2:	// 16-bit add/subtract with carry
 			switch (q) {
@@ -843,7 +843,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			default:
 				UNREACHABLE;
 			}
-			addCycles(15);
+			tick(15);
 			break;
 		case 3:	// Retrieve/store register pair from/to immediate address
 			BUS().ADDRESS() = fetchWord();
@@ -857,11 +857,11 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			default:
 				UNREACHABLE;
 			}
-			addCycles(20);
+			tick(20);
 			break;
 		case 4:	// Negate accumulator
 			neg();
-			addCycles(8);
+			tick(8);
 			break;
 		case 5:	// Return from interrupt
 			switch (y) {
@@ -872,7 +872,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				retn();	// RETN
 				break;
 			}
-			addCycles(14);
+			tick(14);
 			break;
 		case 6:	// Set interrupt mode
 			switch (y) {
@@ -893,41 +893,41 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			default:
 				UNREACHABLE;
 			}
-			addCycles(8);
+			tick(8);
 			break;
 		case 7:	// Assorted ops
 			switch (y) {
 			case 0:	// LD I,A
 				IV() = A();
-				addCycles(9);
+				tick(9);
 				break;
 			case 1:	// LD R,A
 				REFRESH() = A();
-				addCycles(9);
+				tick(9);
 				break;
 			case 2:	// LD A,I
 				adjustSZXY<Z80>(F(), A() = IV());
 				clearFlag(F(), NF | HC);
 				setFlag(F(), PF, IFF2());
-				addCycles(9);
+				tick(9);
 				break;
 			case 3:	// LD A,R
 				adjustSZXY<Z80>(F(), A() = REFRESH());
 				clearFlag(F(), NF | HC);
 				setFlag(F(), PF, IFF2());
-				addCycles(9);
+				tick(9);
 				break;
 			case 4:	// RRD
 				rrd();
-				addCycles(18);
+				tick(18);
 				break;
 			case 5:	// RLD
 				rld();
-				addCycles(18);
+				tick(18);
 				break;
 			case 6:	// NOP
 			case 7:	// NOP
-				addCycles(4);
+				tick(4);
 				break;
 			default:
 				UNREACHABLE;
@@ -951,14 +951,14 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				if (LIKELY(ldir())) {
 					MEMPTR() = --PC();
 					--PC();
-					addCycles(5);
+					tick(5);
 				}
 				break;
 			case 7:	// LDDR
 				if (LIKELY(lddr())) {
 					MEMPTR() = --PC();
 					--PC();
-					addCycles(5);
+					tick(5);
 				}
 				break;
 			}
@@ -975,14 +975,14 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				if (LIKELY(cpir())) {
 					MEMPTR() = --PC();
 					--PC();
-					addCycles(5);
+					tick(5);
 				}
 				break;
 			case 7:	// CPDR
 				if (LIKELY(cpdr())) {
 					MEMPTR() = --PC();
 					--PC();
-					addCycles(5);
+					tick(5);
 				} else {
 					MEMPTR() = PC() - 2;
 				}
@@ -1000,13 +1000,13 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			case 6:	// INIR
 				if (LIKELY(inir())) {
 					PC() -= 2;
-					addCycles(5);
+					tick(5);
 				}
 				break;
 			case 7:	// INDR
 				if (LIKELY(indr())) {
 					PC() -= 2;
-					addCycles(5);
+					tick(5);
 				}
 				break;
 			}
@@ -1022,19 +1022,19 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			case 6:	// OTIR
 				if (LIKELY(otir())) {
 					PC() -= 2;
-					addCycles(5);
+					tick(5);
 				}
 				break;
 			case 7:	// OTDR
 				if (LIKELY(otdr())) {
 					PC() -= 2;
-					addCycles(5);
+					tick(5);
 				}
 				break;
 			}
 			break;
 		}
-		addCycles(16);
+		tick(16);
 		break;
 	}
 }
@@ -1058,28 +1058,28 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 0:	// Relative jumps and assorted ops
 			switch (y) {
 			case 0:	// NOP
-				addCycles(4);
+				tick(4);
 				break;
 			case 1:	// EX AF AF'
 				exxAF();
-				addCycles(4);
+				tick(4);
 				break;
 			case 2:	// DJNZ d
 				if (LIKELY(jrConditional(--B())))
-					addCycles(5);
-				addCycles(8);
+					tick(5);
+				tick(8);
 				break;
 			case 3:	// JR d
 				jr(fetchByte());
-				addCycles(12);
+				tick(12);
 				break;
 			case 4: // JR cc,d
 			case 5:
 			case 6:
 			case 7:
 				if (UNLIKELY(jrConditionalFlag(y - 4)))
-					addCycles(5);
-				addCycles(5);
+					tick(5);
+				tick(5);
 				break;
 			default:
 				UNREACHABLE;
@@ -1089,11 +1089,11 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			switch (q) {
 			case 0: // LD rp,nn
 				RP(p) = fetchWord();
-				addCycles(10);
+				tick(10);
 				break;
 			case 1:	// ADD HL,rp
 				add(RP(p));
-				addCycles(11);
+				tick(11);
 				break;
 			default:
 				UNREACHABLE;
@@ -1107,24 +1107,24 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					(MEMPTR() = BUS().ADDRESS() = BC())++;
 					MEMPTR().high = BUS().DATA() = A();
 					BUS().write();
-					addCycles(7);
+					tick(7);
 					break;
 				case 1:	// LD (DE),A
 					(MEMPTR() = BUS().ADDRESS() = DE())++;
 					MEMPTR().high = BUS().DATA() = A();
 					BUS().write();
-					addCycles(7);
+					tick(7);
 					break;
 				case 2:	// LD (nn),HL
 					BUS().ADDRESS() = fetchWord();
 					setWord(HL2());
-					addCycles(16);
+					tick(16);
 					break;
 				case 3: // LD (nn),A
 					(MEMPTR() = BUS().ADDRESS() = fetchWord())++;
 					MEMPTR().high = BUS().DATA() = A();
 					BUS().write();
-					addCycles(13);
+					tick(13);
 					break;
 				default:
 					UNREACHABLE;
@@ -1135,22 +1135,22 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				case 0:	// LD A,(BC)
 					(MEMPTR() = BUS().ADDRESS() = BC())++;
 					A() = BUS().read();
-					addCycles(7);
+					tick(7);
 					break;
 				case 1:	// LD A,(DE)
 					(MEMPTR() = BUS().ADDRESS() = DE())++;
 					A() = BUS().read();
-					addCycles(7);
+					tick(7);
 					break;
 				case 2:	// LD HL,(nn)
 					BUS().ADDRESS() = fetchWord();
 					HL2() = getWord();
-					addCycles(16);
+					tick(16);
 					break;
 				case 3:	// LD A,(nn)
 					(MEMPTR() = BUS().ADDRESS() = fetchWord())++;
 					A() = BUS().read();
-					addCycles(13);
+					tick(13);
 					break;
 				default:
 					UNREACHABLE;
@@ -1171,31 +1171,31 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			default:
 				UNREACHABLE;
 			}
-			addCycles(6);
+			tick(6);
 			break;
 		case 4:	// 8-bit INC
 			if (UNLIKELY(m_displaced && memoryY))
 				fetchDisplacement();
 			R(y, increment(R(y)));
-			addCycles(4);
+			tick(4);
 			break;
 		case 5:	// 8-bit DEC
 			if (UNLIKELY(memoryY)) {
-				addCycles(7);
+				tick(7);
 				if (UNLIKELY(m_displaced))
 					fetchDisplacement();
 			}
 			R(y, decrement(R(y)));
-			addCycles(4);
+			tick(4);
 			break;
 		case 6:	// 8-bit load immediate
 			if (UNLIKELY(memoryY)) {
-				addCycles(3);
+				tick(3);
 				if (UNLIKELY(m_displaced))
 					fetchDisplacement();
 			}
 			R(y, fetchByte());	// LD r,n
-			addCycles(7);
+			tick(7);
 			break;
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
@@ -1226,7 +1226,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			default:
 				UNREACHABLE;
 			}
-			addCycles(4);
+			tick(4);
 			break;
 		default:
 			UNREACHABLE;
@@ -1266,15 +1266,15 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			if (LIKELY(normal))
 				R(y, R(z));
 			if (UNLIKELY(memoryY || memoryZ))	// M operations
-				addCycles(3);
+				tick(3);
 		} else { 	// Exception (replaces LD (HL), (HL))
 			halt();
 		}
-		addCycles(4);
+		tick(4);
 		break;
 	case 2: { // Operate on accumulator and register/memory location
 		if (UNLIKELY(memoryZ)) {
-			addCycles(3);
+			tick(3);
 			if (UNLIKELY(m_displaced))
 				fetchDisplacement();
 		}
@@ -1307,39 +1307,39 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		default:
 			UNREACHABLE;
 		}
-		addCycles(4);
+		tick(4);
 		break;
 	}
 	case 3:
 		switch (z) {
 		case 0:	// Conditional return
 			if (UNLIKELY(returnConditionalFlag(y)))
-				addCycles(6);
-			addCycles(5);
+				tick(6);
+			tick(5);
 			break;
 		case 1:	// POP & various ops
 			switch (q) {
 			case 0:	// POP rp2[p]
 				RP2(p) = popWord();
-				addCycles(10);
+				tick(10);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// RET
 					ret();
-					addCycles(10);
+					tick(10);
 					break;
 				case 1:	// EXX
 					exx();
-					addCycles(4);
+					tick(4);
 					break;
 				case 2:	// JP HL
 					jump(HL2());
-					addCycles(4);
+					tick(4);
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL2();
-					addCycles(4);
+					tick(4);
 					break;
 				default:
 					UNREACHABLE;
@@ -1351,13 +1351,13 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			break;
 		case 2:	// Conditional jump
 			jumpConditionalFlag(y);
-			addCycles(10);
+			tick(10);
 			break;
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0:	// JP nn
 				jump(MEMPTR() = fetchWord());
-				addCycles(10);
+				tick(10);
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
@@ -1368,27 +1368,27 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				break;
 			case 2:	// OUT (n),A
 				writePort(fetchByte());
-				addCycles(11);
+				tick(11);
 				break;
 			case 3:	// IN A,(n)
 				A() = readPort(fetchByte());
-				addCycles(11);
+				tick(11);
 				break;
 			case 4:	// EX (SP),HL
 				xhtl();
-				addCycles(19);
+				tick(19);
 				break;
 			case 5:	// EX DE,HL
 				std::swap(DE(), HL());
-				addCycles(4);
+				tick(4);
 				break;
 			case 6:	// DI
 				di();
-				addCycles(4);
+				tick(4);
 				break;
 			case 7:	// EI
 				ei();
-				addCycles(4);
+				tick(4);
 				break;
 			default:
 				UNREACHABLE;
@@ -1396,20 +1396,20 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
 			if (UNLIKELY(callConditionalFlag(y)))
-				addCycles(7);
-			addCycles(10);
+				tick(7);
+			tick(10);
 			break;
 		case 5:	// PUSH & various ops
 			switch (q) {
 			case 0:	// PUSH rp2[p]
 				pushWord(RP2(p));
-				addCycles(11);
+				tick(11);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
 					call(MEMPTR() = fetchWord());
-					addCycles(17);
+					tick(17);
 					break;
 				case 1:	// DD prefix
 					m_displaced = m_prefixDD = true;
@@ -1464,12 +1464,12 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			default:
 				UNREACHABLE;
 			}
-			addCycles(7);
+			tick(7);
 			break;
 		}
 		case 7:	// Restart: RST y * 8
 			restart(y << 3);
-			addCycles(11);
+			tick(11);
 			break;
 		default:
 			UNREACHABLE;

@@ -295,7 +295,7 @@ namespace EightBit {
 
 		void branchLong(const int condition) {
 			if (branch(Address_relative_word(), condition))
-				addCycle();
+				tick();
 		}
 
 		// Miscellaneous

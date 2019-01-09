@@ -23,7 +23,7 @@ int EightBit::MOS6502::step() {
 	resetCycles();
 	ExecutingInstruction.fire(*this);
 	if (LIKELY(powered())) {
-		addCycle();
+		tick();
 		if (UNLIKELY(lowered(SO())))
 			handleSO();
 		if (LIKELY(raised(RDY()))) {
@@ -91,12 +91,12 @@ void EightBit::MOS6502::interrupt() {
 //
 
 void EightBit::MOS6502::busWrite() {
-	addCycle();
+	tick();
 	Processor::busWrite();
 }
 
 uint8_t EightBit::MOS6502::busRead() {
-	addCycle();
+	tick();
 	return Processor::busRead();
 }
 
@@ -396,7 +396,7 @@ uint8_t EightBit::MOS6502::pop() {
 }
 
 void EightBit::MOS6502::dummyPush(const uint8_t value) {
-	addCycle();
+	tick();
 	BUS().DATA() = value;
 	BUS().ADDRESS() = register16_t(S()--, 1);
 }

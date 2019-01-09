@@ -30,7 +30,7 @@ void EightBit::GameBoy::LR35902::handleRESET() {
 	IntelProcessor::handleRESET();
 	di();
 	SP() = Mask16 - 1;
-	addCycles(4);
+	tick(4);
 }
 
 void EightBit::GameBoy::LR35902::handleINT() {
@@ -38,7 +38,7 @@ void EightBit::GameBoy::LR35902::handleINT() {
 	raise(HALT());
 	di();
 	restart(BUS().DATA());
-	addCycles(4);
+	tick(4);
 }
 
 void EightBit::GameBoy::LR35902::di() {
@@ -393,29 +393,29 @@ void EightBit::GameBoy::LR35902::executeCB(const int x, const int y, const int z
 		default:
 			UNREACHABLE;
 		}
-		addCycles(2);
+		tick(2);
 		R(z, operand);
 		adjustZero<LR35902>(F(), operand);
 		if (UNLIKELY(z == 6))
-			addCycles(2);
+			tick(2);
 		break;
 	} case 1:	// BIT y, r[z]
 		bit(y, R(z));
-		addCycles(2);
+		tick(2);
 		if (UNLIKELY(z == 6))
-			addCycles(2);
+			tick(2);
 		break;
 	case 2:	// RES y, r[z]
 		R(z, res(y, R(z)));
-		addCycles(2);
+		tick(2);
 		if (UNLIKELY(z == 6))
-			addCycles(2);
+			tick(2);
 		break;
 	case 3:	// SET y, r[z]
 		R(z, set(y, R(z)));
-		addCycles(2);
+		tick(2);
 		if (UNLIKELY(z == 6))
-			addCycles(2);
+			tick(2);
 		break;
 	default:
 		UNREACHABLE;
@@ -429,28 +429,28 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 		case 0:	// Relative jumps and assorted ops
 			switch (y) {
 			case 0:	// NOP
-				addCycle();
+				tick();
 				break;
 			case 1:	// GB: LD (nn),SP
 				BUS().ADDRESS() = fetchWord();
 				setWord(SP());
-				addCycles(5);
+				tick(5);
 				break;
 			case 2:	// GB: STOP
 				stop();
-				addCycle();
+				tick();
 				break;
 			case 3:	// JR d
 				jr(fetchByte());
-				addCycles(4);
+				tick(4);
 				break;
 			case 4: // JR cc,d
 			case 5:
 			case 6:
 			case 7:
 				if (jrConditionalFlag(y - 4))
-					addCycle();
-				addCycles(2);
+					tick();
+				tick(2);
 				break;
 			default:
 				UNREACHABLE;
@@ -460,11 +460,11 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			switch (q) {
 			case 0: // LD rp,nn
 				RP(p) = fetchWord();
-				addCycles(3);
+				tick(3);
 				break;
 			case 1:	// ADD HL,rp
 				add(HL(), RP(p));
-				addCycles(2);
+				tick(2);
 				break;
 			default:
 				UNREACHABLE;
@@ -476,19 +476,19 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				switch (p) {
 				case 0:	// LD (BC),A
 					BUS().write(BC(), A());
-					addCycles(2);
+					tick(2);
 					break;
 				case 1:	// LD (DE),A
 					BUS().write(DE(), A());
-					addCycles(2);
+					tick(2);
 					break;
 				case 2:	// GB: LDI (HL),A
 					BUS().write(HL()++, A());
-					addCycles(2);
+					tick(2);
 					break;
 				case 3: // GB: LDD (HL),A
 					BUS().write(HL()--, A());
-					addCycles(2);
+					tick(2);
 					break;
 				default:
 					UNREACHABLE;
@@ -498,19 +498,19 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				switch (p) {
 				case 0:	// LD A,(BC)
 					A() = BUS().read(BC());
-					addCycles(2);
+					tick(2);
 					break;
 				case 1:	// LD A,(DE)
 					A() = BUS().read(DE());
-					addCycles(2);
+					tick(2);
 					break;
 				case 2:	// GB: LDI A,(HL)
 					A() = BUS().read(HL()++);
-					addCycles(2);
+					tick(2);
 					break;
 				case 3:	// GB: LDD A,(HL)
 					A() = BUS().read(HL()--);
-					addCycles(2);
+					tick(2);
 					break;
 				default:
 					UNREACHABLE;
@@ -531,27 +531,27 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			default:
 				UNREACHABLE;
 			}
-			addCycles(2);
+			tick(2);
 			break;
 		case 4: { // 8-bit INC
 			auto operand = R(y);
 			increment(operand);
 			R(y, operand);
-			addCycle();
+			tick();
 			if (UNLIKELY(y == 6))
-				addCycles(2);
+				tick(2);
 			break;
 		} case 5: {	// 8-bit DEC
 			auto operand = R(y);
 			decrement(operand);
 			R(y, operand);
-			addCycle();
+			tick();
 			if (UNLIKELY(y == 6))
-				addCycles(2);
+				tick(2);
 			break;
 		} case 6:	// 8-bit load immediate
 			R(y, fetchByte());	// LD r,n
-			addCycles(2);
+			tick(2);
 			break;
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
@@ -582,7 +582,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			default:
 				UNREACHABLE;
 			}
-			addCycle();
+			tick();
 			break;
 		default:
 			UNREACHABLE;
@@ -594,9 +594,9 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 		} else {
 			R(y, R(z));
 			if (UNLIKELY((y == 6) || (z == 6))) // M operations
-				addCycle();
+				tick();
 		}
-		addCycle();
+		tick();
 		break;
 	case 2:	// Operate on accumulator and register/memory location
 		switch (y) {
@@ -627,9 +627,9 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 		default:
 			UNREACHABLE;
 		}
-		addCycle();
+		tick();
 		if (UNLIKELY(z == 6))
-			addCycle();
+			tick();
 		break;
 	case 3:
 		switch (z) {
@@ -640,12 +640,12 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			case 2:
 			case 3:
 				if (returnConditionalFlag(y))
-					addCycles(3);
-				addCycles(2);
+					tick(3);
+				tick(2);
 				break;
 			case 4:	// GB: LD (FF00 + n),A
 				BUS().write(IoRegisters::BASE + fetchByte(), A());
-				addCycles(3);
+				tick(3);
 				break;
 			case 5: { // GB: ADD SP,dd
 					const auto before = SP().word;
@@ -657,11 +657,11 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 					setFlag(F(), CF, carried & Bit8);
 					setFlag(F(), HC, carried & Bit4);
 				}
-				addCycles(4);
+				tick(4);
 				break;
 			case 6:	// GB: LD A,(FF00 + n)
 				A() = BUS().read(IoRegisters::BASE + fetchByte());
-				addCycles(3);
+				tick(3);
 				break;
 			case 7: { // GB: LD HL,SP + dd
 					const auto before = SP().word;
@@ -673,7 +673,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 					setFlag(F(), CF, carried & Bit8);
 					setFlag(F(), HC, carried & Bit4);
 				}
-				addCycles(3);
+				tick(3);
 				break;
 			default:
 				UNREACHABLE;
@@ -683,25 +683,25 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			switch (q) {
 			case 0:	// POP rp2[p]
 				RP2(p) = popWord();
-				addCycles(3);
+				tick(3);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// RET
 					ret();
-					addCycles(4);
+					tick(4);
 					break;
 				case 1:	// GB: RETI
 					reti();
-					addCycles(4);
+					tick(4);
 					break;
 				case 2:	// JP HL
 					jump(HL());
-					addCycle();
+					tick();
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL();
-					addCycles(2);
+					tick(2);
 					break;
 				default:
 					UNREACHABLE;
@@ -718,25 +718,25 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			case 2:
 			case 3:
 				jumpConditionalFlag(y);
-				addCycles(3);
+				tick(3);
 				break;
 			case 4:	// GB: LD (FF00 + C),A
 				BUS().write(IoRegisters::BASE + C(), A());
-				addCycles(2);
+				tick(2);
 				break;
 			case 5:	// GB: LD (nn),A
 				BUS().ADDRESS() = MEMPTR() = fetchWord();
 				BUS().write(A());
-				addCycles(4);
+				tick(4);
 				break;
 			case 6:	// GB: LD A,(FF00 + C)
 				A() = BUS().read(IoRegisters::BASE + C());
-				addCycles(2);
+				tick(2);
 				break;
 			case 7:	// GB: LD A,(nn)
 				BUS().ADDRESS() = MEMPTR() = fetchWord();
 				A() = BUS().read();
-				addCycles(4);
+				tick(4);
 				break;
 			default:
 				UNREACHABLE;
@@ -746,7 +746,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			switch (y) {
 			case 0:	// JP nn
 				jump(MEMPTR() = fetchWord());
-				addCycles(4);
+				tick(4);
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
@@ -754,30 +754,30 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				break;
 			case 6:	// DI
 				di();
-				addCycle();
+				tick();
 				break;
 			case 7:	// EI
 				ei();
-				addCycle();
+				tick();
 				break;
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
 			if (callConditionalFlag(y))
-				addCycles(3);
-			addCycles(3);
+				tick(3);
+			tick(3);
 			break;
 		case 5:	// PUSH & various ops
 			switch (q) {
 			case 0:	// PUSH rp2[p]
 				pushWord(RP2(p));
-				addCycles(4);
+				tick(4);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
 					call(MEMPTR() = fetchWord());
-					addCycles(6);
+					tick(6);
 					break;
 				}
 				break;
@@ -814,11 +814,11 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			default:
 				UNREACHABLE;
 			}
-			addCycles(2);
+			tick(2);
 			break;
 		case 7:	// Restart: RST y * 8
 			restart(y << 3);
-			addCycles(4);
+			tick(4);
 			break;
 		default:
 			UNREACHABLE;
