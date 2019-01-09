@@ -16,6 +16,7 @@ void EightBit::MOS6502::powerOn() {
 
 	raise(NMI());
 	raise(SO());
+	raise(RDY());
 }
 
 int EightBit::MOS6502::step() {
