@@ -71,7 +71,6 @@ namespace EightBit {
 
 		void handleNMI();
 		void handleSO();
-		void handleHALT();
 
 		void interrupt();
 
