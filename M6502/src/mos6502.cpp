@@ -22,18 +22,21 @@ void EightBit::MOS6502::powerOn() {
 int EightBit::MOS6502::step() {
 	resetCycles();
 	ExecutingInstruction.fire(*this);
-	if (LIKELY(powered() && raised(RDY()))) {
+	if (LIKELY(powered())) {
+		addCycle();
 		if (UNLIKELY(lowered(SO())))
 			handleSO();
-		lower(SYNC());	// Instruction fetch beginning
-		opcode() = fetchByte();
-		if (UNLIKELY(lowered(RESET())))
-			handleRESET();
-		else if (UNLIKELY(lowered(NMI())))
-			handleNMI();
-		else if (UNLIKELY(lowered(IRQ()) && !interruptMasked()))
-			handleIRQ();
-		execute();
+		if (LIKELY(raised(RDY()))) {
+			lower(SYNC());	// Instruction fetch beginning
+			opcode() = BUS().read(PC()++);	// can't use fetchByte
+			if (UNLIKELY(lowered(RESET())))
+				handleRESET();
+			else if (UNLIKELY(lowered(NMI())))
+				handleNMI();
+			else if (UNLIKELY(lowered(IRQ()) && !interruptMasked()))
+				handleIRQ();
+			execute();
+		}
 	}
 	ExecutedInstruction.fire(*this);
 	return cycles();
