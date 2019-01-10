@@ -118,7 +118,9 @@ void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
 
 bool Board::accessAcia() {
 	ACIA().raise(ACIA().E());
-	const bool accessed = ACIA().tick();
+	const bool activated = ACIA().activated();
+	if (activated)
+		ACIA().step();
 	ACIA().lower(ACIA().E());
-	return accessed;
+	return activated;
 }

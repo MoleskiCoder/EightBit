@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include <Chip.h>
+#include <ClockedChip.h>
 
 /*
 	PIA 6532 combined timer, IO and 128 bytes RAM
@@ -177,7 +177,7 @@
 
 
 namespace EightBit {
-	class M6532 final : public Chip {
+	class M6532 final : public ClockedChip {
 	public:
 		M6532() noexcept;
 		virtual ~M6532() = default;

@@ -2,12 +2,14 @@
 
 #include <cstdint>
 
-#include <Chip.h>
+#include <ClockedChip.h>
 #include <Signal.h>
 
 namespace EightBit {
-	class mc6850 : public Chip {
+	class mc6850 final : public ClockedChip {
 	public:
+		void powerOn() final;
+
 		// +--------+----------------------------------------------------------------------------------+
 		// |		|								Buffer address									   |
 		// |		+------------------+------------------+--------------------+-----------------------+
@@ -242,8 +244,9 @@ namespace EightBit {
 		// Receive data register;
 		auto& RDR() { return m_RDR; }
 
-		bool tick();
+		void step();
 
+		bool activated() { return powered() && raised(E()) && selected(); }
 		bool selected();
 
 		void markTransmitComplete();
@@ -318,6 +321,7 @@ namespace EightBit {
 		uint8_t m_TDR = 0;
 		uint8_t m_RDR = 0;
 
-		bool m_powered = false;
+		enum StartupCondition { ColdStart, WarmStart, Unknown };
+		StartupCondition m_startup = WarmStart;
 	};
 }

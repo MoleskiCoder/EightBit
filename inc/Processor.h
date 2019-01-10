@@ -2,23 +2,20 @@
 
 #include <cstdint>
 
-#include "Chip.h"
+#include "ClockedChip.h"
 #include "Bus.h"
 #include "Register.h"
-#include "Signal.h"
 
 #include "EightBitCompilerDefinitions.h"
 
 namespace EightBit {
-	class Processor : public Chip {
+	class Processor : public ClockedChip {
 	public:
 		// b: number of bits representing the number in x
 		// x: sign extend this b-bit number to r
 		[[nodiscard]] static int8_t signExtend(int b, uint8_t x);
 
 		~Processor() {};
-
-		Signal<EventArgs> Ticked;
 
 		[[nodiscard]] auto& PC() noexcept { return m_pc; }
 
@@ -34,8 +31,6 @@ namespace EightBit {
 		virtual int step() = 0;
 		virtual int execute() = 0;
 		int execute(uint8_t value);
-
-		[[nodiscard]] auto cycles() const noexcept { return m_cycles; }
 
 		[[nodiscard]] virtual register16_t peekWord(register16_t address) = 0;
 		virtual void pokeWord(register16_t address, register16_t value) = 0;
@@ -108,14 +103,9 @@ namespace EightBit {
 
 		virtual void ret();
 
-		void resetCycles() noexcept { m_cycles = 0; }
-		void tick(const int extra) { for (int i = 0; i < extra; ++i) tick(); }
-		void tick() { ++m_cycles;  	Ticked.fire(EventArgs::empty()); }
-
 	private:
 		Bus& m_bus;
 		uint8_t m_opcode = Mask8;
-		int m_cycles = 0;
 		register16_t m_pc;
 
 		PinLevel m_intLine = PinLevel::Low;
