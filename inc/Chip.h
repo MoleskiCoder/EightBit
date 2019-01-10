@@ -1,9 +1,10 @@
 #pragma once
 
 #include <cstdint>
+#include "Device.h"
 
 namespace EightBit {
-	class Chip {
+	class Chip : public Device {
 	public:
 		enum Bits {
 			Bit0 = 1,
@@ -44,10 +45,6 @@ namespace EightBit {
 			Mask16 = Bit16 - 1
 		};
 
-		enum class PinLevel {
-			Low, High
-		};
-
 		static void clearFlag(uint8_t& f, const int flag) noexcept { f &= ~flag; }
 		static void setFlag(uint8_t& f, const int flag) noexcept { f |= flag; }
 
@@ -59,13 +56,6 @@ namespace EightBit {
 		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) noexcept { clearFlag(f, flag, !!condition); }
 		static void clearFlag(uint8_t& f, const int flag, const bool condition) noexcept { setFlag(f, flag, !condition); }
 
-		static constexpr auto raised(const PinLevel line) { return line == PinLevel::High; }
-		static void raise(PinLevel& line) noexcept { line = PinLevel::High; }
-		static constexpr auto lowered(const PinLevel line) { return line == PinLevel::Low; }
-		static void lower(PinLevel& line) noexcept { line = PinLevel::Low; }
-
-		static void match(PinLevel& line, int value);
-
 		static constexpr auto highNibble(const int value) { return value >> 4; }
 		static constexpr auto lowNibble(const int value) { return value & Mask4; }
 
@@ -75,18 +65,9 @@ namespace EightBit {
 		static constexpr auto promoteNibble(const int value) { return value << 4; }
 		static constexpr auto demoteNibble(const int value) { return highNibble(value); }
 
-		virtual ~Chip() {};
-
-		[[nodiscard]] auto& POWER() noexcept { return m_powerLine; }
-
-		[[nodiscard]] auto powered() noexcept { return raised(POWER()); }
-		virtual void powerOn();
-		void powerOff() noexcept { lower(POWER()); }
+		virtual ~Chip();
 
 	protected:
-		Chip() = default;
-
-	private:
-		PinLevel m_powerLine = PinLevel::Low;
+		Chip();
 	};
 }

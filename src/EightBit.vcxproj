@@ -145,6 +145,7 @@
     <ClInclude Include="..\inc\BigEndianProcessor.h" />
     <ClInclude Include="..\inc\Bus.h" />
     <ClInclude Include="..\inc\Chip.h" />
+    <ClInclude Include="..\inc\Device.h" />
     <ClInclude Include="..\inc\EightBitCompilerDefinitions.h" />
     <ClInclude Include="..\inc\EventArgs.h" />
     <ClInclude Include="..\inc\InputOutput.h" />
@@ -166,6 +167,7 @@
     <ClCompile Include="BigEndianProcessor.cpp" />
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="Chip.cpp" />
+    <ClCompile Include="Device.cpp" />
     <ClCompile Include="EventArgs.cpp" />
     <ClCompile Include="InputOutput.cpp" />
     <ClCompile Include="IntelProcessor.cpp" />
