@@ -11,6 +11,7 @@ EightBit::GameBoy::Bus::Bus() noexcept
 void EightBit::GameBoy::Bus::raisePOWER() {
 	EightBit::Bus::raisePOWER();
 	CPU().raisePOWER();
+	CPU().raiseINT();
 	reset();
 }
 
@@ -21,7 +22,7 @@ void EightBit::GameBoy::Bus::lowerPOWER() {
 
 void EightBit::GameBoy::Bus::reset() {
 	IO().reset();
-	LR35902::lower(CPU().RESET());
+	CPU().lowerRESET();
 }
 
 void EightBit::GameBoy::Bus::loadBootRom(const std::string& path) {
