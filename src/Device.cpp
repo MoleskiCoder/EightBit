@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "Device.h"
 
-void EightBit::Device::powerOn() {
+void EightBit::Device::raisePOWER() {
 	raise(POWER());
+	RaisedPOWER.fire(EventArgs::empty());
 }
 
-void EightBit::Device::match(PinLevel& line, int value) {
-	value ? raise(line) : lower(line);
+void EightBit::Device::lowerPOWER() {
+	lower(POWER());
+	LoweredPOWER.fire(EventArgs::empty());
 }

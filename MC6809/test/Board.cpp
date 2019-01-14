@@ -4,29 +4,31 @@
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration) {}
 
-void Board::powerOn() {
+void Board::raisePOWER() {
 
-	EightBit::Bus::powerOn();
+	EightBit::Bus::raisePOWER();
 
 	// Get the CPU ready for action
-	CPU().powerOn();
-	CPU().raise(CPU().NMI());
-	CPU().raise(CPU().FIRQ());
-	CPU().reset();
+	CPU().raisePOWER();
+	CPU().lowerRESET();
+	CPU().raiseINT();
+	CPU().raiseNMI();
+	CPU().raiseFIRQ();
+	CPU().raiseHALT();
 
 	// Get the ACIA ready for action
 	ADDRESS() = 0b1010000000000000;
 	ACIA().DATA() = EightBit::mc6850::CR0 | EightBit::mc6850::CR1;	// Master reset
 	updateAciaPinsWrite();
 	ACIA().lower(ACIA().CTS());
-	ACIA().powerOn();
+	ACIA().raisePOWER();
 	accessAcia();
 }
 
-void Board::powerOff() {
-	ACIA().powerOff();
-	CPU().powerOff();
-	EightBit::Bus::powerOff();
+void Board::lowerPOWER() {
+	ACIA().lowerPOWER();
+	CPU().lowerPOWER();
+	EightBit::Bus::lowerPOWER();
 }
 
 void Board::initialise() {
@@ -88,7 +90,7 @@ void Board::initialise() {
 			assert(cpu.cycles() > 0);
 			m_totalCycleCount += cpu.cycles();
 			if (m_totalCycleCount > Configuration::TerminationCycles)
-				powerOff();
+				lowerPOWER();
 		});
 	}
 }
@@ -107,13 +109,12 @@ EightBit::MemoryMapping Board::mapping(uint16_t address) {
 	return { m_rom, 0xc000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
 }
 
-void Board::updateAciaPins(const EightBit::Chip::PinLevel rw) {
-	ACIA().RW() = rw;
+void Board::updateAciaPins() {
 	ACIA().DATA() = DATA();
-	ACIA().match(ACIA().RS(), ADDRESS().word & EightBit::Chip::Bit0);
-	ACIA().match(ACIA().CS0(), ADDRESS().word & EightBit::Chip::Bit15);
-	ACIA().match(ACIA().CS1(), ADDRESS().word & EightBit::Chip::Bit13);
-	ACIA().match(ACIA().CS2(), ADDRESS().word & EightBit::Chip::Bit14);
+	ADDRESS().word & EightBit::Chip::Bit0 ? ACIA().raise(ACIA().RS()) : ACIA().lower(ACIA().RS());
+	ADDRESS().word & EightBit::Chip::Bit15 ? ACIA().raise(ACIA().CS0()) : ACIA().lower(ACIA().CS0());
+	ADDRESS().word & EightBit::Chip::Bit13 ? ACIA().raise(ACIA().CS1()) : ACIA().lower(ACIA().CS1());
+	ADDRESS().word & EightBit::Chip::Bit14 ? ACIA().raise(ACIA().CS2()) : ACIA().lower(ACIA().CS2());
 }
 
 bool Board::accessAcia() {

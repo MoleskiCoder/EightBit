@@ -17,11 +17,12 @@ public:
 	EightBit::Intel8080& CPU() { return m_cpu; }
 	const EightBit::Intel8080& CPU() const { return m_cpu; }
 
-	virtual void powerOn() final;
-	virtual void powerOff() final;
+	virtual void raisePOWER() final;
+	virtual void lowerPOWER() final;
+
+	virtual void initialise() final;
 
 protected:
-	virtual void initialise() final;
 	virtual EightBit::MemoryMapping mapping(uint16_t address) final {
 		return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 	}

@@ -11,11 +11,12 @@ public:
 
 	EightBit::mc6809& CPU() { return m_cpu; }
 
-	virtual void powerOn() final;
-	virtual void powerOff() final;
+	virtual void raisePOWER() final;
+	virtual void lowerPOWER() final;
 
 protected:
 	virtual void initialise() final;
+
 	virtual EightBit::MemoryMapping mapping(uint16_t address) final;
 
 private:

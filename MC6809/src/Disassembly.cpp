@@ -108,7 +108,7 @@ bool EightBit::Disassembly::ignore() {
 		||	CPU().lowered(CPU().RESET())
 		||	CPU().lowered(CPU().NMI())
 		|| (CPU().lowered(CPU().FIRQ()) && !(CPU().CC() & mc6809::FF))
-		|| (CPU().lowered(CPU().IRQ()) && !(CPU().CC() & mc6809::IF));
+		|| (CPU().lowered(CPU().INT()) && !(CPU().CC() & mc6809::IF));
 }
 
 std::string EightBit::Disassembly::disassemble(uint16_t current) {

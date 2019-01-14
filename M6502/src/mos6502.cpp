@@ -4,18 +4,45 @@
 EightBit::MOS6502::MOS6502(Bus& bus)
 : LittleEndianProcessor(bus) {}
 
-void EightBit::MOS6502::powerOn() {
-
-	LittleEndianProcessor::powerOn();
-
+void EightBit::MOS6502::raisePOWER() {
+	LittleEndianProcessor::raisePOWER();
 	X() = Bit7;
 	Y() = 0;
 	A() = 0;
 	P() = RF;
 	S() = Mask8;
+	lowerSYNC();
+}
 
+void EightBit::MOS6502::lowerNMI() {
+	lower(NMI());
+}
+
+void EightBit::MOS6502::raiseNMI() {
 	raise(NMI());
+}
+
+void EightBit::MOS6502::lowerSO() {
+	lower(SO());
+}
+
+void EightBit::MOS6502::raiseSO() {
 	raise(SO());
+}
+
+void EightBit::MOS6502::lowerSYNC() {
+	lower(SYNC());
+}
+
+void EightBit::MOS6502::raiseSYNC() {
+	raise(SYNC());
+}
+
+void EightBit::MOS6502::lowerRDY() {
+	lower(RDY());
+}
+
+void EightBit::MOS6502::raiseRDY() {
 	raise(RDY());
 }
 
@@ -27,14 +54,14 @@ int EightBit::MOS6502::step() {
 		if (UNLIKELY(lowered(SO())))
 			handleSO();
 		if (LIKELY(raised(RDY()))) {
-			lower(SYNC());	// Instruction fetch beginning
+			lowerSYNC();	// Instruction fetch beginning
 			opcode() = BUS().read(PC()++);	// can't use fetchByte
 			if (UNLIKELY(lowered(RESET())))
 				handleRESET();
 			else if (UNLIKELY(lowered(NMI())))
 				handleNMI();
-			else if (UNLIKELY(lowered(IRQ()) && !interruptMasked()))
-				handleIRQ();
+			else if (UNLIKELY(lowered(INT()) && !interruptMasked()))
+				handleINT();
 			execute();
 		}
 	}
@@ -45,33 +72,33 @@ int EightBit::MOS6502::step() {
 // Interrupt (etc.) handlers
 
 void EightBit::MOS6502::handleSO() {
-	raise(SO());
+	raiseSO();
 	P() |= VF;
 }
 
 void EightBit::MOS6502::handleRESET() {
-	raise(RESET());
+	raiseRESET();
 	m_handlingRESET = true;
 	opcode() = 0x00;	// BRK
 }
 
 
 void EightBit::MOS6502::handleNMI() {
-	raise(NMI());
+	raiseNMI();
 	m_handlingNMI = true;
 	opcode() = 0x00;	// BRK
 }
 
-void EightBit::MOS6502::handleIRQ() {
+void EightBit::MOS6502::handleINT() {
 	raise(INT());
-	m_handlingIRQ = true;
+	m_handlingINT = true;
 	opcode() = 0x00;	// BRK
 }
 
 void EightBit::MOS6502::interrupt() {
 	const bool reset = m_handlingRESET;
 	const bool nmi = m_handlingNMI;
-	const bool irq = m_handlingIRQ;
+	const bool irq = m_handlingINT;
 	const bool hardware = nmi || irq || reset;
 	const bool software = !hardware;
 	if (reset) {
@@ -85,7 +112,7 @@ void EightBit::MOS6502::interrupt() {
 	setFlag(P(), IF);	// Disable IRQ
 	const uint8_t vector = reset ? RSTvector : (nmi ? NMIvector : IRQvector);
 	jump(getWordPaged(0xff, vector));
-	m_handlingRESET = m_handlingNMI = m_handlingIRQ = false;
+	m_handlingRESET = m_handlingNMI = m_handlingINT = false;
 }
 
 //
@@ -104,7 +131,7 @@ uint8_t EightBit::MOS6502::busRead() {
 
 int EightBit::MOS6502::execute() { 
 
-	raise(SYNC());	// Instruction fetch has now completed
+	raiseSYNC();	// Instruction fetch has now completed
 
 	switch (opcode()) {
 

@@ -24,12 +24,11 @@ EightBit::register16_t& EightBit::Z80::HL() {
 	return m_registers[m_registerSet][HL_IDX];
 }
 
-void EightBit::Z80::powerOn() {
+void EightBit::Z80::raisePOWER() {
 
-	IntelProcessor::powerOn();
+	IntelProcessor::raisePOWER();
 
-	raise(NMI());
-	raise(M1());
+	raiseM1();
 
 	di();
 	IM() = 0;
@@ -46,6 +45,26 @@ void EightBit::Z80::powerOn() {
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 }
 
+void EightBit::Z80::raiseNMI() {
+	raise(NMI());
+	RaisedNMI.fire(EventArgs::empty());
+}
+
+void EightBit::Z80::lowerNMI() {
+	lower(NMI());
+	LoweredNMI.fire(EventArgs::empty());
+}
+
+void EightBit::Z80::raiseM1() {
+	raise(M1());
+	RaisedM1.fire(EventArgs::empty());
+}
+
+void EightBit::Z80::lowerM1() {
+	lower(M1());
+	LoweredM1.fire(EventArgs::empty());
+}
+
 void EightBit::Z80::handleRESET() {
 	IntelProcessor::handleRESET();
 	di();
@@ -53,8 +72,8 @@ void EightBit::Z80::handleRESET() {
 }
 
 void EightBit::Z80::handleNMI() {
-	raise(NMI());
-	raise(HALT());
+	raiseNMI();
+	raiseHALT();
 	IFF1() = false;
 	restart(0x66);
 	tick(13);
@@ -62,12 +81,12 @@ void EightBit::Z80::handleNMI() {
 
 void EightBit::Z80::handleINT() {
 	IntelProcessor::handleINT();
-	raise(HALT());
+	raiseHALT();
 	if (IFF1()) {
 		di();
 		switch (IM()) {
 		case 0:		// i8080 equivalent
-			Processor::execute(BUS().DATA());
+			IntelProcessor::execute(BUS().DATA());
 			break;
 		case 1:
 			restart(7 << 3);
@@ -663,7 +682,7 @@ int EightBit::Z80::step() {
 	ExecutingInstruction.fire(*this);
 	if (LIKELY(powered())) {
 		m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
-		lower(M1());
+		lowerM1();
 		if (UNLIKELY(lowered(RESET()))) {
 			handleRESET();
 		} else if (UNLIKELY(lowered(NMI()))) {
@@ -671,9 +690,9 @@ int EightBit::Z80::step() {
 		} else if (UNLIKELY(lowered(INT()))) {
 			handleINT();
 		} else if (UNLIKELY(lowered(HALT()))) {
-			Processor::execute(0);	// NOP
+			IntelProcessor::execute(0);	// NOP
 		} else {
-			Processor::execute(fetchByte());
+			IntelProcessor::execute(fetchByte());
 		}
 	}
 	ExecutedInstruction.fire(*this);
@@ -686,7 +705,7 @@ int EightBit::Z80::execute() {
 
 	if (LIKELY(!(m_prefixCB && m_displaced))) {
 		++REFRESH();
-		raise(M1());
+		raiseM1();
 	}
 
 	const auto& decoded = getDecodedOpcode(opcode());
@@ -1363,8 +1382,8 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				m_prefixCB = true;
 				if (UNLIKELY(m_displaced))
 					fetchDisplacement();
-				lower(M1());
-				Processor::execute(fetchByte());
+				lowerM1();
+				IntelProcessor::execute(fetchByte());
 				break;
 			case 2:	// OUT (n),A
 				writePort(fetchByte());
@@ -1413,18 +1432,18 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					break;
 				case 1:	// DD prefix
 					m_displaced = m_prefixDD = true;
-					lower(M1());
-					Processor::execute(fetchByte());
+					lowerM1();
+					IntelProcessor::execute(fetchByte());
 					break;
 				case 2:	// ED prefix
 					m_prefixED = true;
-					lower(M1());
-					Processor::execute(fetchByte());
+					lowerM1();
+					IntelProcessor::execute(fetchByte());
 					break;
 				case 3:	// FD prefix
 					m_displaced = m_prefixFD = true;
-					lower(M1());
-					Processor::execute(fetchByte());
+					lowerM1();
+					IntelProcessor::execute(fetchByte());
 					break;
 				default:
 					UNREACHABLE;

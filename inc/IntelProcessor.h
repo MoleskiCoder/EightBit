@@ -6,7 +6,8 @@
 #include "Bus.h"
 #include "LittleEndianProcessor.h"
 #include "Register.h"
-
+#include "EventArgs.h"
+#include "Signal.h"
 #include "EightBitCompilerDefinitions.h"
 
 namespace EightBit {
@@ -33,6 +34,11 @@ namespace EightBit {
 
 		~IntelProcessor() = default;
 
+		Signal<EventArgs> RaisedHALT;
+		Signal<EventArgs> LoweredHALT;
+
+		[[nodiscard]] auto& HALT() noexcept { return m_haltLine; }
+
 		[[nodiscard]] const auto& getDecodedOpcode(const size_t i) const noexcept {
 			return m_decodedOpcodes[i];
 		}
@@ -57,7 +63,7 @@ namespace EightBit {
 		[[nodiscard]] auto& H() { return HL().high; }
 		[[nodiscard]] auto& L() { return HL().low; }
 
-		void powerOn() override;
+		void raisePOWER() override;
 
 	protected:
 		IntelProcessor(Bus& bus);
@@ -117,6 +123,8 @@ namespace EightBit {
 			return m_halfCarryTableSub[index & Mask3];
 		}
 
+		void handleRESET() override;
+
 		void push(uint8_t value) final;
 		[[nodiscard]] uint8_t pop() final;
 
@@ -164,9 +172,18 @@ namespace EightBit {
 
 		void ret() final;
 
+		[[nodiscard]] auto halted() noexcept { return lowered(HALT()); }
+		void halt() noexcept { --PC();  lowerHALT(); }
+		void proceed() noexcept { ++PC(); raiseHALT(); }
+
+		virtual void lowerHALT();
+		virtual void raiseHALT();
+
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
 		register16_t m_sp = Mask16;
 		register16_t m_memptr;
+
+		PinLevel m_haltLine = PinLevel::Low;	// Out, Active low
 	};
 }

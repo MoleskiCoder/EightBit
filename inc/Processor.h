@@ -5,6 +5,8 @@
 #include "ClockedChip.h"
 #include "Bus.h"
 #include "Register.h"
+#include "EventArgs.h"
+#include "Signal.h"
 
 #include "EightBitCompilerDefinitions.h"
 
@@ -17,15 +19,22 @@ namespace EightBit {
 
 		~Processor() {};
 
+		Signal<EventArgs> RaisedRESET;
+		Signal<EventArgs> LoweredRESET;
+
+		Signal<EventArgs> RaisedINT;
+		Signal<EventArgs> LoweredINT;
+
 		[[nodiscard]] auto& PC() noexcept { return m_pc; }
 
 		[[nodiscard]] auto& RESET() noexcept { return m_resetLine; }
-		[[nodiscard]] auto& HALT() noexcept { return m_haltLine; }
 		[[nodiscard]] auto& INT() noexcept { return m_intLine; }
-		[[nodiscard]] auto& IRQ() noexcept { return INT(); }	// Synonym
 
-		void powerOn() override;
-		void reset() noexcept { lower(RESET()); }
+		virtual void lowerRESET();
+		virtual void raiseRESET();
+
+		virtual void lowerINT();
+		virtual void raiseINT();
 
 		int run(int limit);
 		virtual int step() = 0;
@@ -41,13 +50,8 @@ namespace EightBit {
 		[[nodiscard]] auto& opcode() noexcept { return m_opcode; }
 		[[nodiscard]] auto& BUS() noexcept { return m_bus; }
 
-		[[nodiscard]] auto halted() noexcept { return lowered(HALT()); }
-		void halt() noexcept { --PC();  lower(HALT()); }
-		void proceed() noexcept { ++PC(); raise(HALT()); }
-
 		virtual void handleRESET();
 		virtual void handleINT();
-		virtual void handleIRQ();
 
 		void busWrite(register16_t address, uint8_t data);
 		void busWrite(uint8_t data);
@@ -108,8 +112,7 @@ namespace EightBit {
 		uint8_t m_opcode = Mask8;
 		register16_t m_pc;
 
-		PinLevel m_intLine = PinLevel::Low;
-		PinLevel m_haltLine = PinLevel::Low;
-		PinLevel m_resetLine = PinLevel::Low;
+		PinLevel m_intLine = PinLevel::Low;		// In
+		PinLevel m_resetLine = PinLevel::Low;	// In
 	};
 }

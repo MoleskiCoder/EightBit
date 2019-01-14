@@ -21,7 +21,6 @@ namespace Fuse {
 
 		EightBit::Ram m_ram = 0x10000;
 
-		void initialise();
 		void initialiseRegisters();
 		void initialiseMemory();
 
@@ -47,7 +46,9 @@ namespace Fuse {
 		bool failed() const { return m_failed; }
 		bool unimplemented() const { return m_unimplemented; }
 
-		virtual void powerOn() final;
-		virtual void powerOff() final;
+		virtual void raisePOWER() final;
+		virtual void lowerPOWER() final;
+
+		void initialise();
 	};
 }

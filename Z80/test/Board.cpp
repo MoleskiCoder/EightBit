@@ -4,15 +4,17 @@
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration) {}
 
-void Board::powerOn() {
-	EightBit::Bus::powerOn();
-	CPU().powerOn();
-	CPU().reset();
+void Board::raisePOWER() {
+	EightBit::Bus::raisePOWER();
+	CPU().raisePOWER();
+	CPU().raiseRESET();
+	CPU().raiseINT();
+	CPU().raiseNMI();
 }
 
-void Board::powerOff() noexcept {
-	CPU().powerOff();
-	EightBit::Bus::powerOff();
+void Board::lowerPOWER() noexcept {
+	CPU().lowerPOWER();
+	EightBit::Bus::lowerPOWER();
 }
 
 void Board::initialise() {
@@ -20,13 +22,15 @@ void Board::initialise() {
 	auto romDirectory = m_configuration.getRomDirectory();
 	m_ram.load(romDirectory + "/zexall.com", 0x100);	// Cringle/Bartholomew
 
+	m_cpu.LoweredHALT.connect([this](EightBit::EventArgs) {
+		lowerPOWER();
+	});
+	
 	m_cpu.ExecutingInstruction.connect([this] (EightBit::Z80& cpu) {
-		if (UNLIKELY(EightBit::Chip::lowered(cpu.HALT())))
-			powerOff();
 		switch (cpu.PC().word) {
 		case 0x0:	// CP/M warm start
-			if (++m_warmstartCount == 3) {
-				powerOff();
+			if (++m_warmstartCount == 2) {
+				lowerPOWER();
 				if (m_configuration.isProfileMode())
 					m_profiler.dump();
 			}

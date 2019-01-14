@@ -8,7 +8,7 @@
 namespace EightBit {
 	class mc6850 final : public ClockedChip {
 	public:
-		void powerOn() final;
+		void raisePOWER() final;
 
 		// +--------+----------------------------------------------------------------------------------+
 		// |		|								Buffer address									   |
@@ -270,10 +270,6 @@ namespace EightBit {
 
 		void startTransmit();
 		void completeReceive();
-
-		bool isInterruptRequired() const;
-		bool isTransmitInterruptRequired() const;
-		bool isReceiveInterruptRequired() const;
 
 		bool transmitInterruptEnabled() const { return m_transmitControl == ReadyLowInterruptEnabled;  }
 		bool receiveInterruptEnabled() const { return m_receiveControl == ReceiveInterruptEnable;  }

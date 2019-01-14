@@ -5,24 +5,32 @@ EightBit::Processor::Processor(Bus& bus)
 : m_bus(bus) {
 }
 
-void EightBit::Processor::powerOn() {
-	Chip::powerOn();
+void EightBit::Processor::lowerRESET() {
+	lower(RESET());
+	LoweredRESET.fire(EventArgs::empty());
+}
+
+void EightBit::Processor::raiseRESET() {
 	raise(RESET());
-	raise(HALT());
+	RaisedRESET.fire(EventArgs::empty());
+}
+
+void EightBit::Processor::lowerINT() {
+	lower(INT());
+	LoweredINT.fire(EventArgs::empty());
+}
+
+void EightBit::Processor::raiseINT() {
 	raise(INT());
+	RaisedINT.fire(EventArgs::empty());
 }
 
 void EightBit::Processor::handleRESET() {
-	raise(RESET());
-	PC() = 0;
+	raiseRESET();
 }
 
 void EightBit::Processor::handleINT() {
-	raise(INT());
-}
-
-void EightBit::Processor::handleIRQ() {
-	raise(IRQ());
+	raiseINT();
 }
 
 void EightBit::Processor::busWrite(const register16_t address, const uint8_t data) {

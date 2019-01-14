@@ -6,17 +6,22 @@ Board::Board()
   m_disassembler(*this, m_cpu) {
 }
 
-void Board::powerOn() {
-	EightBit::Bus::powerOn();
-	CPU().powerOn();
-	CPU().raise(CPU().NMI());
-	CPU().raise(CPU().FIRQ());
-	CPU().reset();
+void Board::raisePOWER() {
+	EightBit::Bus::raisePOWER();
+
+	CPU().raisePOWER();
+
+	CPU().lowerRESET();
+	CPU().raiseINT();
+
+	CPU().raiseNMI();
+	CPU().raiseFIRQ();
+	CPU().raiseHALT();
 }
 
-void Board::powerOff() {
-	CPU().powerOff();
-	EightBit::Bus::powerOff();
+void Board::lowerPOWER() {
+	CPU().lowerPOWER();
+	EightBit::Bus::lowerPOWER();
 }
 
 void Board::initialise() {

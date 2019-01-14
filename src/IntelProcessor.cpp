@@ -7,9 +7,25 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 		m_decodedOpcodes[i] = i;
 }
 
-void EightBit::IntelProcessor::powerOn() {
-	Processor::powerOn();
+void EightBit::IntelProcessor::raisePOWER() {
+	Processor::raisePOWER();
+	raiseHALT();
 	SP() = AF() = BC() = DE() = HL() = Mask16;
+}
+
+void EightBit::IntelProcessor::lowerHALT() {
+	lower(HALT());
+	LoweredHALT.fire(EventArgs::empty());
+}
+
+void EightBit::IntelProcessor::raiseHALT() {
+	raise(HALT());
+	RaisedHALT.fire(EventArgs::empty());
+}
+
+void EightBit::IntelProcessor::handleRESET() {
+	Processor::handleRESET();
+	PC() = 0;
 }
 
 void EightBit::IntelProcessor::push(const uint8_t value) {

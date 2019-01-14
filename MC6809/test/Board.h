@@ -19,11 +19,12 @@ public:
 	auto& CPU() { return m_cpu; }
 	auto& ACIA() { return m_acia; }
 
-	virtual void powerOn() final;
-	virtual void powerOff() final;
+	virtual void raisePOWER() final;
+	virtual void lowerPOWER() final;
+
+	virtual void initialise() final;
 
 protected:
-	virtual void initialise() final;
 	virtual EightBit::MemoryMapping mapping(uint16_t address) final;
 
 private:
@@ -46,9 +47,17 @@ private:
 	bool m_ignoreDisassembly = false;
 
 	// Use the bus data to update the ACIA access/address pins
-	void updateAciaPinsRead() { updateAciaPins(EightBit::Chip::PinLevel::High); }
-	void updateAciaPinsWrite() { updateAciaPins(EightBit::Chip::PinLevel::Low); }
-	void updateAciaPins(EightBit::Chip::PinLevel rw);
+	void updateAciaPinsRead() {
+		ACIA().raise(ACIA().RW());
+		updateAciaPins();
+	}
+	
+	void updateAciaPinsWrite() {
+		ACIA().lower(ACIA().RW());
+		updateAciaPins();
+	}
+	
+	void updateAciaPins();
 
 	bool accessAcia();
 };

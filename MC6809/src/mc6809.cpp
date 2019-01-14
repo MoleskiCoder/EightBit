@@ -7,10 +7,60 @@
 EightBit::mc6809::mc6809(Bus& bus)
 : BigEndianProcessor(bus) {}
 
-void EightBit::mc6809::powerOn() {
-	BigEndianProcessor::powerOn();
+void EightBit::mc6809::raisePOWER() {
+	BigEndianProcessor::raisePOWER();
+	lowerBA();
+	lowerBS();
+}
+
+void EightBit::mc6809::lowerNMI() {
+	lower(NMI());
+	LoweredNMI.fire(EventArgs::empty());
+}
+
+void EightBit::mc6809::raiseNMI() {
+	raise(NMI());
+	RaisedNMI.fire(EventArgs::empty());
+}
+
+void EightBit::mc6809::lowerFIRQ() {
+	lower(FIRQ());
+	LoweredFIRQ.fire(EventArgs::empty());
+}
+
+void EightBit::mc6809::raiseFIRQ() {
+	raise(FIRQ());
+	RaisedFIRQ.fire(EventArgs::empty());
+}
+
+void EightBit::mc6809::lowerHALT() {
+	lower(HALT());
+	LoweredHALT.fire(EventArgs::empty());
+}
+
+void EightBit::mc6809::raiseHALT() {
+	raise(HALT());
+	RaisedHALT.fire(EventArgs::empty());
+}
+
+void EightBit::mc6809::lowerBA() {
 	lower(BA());
+	LoweredNMI.fire(EventArgs::empty());
+}
+
+void EightBit::mc6809::raiseBA() {
+	raise(BA());
+	RaisedBA.fire(EventArgs::empty());
+}
+
+void EightBit::mc6809::lowerBS() {
 	lower(BS());
+	LoweredBS.fire(EventArgs::empty());
+}
+
+void EightBit::mc6809::raiseBS() {
+	raise(BS());
+	RaisedBS.fire(EventArgs::empty());
 }
 
 int EightBit::mc6809::step() {
@@ -26,8 +76,8 @@ int EightBit::mc6809::step() {
 			handleNMI();
 		else if (UNLIKELY(lowered(FIRQ()) && !fastInterruptMasked()))
 			handleFIRQ();
-		else if (UNLIKELY(lowered(IRQ()) && !interruptMasked()))
-			handleIRQ();
+		else if (UNLIKELY(lowered(INT()) && !interruptMasked()))
+			handleINT();
 		else
 			Processor::execute(fetchByte());
 	}
@@ -38,15 +88,15 @@ int EightBit::mc6809::step() {
 // Interrupt (etc.) handlers
 
 void EightBit::mc6809::handleHALT() {
-	raise(BA());
-	raise(BS());
+	raiseBA();
+	raiseBS();
 }
 
 void EightBit::mc6809::handleRESET() {
 	BigEndianProcessor::handleRESET();
-	raise(NMI());
-	lower(BA());
-	raise(BS());
+	raiseNMI();
+	lowerBA();
+	raiseBS();
 	DP() = 0;
 	setFlag(CC(), IF);	// Disable IRQ
 	setFlag(CC(), FF);	// Disable FIRQ
@@ -55,9 +105,9 @@ void EightBit::mc6809::handleRESET() {
 }
 
 void EightBit::mc6809::handleNMI() {
-	raise(NMI());
-	lower(BA());
-	raise(BS());
+	raiseNMI();
+	lowerBA();
+	raiseBS();
 	saveEntireRegisterState();
 	setFlag(CC(), IF);	// Disable IRQ
 	setFlag(CC(), FF);	// Disable FIRQ
@@ -65,10 +115,10 @@ void EightBit::mc6809::handleNMI() {
 	tick(12);
 }
 
-void EightBit::mc6809::handleIRQ() {
-	BigEndianProcessor::handleIRQ();
-	lower(BA());
-	raise(BS());
+void EightBit::mc6809::handleINT() {
+	BigEndianProcessor::handleINT();
+	lowerBA();
+	raiseBS();
 	saveEntireRegisterState();
 	setFlag(CC(), IF);	// Disable IRQ
 	jump(getWordPaged(0xff, IRQvector));
@@ -76,9 +126,9 @@ void EightBit::mc6809::handleIRQ() {
 }
 
 void EightBit::mc6809::handleFIRQ() {
-	raise(FIRQ());
-	lower(BA());
-	raise(BS());
+	raiseFIRQ();
+	lowerBA();
+	raiseBS();
 	savePartialRegisterState();
 	setFlag(CC(), IF);	// Disable IRQ
 	setFlag(CC(), FF);	// Disable FIRQ
@@ -89,8 +139,8 @@ void EightBit::mc6809::handleFIRQ() {
 //
 
 int EightBit::mc6809::execute() {
-	lower(BA());
-	lower(BS());
+	lowerBA();
+	lowerBS();
 	const bool prefixed = m_prefix10 || m_prefix11;
 	const bool unprefixed = !prefixed;
 	if (unprefixed) {

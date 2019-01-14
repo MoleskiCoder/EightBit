@@ -10,15 +10,16 @@ Board::Board(const Configuration& configuration)
   m_disassembler(*this) {
 }
 
-void Board::powerOn() {
-	EightBit::Bus::powerOn();
-	CPU().powerOn();
-	CPU().reset();
+void Board::raisePOWER() {
+	EightBit::Bus::raisePOWER();
+	CPU().raisePOWER();
+	CPU().raiseRESET();
+	CPU().raiseINT();
 }
 
-void Board::powerOff() {
-	CPU().powerOff();
-	EightBit::Bus::powerOff();
+void Board::lowerPOWER() {
+	CPU().lowerPOWER();
+	EightBit::Bus::lowerPOWER();
 }
 
 void Board::initialise() {
@@ -29,6 +30,10 @@ void Board::initialise() {
 	//m_ram.load(romDirectory + "/8080PRE.COM", 0x100);	// Bartholomew preliminary
 	m_ram.load(romDirectory + "/8080EX1.COM", 0x100);	// Cringle/Bartholomew
 	//m_ram.load(romDirectory + "/CPUTEST.COM", 0x100);	// SuperSoft diagnostics
+
+	m_cpu.LoweredHALT.connect([this](EightBit::EventArgs) {
+		lowerPOWER();
+	});
 
 	m_cpu.ExecutingInstruction.connect(std::bind(&Board::Cpu_ExecutingInstruction_Cpm, this, std::placeholders::_1));
 
@@ -49,8 +54,8 @@ void Board::initialise() {
 void Board::Cpu_ExecutingInstruction_Cpm(EightBit::Intel8080& cpu) {
 	switch (cpu.PC().word) {
 	case 0x0:	// CP/M warm start
-		if (++m_warmstartCount == 3) {
-			powerOff();
+		if (++m_warmstartCount == 2) {
+			lowerPOWER();
 			if (m_configuration.isProfileMode()) {
 				m_profiler.dump();
 			}

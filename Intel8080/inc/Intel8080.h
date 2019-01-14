@@ -8,6 +8,7 @@
 #include <Bus.h>
 #include <InputOutput.h>
 #include <IntelProcessor.h>
+#include <EventArgs.h>
 #include <Signal.h>
 #include <Register.h>
 

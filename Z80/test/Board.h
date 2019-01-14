@@ -18,11 +18,12 @@ public:
 
 	EightBit::Z80& CPU() noexcept { return m_cpu; }
 
-	void powerOn() final;
-	void powerOff() noexcept final;
+	void raisePOWER() final;
+	void lowerPOWER() noexcept final;
+
+	void initialise() final;
 
 protected:
-	void initialise() final;
 	EightBit::MemoryMapping mapping(uint16_t address) noexcept final {
 		return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 	}

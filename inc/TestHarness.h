@@ -60,7 +60,8 @@ namespace EightBit {
 			m_totalCycles = m_instructions = 0L;
 			m_startHostCycles = currentHostCycles();
 
-			m_board.powerOn();
+			m_board.initialise();
+			m_board.raisePOWER();
 
 			auto& cpu = m_board.CPU();
 

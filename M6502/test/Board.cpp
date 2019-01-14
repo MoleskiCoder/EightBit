@@ -10,14 +10,19 @@
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration) {}
 
-void Board::powerOn() {
-	EightBit::Bus::powerOn();
-	CPU().powerOn();
+void Board::raisePOWER() {
+	EightBit::Bus::raisePOWER();
+	CPU().raisePOWER();
+	CPU().raiseRESET();
+	CPU().raiseINT();
+	CPU().raiseNMI();
+	CPU().raiseSO();
+	CPU().raiseRDY();
 }
 
-void Board::powerOff() {
-	CPU().powerOff();
-	EightBit::Bus::powerOff();
+void Board::lowerPOWER() {
+	CPU().lowerPOWER();
+	EightBit::Bus::lowerPOWER();
 }
 
 void Board::initialise() {
@@ -53,7 +58,7 @@ void Board::initialise() {
 		if (m_oldPC != pc) {
 			m_oldPC = pc;
 		} else {
-			powerOff();
+			lowerPOWER();
 			auto test = peek(0x0200);
 			std::cout << std::endl << "** Test=" << std::hex << (int)test;
 		}

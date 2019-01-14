@@ -8,11 +8,9 @@
 #include <stdexcept>
 #include <cassert>
 
-void EightBit::Bus::powerOn() {
-	initialise();
-}
+void EightBit::Bus::raisePOWER() {}
 
-void EightBit::Bus::powerOff() {}
+void EightBit::Bus::lowerPOWER() {}
 
 uint8_t EightBit::Bus::read() {
 	ReadingByte.fire(EventArgs::empty());

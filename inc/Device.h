@@ -1,5 +1,8 @@
 #pragma once
 
+#include "EventArgs.h"
+#include "Signal.h"
+
 namespace EightBit {
 	class Device {
 	public:
@@ -12,20 +15,21 @@ namespace EightBit {
 		static constexpr auto lowered(const PinLevel line) { return line == PinLevel::Low; }
 		static void lower(PinLevel& line) noexcept { line = PinLevel::Low; }
 
-		static void match(PinLevel& line, int value);
-
 		virtual ~Device() {};
+
+		Signal<EventArgs> RaisedPOWER;
+		Signal<EventArgs> LoweredPOWER;
 
 		[[nodiscard]] auto& POWER() noexcept { return m_powerLine; }
 
 		[[nodiscard]] auto powered() noexcept { return raised(POWER()); }
-		virtual void powerOn();
-		virtual void powerOff() { lower(POWER()); }
+		virtual void raisePOWER();
+		virtual void lowerPOWER();
 
 	protected:
 		Device() {};
 
 	private:
-		PinLevel m_powerLine = PinLevel::Low;
+		PinLevel m_powerLine = PinLevel::Low;	// In
 	};
 }

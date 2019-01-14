@@ -48,12 +48,12 @@ namespace EightBit {
 			write(value);
 		}
 
-		virtual void powerOn();
-		virtual void powerOff();
+		virtual void raisePOWER();
+		virtual void lowerPOWER();
 
-	protected:
 		virtual void initialise() = 0;
 
+	protected:
 		[[nodiscard]] uint8_t& reference(uint16_t address);
 		[[nodiscard]] auto& reference(const register16_t address) { return reference(address.word); }
 		[[nodiscard]] uint8_t& reference() { return reference(ADDRESS()); }
