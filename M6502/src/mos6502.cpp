@@ -16,34 +16,42 @@ void EightBit::MOS6502::raisePOWER() {
 
 void EightBit::MOS6502::lowerNMI() {
 	lower(NMI());
+	LoweredNMI.fire(EventArgs::empty());
 }
 
 void EightBit::MOS6502::raiseNMI() {
 	raise(NMI());
+	RaisedNMI.fire(EventArgs::empty());
 }
 
 void EightBit::MOS6502::lowerSO() {
 	lower(SO());
+	LoweredSO.fire(EventArgs::empty());
 }
 
 void EightBit::MOS6502::raiseSO() {
 	raise(SO());
+	RaisedSO.fire(EventArgs::empty());
 }
 
 void EightBit::MOS6502::lowerSYNC() {
 	lower(SYNC());
+	LoweredSYNC.fire(EventArgs::empty());
 }
 
 void EightBit::MOS6502::raiseSYNC() {
 	raise(SYNC());
+	RaisedSYNC.fire(EventArgs::empty());
 }
 
 void EightBit::MOS6502::lowerRDY() {
 	lower(RDY());
+	LoweredRDY.fire(EventArgs::empty());
 }
 
 void EightBit::MOS6502::raiseRDY() {
 	raise(RDY());
+	RaisedRDY.fire(EventArgs::empty());
 }
 
 int EightBit::MOS6502::step() {
