@@ -5,25 +5,8 @@ EightBit::Processor::Processor(Bus& bus)
 : m_bus(bus) {
 }
 
-void EightBit::Processor::lowerRESET() {
-	lower(RESET());
-	LoweredRESET.fire(EventArgs::empty());
-}
-
-void EightBit::Processor::raiseRESET() {
-	raise(RESET());
-	RaisedRESET.fire(EventArgs::empty());
-}
-
-void EightBit::Processor::lowerINT() {
-	lower(INT());
-	LoweredINT.fire(EventArgs::empty());
-}
-
-void EightBit::Processor::raiseINT() {
-	raise(INT());
-	RaisedINT.fire(EventArgs::empty());
-}
+DEFINE_PIN_LEVEL_CHANGERS(RESET, Processor);
+DEFINE_PIN_LEVEL_CHANGERS(INT, Processor);
 
 void EightBit::Processor::handleRESET() {
 	raiseRESET();

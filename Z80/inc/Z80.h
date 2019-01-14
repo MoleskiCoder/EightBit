@@ -52,22 +52,10 @@ namespace EightBit {
 		Signal<Z80> ExecutingInstruction;
 		Signal<Z80> ExecutedInstruction;
 
-		Signal<EventArgs> RaisedNMI;
-		Signal<EventArgs> LoweredNMI;
-
-		Signal<EventArgs> RaisedM1;
-		Signal<EventArgs> LoweredM1;
-
-		[[nodiscard]] auto& NMI() { return m_nmiLine; }		// In
-		[[nodiscard]] auto& M1() { return m_m1Line; }		// Out
-
 		int execute() final;
 		int step() final;
 
 		void raisePOWER() final;
-
-		void raiseNMI();
-		void lowerNMI();
 
 		[[nodiscard]] register16_t& AF() final;
 		[[nodiscard]] register16_t& BC() final;
@@ -96,14 +84,14 @@ namespace EightBit {
 			m_accumulatorFlagsSet = !m_accumulatorFlagsSet;
 		}
 
+		DECLARE_PIN_INPUT(NMI)
+		DECLARE_PIN_OUTPUT(M1)
+
 	protected:
 		void handleRESET() final;
 		void handleINT() final;
 
 	private:
-		PinLevel m_nmiLine = PinLevel::Low;		// In, Active low
-		PinLevel m_m1Line = PinLevel::Low;		// Out, Active low
-
 		InputOutput& m_ports;
 
 		enum { BC_IDX, DE_IDX, HL_IDX };
@@ -131,9 +119,6 @@ namespace EightBit {
 
 		int8_t m_displacement = 0;
 		bool m_displaced = false;
-
-		void raiseM1();
-		void lowerM1();
 
 		void handleNMI();
 

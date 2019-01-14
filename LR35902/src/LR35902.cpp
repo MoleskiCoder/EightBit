@@ -35,7 +35,7 @@ void EightBit::GameBoy::LR35902::handleRESET() {
 
 void EightBit::GameBoy::LR35902::handleINT() {
 	IntelProcessor::handleINT();
-	raise(HALT());
+	raiseHALT();
 	di();
 	restart(BUS().DATA());
 	tick(4);
@@ -312,7 +312,7 @@ int EightBit::GameBoy::LR35902::step() {
 		if (masked) {
 			if (IME()) {
 				m_bus.IO().poke(IoRegisters::IF, 0);
-				lower(INT());
+				lowerINT();
 				const int index = EightBit::findFirstSet(masked);
 				BUS().DATA() = 0x38 + (index << 3);
 			} else {

@@ -8,6 +8,9 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
   m_ports(ports) {
 }
 
+DEFINE_PIN_LEVEL_CHANGERS(NMI, Z80);
+DEFINE_PIN_LEVEL_CHANGERS(M1, Z80);
+
 EightBit::register16_t& EightBit::Z80::AF() {
 	return m_accumulatorFlags[m_accumulatorFlagsSet];
 }
@@ -43,26 +46,6 @@ void EightBit::Z80::raisePOWER() {
 	IX() = IY() = BC() = DE() = HL() = Mask16;
 
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
-}
-
-void EightBit::Z80::raiseNMI() {
-	raise(NMI());
-	RaisedNMI.fire(EventArgs::empty());
-}
-
-void EightBit::Z80::lowerNMI() {
-	lower(NMI());
-	LoweredNMI.fire(EventArgs::empty());
-}
-
-void EightBit::Z80::raiseM1() {
-	raise(M1());
-	RaisedM1.fire(EventArgs::empty());
-}
-
-void EightBit::Z80::lowerM1() {
-	lower(M1());
-	LoweredM1.fire(EventArgs::empty());
 }
 
 void EightBit::Z80::handleRESET() {

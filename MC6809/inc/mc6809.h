@@ -57,34 +57,10 @@ namespace EightBit {
 		Signal<mc6809> ExecutingInstruction;
 		Signal<mc6809> ExecutedInstruction;
 
-		Signal<EventArgs> RaisedNMI;
-		Signal<EventArgs> LoweredNMI;
-
-		Signal<EventArgs> RaisedFIRQ;
-		Signal<EventArgs> LoweredFIRQ;
-
-		Signal<EventArgs> RaisedHALT;
-		Signal<EventArgs> LoweredHALT;
-
-		Signal<EventArgs> RaisedBA;
-		Signal<EventArgs> LoweredBA;
-
-		Signal<EventArgs> RaisedBS;
-		Signal<EventArgs> LoweredBS;
-
 		virtual int execute() final;
 		virtual int step() final;
 
 		virtual void raisePOWER() final;
-
-		virtual void lowerNMI();
-		virtual void raiseNMI();
-
-		virtual void lowerFIRQ();
-		virtual void raiseFIRQ();
-
-		virtual void lowerHALT();
-		virtual void raiseHALT();
 
 		auto& D() { return m_d; }
 		auto& A() { return D().high; }
@@ -99,10 +75,6 @@ namespace EightBit {
 		auto& CC() { return m_cc; }
 		const auto& CC() const { return m_cc; }
 
-		[[nodiscard]] auto& NMI() noexcept { return m_nmiLine; }	// In
-		[[nodiscard]] auto& FIRQ() noexcept { return m_firqLine; }	// In
-		[[nodiscard]] auto& HALT() noexcept { return m_haltLine; }	// In
-
 		//	|---------------|-----------------------------------|
 		//	|	MPU State	|									|
 		//	|_______________|	MPU State Definition			|
@@ -114,12 +86,15 @@ namespace EightBit {
 		//	|	1	|	1	|	HALT Acknowledge				|
 		//	|-------|-------|-----------------------------------|
 
-		auto& BA() { return m_baLine; }			// Out
-		auto& BS() { return m_bsLine; }			// Out
-
 		[[nodiscard]] auto halted() noexcept { return lowered(HALT()); }
 		void halt() noexcept { --PC();  lowerHALT(); }
 		void proceed() noexcept { ++PC(); raiseHALT(); }
+
+		DECLARE_PIN_INPUT(NMI)
+		DECLARE_PIN_INPUT(FIRQ)
+		DECLARE_PIN_INPUT(HALT)
+		DECLARE_PIN_OUTPUT(BA)
+		DECLARE_PIN_OUTPUT(BS)
 
 	protected:
 		// Default push/pop handlers
@@ -131,14 +106,6 @@ namespace EightBit {
 
 		virtual void handleRESET() final;
 		virtual void handleINT() final;
-
-		// Line handlers
-
-		virtual void lowerBA();
-		virtual void raiseBA();
-
-		virtual void lowerBS();
-		virtual void raiseBS();
 
 	private:
 		const uint8_t RESETvector = 0xfe;		// RESET vector
@@ -404,13 +371,6 @@ namespace EightBit {
 
 		uint8_t m_dp = 0;
 		uint8_t m_cc = 0;
-
-		PinLevel m_nmiLine = PinLevel::Low;		// In, Active low
-		PinLevel m_firqLine = PinLevel::Low;	// In, Active low
-		PinLevel m_haltLine = PinLevel::Low;	// In, Active low
-
-		PinLevel m_baLine = PinLevel::Low;		// Out, Bus available
-		PinLevel m_bsLine = PinLevel::Low;		// Out, Bus status
 
 		bool m_prefix10 = false;
 		bool m_prefix11 = false;

@@ -19,22 +19,7 @@ namespace EightBit {
 
 		~Processor() {};
 
-		Signal<EventArgs> RaisedRESET;
-		Signal<EventArgs> LoweredRESET;
-
-		Signal<EventArgs> RaisedINT;
-		Signal<EventArgs> LoweredINT;
-
 		[[nodiscard]] auto& PC() noexcept { return m_pc; }
-
-		[[nodiscard]] auto& RESET() noexcept { return m_resetLine; }
-		[[nodiscard]] auto& INT() noexcept { return m_intLine; }
-
-		virtual void lowerRESET();
-		virtual void raiseRESET();
-
-		virtual void lowerINT();
-		virtual void raiseINT();
 
 		int run(int limit);
 		virtual int step() = 0;
@@ -43,6 +28,9 @@ namespace EightBit {
 
 		[[nodiscard]] virtual register16_t peekWord(register16_t address) = 0;
 		virtual void pokeWord(register16_t address, register16_t value) = 0;
+
+		DECLARE_PIN_INPUT(RESET)
+		DECLARE_PIN_INPUT(INT)
 
 	protected:
 		Processor(Bus& memory);
@@ -111,8 +99,5 @@ namespace EightBit {
 		Bus& m_bus;
 		uint8_t m_opcode = Mask8;
 		register16_t m_pc;
-
-		PinLevel m_intLine = PinLevel::Low;		// In
-		PinLevel m_resetLine = PinLevel::Low;	// In
 	};
 }

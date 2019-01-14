@@ -7,60 +7,16 @@
 EightBit::mc6809::mc6809(Bus& bus)
 : BigEndianProcessor(bus) {}
 
+DEFINE_PIN_LEVEL_CHANGERS(NMI, mc6809);
+DEFINE_PIN_LEVEL_CHANGERS(FIRQ, mc6809);
+DEFINE_PIN_LEVEL_CHANGERS(HALT, mc6809);
+DEFINE_PIN_LEVEL_CHANGERS(BA, mc6809);
+DEFINE_PIN_LEVEL_CHANGERS(BS, mc6809);
+
 void EightBit::mc6809::raisePOWER() {
 	BigEndianProcessor::raisePOWER();
 	lowerBA();
 	lowerBS();
-}
-
-void EightBit::mc6809::lowerNMI() {
-	lower(NMI());
-	LoweredNMI.fire(EventArgs::empty());
-}
-
-void EightBit::mc6809::raiseNMI() {
-	raise(NMI());
-	RaisedNMI.fire(EventArgs::empty());
-}
-
-void EightBit::mc6809::lowerFIRQ() {
-	lower(FIRQ());
-	LoweredFIRQ.fire(EventArgs::empty());
-}
-
-void EightBit::mc6809::raiseFIRQ() {
-	raise(FIRQ());
-	RaisedFIRQ.fire(EventArgs::empty());
-}
-
-void EightBit::mc6809::lowerHALT() {
-	lower(HALT());
-	LoweredHALT.fire(EventArgs::empty());
-}
-
-void EightBit::mc6809::raiseHALT() {
-	raise(HALT());
-	RaisedHALT.fire(EventArgs::empty());
-}
-
-void EightBit::mc6809::lowerBA() {
-	lower(BA());
-	LoweredNMI.fire(EventArgs::empty());
-}
-
-void EightBit::mc6809::raiseBA() {
-	raise(BA());
-	RaisedBA.fire(EventArgs::empty());
-}
-
-void EightBit::mc6809::lowerBS() {
-	lower(BS());
-	LoweredBS.fire(EventArgs::empty());
-}
-
-void EightBit::mc6809::raiseBS() {
-	raise(BS());
-	RaisedBS.fire(EventArgs::empty());
 }
 
 int EightBit::mc6809::step() {

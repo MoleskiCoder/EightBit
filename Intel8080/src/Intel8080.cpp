@@ -32,7 +32,7 @@ void EightBit::Intel8080::handleRESET() {
 
 void EightBit::Intel8080::handleINT() {
 	IntelProcessor::handleINT();
-	raise(HALT());
+	raiseHALT();
 	if (m_interruptEnable) {
 		di();
 		Processor::execute(BUS().DATA());

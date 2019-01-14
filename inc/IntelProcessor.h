@@ -34,11 +34,6 @@ namespace EightBit {
 
 		~IntelProcessor() = default;
 
-		Signal<EventArgs> RaisedHALT;
-		Signal<EventArgs> LoweredHALT;
-
-		[[nodiscard]] auto& HALT() noexcept { return m_haltLine; }
-
 		[[nodiscard]] const auto& getDecodedOpcode(const size_t i) const noexcept {
 			return m_decodedOpcodes[i];
 		}
@@ -64,6 +59,8 @@ namespace EightBit {
 		[[nodiscard]] auto& L() { return HL().low; }
 
 		void raisePOWER() override;
+
+		DECLARE_PIN_INPUT(HALT)
 
 	protected:
 		IntelProcessor(Bus& bus);
@@ -176,14 +173,9 @@ namespace EightBit {
 		void halt() noexcept { --PC();  lowerHALT(); }
 		void proceed() noexcept { ++PC(); raiseHALT(); }
 
-		virtual void lowerHALT();
-		virtual void raiseHALT();
-
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
 		register16_t m_sp = Mask16;
 		register16_t m_memptr;
-
-		PinLevel m_haltLine = PinLevel::Low;	// Out, Active low
 	};
 }

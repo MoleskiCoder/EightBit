@@ -4,6 +4,11 @@
 EightBit::MOS6502::MOS6502(Bus& bus)
 : LittleEndianProcessor(bus) {}
 
+DEFINE_PIN_LEVEL_CHANGERS(NMI, MOS6502);
+DEFINE_PIN_LEVEL_CHANGERS(SO, MOS6502);
+DEFINE_PIN_LEVEL_CHANGERS(SYNC, MOS6502);
+DEFINE_PIN_LEVEL_CHANGERS(RDY, MOS6502);
+
 void EightBit::MOS6502::raisePOWER() {
 	LittleEndianProcessor::raisePOWER();
 	X() = Bit7;
@@ -12,46 +17,6 @@ void EightBit::MOS6502::raisePOWER() {
 	P() = RF;
 	S() = Mask8;
 	lowerSYNC();
-}
-
-void EightBit::MOS6502::lowerNMI() {
-	lower(NMI());
-	LoweredNMI.fire(EventArgs::empty());
-}
-
-void EightBit::MOS6502::raiseNMI() {
-	raise(NMI());
-	RaisedNMI.fire(EventArgs::empty());
-}
-
-void EightBit::MOS6502::lowerSO() {
-	lower(SO());
-	LoweredSO.fire(EventArgs::empty());
-}
-
-void EightBit::MOS6502::raiseSO() {
-	raise(SO());
-	RaisedSO.fire(EventArgs::empty());
-}
-
-void EightBit::MOS6502::lowerSYNC() {
-	lower(SYNC());
-	LoweredSYNC.fire(EventArgs::empty());
-}
-
-void EightBit::MOS6502::raiseSYNC() {
-	raise(SYNC());
-	RaisedSYNC.fire(EventArgs::empty());
-}
-
-void EightBit::MOS6502::lowerRDY() {
-	lower(RDY());
-	LoweredRDY.fire(EventArgs::empty());
-}
-
-void EightBit::MOS6502::raiseRDY() {
-	raise(RDY());
-	RaisedRDY.fire(EventArgs::empty());
 }
 
 int EightBit::MOS6502::step() {
@@ -98,7 +63,7 @@ void EightBit::MOS6502::handleNMI() {
 }
 
 void EightBit::MOS6502::handleINT() {
-	raise(INT());
+	raiseINT();
 	m_handlingINT = true;
 	opcode() = 0x00;	// BRK
 }

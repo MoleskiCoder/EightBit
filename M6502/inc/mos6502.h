@@ -31,30 +31,9 @@ namespace EightBit {
 		Signal<MOS6502> ExecutingInstruction;
 		Signal<MOS6502> ExecutedInstruction;
 
-		Signal<EventArgs> RaisedNMI;
-		Signal<EventArgs> LoweredNMI;
-
-		Signal<EventArgs> RaisedSO;
-		Signal<EventArgs> LoweredSO;
-
-		Signal<EventArgs> RaisedSYNC;
-		Signal<EventArgs> LoweredSYNC;
-
-		Signal<EventArgs> RaisedRDY;
-		Signal<EventArgs> LoweredRDY;
-
 		int execute() final;
 		int step() final;
 		void raisePOWER() final;
-
-		virtual void lowerNMI();
-		virtual void raiseNMI();
-
-		virtual void lowerSO();
-		virtual void raiseSO();
-
-		virtual void lowerRDY();
-		virtual void raiseRDY();
 
 		auto& X() { return x; }
 		auto& Y() { return y; }
@@ -64,15 +43,12 @@ namespace EightBit {
 		auto& P() { return p; }
 		const auto& P() const { return p; }
 
-		auto& NMI() { return m_nmiLine; }	// In
-		auto& SO() { return m_soLine; }		// In
-		auto& SYNC() { return m_syncLine; }	// Out
-		auto& RDY() { return m_rdyLine; }	// In
+		DECLARE_PIN_INPUT(NMI)
+		DECLARE_PIN_INPUT(SO)
+		DECLARE_PIN_OUTPUT(SYNC)
+		DECLARE_PIN_INPUT(RDY)
 
 	protected:
-		virtual void lowerSYNC();
-		virtual void raiseSYNC();
-
 		virtual void handleRESET() final;
 		virtual void handleINT() final;
 
@@ -210,11 +186,6 @@ namespace EightBit {
 		uint8_t a = 0;		// accumulator
 		uint8_t s = 0;		// stack pointer
 		uint8_t p = 0;		// processor status
-
-		PinLevel m_nmiLine = PinLevel::Low;		// In, Active low
-		PinLevel m_soLine = PinLevel::Low;		// In, Active low
-		PinLevel m_syncLine = PinLevel::Low;	// Out, Active high
-		PinLevel m_rdyLine = PinLevel::Low;		// In, Active high
 
 		register16_t m_intermediate;
 

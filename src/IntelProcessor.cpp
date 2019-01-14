@@ -7,20 +7,12 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 		m_decodedOpcodes[i] = i;
 }
 
+DEFINE_PIN_LEVEL_CHANGERS(HALT, IntelProcessor);
+
 void EightBit::IntelProcessor::raisePOWER() {
 	Processor::raisePOWER();
 	raiseHALT();
 	SP() = AF() = BC() = DE() = HL() = Mask16;
-}
-
-void EightBit::IntelProcessor::lowerHALT() {
-	lower(HALT());
-	LoweredHALT.fire(EventArgs::empty());
-}
-
-void EightBit::IntelProcessor::raiseHALT() {
-	raise(HALT());
-	RaisedHALT.fire(EventArgs::empty());
 }
 
 void EightBit::IntelProcessor::handleRESET() {
