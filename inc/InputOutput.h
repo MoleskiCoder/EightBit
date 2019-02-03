@@ -11,7 +11,7 @@ namespace EightBit {
 		InputOutput() = default;
 
 		[[nodiscard]] auto read(const uint8_t port) { return readInputPort(port); }
-		void write(const uint8_t port, const uint8_t value) { return writeOutputPort(port, value); }
+		void write(const uint8_t port, const uint8_t value) { writeOutputPort(port, value); }
 
 		[[nodiscard]] uint8_t readInputPort(uint8_t port);
 		void writeInputPort(const uint8_t port, const uint8_t value) noexcept { m_input[port] = value; }

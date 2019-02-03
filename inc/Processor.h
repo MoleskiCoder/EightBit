@@ -81,7 +81,7 @@ namespace EightBit {
 
 		void setWord(const register16_t address, const register16_t value) {
 			BUS().ADDRESS() = address;
-			return setWord(value);
+			setWord(value);
 		}
 
 		void jump(const register16_t destination) noexcept {
