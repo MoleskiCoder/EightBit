@@ -12,3 +12,4 @@ Assortment of eight-bit processor emulators:
 Some support chips:
 
 * Motorola MC6850
+* MOS 6532 (Not working)
