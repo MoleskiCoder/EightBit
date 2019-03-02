@@ -29,21 +29,19 @@ std::string EightBit::Disassembler::state(Intel8080& cpu) {
 	auto h = cpu.H();
 	auto l = cpu.L();
 
-	std::ostringstream output;
-
-	output
-		<< "PC=" << pc
-		<< " "
-		<< "SP=" << sp
-		<< " " << "A=" << hex(a) << " " << "F=" << flags(f)
-		<< " " << "B=" << hex(b) << " " << "C=" << hex(c)
-		<< " " << "D=" << hex(d) << " " << "E=" << hex(e)
-		<< " " << "H=" << hex(h) << " " << "L=" << hex(l);
-
-	return output.str();
+	std::string output;
+	output.reserve(80);
+	output =
+		"PC=" + hex(pc.word)
+		+ " SP=" + hex(sp.word)
+		+ " A=" + hex(a) + " F=" + flags(f)
+		+ " B=" + hex(b) + " C=" + hex(c)
+		+ " D=" + hex(d) + " E=" + hex(e)
+		+ " H=" + hex(h) + " L=" + hex(l);
+	return output;
 }
 
-std::string EightBit::Disassembler::RP(int rp) const {
+std::string EightBit::Disassembler::RP(int rp) {
 	switch (rp) {
 	case 0:
 		return "B";
@@ -57,7 +55,7 @@ std::string EightBit::Disassembler::RP(int rp) const {
 	throw std::logic_error("Unhandled register pair");
 }
 
-std::string EightBit::Disassembler::RP2(int rp) const {
+std::string EightBit::Disassembler::RP2(int rp) {
 	switch (rp) {
 	case 0:
 		return "B";
@@ -71,7 +69,7 @@ std::string EightBit::Disassembler::RP2(int rp) const {
 	throw std::logic_error("Unhandled register pair");
 }
 
-std::string EightBit::Disassembler::R(int r) const {
+std::string EightBit::Disassembler::R(int r) {
 	switch (r) {
 	case 0:
 		return "B";
@@ -160,12 +158,12 @@ std::string EightBit::Disassembler::alu2(int which) {
 }
 
 std::string EightBit::Disassembler::disassemble(Intel8080& cpu) {
-	std::ostringstream output;
-	disassemble(output, cpu, cpu.PC().word);
-	return output.str();
+	return disassemble(cpu, cpu.PC().word);
 }
 
-void EightBit::Disassembler::disassemble(std::ostringstream& output, Intel8080& cpu, uint16_t pc) {
+std::string EightBit::Disassembler::disassemble(Intel8080& cpu, uint16_t pc) {
+
+	std::ostringstream output;
 
 	auto opcode = BUS().peek(pc);
 
@@ -186,30 +184,23 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Intel8080& 
 
 	auto dumpCount = 0;
 
-	std::string specification = "";
-
-	disassemble(
-		output, cpu, pc,
-		specification, dumpCount,
-		x, y, z, p, q);
+	const std::string specification = disassemble(dumpCount, x, y, z, p, q);
 
 	for (int i = 0; i < dumpCount; ++i)
 		output << hex(BUS().peek(pc + i + 1));
 
-	output << '\t';
 	m_formatter.parse(specification);
-	output << m_formatter % (int)immediate % (int)absolute % relative % (int)displacement % indexedImmediate;
+	output << '\t' << m_formatter % (int)immediate % (int)absolute % relative % (int)displacement % indexedImmediate;
+
+	return output.str();
 }
 
-void EightBit::Disassembler::disassemble(
-	std::ostringstream&,
-	const Intel8080&,
-	uint16_t,
-	std::string& specification,
+std::string EightBit::Disassembler::disassemble(
 	int& dumpCount,
 	int x, int y, int z,
 	int p, int q) {
 
+	std::string specification;
 	switch (x) {
 	case 0:
 		switch (z) {
@@ -433,48 +424,43 @@ void EightBit::Disassembler::disassemble(
 		}
 		break;
 	}
+	return specification;
 }
 
 std::string EightBit::Disassembler::flag(uint8_t value, int flag, std::string represents, std::string off) {
-	std::ostringstream output;
-	output << (value & flag ? represents : off);
-	return output.str();
+	return value & flag ? represents : off;
 }
 
 std::string EightBit::Disassembler::flags(uint8_t value) {
-	std::ostringstream output;
-	output
-		<< flag(value, Intel8080::SF, "S")
-		<< flag(value, Intel8080::ZF, "Z")
-		<< flag(value, Chip::Bit5, "1", "0")
-		<< flag(value, Intel8080::AC, "A")
-		<< flag(value, Chip::Bit3, "1", "0")
-		<< flag(value, Intel8080::PF, "P")
-		<< flag(value, Chip::Bit1, "1", "0")
-		<< flag(value, Intel8080::CF, "C");
-	return output.str();
+	std::string returned;
+	returned.reserve(8);
+	returned += flag(value, Intel8080::SF, "S");
+	returned += flag(value, Intel8080::ZF, "Z");
+	returned += flag(value, Chip::Bit5, "1", "0");
+	returned += flag(value, Intel8080::AC, "A");
+	returned += flag(value, Chip::Bit3, "1", "0");
+	returned += flag(value, Intel8080::PF, "P");
+	returned += flag(value, Chip::Bit1, "1", "0");
+	returned += flag(value, Intel8080::CF, "C");
+	return returned;
 }
 
 std::string EightBit::Disassembler::hex(uint8_t value) {
-	std::ostringstream output;
-	output << std::hex << std::setw(2) << std::setfill('0') << (int)value;
-	return output.str();
+	static char digits[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' , 'a', 'b', 'c', 'd', 'e', 'f' };
+	std::string returned;
+	returned.reserve(2);
+	returned += digits[Chip::highNibble(value)];
+	returned += digits[Chip::lowNibble(value)];
+	return returned;
 }
 
 std::string EightBit::Disassembler::hex(uint16_t value) {
-	std::ostringstream output;
-	output << std::hex << std::setw(4) << std::setfill('0') << (int)value;
-	return output.str();
+	const register16_t converted(value);
+	return hex(converted.high) + hex(converted.low);
 }
 
 std::string EightBit::Disassembler::binary(uint8_t value) {
 	std::ostringstream output;
 	output << std::bitset<8>(value);
-	return output.str();
-}
-
-std::string EightBit::Disassembler::invalid(uint8_t value) {
-	std::ostringstream output;
-	output << "Invalid instruction: " << hex(value) << "(" << binary(value) << ")";
 	return output.str();
 }
