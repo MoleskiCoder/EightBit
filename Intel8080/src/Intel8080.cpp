@@ -238,12 +238,12 @@ void EightBit::Intel8080::cmc() {
 }
 
 void EightBit::Intel8080::xhtl() {
-	MEMPTR().low = BUS().read(SP());
-	BUS().write(L());
+	MEMPTR().low = busRead(SP());
+	busWrite(L());
 	L() = MEMPTR().low;
 	++BUS().ADDRESS();
-	MEMPTR().high = BUS().read();
-	BUS().write(H());
+	MEMPTR().high = busRead();
+	busWrite(H());
 	H() = MEMPTR().high;
 }
 
@@ -331,11 +331,11 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					BUS().write(BC(), A());
+					busWrite(BC(), A());
 					tick(7);
 					break;
 				case 1:	// LD (DE),A
-					BUS().write(DE(), A());
+					busWrite(DE(), A());
 					tick(7);
 					break;
 				case 2:	// LD (nn),HL
@@ -345,7 +345,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 					break;
 				case 3: // LD (nn),A
 					BUS().ADDRESS() = fetchWord();
-					BUS().write(A());
+					busWrite(A());
 					tick(13);
 					break;
 				default:
@@ -355,11 +355,11 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					A() = BUS().read(BC());
+					A() = busRead(BC());
 					tick(7);
 					break;
 				case 1:	// LD A,(DE)
-					A() = BUS().read(DE());
+					A() = busRead(DE());
 					tick(7);
 					break;
 				case 2:	// LD HL,(nn)
@@ -369,7 +369,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 					break;
 				case 3:	// LD A,(nn)
 					BUS().ADDRESS() = fetchWord();
-					A() = BUS().read();
+					A() = busRead();
 					tick(13);
 					break;
 				default:

@@ -191,7 +191,7 @@ namespace EightBit {
 			case 5:
 				return HL2().low;
 			case 6:
-				return BUS().read(UNLIKELY(m_displaced) ?  displacedAddress() : HL().word);
+				return busRead(UNLIKELY(m_displaced) ?  displacedAddress() : HL().word);
 			case 7:
 				return A();
 			default:
@@ -222,36 +222,11 @@ namespace EightBit {
 				HL2().low = value;
 				break;
 			case 6:
-				BUS().write(UNLIKELY(m_displaced) ? displacedAddress() : HL().word, value);
+				busWrite(UNLIKELY(m_displaced) ? displacedAddress() : HL().word, value);
 				break;
 			case 7:
 				A() = value;
 				break;
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		[[nodiscard]] auto R2(const int r) {
-			ASSUME(r >= 0);
-			ASSUME(r <= 7);
-			switch (r) {
-			case 0:
-				return B();
-			case 1:
-				return C();
-			case 2:
-				return D();
-			case 3:
-				return E();
-			case 4:
-				return H();
-			case 5:
-				return L();
-			case 6:
-				return BUS().read(HL());
-			case 7:
-				return A();
 			default:
 				UNREACHABLE;
 			}
@@ -280,7 +255,7 @@ namespace EightBit {
 				L() = value;
 				break;
 			case 6:
-				BUS().write(HL(), value);
+				busWrite(HL(), value);
 				break;
 			case 7:
 				A() = value;
