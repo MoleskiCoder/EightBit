@@ -93,10 +93,7 @@ void Board::Cpu_ExecutingInstruction_Profile(EightBit::Intel8080& cpu) {
 }
 
 void Board::Cpu_ExecutingInstruction_Debug(const EightBit::Intel8080& cpu) {
-
-	std::cerr
-		<< EightBit::Disassembler::state(CPU())
-		<< "\t"
-		<< m_disassembler.disassemble(CPU())
-		<< '\n';
+	const std::string disassembled = 
+		EightBit::Disassembler::state(CPU()) + '\t' + m_disassembler.disassemble(CPU()) + '\n';
+	std::cerr << disassembled;
 }
