@@ -984,4 +984,70 @@ TEST_CASE("Branch on Less than or Equal to Zero", "[BLE]") {
 		cpu.step();
 		REQUIRE(cpu.A() == 2);
 	}
+
+	cpu.lowerRESET();
+	cpu.step();
+
+	// Test the JSR - Jump to Subroutine - instruction.
+	// INDEXED mode:   JSR   D,Y
+	SECTION("JSR") {
+
+		// Set up a word to test at address 0x205
+		cpu.pokeWord(0x205, 0x03ff);
+
+		// Set register D
+		cpu.D() = 0x105;
+
+		// Set register Y to point to that location minus 5
+		cpu.Y() = 0x200;
+
+		// Set register S to point to 0x915
+		cpu.S() = 0x915;
+
+		// Two bytes of instruction
+		board.poke(0xB00, 0xAD);
+		board.poke(0xB01, 0xAB);
+		board.poke(0xB02, 0x11); // Junk
+		board.poke(0xB03, 0x22); // Junk
+
+		cpu.PC() = 0xB00;
+		cpu.CC() = 0;
+
+		cpu.step();
+
+		REQUIRE(cpu.CC() == 0);
+		REQUIRE(cpu.A() == 1);
+		REQUIRE(cpu.B() == 5);
+		REQUIRE(cpu.DP() == 0);
+		REQUIRE(cpu.X() == 0);
+		REQUIRE(cpu.Y() == 0x200);
+		REQUIRE(cpu.D() == 0x105);
+		REQUIRE(cpu.S() == 0x913);
+		REQUIRE(cpu.U() == 0);
+		REQUIRE(cpu.PC() == 0x305);
+
+		REQUIRE(board.peek(0x914) == 2);
+		REQUIRE(board.peek(0x913) == 0xb);
+
+		REQUIRE(cpu.cycles() == 10);
+	}
+
+	cpu.lowerRESET();
+	cpu.step();
+
+	SECTION("RTS") {
+
+		cpu.S().word = 0x300;
+
+		cpu.pokeWord(0x300, 0x102C); // Write return address
+		board.poke(0xB00, 0x39); // RTS
+
+		cpu.PC().word = 0xB00;
+
+		cpu.step();
+
+		REQUIRE(cpu.PC().word == 0x102C);
+		REQUIRE(cpu.S().word == 0x302);
+		REQUIRE(cpu.cycles() == 5);
+	}
 }
