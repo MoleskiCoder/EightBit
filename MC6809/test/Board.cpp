@@ -18,7 +18,7 @@ void Board::raisePOWER() {
 
 	// Get the ACIA ready for action
 	ADDRESS() = 0b1010000000000000;
-	ACIA().DATA() = EightBit::mc6850::CR0 | EightBit::mc6850::CR1;	// Master reset
+	DATA() = EightBit::mc6850::CR0 | EightBit::mc6850::CR1;	// Master reset
 	updateAciaPinsWrite();
 	ACIA().lower(ACIA().CTS());
 	ACIA().raisePOWER();
@@ -119,9 +119,7 @@ void Board::updateAciaPins() {
 
 bool Board::accessAcia() {
 	ACIA().raise(ACIA().E());
-	const bool activated = ACIA().activated();
-	if (activated)
-		ACIA().step();
+	ACIA().tick();
 	ACIA().lower(ACIA().E());
-	return activated;
+	return ACIA().activated();
 }

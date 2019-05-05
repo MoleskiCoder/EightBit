@@ -8,6 +8,8 @@
 namespace EightBit {
 	class mc6850 final : public ClockedChip {
 	public:
+		mc6850();
+
 		void raisePOWER() final;
 
 		// +--------+----------------------------------------------------------------------------------+
@@ -191,48 +193,6 @@ namespace EightBit {
 			STATUS_IRQ = 0b10000000,
 		};
 
-		// Receive data, (I) Active high
-		auto& RXDATA() { return m_RXDATA; }
-
-		// Transmit data, (O) Active high
-		auto& TXDATA() { return m_TXDATA; }
-
-		// Request to send, (O) Active low
-		auto& RTS() { return m_RTS; }
-
-		// Clear to send, (I) Active low
-		auto& CTS() { return m_CTS; }
-
-		// Data carrier detect, (I) Active low
-		auto& DCD() { return m_DCD; }
-
-		// Transmit clock, (I) Active high
-		auto& RXCLK() { return m_RXCLK; }
-
-		// Receive clock, (I) Active high
-		auto& TXCLK() { return m_TXCLK; }
-
-		// Chip select, bit 0, (I) Active high
-		auto& CS0() { return m_CS0; }
-
-		// Chip select, bit 1, (I) Active high
-		auto& CS1() { return m_CS1; }
-
-		// Chip select, bit 2, (I) Active low
-		auto& CS2() { return m_CS2; }
-
-		// Register select, (I) Active high
-		auto& RS() { return m_RS; }
-
-		// Read/Write, (I) Read high, write low
-		auto& RW() { return m_RW; }
-
-		// ACIA Enable, (I) Active high
-		auto& E() { return m_E; }
-
-		// Interrupt request, (O) Active low
-		auto& IRQ() { return m_IRQ; }
-
 		// Data, (I/O)
 		auto& DATA() { return m_data; }
 
@@ -263,6 +223,48 @@ namespace EightBit {
 		Signal<EventArgs> Receiving;
 		Signal<EventArgs> Received;
 
+		// Receive data, (I) Active high
+		DECLARE_PIN_INPUT(RXDATA)
+
+		// Transmit data, (O) Active high
+		DECLARE_PIN_OUTPUT(TXDATA)
+
+		// Request to send, (O) Active low
+		DECLARE_PIN_OUTPUT(RTS)
+
+		// Clear to send, (I) Active low
+		DECLARE_PIN_INPUT(CTS)
+
+		// Data carrier detect, (I) Active low
+		DECLARE_PIN_INPUT(DCD)
+
+		// Transmit clock, (I) Active high
+		DECLARE_PIN_INPUT(RXCLK)
+
+		// Receive clock, (I) Active high
+		DECLARE_PIN_INPUT(TXCLK)
+
+		// Chip select, bit 0, (I) Active high
+		DECLARE_PIN_INPUT(CS0)
+
+		// Chip select, bit 1, (I) Active high
+		DECLARE_PIN_INPUT(CS1)
+
+		// Chip select, bit 2, (I) Active low
+		DECLARE_PIN_INPUT(CS2)
+
+		// Register select, (I) Active high
+		DECLARE_PIN_INPUT(RS)
+
+		// Read/Write, (I) Read high, write low
+		DECLARE_PIN_INPUT(RW)
+
+		// ACIA Enable, (I) Active high
+		DECLARE_PIN_INPUT(E)
+
+		// Interrupt request, (O) Active low
+		DECLARE_PIN_OUTPUT(IRQ)
+
 	private:
 		uint8_t status();
 
@@ -277,26 +279,7 @@ namespace EightBit {
 		bool transmitReadyHigh() const { return m_transmitControl == ReadyHighInterruptDisabled; }
 		bool transmitReadyLow() const { return !transmitReadyHigh(); }
 
-		PinLevel m_RXDATA = PinLevel::Low;
-		PinLevel m_TXDATA = PinLevel::Low;
-
-		PinLevel m_RTS = PinLevel::Low;
-		PinLevel m_CTS = PinLevel::Low;
-		PinLevel m_DCD = PinLevel::Low;
 		PinLevel m_oldDCD = PinLevel::Low;	// So we can detect low -> high transition
-
-		PinLevel m_RXCLK = PinLevel::Low;
-		PinLevel m_TXCLK = PinLevel::Low;
-
-		PinLevel m_CS0 = PinLevel::Low;;
-		PinLevel m_CS1 = PinLevel::Low;;
-		PinLevel m_CS2 = PinLevel::Low;;
-
-		PinLevel m_RS = PinLevel::Low;;
-		PinLevel m_RW = PinLevel::Low;;
-
-		PinLevel m_E = PinLevel::Low;;
-		PinLevel m_IRQ = PinLevel::Low;;
 
 		uint8_t m_data = 0;
 
