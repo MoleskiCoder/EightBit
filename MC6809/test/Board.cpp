@@ -120,6 +120,7 @@ void Board::updateAciaPins() {
 bool Board::accessAcia() {
 	ACIA().raise(ACIA().E());
 	ACIA().tick();
+	const bool activated = ACIA().activated();
 	ACIA().lower(ACIA().E());
-	return ACIA().activated();
+	return activated;
 }
