@@ -46,17 +46,6 @@ private:
 	EightBit::register16_t m_disassembleAt = 0x0000;
 	bool m_ignoreDisassembly = false;
 
-	// Use the bus data to update the ACIA access/address pins
-	void updateAciaPinsRead() {
-		ACIA().raise(ACIA().RW());
-		updateAciaPins();
-	}
-	
-	void updateAciaPinsWrite() {
-		ACIA().lower(ACIA().RW());
-		updateAciaPins();
-	}
-	
 	void updateAciaPins();
 
 	bool accessAcia();

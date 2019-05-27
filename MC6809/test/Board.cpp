@@ -19,8 +19,9 @@ void Board::raisePOWER() {
 	// Get the ACIA ready for action
 	ADDRESS() = 0b1010000000000000;
 	DATA() = EightBit::mc6850::CR0 | EightBit::mc6850::CR1;	// Master reset
-	updateAciaPinsWrite();
 	ACIA().lower(ACIA().CTS());
+	ACIA().lower(ACIA().RW());
+	updateAciaPins();
 	ACIA().raisePOWER();
 	accessAcia();
 }
@@ -45,16 +46,17 @@ void Board::initialise() {
 
 	// Marshal data from memory -> ACIA
 	WrittenByte.connect([this] (EightBit::EventArgs&) {
-		updateAciaPinsWrite();
+		updateAciaPins();
 		if (ACIA().selected()) {
-			ACIA().DATA() = DATA();
+			ACIA().lower(ACIA().RW());
 			accessAcia();
 		}
 	});
 
 	// Marshal data from ACIA -> memory
 	ReadingByte.connect([this] (EightBit::EventArgs&) {
-		updateAciaPinsRead();
+		updateAciaPins();
+		ACIA().raise(ACIA().RW());
 		if (accessAcia())
 			poke(ACIA().DATA());
 	});

@@ -204,8 +204,6 @@ namespace EightBit {
 		// Receive data register;
 		auto& RDR() { return m_RDR; }
 
-		void step();
-
 		bool activated() { return powered() && raised(E()) && selected(); }
 		bool selected();
 
@@ -266,6 +264,8 @@ namespace EightBit {
 		DECLARE_PIN_OUTPUT(IRQ)
 
 	private:
+		void step();
+
 		uint8_t status();
 
 		void reset();
