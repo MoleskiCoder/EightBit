@@ -3,6 +3,8 @@
 #include <cstdint>
 
 #include <ClockedChip.h>
+#include <Signal.h>
+#include <Ram.h>
 
 /*
 	PIA 6532 combined timer, IO and 128 bytes RAM
@@ -190,16 +192,16 @@ namespace EightBit {
 		put into an OFF-STATE during Reset. Interrupt capability is disabled with the RES signal. The RES signal
 		must be held low for at least one clock period when reset is required.
 		*/
-		PinLevel& RES() { return m_res; }
+		DECLARE_PIN_INPUT(RES)
 
-		/*
+		/*            _
 		Read/Write (R/W)
 		The R/W signal is supplied by the microprocessor array and is used to control the transfer of data to and
 		from the microprocessor array and the 6532. A high on the R/W pin allows the processor to read (with proper
 		addressing) the data supplied by the 6532. A low on the R/W pin allows a write (with proper addressing) to
 		the 6532.
 		*/
-		PinLevel& RW() { return m_rw; }
+		DECLARE_PIN_INPUT(RW)
 
 		/*                 ___
 		Interrupt Request (IRQ)
@@ -207,7 +209,7 @@ namespace EightBit {
 		an interrupt from the 6532. An external pull-up device is required. The IRQ pin may be activated by a
 		transition on PA7 or timeout of the interval timer.
 		*/
-		PinLevel& IRQ() { return m_irq; }
+		DECLARE_PIN_OUTPUT(IRQ)
 
 		/*
 		Data Bus (D0-D7)
@@ -215,7 +217,7 @@ namespace EightBit {
 		allow transfer of data to and from the microprocessor array. The output buffers remain in the off state except
 		when a Read operation occurs and are capable of driving one standard TTL load and 130 pf.
 		*/
-		uint8_t& data() { return m_data; }
+		auto& DATA() { return m_data; }
 
 		/*
 		Peripheral Data Ports
@@ -236,28 +238,32 @@ namespace EightBit {
 
 		/*
 		Address Lines (A0-A6)
-		There are 7 address pins. In addition to these 7, there is 9 RAM SELECT pin. These pins, A0-A6 and RAM
+		There are 7 address pins. In addition to these 7, there is a RAM SELECT pin. These pins, A0-A6 and RAM
 		SELECT, are always used as addressing pins. There are two additional pins which are used as CHIP
 		SELECTS. They are pins CS1 and CS2.
 		*/
 		uint8_t& address() { return m_address; }
 
 		// RAM SELECT, active low
-		PinLevel& RS() { return m_rs; }
+		DECLARE_PIN_INPUT(RS)
 
 		// CHIP SELECT 1, active high
-		PinLevel& CS1() { return m_cs1; }
+		DECLARE_PIN_INPUT(CS1)
 
 		// CHIP SELECT 2, active low
-		PinLevel& CS2() { return m_cs2; }
+		DECLARE_PIN_INPUT(CS2)
 
-		void tick();
+		bool activated() { return powered() && selected(); }
+		bool selected() { return raised(CS1()) && lowered(CS2()); }
 
-		virtual void initialise() final;
+		Signal<EventArgs> Accessing;
+		Signal<EventArgs> Accessed;
+
+	private:
+		void step();
 
 		void reset();
 
-	private:
 		enum EdgeDetect { Positive, Negative };
 		enum TimerIncrement { One = 1, Eight = 8, SixtyFour = 64, OneThousandAndTwentyFour = 1024 };
 
@@ -267,8 +273,6 @@ namespace EightBit {
 		auto& DDRB() { return m_ddrb; }
 
 		auto& IF() { return m_interruptFlags; }
-
-		bool selected() { return raised(CS1()) && lowered(CS2()); }
 
 		uint8_t m_address;
 		uint8_t m_data;
@@ -280,13 +284,6 @@ namespace EightBit {
 		uint8_t m_pb;
 		uint8_t m_drb;
 		uint8_t m_ddrb;
-
-		PinLevel m_res;
-		PinLevel m_rw;
-		PinLevel m_irq;
-		PinLevel m_rs;
-		PinLevel m_cs1;
-		PinLevel m_cs2;
 
 		Ram m_ram = 0x80;
 
