@@ -113,10 +113,10 @@ EightBit::MemoryMapping Board::mapping(uint16_t address) {
 
 void Board::updateAciaPins() {
 	ACIA().DATA() = DATA();
-	ADDRESS().word & EightBit::Chip::Bit0 ? ACIA().raise(ACIA().RS()) : ACIA().lower(ACIA().RS());
-	ADDRESS().word & EightBit::Chip::Bit15 ? ACIA().raise(ACIA().CS0()) : ACIA().lower(ACIA().CS0());
-	ADDRESS().word & EightBit::Chip::Bit13 ? ACIA().raise(ACIA().CS1()) : ACIA().lower(ACIA().CS1());
-	ADDRESS().word & EightBit::Chip::Bit14 ? ACIA().raise(ACIA().CS2()) : ACIA().lower(ACIA().CS2());
+	EightBit::Device::match(ACIA().RS(), ADDRESS().word & EightBit::Chip::Bit0);
+	EightBit::Device::match(ACIA().CS0(), ADDRESS().word & EightBit::Chip::Bit15);
+	EightBit::Device::match(ACIA().CS1(), ADDRESS().word & EightBit::Chip::Bit13);
+	EightBit::Device::match(ACIA().CS2(), ADDRESS().word & EightBit::Chip::Bit14);
 }
 
 bool Board::accessAcia() {

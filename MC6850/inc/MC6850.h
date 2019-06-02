@@ -205,7 +205,7 @@ namespace EightBit {
 		auto& RDR() { return m_RDR; }
 
 		bool activated() { return powered() && raised(E()) && selected(); }
-		bool selected();
+		bool selected() { return raised(CS0()) && raised(CS1()) && lowered(CS2()); }
 
 		void markTransmitComplete();
 		void markReceiveStarting();

@@ -44,7 +44,7 @@ void EightBit::M6532::step() {
 	if (interruptTimer)
 		setFlag(IF(), Bit7);
 
-	interruptPA7 || interruptTimer ? lower(IRQ()) : raise(IRQ());
+	match(IRQ(), !(interruptPA7 || interruptTimer));
 
 	const auto read = raised(RW());
 	const auto write = lowered(RW());
