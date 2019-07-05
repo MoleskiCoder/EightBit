@@ -42,7 +42,7 @@
 
 #define DECLARE_PIN(name, visibility) \
 	public: DECLARE_PIN_SIGNALS(name) \
-	[[nodiscard]] PinLevel& name ## () noexcept { return m_## name ## _Line; } \
+	[[nodiscard]] PinLevel& name () noexcept { return m_## name ## _Line; } \
 	visibility : DECLARE_PIN_LEVEL_CHANGERS(name) \
 	private: DECLARE_PIN_MEMBER(name)
 
