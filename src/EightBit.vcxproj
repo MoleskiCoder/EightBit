@@ -23,7 +23,7 @@
     <ProjectGuid>{A9C24BD9-0CB4-4C84-B09B-46B815F9DA47}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>EightBit</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,15 +72,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>..\inc;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>..\inc;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>..\inc;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>..\inc;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -120,6 +124,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OmitFramePointers>true</OmitFramePointers>
       <ControlFlowGuard>false</ControlFlowGuard>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -139,6 +144,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OmitFramePointers>true</OmitFramePointers>
       <ControlFlowGuard>false</ControlFlowGuard>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,6 +161,7 @@
     <ClInclude Include="..\inc\EightBitCompilerDefinitions.h" />
     <ClInclude Include="..\inc\EventArgs.h" />
     <ClInclude Include="..\inc\InputOutput.h" />
+    <ClInclude Include="..\inc\IntelHexFile.h" />
     <ClInclude Include="..\inc\IntelProcessor.h" />
     <ClInclude Include="..\inc\LittleEndianProcessor.h" />
     <ClInclude Include="..\inc\Mapper.h" />
@@ -176,6 +183,7 @@
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="EventArgs.cpp" />
     <ClCompile Include="InputOutput.cpp" />
+    <ClCompile Include="IntelHexFile.cpp" />
     <ClCompile Include="IntelProcessor.cpp" />
     <ClCompile Include="LittleEndianProcessor.cpp" />
     <ClCompile Include="Memory.cpp" />

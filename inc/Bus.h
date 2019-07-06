@@ -2,8 +2,6 @@
 
 #include <cstdint>
 #include <string>
-#include <map>
-#include <vector>
 
 #include "Chip.h"
 #include "Signal.h"
@@ -58,7 +56,6 @@ namespace EightBit {
 		[[nodiscard]] auto& reference(const register16_t address) { return reference(address.word); }
 		[[nodiscard]] uint8_t& reference() { return reference(ADDRESS()); }
 
-		[[nodiscard]] static std::map<uint16_t, std::vector<uint8_t>> parseHexFile(std::string path);
 		void loadHexFile(std::string path);
 
 	private:
