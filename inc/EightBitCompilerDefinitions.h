@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cassert>
+#include <bitset>
+
 #ifdef _MSC_VER
 #	include <intrin.h>
 #endif
@@ -9,9 +12,9 @@
 #endif
 
 namespace EightBit {
-	[[nodiscard]] int countBits(uint8_t value) noexcept ;
-	[[nodiscard]] bool oddParity(uint8_t value) noexcept ;
-	[[nodiscard]] int findFirstSet(int value) noexcept ;
+	[[nodiscard]] int countBits(uint8_t value) noexcept;
+	[[nodiscard]] bool oddParity(uint8_t value) noexcept;
+	[[nodiscard]] int findFirstSet(unsigned long value) noexcept;
 	constexpr void assume(int expression);
 }
 
@@ -39,7 +42,7 @@ inline bool EightBit::oddParity(const uint8_t value) noexcept {
 	return countBits(value) % 2;
 }
 
-inline int EightBit::findFirstSet(const int value) noexcept {
+inline int EightBit::findFirstSet(const unsigned long value) noexcept {
 #ifdef _MSC_VER
 	unsigned long index;
 	if (_BitScanForward(&index, value))
@@ -48,7 +51,11 @@ inline int EightBit::findFirstSet(const int value) noexcept {
 #elif defined(__GNUG__)
 	return __builtin_ffs(value);
 #else
-#	error Find first set not implemented
+	std::bitset<sizeof(unsigned long) * 8> bits(value);
+	for (size_t i = bits.size() - 1; i >= 0; --i)
+		if (bits.test(i))
+			return i + 1;
+	return 0;
 #endif
 }
 
