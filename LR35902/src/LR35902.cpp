@@ -244,12 +244,11 @@ uint8_t EightBit::GameBoy::LR35902::srl(const uint8_t operand) {
 	return (operand >> 1) & ~Bit7;
 }
 
-uint8_t EightBit::GameBoy::LR35902::bit(const int n, const uint8_t operand) {
+void EightBit::GameBoy::LR35902::bit(const int n, const uint8_t operand) {
 	const auto carry = F() & CF;
 	uint8_t discarded = operand;
 	andr(discarded, 1 << n);
 	setFlag(F(), CF, carry);
-	return operand;
 }
 
 uint8_t EightBit::GameBoy::LR35902::res(const int n, const uint8_t operand) {
