@@ -423,7 +423,7 @@ void EightBit::GameBoy::Disassembler::disassembleOther(
 				dumpCount++;
 				break;
 			case 7:
-				specification = "LD HL,SP%4$+i";
+				specification = "LD HL,SP+%4%";
 				dumpCount++;
 				break;
 			}
