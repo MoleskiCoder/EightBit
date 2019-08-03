@@ -35,11 +35,11 @@ void EightBit::GameBoy::IoRegisters::Bus_ReadingByte(EightBit::EventArgs) {
 				auto directionKeys = m_scanP14 && !m_p14;
 				auto miscKeys = m_scanP15 && !m_p15;
 				auto live = directionKeys || miscKeys;
-				auto rightOrA = live && !m_p10;
-				auto leftOrB = live && !m_p11;
-				auto upOrSelect = live && !m_p12;
-				auto downOrStart = live && !m_p13;
-				auto lowNibble = ((int)!rightOrA) | ((int)!leftOrB << 1) | ((int)!upOrSelect << 2) | ((int)!downOrStart << 3);
+				auto rightOrA = (live && !m_p10) ? 0 : Chip::Bit0;
+				auto leftOrB = (live && !m_p11) ? 0 : Chip::Bit1;
+				auto upOrSelect = (live && !m_p12) ? 0 : Chip::Bit2;
+				auto downOrStart = (live && !m_p13) ? 0 : Chip::Bit3;
+				auto lowNibble = rightOrA | leftOrB | upOrSelect | downOrStart;
 				auto highNibble = Chip::promoteNibble(Chip::Mask4);
 				auto value = lowNibble | highNibble;
 				poke(port, lowNibble | highNibble);
