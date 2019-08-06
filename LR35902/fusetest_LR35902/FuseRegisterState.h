@@ -24,7 +24,5 @@ namespace Fuse {
 	private:
 		void readInternal(std::ifstream& file);
 		void readExternal(std::ifstream& file);
-
-		static std::string hex(int value);
 	};
 }

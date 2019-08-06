@@ -26,12 +26,3 @@ void Fuse::RegisterState::readInternal(std::ifstream& file) {
 	file >> tstates;
 	file >> std::hex;
 }
-
-std::string Fuse::RegisterState::hex(int value) {
-	std::ostringstream output;
-	output << std::hex
-		<< std::setw(4)
-		<< std::setfill('0')
-		<< value;
-	return output.str();
-}
