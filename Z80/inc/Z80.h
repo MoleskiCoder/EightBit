@@ -343,7 +343,7 @@ namespace EightBit {
 		void ccf();
 		void cpl();
 
-		void xhtl();
+		void xhtl(register16_t& exchange);
 
 		void blockCompare(register16_t source, register16_t& counter);
 

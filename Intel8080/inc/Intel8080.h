@@ -177,7 +177,7 @@ namespace EightBit {
 		void stc();
 		void cmc();
 
-		void xhtl();
+		void xhtl(register16_t& exchange);
 
 		void writePort(uint8_t port);
 		void writePort();

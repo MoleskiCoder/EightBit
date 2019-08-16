@@ -237,14 +237,15 @@ void EightBit::Intel8080::cmc() {
 	clearFlag(F(), CF, F() & CF);
 }
 
-void EightBit::Intel8080::xhtl() {
+void EightBit::Intel8080::xhtl(register16_t& exchange) {
 	MEMPTR().low = busRead(SP());
-	busWrite(L());
-	L() = MEMPTR().low;
 	++BUS().ADDRESS();
 	MEMPTR().high = busRead();
-	busWrite(H());
-	H() = MEMPTR().high;
+	busWrite(exchange.high);
+	exchange.high = MEMPTR().high;
+	--BUS().ADDRESS();
+	busWrite(exchange.low);
+	exchange.low = MEMPTR().low;
 }
 
 void EightBit::Intel8080::writePort(const uint8_t port) {
@@ -543,7 +544,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 				tick(11);
 				break;
 			case 4:	// EX (SP),HL
-				xhtl();
+				xhtl(HL());
 				tick(19);
 				break;
 			case 5:	// EX DE,HL

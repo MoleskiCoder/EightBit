@@ -487,14 +487,15 @@ void EightBit::Z80::ccf() {
 	adjustXY<Z80>(F(), A());
 }
 
-void EightBit::Z80::xhtl() {
+void EightBit::Z80::xhtl(register16_t& exchange) {
 	MEMPTR().low = busRead(SP());
-	busWrite(HL2().low);
-	HL2().low = MEMPTR().low;
 	++BUS().ADDRESS();
 	MEMPTR().high = busRead();
-	busWrite(HL2().high);
-	HL2().high = MEMPTR().high;
+	busWrite(exchange.high);
+	exchange.high = MEMPTR().high;
+	--BUS().ADDRESS();
+	busWrite(exchange.low);
+	exchange.low = MEMPTR().low;
 }
 
 void EightBit::Z80::blockCompare(const register16_t source, register16_t& counter) {
@@ -592,9 +593,9 @@ bool EightBit::Z80::indr() {
 
 void EightBit::Z80::blockOut(const register16_t source, register16_t& destination) {
 	const auto value = busRead(source);
+	destination.high = decrement(destination.high);
 	BUS().ADDRESS() = destination;
 	writePort();
-	destination.high = decrement(destination.high);
 	MEMPTR() = destination;
 	setFlag(F(), NF, value & Bit7);
 	setFlag(F(), HC | CF, (L() + value) > 0xff);
@@ -790,7 +791,8 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 				tick(7);
 		} else {
 			busWrite(operand);
-			R2(z, operand);
+			if (LIKELY(!memoryZ))
+				R2(z, operand);
 			tick(15);
 		}
 	}
@@ -1377,7 +1379,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				tick(11);
 				break;
 			case 4:	// EX (SP),HL
-				xhtl();
+				xhtl(HL2());
 				tick(19);
 				break;
 			case 5:	// EX DE,HL

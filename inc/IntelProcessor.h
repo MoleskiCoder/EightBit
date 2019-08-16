@@ -161,9 +161,11 @@ namespace EightBit {
 		}
 
 		auto jrConditional(const int condition) {
-			const int8_t offset = fetchByte();
-			if (condition)
+			const auto offsetAddress = PC()++;
+			if (condition) {
+				const auto offset = busRead(offsetAddress);
 				jr(offset);
+			}
 			return !!condition;
 		}
 
