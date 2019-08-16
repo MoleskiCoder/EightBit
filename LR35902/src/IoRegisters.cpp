@@ -32,20 +32,17 @@ void EightBit::GameBoy::IoRegisters::Bus_ReadingByte(EightBit::EventArgs) {
 
 		// Port/Mode Registers
 		case P1: {
-				auto p14 = m_scanP14 && !m_p14;
-				auto p15 = m_scanP15 && !m_p15;
-				auto live = p14 || p15;
-				auto p10 = live && !m_p10;
-				auto p11 = live && !m_p11;
-				auto p12 = live && !m_p12;
-				auto p13 = live && !m_p13;
-				poke(port,
-					((int)!p10)
-					| ((int)!p11 << 1)
-					| ((int)!p12 << 2)
-					| ((int)!p13 << 3)
-					| Chip::Bit4 | Chip::Bit5
-					| Chip::Bit6 | Chip::Bit7);
+				auto directionKeys = m_scanP14 && !m_p14;
+				auto miscKeys = m_scanP15 && !m_p15;
+				auto live = directionKeys || miscKeys;
+				auto rightOrA = (live && !m_p10) ? 0 : Chip::Bit0;
+				auto leftOrB = (live && !m_p11) ? 0 : Chip::Bit1;
+				auto upOrSelect = (live && !m_p12) ? 0 : Chip::Bit2;
+				auto downOrStart = (live && !m_p13) ? 0 : Chip::Bit3;
+				auto lowNibble = rightOrA | leftOrB | upOrSelect | downOrStart;
+				auto highNibble = Chip::promoteNibble(Chip::Mask4);
+				auto value = lowNibble | highNibble;
+				poke(port, lowNibble | highNibble);
 			}
 			break;
 		case SB:
