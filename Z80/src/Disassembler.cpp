@@ -300,6 +300,12 @@ void EightBit::Disassembler::disassembleED(
 		break;
 	case 1:
 		switch (z) {
+		case 0:
+			specification = "IN " + R(y) + ",(C)";
+			break;
+		case 1:
+			specification = "OUT (C)," + (y != 6 ? R(y) : "0");
+			break;
 		case 2:
 			switch (q) {
 			case 0:	// SBC HL,rp
