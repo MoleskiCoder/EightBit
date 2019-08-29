@@ -451,7 +451,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 		break;
 	case 1:	// 8-bit loading
 		if (UNLIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
-			halt();
+			lowerHALT();
 		} else {
 			R(y, R(z));
 			if (UNLIKELY((y == 6) || (z == 6)))	// M operations

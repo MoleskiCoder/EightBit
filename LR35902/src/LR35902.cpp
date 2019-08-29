@@ -315,8 +315,7 @@ int EightBit::GameBoy::LR35902::step() {
 				const int index = EightBit::findFirstSet(masked);
 				BUS().DATA() = 0x38 + (index << 3);
 			} else {
-				if (halted())
-					proceed();
+				raiseHALT();
 			}
 		}
 
@@ -324,7 +323,7 @@ int EightBit::GameBoy::LR35902::step() {
 			handleRESET();
 		} else if (UNLIKELY(lowered(INT()))) {
 			handleINT();
-		} else if (UNLIKELY(halted())) {
+		} else if (UNLIKELY(lowered(HALT()))) {
 			Processor::execute(0);	// NOP
 		} else {
 			Processor::execute(fetchByte());
@@ -589,7 +588,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 		break;
 	case 1:	// 8-bit loading
 		if (UNLIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
-			halt();
+			lowerHALT();
 		} else {
 			R(y, R(z));
 			if (UNLIKELY((y == 6) || (z == 6))) // M operations
