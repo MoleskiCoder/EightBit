@@ -56,8 +56,7 @@ void EightBit::Z80::handleRESET() {
 
 void EightBit::Z80::handleNMI() {
 	raiseNMI();
-	if (halted())
-		proceed();
+	raiseHALT();
 	IFF1() = false;
 	restart(0x66);
 	tick(13);
@@ -65,8 +64,7 @@ void EightBit::Z80::handleNMI() {
 
 void EightBit::Z80::handleINT() {
 	IntelProcessor::handleINT();
-	if (halted())
-		proceed();
+	raiseHALT();
 	if (IFF1()) {
 		di();
 		switch (IM()) {
@@ -675,7 +673,7 @@ int EightBit::Z80::step() {
 			handleNMI();
 		} else if (UNLIKELY(lowered(INT()))) {
 			handleINT();
-		} else if (UNLIKELY(halted())) {
+		} else if (UNLIKELY(lowered(HALT()))) {
 			IntelProcessor::execute(0);	// NOP
 		} else {
 			IntelProcessor::execute(fetchByte());
@@ -1274,7 +1272,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			if (UNLIKELY(memoryY || memoryZ))	// M operations
 				tick(3);
 		} else { 	// Exception (replaces LD (HL), (HL))
-			halt();
+			lowerHALT();
 		}
 		tick(4);
 		break;

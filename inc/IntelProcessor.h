@@ -171,10 +171,6 @@ namespace EightBit {
 
 		void ret() final;
 
-		[[nodiscard]] auto halted() noexcept { return lowered(HALT()); }
-		void halt() noexcept { --PC();  lowerHALT(); }
-		void proceed() noexcept { ++PC(); raiseHALT(); }
-
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
 		register16_t m_sp = Mask16;
