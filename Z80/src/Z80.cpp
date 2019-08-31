@@ -69,7 +69,7 @@ void EightBit::Z80::handleINT() {
 		di();
 		switch (IM()) {
 		case 0:		// i8080 equivalent
-			IntelProcessor::execute(BUS().DATA());
+			execute(BUS().DATA());
 			break;
 		case 1:
 			restart(7 << 3);
@@ -674,9 +674,9 @@ int EightBit::Z80::step() {
 		} else if (UNLIKELY(lowered(INT()))) {
 			handleINT();
 		} else if (UNLIKELY(lowered(HALT()))) {
-			IntelProcessor::execute(0);	// NOP
+			execute(0);	// NOP
 		} else {
-			IntelProcessor::execute(fetchByte());
+			execute(fetchByte());
 		}
 	}
 	ExecutedInstruction.fire(*this);
@@ -1368,7 +1368,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				if (UNLIKELY(m_displaced))
 					fetchDisplacement();
 				lowerM1();
-				IntelProcessor::execute(fetchByte());
+				execute(fetchByte());
 				break;
 			case 2:	// OUT (n),A
 				writePort(fetchByte());
@@ -1418,17 +1418,17 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				case 1:	// DD prefix
 					m_displaced = m_prefixDD = true;
 					lowerM1();
-					IntelProcessor::execute(fetchByte());
+					execute(fetchByte());
 					break;
 				case 2:	// ED prefix
 					m_prefixED = true;
 					lowerM1();
-					IntelProcessor::execute(fetchByte());
+					execute(fetchByte());
 					break;
 				case 3:	// FD prefix
 					m_displaced = m_prefixFD = true;
 					lowerM1();
-					IntelProcessor::execute(fetchByte());
+					execute(fetchByte());
 					break;
 				default:
 					UNREACHABLE;

@@ -52,6 +52,7 @@ namespace EightBit {
 		Signal<Z80> ExecutingInstruction;
 		Signal<Z80> ExecutedInstruction;
 
+		int execute(uint8_t opcode) { return IntelProcessor::execute(opcode); }
 		int execute() final;
 		int step() final;
 
