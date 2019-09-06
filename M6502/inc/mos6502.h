@@ -33,7 +33,6 @@ namespace EightBit {
 
 		int execute() final;
 		int step() final;
-		void raisePOWER() final;
 
 		auto& X() { return x; }
 		auto& Y() { return y; }

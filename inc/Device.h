@@ -21,16 +21,20 @@
 
 #define DEFINE_PIN_LEVEL_RAISE(name, within) \
 	void EightBit:: within ::raise ## name() { \
-		Raising ## name.fire(EventArgs::empty()); \
-		raise( name ()); \
-		Raised ## name.fire(EventArgs::empty()); \
+		if (lowered( name ())) { \
+			Raising ## name.fire(EventArgs::empty()); \
+			raise( name ()); \
+			Raised ## name.fire(EventArgs::empty()); \
+		} \
 	}
 
 #define DEFINE_PIN_LEVEL_LOWER(name, within) \
 	void EightBit:: within ::lower ## name() { \
-		Lowering ## name.fire(EventArgs::empty()); \
-		lower( name ()); \
-		Lowered ## name.fire(EventArgs::empty()); \
+		if (raised( name ())) { \
+			Lowering ## name.fire(EventArgs::empty()); \
+			lower( name ()); \
+			Lowered ## name.fire(EventArgs::empty()); \
+		} \
 	}
 
 #define DEFINE_PIN_LEVEL_CHANGERS(name, within) \

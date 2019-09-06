@@ -2,22 +2,21 @@
 #include "mos6502.h"
 
 EightBit::MOS6502::MOS6502(Bus& bus)
-: LittleEndianProcessor(bus) {}
+: LittleEndianProcessor(bus) {
+	RaisedPOWER.connect([this](EventArgs) {
+		X() = Bit7;
+		Y() = 0;
+		A() = 0;
+		P() = RF;
+		S() = Mask8;
+		lowerSYNC();
+	});
+}
 
 DEFINE_PIN_LEVEL_CHANGERS(NMI, MOS6502);
 DEFINE_PIN_LEVEL_CHANGERS(SO, MOS6502);
 DEFINE_PIN_LEVEL_CHANGERS(SYNC, MOS6502);
 DEFINE_PIN_LEVEL_CHANGERS(RDY, MOS6502);
-
-void EightBit::MOS6502::raisePOWER() {
-	LittleEndianProcessor::raisePOWER();
-	X() = Bit7;
-	Y() = 0;
-	A() = 0;
-	P() = RF;
-	S() = Mask8;
-	lowerSYNC();
-}
 
 int EightBit::MOS6502::step() {
 	resetCycles();

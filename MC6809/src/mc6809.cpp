@@ -5,19 +5,18 @@
 #include <cassert>
 
 EightBit::mc6809::mc6809(Bus& bus)
-: BigEndianProcessor(bus) {}
+: BigEndianProcessor(bus) {
+	RaisedPOWER.connect([this](EventArgs) {
+		lowerBA();
+		lowerBS();
+	});
+}
 
 DEFINE_PIN_LEVEL_CHANGERS(NMI, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(FIRQ, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(HALT, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(BA, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(BS, mc6809);
-
-void EightBit::mc6809::raisePOWER() {
-	BigEndianProcessor::raisePOWER();
-	lowerBA();
-	lowerBS();
-}
 
 int EightBit::mc6809::step() {
 	resetCycles();

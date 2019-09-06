@@ -6,6 +6,22 @@
 EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 : IntelProcessor(bus),
   m_ports(ports) {
+	RaisedPOWER.connect([this](EventArgs) {
+		raiseM1();
+
+		di();
+		IM() = 0;
+
+		REFRESH() = 0;
+		IV() = Mask8;
+
+		AF() = IX() = IY() = BC() = DE() = HL() = Mask16;
+
+		exxAF();
+		exx();
+
+		m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
+	});
 }
 
 DEFINE_PIN_LEVEL_CHANGERS(NMI, Z80);
@@ -25,27 +41,6 @@ EightBit::register16_t& EightBit::Z80::DE() {
 
 EightBit::register16_t& EightBit::Z80::HL() {
 	return m_registers[m_registerSet][HL_IDX];
-}
-
-void EightBit::Z80::raisePOWER() {
-
-	IntelProcessor::raisePOWER();
-
-	raiseM1();
-
-	di();
-	IM() = 0;
-
-	REFRESH() = 0;
-	IV() = Mask8;
-
-	exxAF();
-	AF() = Mask16;
-
-	exx();
-	IX() = IY() = BC() = DE() = HL() = Mask16;
-
-	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 }
 
 void EightBit::Z80::handleRESET() {

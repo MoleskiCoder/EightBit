@@ -29,7 +29,6 @@ void EightBit::Intel8080::handleRESET() {
 	tick(3);
 }
 
-
 void EightBit::Intel8080::handleINT() {
 	IntelProcessor::handleINT();
 	raiseHALT();

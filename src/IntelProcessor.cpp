@@ -5,15 +5,17 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 : LittleEndianProcessor(bus) {
 	for (int i = 0; i < 0x100; ++i)
 		m_decodedOpcodes[i] = i;
+
+	LoweredHALT.connect([this](EventArgs) { --PC(); });
+	RaisedHALT.connect([this](EventArgs) { ++PC(); });
+
+	RaisedPOWER.connect([this](EventArgs) {
+		raiseHALT();
+		SP() = AF() = BC() = DE() = HL() = Mask16;
+	});
 }
 
 DEFINE_PIN_LEVEL_CHANGERS(HALT, IntelProcessor);
-
-void EightBit::IntelProcessor::raisePOWER() {
-	Processor::raisePOWER();
-	raiseHALT();
-	SP() = AF() = BC() = DE() = HL() = Mask16;
-}
 
 void EightBit::IntelProcessor::handleRESET() {
 	Processor::handleRESET();

@@ -60,8 +60,6 @@ namespace EightBit {
 		virtual int execute() final;
 		virtual int step() final;
 
-		virtual void raisePOWER() final;
-
 		auto& D() { return m_d; }
 		auto& A() { return D().high; }
 		auto& B() { return D().low; }

@@ -56,8 +56,6 @@ namespace EightBit {
 		int execute() final;
 		int step() final;
 
-		void raisePOWER() final;
-
 		[[nodiscard]] register16_t& AF() final;
 		[[nodiscard]] register16_t& BC() final;
 		[[nodiscard]] register16_t& DE() final;

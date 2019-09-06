@@ -58,8 +58,6 @@ namespace EightBit {
 		[[nodiscard]] auto& H() { return HL().high; }
 		[[nodiscard]] auto& L() { return HL().low; }
 
-		void raisePOWER() override;
-
 		DECLARE_PIN_INPUT(HALT)
 
 	protected:
