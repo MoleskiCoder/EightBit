@@ -47,7 +47,12 @@ std::string EightBit::Disassembler::state(Z80& cpu) {
 		<< " " << "D=" << hex(d) << " " << "E=" << hex(e)
 		<< " " << "H=" << hex(h) << " " << "L=" << hex(l)
 		<< " " << "I=" << hex(i) << " " << "R=" << hex(r)
-		<< " " << "IM=" << im;
+		<< " " << "IM=" << im
+		<< " " << "IFF1=" << cpu.IFF1()
+		<< " " << (Device::lowered(cpu.RESET()) ? "R" : "-")
+		<<        (Device::lowered(cpu.INT()) ? "I" : "-")
+		<<        (Device::lowered(cpu.HALT()) ? "H" : "-")
+		<<        (Device::lowered(cpu.NMI()) ? "N" : "-");
 
 	return output.str();
 }
