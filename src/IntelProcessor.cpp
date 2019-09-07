@@ -10,8 +10,8 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 	RaisedHALT.connect([this](EventArgs) { ++PC(); });
 
 	RaisedPOWER.connect([this](EventArgs) {
+		PC() = SP() = AF() = BC() = DE() = HL() = Mask16;
 		raiseHALT();
-		SP() = AF() = BC() = DE() = HL() = Mask16;
 	});
 }
 
