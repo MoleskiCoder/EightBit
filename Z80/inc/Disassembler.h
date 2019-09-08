@@ -30,6 +30,8 @@ namespace EightBit {
 		bool m_prefixDD = false;
 		bool m_prefixED = false;
 		bool m_prefixFD = false;
+		bool m_displaced = false;
+		uint8_t m_opcode = 0xff;
 		Bus& m_bus;
 
 		void disassemble(std::ostringstream& output, Z80& cpu, uint16_t pc);
@@ -61,6 +63,7 @@ namespace EightBit {
 			int x, int y, int z,
 			int p, int q);
 
+		std::string HL2() const;
 		std::string RP(int rp) const;
 		std::string RP2(int rp) const;
 		std::string R(int r) const;

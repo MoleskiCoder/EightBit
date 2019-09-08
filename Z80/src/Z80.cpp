@@ -1337,7 +1337,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					exx();
 					tick(4);
 					break;
-				case 2:	// JP HL
+				case 2:	// JP (HL)
 					jump(HL2());
 					tick(4);
 					break;

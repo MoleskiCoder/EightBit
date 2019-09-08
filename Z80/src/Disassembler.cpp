@@ -46,6 +46,8 @@ std::string EightBit::Disassembler::state(Z80& cpu) {
 		<< " " << "B=" << hex(b) << " " << "C=" << hex(c)
 		<< " " << "D=" << hex(d) << " " << "E=" << hex(e)
 		<< " " << "H=" << hex(h) << " " << "L=" << hex(l)
+		<< " " << "IX=" << cpu.IX()
+		<< " " << "IY=" << cpu.IY()
 		<< " " << "I=" << hex(i) << " " << "R=" << hex(r)
 		<< " " << "IM=" << im
 		<< " " << "IFF1=" << cpu.IFF1()
@@ -55,6 +57,15 @@ std::string EightBit::Disassembler::state(Z80& cpu) {
 		<<        (Device::lowered(cpu.NMI()) ? "N" : "-");
 
 	return output.str();
+}
+
+std::string EightBit::Disassembler::HL2() const {
+	if (!m_displaced)
+		return "HL";
+	if (m_prefixDD)
+		return "IX";
+	// Must be FD prefix
+	return "IY";
 }
 
 std::string EightBit::Disassembler::RP(int rp) const {
@@ -176,7 +187,7 @@ std::string EightBit::Disassembler::alu(int which) {
 }
 
 std::string EightBit::Disassembler::disassemble(Z80& cpu) {
-	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
+	m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	std::ostringstream output;
 	disassemble(output, cpu, cpu.PC().word);
 	return output.str();
@@ -184,9 +195,9 @@ std::string EightBit::Disassembler::disassemble(Z80& cpu) {
 
 void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, uint16_t pc) {
 
-	auto opcode = BUS().peek(pc);
+	m_opcode = BUS().peek(pc);
 
-	const auto& decoded = cpu.getDecodedOpcode(opcode);
+	const auto& decoded = cpu.getDecodedOpcode(m_opcode);
 
 	auto x = decoded.x;
 	auto y = decoded.y;
@@ -203,7 +214,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 
 	auto dumpCount = 0;
 
-	output << hex(opcode);
+	output << hex(m_opcode);
 
 	std::string specification = "";
 
@@ -228,7 +239,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 
 	auto outputFormatSpecification = !m_prefixDD;
 	if (m_prefixDD) {
-		if (opcode != 0xdd) {
+		if (m_opcode != 0xdd) {
 			outputFormatSpecification = true;
 		}
 	}
@@ -236,7 +247,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 	if (outputFormatSpecification) {
 		output << '\t';
 		m_formatter.parse(specification);
-		output << m_formatter % (int)immediate % (int)absolute % relative % (int)displacement % indexedImmediate;
+		output << m_formatter % (int)immediate % (int)absolute % relative % (int)displacement % (int)indexedImmediate;
 	}
 }
 
@@ -330,6 +341,37 @@ void EightBit::Disassembler::disassembleED(
 				break;
 			}
 			dumpCount += 2;
+			break;
+		case 4:	// Negate accumulator
+			specification = "NEG";
+			break;
+		case 5:	// Return from interrupt
+			switch (y) {
+			case 1:
+				specification = "RETI";
+				break;
+			default:
+				specification = "RETN";
+				break;
+			}
+			break;
+		case 6:	// Set interrupt mode
+			switch (y) {
+			case 0:
+			case 1:
+			case 4:
+			case 5:
+				specification = "IM 0";
+				break;
+			case 2:
+			case 6:
+				specification = "IM 1";
+				break;
+			case 3:
+			case 7:
+				specification = "IM 2";
+				break;
+			}
 			break;
 		case 7:
 			switch (y) {
@@ -486,7 +528,7 @@ void EightBit::Disassembler::disassembleOther(
 					specification = "LD (DE),A";
 					break;
 				case 2:	// LD (nn),HL
-					specification = "LD (%2$04XH),HL";
+					specification = "LD (%2$04XH)," + HL2();
 					dumpCount += 2;
 					break;
 				case 3:	// LD (nn),A
@@ -504,7 +546,7 @@ void EightBit::Disassembler::disassembleOther(
 					specification = "LD A,(DE)";
 					break;
 				case 2:	// LD HL,(nn)
-					specification = "LD HL,(%2$04XH)";
+					specification = "LD " + HL2() + ",(%2$04XH)";
 					dumpCount += 2;
 					break;
 				case 3:	// LD A,(nn)
@@ -600,10 +642,10 @@ void EightBit::Disassembler::disassembleOther(
 					specification = "EXX";
 					break;
 				case 2:	// JP (HL)
-					specification = "JP (HL)";
+					specification = "JP (" + HL2() + ")";
 					break;
 				case 3:	// LD SP,HL
-					specification = "LD SP,HL";
+					specification = "LD " + HL2() + ",HL";
 					break;
 				}
 			}
@@ -631,7 +673,7 @@ void EightBit::Disassembler::disassembleOther(
 				dumpCount++;
 				break;
 			case 4:	// EX (SP),HL
-				specification = "EX (SP),HL";
+				specification = "EX (" + HL2() + "),HL";
 				break;
 			case 5:	// EX DE,HL
 				specification = "EX DE,HL";
@@ -660,7 +702,7 @@ void EightBit::Disassembler::disassembleOther(
 					dumpCount += 2;
 					break;
 				case 1:	// DD prefix
-					m_prefixDD = true;
+					m_displaced = m_prefixDD = true;
 					disassemble(output, cpu, pc + 1);
 					break;
 				case 2:	// ED prefix
@@ -668,7 +710,7 @@ void EightBit::Disassembler::disassembleOther(
 					disassemble(output, cpu, pc + 1);
 					break;
 				case 3:	// FD prefix
-					m_prefixFD = true;
+					m_displaced = m_prefixFD = true;
 					disassemble(output, cpu, pc + 1);
 					break;
 				}
