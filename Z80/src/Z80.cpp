@@ -59,24 +59,21 @@ void EightBit::Z80::handleNMI() {
 
 void EightBit::Z80::handleINT() {
 	IntelProcessor::handleINT();
-	raiseHALT();
-	if (IFF1()) {
-		di();
-		switch (IM()) {
-		case 0:		// i8080 equivalent
-			execute(BUS().DATA());
-			break;
-		case 1:
-			restart(7 << 3);
-			tick(13);
-			break;
-		case 2:
-			call(MEMPTR() = register16_t(BUS().DATA(), IV()));
-			tick(19);
-			break;
-		default:
-			UNREACHABLE;
-		}
+	di();
+	switch (IM()) {
+	case 0:		// i8080 equivalent
+		execute(BUS().DATA());
+		break;
+	case 1:
+		restart(7 << 3);
+		tick(13);
+		break;
+	case 2:
+		call(MEMPTR() = register16_t(BUS().DATA(), IV()));
+		tick(19);
+		break;
+	default:
+		UNREACHABLE;
 	}
 }
 
@@ -662,17 +659,25 @@ int EightBit::Z80::step() {
 	if (LIKELY(powered())) {
 		m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 		lowerM1();
-		if (UNLIKELY(lowered(RESET()))) {
+		bool handled = false;
+		if (lowered(RESET())) {
 			handleRESET();
-		} else if (UNLIKELY(lowered(NMI()))) {
+			handled = true;
+		} else if (lowered(NMI())) {
 			handleNMI();
-		} else if (UNLIKELY(lowered(INT()))) {
-			handleINT();
-		} else if (UNLIKELY(lowered(HALT()))) {
+			handled = true;
+		} else if (lowered(INT())) {
+			raiseHALT();
+			if (IFF1()) {
+				handleINT();
+				handled = true;
+			}
+		} else if (lowered(HALT())) {
 			execute(0);	// NOP
-		} else {
-			execute(fetchByte());
+			handled = true;
 		}
+		if (!handled)
+			execute(fetchByte());
 	}
 	ExecutedInstruction.fire(*this);
 	return cycles();
