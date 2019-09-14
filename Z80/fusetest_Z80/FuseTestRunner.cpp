@@ -336,7 +336,7 @@ void Fuse::TestRunner::run() {
 	try {
 		m_cpu.run(allowedCycles);
 		check();
-	}	catch (std::logic_error& error) {
+	} catch (std::logic_error& error) {
 		m_unimplemented = true;
 		std::cerr << "**** Error: " << error.what() << std::endl;
 	}

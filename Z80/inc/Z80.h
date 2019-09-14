@@ -85,6 +85,7 @@ namespace EightBit {
 
 		DECLARE_PIN_INPUT(NMI)
 		DECLARE_PIN_OUTPUT(M1)
+		DECLARE_PIN_OUTPUT(IORQ)
 
 	protected:
 		void handleRESET() final;

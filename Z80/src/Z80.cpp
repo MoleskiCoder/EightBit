@@ -30,6 +30,7 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 
 DEFINE_PIN_LEVEL_CHANGERS(NMI, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(M1, Z80);
+DEFINE_PIN_LEVEL_CHANGERS(IORQ, Z80);
 
 EightBit::register16_t& EightBit::Z80::AF() {
 	return m_accumulatorFlags[m_accumulatorFlagsSet];
@@ -57,23 +58,31 @@ void EightBit::Z80::handleNMI() {
 	raiseNMI();
 	raiseHALT();
 	IFF1() = false;
+	lowerM1();
+	const auto discarded = BUS().DATA();
+	raiseM1();
 	restart(0x66);
 	tick(13);
 }
 
 void EightBit::Z80::handleINT() {
 	IntelProcessor::handleINT();
+	lowerM1();
+	lowerIORQ();
+	const auto data = BUS().DATA();
+	raiseIORQ();
+	raiseM1();
 	di();
 	switch (IM()) {
 	case 0:		// i8080 equivalent
-		execute(BUS().DATA());
+		execute(data);
 		break;
 	case 1:
 		restart(7 << 3);
 		tick(13);
 		break;
 	case 2:
-		call(MEMPTR() = register16_t(BUS().DATA(), IV()));
+		call(MEMPTR() = register16_t(data, IV()));
 		tick(19);
 		break;
 	default:
@@ -1026,6 +1035,8 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 0:	// Relative jumps and assorted ops
 			switch (y) {
 			case 0:	// NOP
+				if (m_prefixDD)
+					tick(4);
 				tick(4);
 				break;
 			case 1:	// EX AF AF'
