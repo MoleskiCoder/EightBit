@@ -310,14 +310,14 @@ namespace EightBit {
 		bool jumpConditionalFlag(int flag);
 		bool callConditionalFlag(int flag);
 
-		void sbc(register16_t value);
-		void adc(register16_t value);
-		void add(register16_t value);
+		register16_t sbc(register16_t operand, register16_t value);
+		register16_t adc(register16_t operand, register16_t value);
+		register16_t add(register16_t operand, register16_t value, int carry = 0);
 
-		void add(uint8_t value, int carry = 0);
-		void adc(uint8_t value);
-		void sub(uint8_t value, int carry = 0);
-		void sbc(uint8_t value);
+		[[nodiscard]] uint8_t add(uint8_t operand, uint8_t value, int carry = 0);
+		[[nodiscard]] uint8_t adc(uint8_t operand, uint8_t value);
+		[[nodiscard]] uint8_t sub(uint8_t operand, uint8_t value, int carry = 0);
+		[[nodiscard]] uint8_t sbc(uint8_t operand, uint8_t value);
 		void andr(uint8_t value);
 		void xorr(uint8_t value);
 		void orr(uint8_t value);
