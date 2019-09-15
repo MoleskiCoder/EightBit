@@ -10,6 +10,7 @@ EightBit::MOS6502::MOS6502(Bus& bus)
 		P() = RF;
 		S() = Mask8;
 		lowerSYNC();
+		lowerRW();
 	});
 }
 
@@ -17,6 +18,7 @@ DEFINE_PIN_LEVEL_CHANGERS(NMI, MOS6502);
 DEFINE_PIN_LEVEL_CHANGERS(SO, MOS6502);
 DEFINE_PIN_LEVEL_CHANGERS(SYNC, MOS6502);
 DEFINE_PIN_LEVEL_CHANGERS(RDY, MOS6502);
+DEFINE_PIN_LEVEL_CHANGERS(RW, MOS6502);
 
 int EightBit::MOS6502::step() {
 	resetCycles();
@@ -27,6 +29,7 @@ int EightBit::MOS6502::step() {
 			handleSO();
 		if (LIKELY(raised(RDY()))) {
 			lowerSYNC();	// Instruction fetch beginning
+			raiseRW();
 			opcode() = BUS().read(PC()++);	// can't use fetchByte
 			if (UNLIKELY(lowered(RESET())))
 				handleRESET();
@@ -91,11 +94,13 @@ void EightBit::MOS6502::interrupt() {
 
 void EightBit::MOS6502::busWrite() {
 	tick();
+	lowerRW();
 	Processor::busWrite();
 }
 
 uint8_t EightBit::MOS6502::busRead() {
 	tick();
+	raiseRW();
 	return Processor::busRead();
 }
 

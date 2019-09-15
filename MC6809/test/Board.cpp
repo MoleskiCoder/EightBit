@@ -47,16 +47,13 @@ void Board::initialise() {
 	// Marshal data from memory -> ACIA
 	WrittenByte.connect([this] (EightBit::EventArgs&) {
 		updateAciaPins();
-		if (ACIA().selected()) {
-			ACIA().lower(ACIA().RW());
+		if (ACIA().selected())
 			accessAcia();
-		}
 	});
 
 	// Marshal data from ACIA -> memory
 	ReadingByte.connect([this] (EightBit::EventArgs&) {
 		updateAciaPins();
-		ACIA().raise(ACIA().RW());
 		if (accessAcia())
 			poke(ACIA().DATA());
 	});
@@ -113,6 +110,7 @@ EightBit::MemoryMapping Board::mapping(uint16_t address) {
 
 void Board::updateAciaPins() {
 	ACIA().DATA() = DATA();
+	EightBit::Device::match(ACIA().RW(), CPU().RW());
 	EightBit::Device::match(ACIA().RS(), ADDRESS().word & EightBit::Chip::Bit0);
 	EightBit::Device::match(ACIA().CS0(), ADDRESS().word & EightBit::Chip::Bit15);
 	EightBit::Device::match(ACIA().CS1(), ADDRESS().word & EightBit::Chip::Bit13);

@@ -93,6 +93,7 @@ namespace EightBit {
 		DECLARE_PIN_INPUT(HALT)
 		DECLARE_PIN_OUTPUT(BA)
 		DECLARE_PIN_OUTPUT(BS)
+		DECLARE_PIN_OUTPUT(RW)
 
 	protected:
 		// Default push/pop handlers
@@ -104,6 +105,11 @@ namespace EightBit {
 
 		virtual void handleRESET() final;
 		virtual void handleINT() final;
+
+		// Bus reader/writers
+
+		virtual void busWrite() final;
+		virtual uint8_t busRead() final;
 
 	private:
 		const uint8_t RESETvector = 0xfe;		// RESET vector

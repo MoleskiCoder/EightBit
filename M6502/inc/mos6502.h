@@ -46,6 +46,7 @@ namespace EightBit {
 		DECLARE_PIN_INPUT(SO)
 		DECLARE_PIN_OUTPUT(SYNC)
 		DECLARE_PIN_INPUT(RDY)
+		DECLARE_PIN_OUTPUT(RW)
 
 	protected:
 		virtual void handleRESET() final;

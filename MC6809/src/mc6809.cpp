@@ -9,6 +9,7 @@ EightBit::mc6809::mc6809(Bus& bus)
 	RaisedPOWER.connect([this](EventArgs) {
 		lowerBA();
 		lowerBS();
+		lowerRW();
 	});
 }
 
@@ -17,6 +18,7 @@ DEFINE_PIN_LEVEL_CHANGERS(FIRQ, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(HALT, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(BA, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(BS, mc6809);
+DEFINE_PIN_LEVEL_CHANGERS(RW, mc6809);
 
 int EightBit::mc6809::step() {
 	resetCycles();
@@ -93,6 +95,18 @@ void EightBit::mc6809::handleFIRQ() {
 
 //
 
+void EightBit::mc6809::busWrite() {
+	lowerRW();
+	Processor::busWrite();
+}
+
+uint8_t EightBit::mc6809::busRead() {
+	raiseRW();
+	return Processor::busRead();
+}
+
+//
+
 int EightBit::mc6809::execute() {
 	lowerBA();
 	lowerBS();
@@ -164,18 +178,18 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0x1c:	tick(3);	CC() &= AM_immediate_byte();						break;		// AND (ANDCC immediate)
 
 	// ASL/LSL
-	case 0x08:	tick(6);	busWrite(asl(AM_direct_byte()));					break;		// ASL (direct)
+	case 0x08:	tick(6);	Processor::busWrite(asl(AM_direct_byte()));			break;		// ASL (direct)
 	case 0x48:	tick(2);	A() = asl(A());										break;		// ASL (ASLA inherent)
 	case 0x58:	tick(2);	B() = asl(B());										break;		// ASL (ASLB inherent)
-	case 0x68:	tick(6);	busWrite(asl(AM_indexed_byte()));					break;		// ASL (indexed)
-	case 0x78:	tick(7);	busWrite(asl(AM_extended_byte()));					break;		// ASL (extended)
+	case 0x68:	tick(6);	Processor::busWrite(asl(AM_indexed_byte()));		break;		// ASL (indexed)
+	case 0x78:	tick(7);	Processor::busWrite(asl(AM_extended_byte()));		break;		// ASL (extended)
 
 	// ASR
-	case 0x07:	tick(6);	busWrite(asr(AM_direct_byte()));					break;		// ASR (direct)
+	case 0x07:	tick(6);	Processor::busWrite(asr(AM_direct_byte()));			break;		// ASR (direct)
 	case 0x47:	tick(2);	A() = asr(A());										break;		// ASR (ASRA inherent)
 	case 0x57:	tick(2);	B() = asr(B());										break;		// ASR (ASRB inherent)
-	case 0x67:	tick(6);	busWrite(asr(AM_indexed_byte()));					break;		// ASR (indexed)
-	case 0x77:	tick(7);	busWrite(asr(AM_extended_byte()));					break;		// ASR (extended)
+	case 0x67:	tick(6);	Processor::busWrite(asr(AM_indexed_byte()));		break;		// ASR (indexed)
+	case 0x77:	tick(7);	Processor::busWrite(asr(AM_extended_byte()));		break;		// ASR (extended)
 
 	// BIT
 	case 0x85:	tick(2);	bit(A(), AM_immediate_byte());						break;		// BIT (BITA immediate)
@@ -189,11 +203,11 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0xf5:	tick(5);	bit(B(), AM_extended_byte());						break;		// BIT (BITB extended)
 
 	// CLR
-	case 0x0f:	tick(6);	busWrite(Address_direct(), clr());					break;		// CLR (direct)
+	case 0x0f:	tick(6);	Processor::busWrite(Address_direct(), clr());		break;		// CLR (direct)
 	case 0x4f:	tick(2);	A() = clr();										break;		// CLR (CLRA implied)
 	case 0x5f:	tick(2);	B() = clr();										break;		// CLR (CLRB implied)
-	case 0x6f:	tick(6);	busWrite(Address_indexed(), clr());					break;		// CLR (indexed)
-	case 0x7f:	tick(7);	busWrite(Address_extended(), clr());				break;		// CLR (extended)
+	case 0x6f:	tick(6);	Processor::busWrite(Address_indexed(), clr());		break;		// CLR (indexed)
+	case 0x7f:	tick(7);	Processor::busWrite(Address_extended(), clr());		break;		// CLR (extended)
 
 	// CMP
 
@@ -216,11 +230,11 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0xbc:	tick(7);	cmp(X(), AM_extended_word());						break;		// CMP (CMPX, extended)
 
 	// COM
-	case 0x03:	tick(6);	busWrite(com(AM_direct_byte()));					break;		// COM (direct)
+	case 0x03:	tick(6);	Processor::busWrite(com(AM_direct_byte()));			break;		// COM (direct)
 	case 0x43:	tick(2);	A() = com(A());										break;		// COM (COMA inherent)
 	case 0x53:	tick(2);	B() = com(B());										break;		// COM (COMB inherent)
-	case 0x63:	tick(6);	busWrite(com(AM_indexed_byte()));					break;		// COM (indexed)
-	case 0x73:	tick(7);	busWrite(com(AM_extended_byte()));					break;		// COM (extended)
+	case 0x63:	tick(6);	Processor::busWrite(com(AM_indexed_byte()));		break;		// COM (indexed)
+	case 0x73:	tick(7);	Processor::busWrite(com(AM_extended_byte()));		break;		// COM (extended)
 
 	// CWAI
 	case 0x3c:	tick(11);	cwai(AM_direct_byte());								break;		// CWAI (direct)
@@ -229,11 +243,11 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0x19:	tick(2);	A() = da(A());										break;		// DAA (inherent)
 
 	// DEC
-	case 0x0a:	tick(6);	busWrite(dec(AM_direct_byte()));					break;		// DEC (direct)
+	case 0x0a:	tick(6);	Processor::busWrite(dec(AM_direct_byte()));			break;		// DEC (direct)
 	case 0x4a:	tick(2);	A() = dec(A());										break;		// DEC (DECA inherent)
 	case 0x5a:	tick(2);	B() = dec(B());										break;		// DEC (DECB inherent)
-	case 0x6a:	tick(6);	busWrite(dec(AM_indexed_byte()));					break;		// DEC (indexed)
-	case 0x7a:	tick(7);	busWrite(dec(AM_extended_byte()));					break;		// DEC (extended)
+	case 0x6a:	tick(6);	Processor::busWrite(dec(AM_indexed_byte()));		break;		// DEC (indexed)
+	case 0x7a:	tick(7);	Processor::busWrite(dec(AM_extended_byte()));		break;		// DEC (extended)
 
 	// EOR
 
@@ -253,11 +267,11 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0x1e:	tick(8);	exg(AM_immediate_byte());							break;		// EXG (R1,R2 immediate)
 
 	// INC
-	case 0x0c:	tick(6);	busWrite(inc(AM_direct_byte()));					break;		// INC (direct)
+	case 0x0c:	tick(6);	Processor::busWrite(inc(AM_direct_byte()));			break;		// INC (direct)
 	case 0x4c:	tick(2);	A() = inc(A());										break;		// INC (INCA inherent)
 	case 0x5c:	tick(2);	B() = inc(B());										break;		// INC (INCB inherent)
-	case 0x6c:	tick(6);	busWrite(inc(AM_indexed_byte()));					break;		// INC (indexed)
-	case 0x7c:	tick(7);	busWrite(inc(AM_extended_byte()));					break;		// INC (extended)
+	case 0x6c:	tick(6);	Processor::busWrite(inc(AM_indexed_byte()));		break;		// INC (indexed)
+	case 0x7c:	tick(7);	Processor::busWrite(inc(AM_extended_byte()));		break;		// INC (extended)
 
 	// JMP
 	case 0x0e:	tick(6);	jump(Address_direct());								break;		// JMP (direct)
@@ -308,21 +322,21 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0x33:	tick(4);	U() = Address_indexed();							break;		// LEA (LEAU indexed)
 
 	// LSR
-	case 0x04:	tick(6);	busWrite(lsr(AM_direct_byte()));					break;		// LSR (direct)
+	case 0x04:	tick(6);	Processor::busWrite(lsr(AM_direct_byte()));			break;		// LSR (direct)
 	case 0x44:	tick(2);	A() = lsr(A());										break;		// LSR (LSRA inherent)
 	case 0x54:	tick(2);	B() = lsr(B());										break;		// LSR (LSRB inherent)
-	case 0x64:	tick(6);	busWrite(lsr(AM_indexed_byte()));					break;		// LSR (indexed)
-	case 0x74:	tick(7);	busWrite(lsr(AM_extended_byte()));					break;		// LSR (extended)
+	case 0x64:	tick(6);	Processor::busWrite(lsr(AM_indexed_byte()));		break;		// LSR (indexed)
+	case 0x74:	tick(7);	Processor::busWrite(lsr(AM_extended_byte()));		break;		// LSR (extended)
 
 	// MUL
 	case 0x3d:	tick(11);	D() = mul(A(), B());								break;		// MUL (inherent)
 
 	// NEG
-	case 0x00:	tick(6);	busWrite(neg(AM_direct_byte()));					break;		// NEG (direct)
+	case 0x00:	tick(6);	Processor::busWrite(neg(AM_direct_byte()));			break;		// NEG (direct)
 	case 0x40:	tick(2);	A() = neg(A());										break;		// NEG (NEGA, inherent)
 	case 0x50:	tick(2);	B() = neg(B());										break;		// NEG (NEGB, inherent)
-	case 0x60:	tick(6);	busWrite(neg(AM_indexed_byte()));					break;		// NEG (indexed)
-	case 0x70:	tick(7);	busWrite(neg(AM_extended_byte()));					break;		// NEG (extended)
+	case 0x60:	tick(6);	Processor::busWrite(neg(AM_indexed_byte()));		break;		// NEG (indexed)
+	case 0x70:	tick(7);	Processor::busWrite(neg(AM_extended_byte()));		break;		// NEG (extended)
 
 	// NOP
 	case 0x12:	tick(2);														break;		// NOP (inherent)
@@ -353,18 +367,18 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0x37:	tick(5);	pul(U(), AM_immediate_byte());						break;		// PUL (PULU immediate)
 
 	// ROL
-	case 0x09:	tick(6);	busWrite(rol(AM_direct_byte()));					break;		// ROL (direct)
+	case 0x09:	tick(6);	Processor::busWrite(rol(AM_direct_byte()));			break;		// ROL (direct)
 	case 0x49:	tick(2);	A() = rol(A());										break;		// ROL (ROLA inherent)
 	case 0x59:	tick(2);	B() = rol(B());										break;		// ROL (ROLB inherent)
-	case 0x69:	tick(6);	busWrite(rol(AM_indexed_byte()));					break;		// ROL (indexed)
-	case 0x79:	tick(7);	busWrite(rol(AM_extended_byte()));					break;		// ROL (extended)
+	case 0x69:	tick(6);	Processor::busWrite(rol(AM_indexed_byte()));		break;		// ROL (indexed)
+	case 0x79:	tick(7);	Processor::busWrite(rol(AM_extended_byte()));		break;		// ROL (extended)
 
 	// ROR
-	case 0x06:	tick(6);	busWrite(ror(AM_direct_byte()));					break;		// ROR (direct)
+	case 0x06:	tick(6);	Processor::busWrite(ror(AM_direct_byte()));			break;		// ROR (direct)
 	case 0x46:	tick(2);	A() = ror(A());										break;		// ROR (RORA inherent)
 	case 0x56:	tick(2);	B() = ror(B());										break;		// ROR (RORB inherent)
-	case 0x66:	tick(6);	busWrite(ror(AM_indexed_byte()));					break;		// ROR (indexed)
-	case 0x76:	tick(7);	busWrite(ror(AM_extended_byte()));					break;		// ROR (extended)
+	case 0x66:	tick(6);	Processor::busWrite(ror(AM_indexed_byte()));		break;		// ROR (indexed)
+	case 0x76:	tick(7);	Processor::busWrite(ror(AM_extended_byte()));		break;		// ROR (extended)
 
 	// RTI
 	case 0x3B:	tick(6);	rti();												break;		// RTI (inherent)
@@ -392,14 +406,14 @@ void EightBit::mc6809::executeUnprefixed() {
 	// ST
 
 	// STA
-	case 0x97:	tick(4);	busWrite(Address_direct(), st(A()));				break;		// ST (STA direct)
-	case 0xa7:	tick(4);	busWrite(Address_indexed(), st(A()));				break;		// ST (STA indexed)
-	case 0xb7:	tick(5);	busWrite(Address_extended(), st(A()));				break;		// ST (STA extended)
+	case 0x97:	tick(4);	Processor::busWrite(Address_direct(), st(A()));		break;		// ST (STA direct)
+	case 0xa7:	tick(4);	Processor::busWrite(Address_indexed(), st(A()));	break;		// ST (STA indexed)
+	case 0xb7:	tick(5);	Processor::busWrite(Address_extended(), st(A()));	break;		// ST (STA extended)
 
 	// STB
-	case 0xd7:	tick(4);	busWrite(Address_direct(), st(B()));				break;		// ST (STB direct)
-	case 0xe7:	tick(4);	busWrite(Address_indexed(), st(B()));				break;		// ST (STB indexed)
-	case 0xf7:	tick(5);	busWrite(Address_extended(), st(B()));				break;		// ST (STB extended)
+	case 0xd7:	tick(4);	Processor::busWrite(Address_direct(), st(B()));		break;		// ST (STB direct)
+	case 0xe7:	tick(4);	Processor::busWrite(Address_indexed(), st(B()));	break;		// ST (STB indexed)
+	case 0xf7:	tick(5);	Processor::busWrite(Address_extended(), st(B()));	break;		// ST (STB extended)
 
 	// STD
 	case 0xdd:	tick(5);	Processor::setWord(Address_direct(), st(D()));		break;		// ST (STD direct)
@@ -591,11 +605,11 @@ uint8_t EightBit::mc6809::pop() {
 }
 
 void EightBit::mc6809::push(register16_t& stack, const uint8_t value) {
-	busWrite(--stack, value);
+	Processor::busWrite(--stack, value);
 }
 
 uint8_t EightBit::mc6809::pop(register16_t& stack) {
-	return busRead(stack++);
+	return Processor::busRead(stack++);
 }
 
 //
@@ -719,15 +733,15 @@ uint8_t EightBit::mc6809::AM_immediate_byte() {
 }
 
 uint8_t EightBit::mc6809::AM_direct_byte() {
-	return busRead(Address_direct());
+	return Processor::busRead(Address_direct());
 }
 
 uint8_t EightBit::mc6809::AM_indexed_byte() {
-	return busRead(Address_indexed());
+	return Processor::busRead(Address_indexed());
 }
 
 uint8_t EightBit::mc6809::AM_extended_byte() {
-	return busRead(Address_extended());
+	return Processor::busRead(Address_extended());
 }
 
 //

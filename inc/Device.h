@@ -68,13 +68,9 @@ namespace EightBit {
 		static constexpr auto lowered(const PinLevel line) { return line == PinLevel::Low; }
 		static void lower(PinLevel& line) noexcept { line = PinLevel::Low; }
 
-		static void match(PinLevel& line, int condition) {
-			match(line, condition != 0);
-		}
-
-		static void match(PinLevel& line, bool condition) {
-			condition ? raise(line) : lower(line);
-		}
+		static void match(PinLevel& line, int condition) { match(line, condition != 0); }
+		static void match(PinLevel& line, bool condition) { condition ? raise(line) : lower(line); }
+		static void match(PinLevel& out, PinLevel in) { out = in; }
 
 		virtual ~Device() {};
 
