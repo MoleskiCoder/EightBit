@@ -8,6 +8,9 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
   m_ports(ports) {
 	RaisedPOWER.connect([this](EventArgs) {
 		raiseM1();
+		raiseIORQ();
+		raiseRD();
+		raiseWR();
 
 		di();
 		IM() = 0;
@@ -31,6 +34,8 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 DEFINE_PIN_LEVEL_CHANGERS(NMI, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(M1, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(IORQ, Z80);
+DEFINE_PIN_LEVEL_CHANGERS(RD, Z80);
+DEFINE_PIN_LEVEL_CHANGERS(WR, Z80);
 
 EightBit::register16_t& EightBit::Z80::AF() {
 	return m_accumulatorFlags[m_accumulatorFlagsSet];
@@ -46,6 +51,19 @@ EightBit::register16_t& EightBit::Z80::DE() {
 
 EightBit::register16_t& EightBit::Z80::HL() {
 	return m_registers[m_registerSet][HL_IDX];
+}
+
+void EightBit::Z80::busWrite() {
+	lowerWR();
+	IntelProcessor::busWrite();
+	raiseWR();
+}
+
+uint8_t EightBit::Z80::busRead() {
+	lowerRD();
+	const auto returned = IntelProcessor::busRead();
+	raiseRD();
+	return returned;
 }
 
 void EightBit::Z80::handleRESET() {
@@ -489,19 +507,19 @@ void EightBit::Z80::ccf() {
 }
 
 void EightBit::Z80::xhtl(register16_t& exchange) {
-	MEMPTR().low = busRead(SP());
+	MEMPTR().low = IntelProcessor::busRead(SP());
 	++BUS().ADDRESS();
-	MEMPTR().high = busRead();
-	busWrite(exchange.high);
+	MEMPTR().high = IntelProcessor::busRead();
+	IntelProcessor::busWrite(exchange.high);
 	exchange.high = MEMPTR().high;
 	--BUS().ADDRESS();
-	busWrite(exchange.low);
+	IntelProcessor::busWrite(exchange.low);
 	exchange.low = MEMPTR().low;
 }
 
 void EightBit::Z80::blockCompare(const register16_t source, register16_t& counter) {
 
-	const auto value = busRead(source);
+	const auto value = IntelProcessor::busRead(source);
 	uint8_t result = A() - value;
 
 	setFlag(F(), PF, --counter.word);
@@ -537,8 +555,8 @@ bool EightBit::Z80::cpdr() {
 }
 
 void EightBit::Z80::blockLoad(const register16_t source, const register16_t destination, register16_t& counter) {
-	const auto value = busRead(source);
-	busWrite(destination, value);
+	const auto value = IntelProcessor::busRead(source);
+	IntelProcessor::busWrite(destination, value);
 	const auto xy = A() + value;
 	setFlag(F(), XF, xy & Bit3);
 	setFlag(F(), YF, xy & Bit1);
@@ -567,7 +585,7 @@ bool EightBit::Z80::lddr() {
 void EightBit::Z80::blockIn(register16_t& source, const register16_t destination) {
 	MEMPTR() = BUS().ADDRESS() = source;
 	const auto value = readPort();
-	busWrite(destination, value);
+	IntelProcessor::busWrite(destination, value);
 	source.high = decrement(source.high);
 	setFlag(F(), NF);
 }
@@ -593,7 +611,7 @@ bool EightBit::Z80::indr() {
 }
 
 void EightBit::Z80::blockOut(const register16_t source, register16_t& destination) {
-	const auto value = busRead(source);
+	const auto value = IntelProcessor::busRead(source);
 	destination.high = decrement(destination.high);
 	BUS().ADDRESS() = destination;
 	writePort();
@@ -626,7 +644,7 @@ bool EightBit::Z80::otdr() {
 void EightBit::Z80::rrd() {
 	(MEMPTR() = BUS().ADDRESS() = HL())++;
 	const auto memory = busRead();
-	busWrite(promoteNibble(A()) | highNibble(memory));
+	IntelProcessor::busWrite(promoteNibble(A()) | highNibble(memory));
 	A() = higherNibble(A()) | lowerNibble(memory);
 	adjustSZPXY<Z80>(F(), A());
 	clearFlag(F(), NF | HC);
@@ -635,7 +653,7 @@ void EightBit::Z80::rrd() {
 void EightBit::Z80::rld() {
 	(MEMPTR() = BUS().ADDRESS() = HL())++;
 	const auto memory = busRead();
-	busWrite(promoteNibble(memory) | lowNibble(A()));
+	IntelProcessor::busWrite(promoteNibble(memory) | lowNibble(A()));
 	A() = higherNibble(A()) | highNibble(memory);
 	adjustSZPXY<Z80>(F(), A());
 	clearFlag(F(), NF | HC);
@@ -649,7 +667,11 @@ void EightBit::Z80::writePort(const uint8_t port) {
 }
 
 void EightBit::Z80::writePort() {
+	lowerIORQ();
+	lowerWR();
 	m_ports.write(BUS().ADDRESS().low, BUS().DATA());
+	raiseWR();
+	raiseIORQ();
 }
 
 uint8_t EightBit::Z80::readPort(const uint8_t port) {
@@ -659,7 +681,12 @@ uint8_t EightBit::Z80::readPort(const uint8_t port) {
 }
 
 uint8_t EightBit::Z80::readPort() {
-	return BUS().DATA() = m_ports.read(BUS().ADDRESS().low);
+	lowerIORQ();
+	lowerRD();
+	const auto returned = BUS().DATA() = m_ports.read(BUS().ADDRESS().low);
+	raiseRD();
+	raiseIORQ();
+	return returned;
 }
 
 int EightBit::Z80::step() {
@@ -721,7 +748,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 	const bool memoryY = y == 6;
 	const bool memoryZ = z == 6;
 	const bool indirect = (!m_displaced && memoryZ) || m_displaced;
-	auto operand = m_displaced ? busRead(displacedAddress()) : R(z);
+	auto operand = m_displaced ? IntelProcessor::busRead(displacedAddress()) : R(z);
 	const bool update = x != 1; // BIT does not update
 	switch (x) {
 	case 0:	{ // rot[y] r[z]
@@ -779,7 +806,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 	}
 	if (update) {
 		if (m_displaced) {
-			busWrite(operand);
+			IntelProcessor::busWrite(operand);
 			if (!memoryZ)
 				R2(z, operand);
 			tick(15);

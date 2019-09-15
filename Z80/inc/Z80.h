@@ -86,10 +86,15 @@ namespace EightBit {
 		DECLARE_PIN_INPUT(NMI)
 		DECLARE_PIN_OUTPUT(M1)
 		DECLARE_PIN_OUTPUT(IORQ)
+		DECLARE_PIN_OUTPUT(RD)
+		DECLARE_PIN_OUTPUT(WR)
 
 	protected:
 		void handleRESET() final;
 		void handleINT() final;
+
+		void busWrite() final;
+		uint8_t busRead() final;
 
 	private:
 		InputOutput& m_ports;
@@ -191,7 +196,7 @@ namespace EightBit {
 			case 5:
 				return HL2().low;
 			case 6:
-				return busRead(UNLIKELY(m_displaced) ?  displacedAddress() : HL().word);
+				return IntelProcessor::busRead(UNLIKELY(m_displaced) ?  displacedAddress() : HL().word);
 			case 7:
 				return A();
 			default:
@@ -222,7 +227,7 @@ namespace EightBit {
 				HL2().low = value;
 				break;
 			case 6:
-				busWrite(UNLIKELY(m_displaced) ? displacedAddress() : HL().word, value);
+				IntelProcessor::busWrite(UNLIKELY(m_displaced) ? displacedAddress() : HL().word, value);
 				break;
 			case 7:
 				A() = value;
@@ -255,7 +260,7 @@ namespace EightBit {
 				L() = value;
 				break;
 			case 6:
-				busWrite(HL(), value);
+				IntelProcessor::busWrite(HL(), value);
 				break;
 			case 7:
 				A() = value;
