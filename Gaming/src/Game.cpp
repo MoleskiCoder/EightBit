@@ -18,7 +18,7 @@ void Game::raisePOWER() {
 	m_window.reset(::SDL_CreateWindow(
 		title().c_str(),
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		displayWidth() * displayScale(), displayHeight() * displayScale(),
+		windowWidth(), windowHeight(),
 		SDL_WINDOW_SHOWN), ::SDL_DestroyWindow);
 	if (m_window == nullptr)
 		throwSDLException("Unable to create window: ");

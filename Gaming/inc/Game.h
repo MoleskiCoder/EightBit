@@ -37,12 +37,13 @@ namespace Gaming {
 		virtual int fps() const = 0;
 		virtual bool useVsync() const = 0;
 
-		virtual int displayWidth() const { return rasterWidth(); }
-		virtual int displayHeight() const { return rasterHeight(); }
-		virtual int displayScale() const = 0;
-
-		virtual int rasterWidth() const = 0;
-		virtual int rasterHeight() const = 0;
+		virtual int windowWidth() const noexcept { return displayWidth() * displayScale(); }
+		virtual int windowHeight() const noexcept { return displayHeight() * displayScale(); }
+		virtual int displayWidth() const noexcept { return rasterWidth(); }
+		virtual int displayHeight() const noexcept { return rasterHeight(); }
+		virtual int displayScale() const noexcept = 0;
+		virtual int rasterWidth() const noexcept = 0;
+		virtual int rasterHeight() const noexcept = 0;
 
 		virtual std::string title() const = 0;
 
@@ -57,12 +58,33 @@ namespace Gaming {
 
 		virtual const uint32_t* pixels() const = 0;
 
-		std::shared_ptr<SDL_PixelFormat> m_pixelFormat;
+		std::shared_ptr<GameController> gameController(const int which) const {
+			const auto i = m_gameControllers.find(which);
+			if (i == m_gameControllers.cend())
+				throw std::runtime_error("Unknown controller");
+			return i->second;
+		}
+
+		int mappedController(const SDL_JoystickID which) const {
+			const auto i = m_mappedControllers.find(which);
+			if (i == m_mappedControllers.cend())
+				throw std::runtime_error("Unknown joystick");
+			return i->second;
+		}
+
+		int chooseControllerIndex(int who) const;
+		std::shared_ptr<GameController> chooseController(int who) const;
+
+		std::shared_ptr<SDL_Renderer> renderer() const noexcept { return m_renderer; }
+		std::shared_ptr<SDL_Texture> bitmapTexture() const noexcept { return m_bitmapTexture; }
+		std::shared_ptr<SDL_PixelFormat> pixelFormat() const noexcept { return m_pixelFormat; }
 
 	private:
 		std::shared_ptr<SDL_Window> m_window;
 		std::shared_ptr<SDL_Renderer> m_renderer;
 		std::shared_ptr<SDL_Texture> m_bitmapTexture;
+		std::shared_ptr<SDL_PixelFormat> m_pixelFormat;
+
 		Uint32 m_pixelType = SDL_PIXELFORMAT_ARGB8888;
 
 		bool m_vsync = false;
@@ -80,8 +102,5 @@ namespace Gaming {
 
 		virtual void handleJoyButtonDown(SDL_JoyButtonEvent event) {}
 		virtual void handleJoyButtonUp(SDL_JoyButtonEvent event) {}
-
-		int chooseControllerIndex(int who) const;
-		std::shared_ptr<GameController> chooseController(int who) const;
 	};
 }
