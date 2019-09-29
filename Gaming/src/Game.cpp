@@ -103,7 +103,7 @@ void Game::runLoop() {
 			}
 		}
 
-		runFrame();
+		runRasterLines();
 
 		updateTexture();
 		copyTexture();
@@ -119,6 +119,8 @@ void Game::runLoop() {
 				::SDL_Delay(sleepNeeded);
 			}
 		}
+
+		runVerticalBlank();
 	}
 }
 

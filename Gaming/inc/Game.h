@@ -47,7 +47,8 @@ namespace Gaming {
 
 		virtual std::string title() const = 0;
 
-		virtual void runFrame() = 0;
+		virtual void runRasterLines() {};
+		virtual void runVerticalBlank() {}
 
 		void addJoystick(SDL_Event& e);
 		void removeJoystick(SDL_Event& e);
