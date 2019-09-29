@@ -94,6 +94,12 @@ void Game::runLoop() {
 			case SDL_JOYBUTTONUP:
 				handleJoyButtonUp(e.jbutton);
 				break;
+			case SDL_CONTROLLERBUTTONDOWN:
+				handleControllerButtonDown(e.cbutton);
+				break;
+			case SDL_CONTROLLERBUTTONUP:
+				handleControllerButtonUp(e.cbutton);
+				break;
 			case SDL_JOYDEVICEADDED:
 				addJoystick(e);
 				break;

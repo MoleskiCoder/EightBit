@@ -103,5 +103,8 @@ namespace Gaming {
 
 		virtual void handleJoyButtonDown(SDL_JoyButtonEvent event) {}
 		virtual void handleJoyButtonUp(SDL_JoyButtonEvent event) {}
+
+		virtual void handleControllerButtonDown(SDL_ControllerButtonEvent event) {}
+		virtual void handleControllerButtonUp(SDL_ControllerButtonEvent event) {}
 	};
 }
