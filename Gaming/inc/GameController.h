@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <SDL.h>
 
 namespace Gaming {
@@ -17,17 +19,17 @@ namespace Gaming {
 		}
 
 		auto getJoystickId() const noexcept {
-			return buildJoystickId(m_gameController);
+			return buildJoystickId(m_gameController.get());
 		}
 
 	private:
 		int m_index;
-		SDL_GameController* m_gameController = nullptr;
+		std::shared_ptr<SDL_GameController> m_gameController;
 
 		void open();
 		void close() noexcept;
 
-		SDL_Haptic* m_hapticController = nullptr;
+		std::shared_ptr<SDL_Haptic> m_hapticController;
 		bool m_hapticRumbleSupported = false;
 
 		void openHapticController();

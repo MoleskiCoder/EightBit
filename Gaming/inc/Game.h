@@ -11,22 +11,13 @@
 #include <Device.h>
 
 #include "GameController.h"
+#include "SDLWrapper.h"
 
 class Configuration;
 
 namespace Gaming {
 	class Game : public EightBit::Device {
 	public:
-
-		static void throwSDLException(std::string failure) {
-			throw std::runtime_error(failure + ::SDL_GetError());
-		}
-
-		static void verifySDLCall(int returned, std::string failure) {
-			if (returned < 0)
-				throwSDLException(failure);
-		}
-
 		Game();
 		virtual ~Game();
 
@@ -34,7 +25,7 @@ namespace Gaming {
 		virtual void raisePOWER() override;
 
 	protected:
-		virtual int fps() const = 0;
+		virtual float fps() const = 0;
 		virtual bool useVsync() const = 0;
 
 		virtual int windowWidth() const noexcept { return displayWidth() * displayScale(); }
@@ -59,6 +50,17 @@ namespace Gaming {
 
 		virtual const uint32_t* pixels() const = 0;
 
+		virtual bool handleKeyDown(SDL_Keycode key);
+		virtual bool handleKeyUp(SDL_Keycode key);
+
+		virtual bool handleJoyButtonDown(SDL_JoyButtonEvent event);
+		virtual bool handleJoyButtonUp(SDL_JoyButtonEvent event);
+
+		virtual bool handleControllerButtonDown(SDL_ControllerButtonEvent event);
+		virtual bool handleControllerButtonUp(SDL_ControllerButtonEvent event);
+
+		void toggleFullscreen();
+
 		std::shared_ptr<GameController> gameController(const int which) const {
 			const auto i = m_gameControllers.find(which);
 			if (i == m_gameControllers.cend())
@@ -81,6 +83,8 @@ namespace Gaming {
 		std::shared_ptr<SDL_PixelFormat> pixelFormat() const noexcept { return m_pixelFormat; }
 
 	private:
+		SDLWrapper m_wrapper;
+
 		std::shared_ptr<SDL_Window> m_window;
 		std::shared_ptr<SDL_Renderer> m_renderer;
 		std::shared_ptr<SDL_Texture> m_bitmapTexture;
@@ -97,14 +101,5 @@ namespace Gaming {
 
 		void configureBackground() const;
 		void createBitmapTexture();
-
-		virtual void handleKeyDown(SDL_Keycode key) {}
-		virtual void handleKeyUp(SDL_Keycode key) {}
-
-		virtual void handleJoyButtonDown(SDL_JoyButtonEvent event) {}
-		virtual void handleJoyButtonUp(SDL_JoyButtonEvent event) {}
-
-		virtual void handleControllerButtonDown(SDL_ControllerButtonEvent event) {}
-		virtual void handleControllerButtonUp(SDL_ControllerButtonEvent event) {}
 	};
 }
