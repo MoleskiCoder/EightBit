@@ -237,13 +237,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 	for (int i = 0; i < dumpCount; ++i)
 		output << hex(BUS().peek(pc + i + 1));
 
-	auto outputFormatSpecification = !m_prefixDD;
-	if (m_prefixDD) {
-		if (m_opcode != 0xdd) {
-			outputFormatSpecification = true;
-		}
-	}
-
+	const auto outputFormatSpecification = !m_prefixDD || (m_prefixDD && m_opcode != 0xdd) && !specification.empty();
 	if (outputFormatSpecification) {
 		output << '\t';
 		m_formatter.parse(specification);
@@ -331,6 +325,7 @@ void EightBit::Disassembler::disassembleED(
 				specification = "ADC HL," + RP(p);
 				break;
 			}
+			break;
 		case 3:
 			switch (q) {
 			case 0:	// LD (nn),rp
@@ -704,14 +699,17 @@ void EightBit::Disassembler::disassembleOther(
 				case 1:	// DD prefix
 					m_displaced = m_prefixDD = true;
 					disassemble(output, cpu, pc + 1);
+					//m_prefixDD = false;
 					break;
 				case 2:	// ED prefix
 					m_prefixED = true;
 					disassemble(output, cpu, pc + 1);
+					//m_prefixED = false;
 					break;
 				case 3:	// FD prefix
 					m_displaced = m_prefixFD = true;
 					disassemble(output, cpu, pc + 1);
+					//m_prefixFD = false;
 					break;
 				}
 			}
