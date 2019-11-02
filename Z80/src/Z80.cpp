@@ -34,6 +34,7 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 
 DEFINE_PIN_LEVEL_CHANGERS(NMI, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(M1, Z80);
+DEFINE_PIN_LEVEL_CHANGERS(MREQ, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(IORQ, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(RD, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(WR, Z80);
@@ -55,15 +56,19 @@ EightBit::register16_t& EightBit::Z80::HL() {
 }
 
 void EightBit::Z80::busWrite() {
+	lowerMREQ();
 	lowerWR();
 	IntelProcessor::busWrite();
 	raiseWR();
+	raiseMREQ();
 }
 
 uint8_t EightBit::Z80::busRead() {
+	lowerMREQ();
 	lowerRD();
 	const auto returned = IntelProcessor::busRead();
 	raiseRD();
+	raiseMREQ();
 	return returned;
 }
 
