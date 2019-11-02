@@ -7,6 +7,7 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 : IntelProcessor(bus),
   m_ports(ports) {
 	RaisedPOWER.connect([this](EventArgs) {
+
 		raiseM1();
 		raiseIORQ();
 		raiseRD();
@@ -18,10 +19,10 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 		REFRESH() = 0;
 		IV() = Mask8;
 
-		AF() = IX() = IY() = BC() = DE() = HL() = Mask16;
-
 		exxAF();
 		exx();
+
+		AF() = IX() = IY() = BC() = DE() = HL() = Mask16;
 
 		m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	});
