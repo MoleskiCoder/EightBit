@@ -53,8 +53,8 @@ int EightBit::Processor::execute(const uint8_t value) {
 
 // http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
 int8_t EightBit::Processor::signExtend(const int b, uint8_t x) {
-	const uint8_t m = 1 << (b - 1); // mask can be pre-computed if b is fixed
-	x = x & ((1 << b) - 1);  // (Skip this if bits in x above position b are already zero.)
+	const uint8_t m = bit(b - 1); // mask can be pre-computed if b is fixed
+	x = x & (bit(b) - 1);  // (Skip this if bits in x above position b are already zero.)
 	const auto result = (x ^ m) - m;
 	return result;
 }

@@ -45,6 +45,8 @@ namespace EightBit {
 			Mask16 = Bit16 - 1
 		};
 
+		static constexpr uint8_t bit(const int which) noexcept { return 1 << which; }
+
 		static void clearFlag(uint8_t& f, const int flag) noexcept { f &= ~flag; }
 		static void setFlag(uint8_t& f, const int flag) noexcept { f |= flag; }
 

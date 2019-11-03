@@ -436,7 +436,7 @@ void EightBit::Z80::bit(const int n, const uint8_t operand) {
 	ASSUME(n <= 7);
 	setFlag(F(), HC);
 	clearFlag(F(), NF);
-	const auto discarded = operand & (1 << n);
+	const auto discarded = operand & Chip::bit(n);
 	adjustSZ<Z80>(F(), discarded);
 	clearFlag(F(), PF, discarded);
 }
@@ -444,13 +444,13 @@ void EightBit::Z80::bit(const int n, const uint8_t operand) {
 uint8_t EightBit::Z80::res(const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
-	return operand & ~(1 << n);
+	return operand & ~Chip::bit(n);
 }
 
 uint8_t EightBit::Z80::set(const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
-	return operand | (1 << n);
+	return operand | Chip::bit(n);
 }
 
 void EightBit::Z80::neg() {
