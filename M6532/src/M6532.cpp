@@ -38,11 +38,11 @@ void EightBit::M6532::step() {
 
 	const bool interruptPA7 = m_allowPA7Interrupts && (PA() & Bit7);
 	if (interruptPA7)
-		setFlag(IF(), Bit6);
+		IF() = setBit(IF(), Bit6);
 
 	const bool interruptTimer = m_allowTimerInterrupts && (m_timerInterval == 0);
 	if (interruptTimer)
-		setFlag(IF(), Bit7);
+		IF() = setBit(IF(), Bit7);
 
 	match(IRQ(), !(interruptPA7 || interruptTimer));
 
@@ -93,7 +93,7 @@ void EightBit::M6532::step() {
 
 			if (read && a2 && a0) {
 				DATA() = IF();
-				clearFlag(IF(), Bit6);
+				IF() = clearBit(IF(), Bit6);
 			}
 
 			m_allowTimerInterrupts = !!a3;
@@ -115,7 +115,7 @@ void EightBit::M6532::step() {
 					break;
 				}
 				m_currentIncrement = m_timerIncrement;
-				clearFlag(IF(), Bit7);
+				IF() = clearBit(IF(), Bit7);
 			}
 		}
 	}

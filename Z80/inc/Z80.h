@@ -137,6 +137,13 @@ namespace EightBit {
 			m_displacement = fetchByte();
 		}
 
+		uint8_t fetchInitialOpCode() {
+			lowerM1();
+			const auto returned = fetchByte();
+			raiseM1();
+			return returned;
+		}
+
 		[[nodiscard]] auto& HL2() {
 			if (LIKELY(!m_displaced))
 				return HL();
@@ -271,12 +278,12 @@ namespace EightBit {
 			}
 		}
 
-		static void adjustHalfCarryAdd(uint8_t& f, const uint8_t before, const uint8_t value, const int calculation) {
-			setFlag(f, HC, calculateHalfCarryAdd(before, value, calculation));
+		[[nodiscard]] static uint8_t adjustHalfCarryAdd(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
+			return setBit(f, HC, calculateHalfCarryAdd(before, value, calculation));
 		}
 
 		static void adjustHalfCarrySub(uint8_t& f, const uint8_t before, const uint8_t value, const int calculation) {
-			setFlag(f, HC, calculateHalfCarrySub(before, value, calculation));
+			f = setBit(f, HC, calculateHalfCarrySub(before, value, calculation));
 		}
 
 		static void adjustOverflowAdd(uint8_t& f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
@@ -285,7 +292,7 @@ namespace EightBit {
 
 		static void adjustOverflowAdd(uint8_t& f, const int beforeNegative, const int valueNegative, const int afterNegative) {
 			const auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
-			setFlag(f, VF, overflow);
+			f = setBit(f, VF, overflow);
 		}
 
 		static void adjustOverflowSub(uint8_t& f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
@@ -294,17 +301,17 @@ namespace EightBit {
 
 		static void adjustOverflowSub(uint8_t& f, const int beforeNegative, const int valueNegative, const int afterNegative) {
 			const auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
-			setFlag(f, VF, overflow);
+			f = setBit(f, VF, overflow);
 		}
 
-		uint8_t subtract(uint8_t operand, uint8_t value, int carry = 0);
+		static uint8_t subtract(uint8_t& f, uint8_t operand, uint8_t value, int carry = 0);
 
 		void executeCB(int x, int y, int z);
 		void executeED(int x, int y, int z, int p, int q);
 		void executeOther(int x, int y, int z, int p, int q);
 
-		[[nodiscard]] uint8_t increment(uint8_t operand);
-		[[nodiscard]] uint8_t decrement(uint8_t operand);
+		[[nodiscard]] static uint8_t increment(uint8_t& f, uint8_t operand);
+		[[nodiscard]] static uint8_t decrement(uint8_t& f, uint8_t operand);
 
 		void di();
 		void ei();
@@ -312,60 +319,60 @@ namespace EightBit {
 		void retn();
 		void reti();
 
-		bool jrConditionalFlag(int flag);
-		bool returnConditionalFlag(int flag);
-		bool jumpConditionalFlag(int flag);
-		bool callConditionalFlag(int flag);
+		[[nodiscard]] bool jrConditionalFlag(uint8_t f, int flag);
+		[[nodiscard]] bool returnConditionalFlag(uint8_t f, int flag);
+		[[nodiscard]] bool callConditionalFlag(uint8_t f, int flag);
+		void jumpConditionalFlag(uint8_t f, int flag);
 
-		register16_t sbc(register16_t operand, register16_t value);
-		register16_t adc(register16_t operand, register16_t value);
-		register16_t add(register16_t operand, register16_t value, int carry = 0);
+		[[nodiscard]] register16_t sbc(uint8_t& f, register16_t operand, register16_t value);
+		[[nodiscard]] register16_t adc(uint8_t& f, register16_t operand, register16_t value);
+		[[nodiscard]] register16_t add(uint8_t& f, register16_t operand, register16_t value, int carry = 0);
 
-		[[nodiscard]] uint8_t add(uint8_t operand, uint8_t value, int carry = 0);
-		[[nodiscard]] uint8_t adc(uint8_t operand, uint8_t value);
-		[[nodiscard]] uint8_t sub(uint8_t operand, uint8_t value, int carry = 0);
-		[[nodiscard]] uint8_t sbc(uint8_t operand, uint8_t value);
-		void andr(uint8_t value);
-		void xorr(uint8_t value);
-		void orr(uint8_t value);
-		void compare(uint8_t value);
+		[[nodiscard]] static uint8_t add(uint8_t& f, uint8_t operand, uint8_t value, int carry = 0);
+		[[nodiscard]] static uint8_t adc(uint8_t& f, uint8_t operand, uint8_t value);
+		[[nodiscard]] static uint8_t sub(uint8_t& f, uint8_t operand, uint8_t value, int carry = 0);
+		[[nodiscard]] static uint8_t sbc(uint8_t& f, uint8_t operand, uint8_t value);
+		[[nodiscard]] static uint8_t andr(uint8_t& f, uint8_t operand, uint8_t value);
+		[[nodiscard]] static uint8_t xorr(uint8_t& f, uint8_t operand, uint8_t value);
+		[[nodiscard]] static uint8_t orr(uint8_t& f, uint8_t operand, uint8_t value);
+		static void compare(uint8_t& f, uint8_t operand, uint8_t value);
 
-		[[nodiscard]] uint8_t rlc(uint8_t operand);
-		[[nodiscard]] uint8_t rrc(uint8_t operand);
-		[[nodiscard]] uint8_t rl(uint8_t operand);
-		[[nodiscard]] uint8_t rr(uint8_t operand);
-		[[nodiscard]] uint8_t sla(uint8_t operand);
-		[[nodiscard]] uint8_t sra(uint8_t operand);
-		[[nodiscard]] uint8_t sll(uint8_t operand);
-		[[nodiscard]] uint8_t srl(uint8_t operand);
+		[[nodiscard]] static uint8_t rlc(uint8_t& f, uint8_t operand);
+		[[nodiscard]] static uint8_t rrc(uint8_t& f, uint8_t operand);
+		[[nodiscard]] static uint8_t rl(uint8_t& f, uint8_t operand);
+		[[nodiscard]] static uint8_t rr(uint8_t& f, uint8_t operand);
+		[[nodiscard]] static uint8_t sla(uint8_t& f, uint8_t operand);
+		[[nodiscard]] static uint8_t sra(uint8_t& f, uint8_t operand);
+		[[nodiscard]] static uint8_t sll(uint8_t& f, uint8_t operand);
+		[[nodiscard]] static uint8_t srl(uint8_t& f, uint8_t operand);
 
-		void bit(int n, uint8_t operand);
+		static void bit(uint8_t& f, int n, uint8_t operand);
 		[[nodiscard]] static uint8_t res(int n, uint8_t operand);
 		[[nodiscard]] static uint8_t set(int n, uint8_t operand);
 
-		void daa();
+		[[nodiscard]] static uint8_t daa(uint8_t& f, uint8_t operand);
 
-		void scf();
-		void ccf();
-		void cpl();
+		static void scf(uint8_t& f, uint8_t operand);
+		static void ccf(uint8_t& f, uint8_t operand);
+		static uint8_t cpl(uint8_t& f, uint8_t operand);
 
 		void xhtl(register16_t& exchange);
 
-		void blockCompare(register16_t source, register16_t& counter);
+		void blockCompare(uint8_t& f, uint8_t value, register16_t source, register16_t& counter);
 
-		void cpi();
-		bool cpir();
+		void cpi(uint8_t& f, uint8_t value);
+		bool cpir(uint8_t& f, uint8_t value);
 
-		void cpd();
-		bool cpdr();
+		void cpd(uint8_t& f, uint8_t value);
+		bool cpdr(uint8_t& f, uint8_t value);
 
-		void blockLoad(register16_t source, register16_t destination, register16_t& counter);
+		void blockLoad(uint8_t& f, uint8_t a, register16_t source, register16_t destination, register16_t& counter);
 
-		void ldi();
-		bool ldir();
+		void ldi(uint8_t& f, uint8_t a);
+		bool ldir(uint8_t& f, uint8_t a);
 
-		void ldd();
-		bool lddr();
+		void ldd(uint8_t& f, uint8_t a);
+		bool lddr(uint8_t& f, uint8_t a);
 
 		void blockIn(register16_t& source, register16_t destination);
 
@@ -383,10 +390,10 @@ namespace EightBit {
 		void outd();
 		bool otdr();
 
-		void neg();
+		[[nodiscard]] uint8_t neg(uint8_t& f, uint8_t operand);
 
-		void rrd();
-		void rld();
+		void rrd(uint8_t& f, register16_t address, uint8_t& update);
+		void rld(uint8_t& f, register16_t address, uint8_t& update);
 
 		void writePort(uint8_t port);
 		void writePort();

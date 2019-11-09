@@ -45,27 +45,26 @@ namespace EightBit {
 			Mask16 = Bit16 - 1
 		};
 
-		static constexpr uint8_t bit(const int which) noexcept { return 1 << which; }
+		[[nodiscard]] static constexpr uint8_t bit(const int which) noexcept { return 1 << which; }
 
-		static void clearFlag(uint8_t& f, const int flag) noexcept { f &= ~flag; }
-		static void setFlag(uint8_t& f, const int flag) noexcept { f |= flag; }
+		[[nodiscard]] static constexpr uint8_t setBit(uint8_t input, const int which) noexcept { return input | which; }
+		[[nodiscard]] static constexpr uint8_t setBit(uint8_t input, const int which, const int condition) noexcept { return setBit(input, which, !!condition); }
+		[[nodiscard]] static constexpr uint8_t setBit(uint8_t input, const int which, const uint32_t condition) noexcept { return setBit(input, which, !!condition); }
+		[[nodiscard]] static constexpr uint8_t setBit(uint8_t input, const int which, const bool condition) noexcept { return condition ? setBit(input, which) : clearBit(input, which); }
 
-		static void setFlag(uint8_t& f, const int flag, const int condition) noexcept { setFlag(f, flag, !!condition); }
-		static void setFlag(uint8_t& f, const int flag, const uint32_t condition) noexcept { setFlag(f, flag, !!condition); }
-		static void setFlag(uint8_t& f, const int flag, const bool condition) noexcept { condition ? setFlag(f, flag) : clearFlag(f, flag); }
+		[[nodiscard]] static constexpr uint8_t clearBit(uint8_t input, const int which) noexcept { return input & ~which; }
+		[[nodiscard]] static constexpr uint8_t clearBit(uint8_t input, const int which, const int condition) noexcept { return clearBit(input, which, !!condition); }
+		[[nodiscard]] static constexpr uint8_t clearBit(uint8_t input, const int which, const uint32_t condition) noexcept { return clearBit(input, which, !!condition); }
+		[[nodiscard]] static constexpr uint8_t clearBit(uint8_t input, const int which, const bool condition) noexcept { return setBit(input, which, !condition); }
 
-		static void clearFlag(uint8_t& f, const int flag, const int condition) noexcept { clearFlag(f, flag, !!condition); }
-		static void clearFlag(uint8_t& f, const int flag, const uint32_t condition) noexcept { clearFlag(f, flag, !!condition); }
-		static void clearFlag(uint8_t& f, const int flag, const bool condition) noexcept { setFlag(f, flag, !condition); }
+		[[nodiscard]] static constexpr auto highNibble(const int value) { return value >> 4; }
+		[[nodiscard]] static constexpr auto lowNibble(const int value) { return value & Mask4; }
 
-		static constexpr auto highNibble(const int value) { return value >> 4; }
-		static constexpr auto lowNibble(const int value) { return value & Mask4; }
+		[[nodiscard]] static constexpr auto higherNibble(const int value) { return value & 0xf0; }
+		[[nodiscard]] static constexpr auto lowerNibble(const int value) { return lowNibble(value); }
 
-		static constexpr auto higherNibble(const int value) { return value & 0xf0; }
-		static constexpr auto lowerNibble(const int value) { return lowNibble(value); }
-
-		static constexpr auto promoteNibble(const int value) { return value << 4; }
-		static constexpr auto demoteNibble(const int value) { return highNibble(value); }
+		[[nodiscard]] static constexpr auto promoteNibble(const int value) { return value << 4; }
+		[[nodiscard]] static constexpr auto demoteNibble(const int value) { return highNibble(value); }
 
 		virtual ~Chip();
 

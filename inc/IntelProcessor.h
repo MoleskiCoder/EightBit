@@ -21,9 +21,9 @@ namespace EightBit {
 			int p = 0;
 			int q = 0;
 
-			opcode_decoded_t() {}
+			opcode_decoded_t() noexcept {}
 
-			opcode_decoded_t(const uint8_t opcode) {
+			opcode_decoded_t(const uint8_t opcode) noexcept {
 				x = (opcode & 0b11000000) >> 6;	// 0 - 3
 				y = (opcode & 0b00111000) >> 3;	// 0 - 7
 				z = (opcode & 0b00000111);		// 0 - 7
@@ -35,7 +35,7 @@ namespace EightBit {
 		~IntelProcessor() = default;
 
 		[[nodiscard]] const auto& getDecodedOpcode(const size_t i) const noexcept {
-			return m_decodedOpcodes[i];
+			return m_decodedOpcodes.at(i);
 		}
 
 		[[nodiscard]] auto& MEMPTR() noexcept { return m_memptr; }
@@ -63,59 +63,59 @@ namespace EightBit {
 	protected:
 		IntelProcessor(Bus& bus);
 
-		template<class T> static void adjustSign(uint8_t& f, const uint8_t value) {
-			setFlag(f, T::SF, value & T::SF);
+		template<class T> [[nodiscard]] static uint8_t adjustSign(uint8_t f, const uint8_t value) {
+			return setBit(f, T::SF, value & T::SF);
 		}
 
-		template<class T> static void adjustZero(uint8_t& f, const uint8_t value) {
-			clearFlag(f, T::ZF, value);
+		template<class T> [[nodiscard]] static uint8_t adjustZero(uint8_t f, const uint8_t value) {
+			return clearBit(f, T::ZF, value);
 		}
 
-		template<class T> static void adjustParity(uint8_t& f, const uint8_t value) {
-			clearFlag(f, T::PF, PARITY(value));
+		template<class T> [[nodiscard]] static uint8_t adjustParity(uint8_t f, const uint8_t value) {
+			return clearBit(f, T::PF, PARITY(value));
 		}
 
-		template<class T> static void adjustSZ(uint8_t& f, const uint8_t value) {
-			adjustSign<T>(f, value);
-			adjustZero<T>(f, value);
+		template<class T> [[nodiscard]] static uint8_t adjustSZ(uint8_t f, const uint8_t value) {
+			const auto intermediate = adjustSign<T>(f, value);
+			return adjustZero<T>(intermediate, value);
 		}
 
-		template<class T> static void adjustSZP(uint8_t& f, const uint8_t value) {
-			adjustSZ<T>(f, value);
-			adjustParity<T>(f, value);
+		template<class T> [[nodiscard]] static uint8_t adjustSZP(uint8_t f, const uint8_t value) {
+			const auto intermediate = adjustSZ<T>(f, value);
+			return adjustParity<T>(intermediate, value);
 		}
 
-		template<class T> static void adjustXY(uint8_t& f, const uint8_t value) {
-			setFlag(f, T::XF, value & T::XF);
-			setFlag(f, T::YF, value & T::YF);
+		template<class T> [[nodiscard]] static uint8_t adjustXY(uint8_t f, const uint8_t value) {
+			const auto intermediate = setBit(f, T::XF, value & T::XF);
+			return setBit(intermediate, T::YF, value & T::YF);
 		}
 
-		template<class T> static void adjustSZPXY(uint8_t& f, const uint8_t value) {
-			adjustSZP<T>(f, value);
-			adjustXY<T>(f, value);
+		template<class T> [[nodiscard]] static uint8_t adjustSZPXY(uint8_t f, const uint8_t value) {
+			const auto intermediate = adjustSZP<T>(f, value);
+			return adjustXY<T>(intermediate, value);
 		}
 
-		template<class T> static void adjustSZXY(uint8_t& f, const uint8_t value) {
-			adjustSZ<T>(f, value);
-			adjustXY<T>(f, value);
+		template<class T> [[nodiscard]] static uint8_t adjustSZXY(uint8_t f, const uint8_t value) {
+			const auto intermediate = adjustSZ<T>(f, value);
+			return adjustXY<T>(intermediate, value);
 		}
 
 		//
 
-		static constexpr auto buildHalfCarryIndex(const uint8_t before, const uint8_t value, const int calculation) {
+		[[nodiscard]] static constexpr auto buildHalfCarryIndex(const uint8_t before, const uint8_t value, const int calculation) {
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
 		[[nodiscard]] static auto calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) noexcept {
 			static std::array<int, 8> halfCarryTableAdd = { { 0, 0, 1, 0, 1, 0, 1, 1} };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
-			return halfCarryTableAdd[index & Mask3];
+			return halfCarryTableAdd.at(index & Mask3);
 		}
 
 		[[nodiscard]] static auto calculateHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) noexcept {
 			std::array<int, 8> halfCarryTableSub = { { 0, 1, 1, 1, 0, 0, 0, 1 } };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
-			return halfCarryTableSub[index & Mask3];
+			return halfCarryTableSub.at(index & Mask3);
 		}
 
 		void handleRESET() override;
@@ -154,7 +154,7 @@ namespace EightBit {
 			return !!condition;
 		}
 
-		void jr(const int8_t offset) {
+		void jr(const int8_t offset) noexcept {
 			jump(MEMPTR() = PC() + offset);
 		}
 

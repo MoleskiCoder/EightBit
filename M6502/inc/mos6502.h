@@ -97,12 +97,12 @@ namespace EightBit {
 
 		// Addressing modes, read
 
-		enum PageCrossingBehavior { AlwaysReadTwice, MaybeReadTwice };
+		enum class PageCrossingBehavior { AlwaysReadTwice, MaybeReadTwice };
 
 		uint8_t AM_Immediate();
 		uint8_t AM_Absolute();
 		uint8_t AM_ZeroPage();
-		uint8_t AM_AbsoluteX(PageCrossingBehavior behaviour = MaybeReadTwice);
+		uint8_t AM_AbsoluteX(PageCrossingBehavior behaviour = PageCrossingBehavior::MaybeReadTwice);
 		uint8_t AM_AbsoluteY();
 		uint8_t AM_ZeroPageX();
 		uint8_t AM_ZeroPageY();
@@ -111,8 +111,8 @@ namespace EightBit {
 
 		// Flag adjustment
 
-		void adjustZero(const uint8_t datum) { clearFlag(P(), ZF, datum); }
-		void adjustNegative(const uint8_t datum) { setFlag(P(), NF, datum & NF); }
+		void adjustZero(const uint8_t datum) { P() = clearBit(P(), ZF, datum); }
+		void adjustNegative(const uint8_t datum) { P() = setBit(P(), NF, datum & NF); }
 		
 		void adjustNZ(const uint8_t datum) {
 			adjustZero(datum);

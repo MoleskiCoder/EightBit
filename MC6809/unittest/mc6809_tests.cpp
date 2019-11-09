@@ -77,7 +77,7 @@ TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
     SECTION("Immediate (byte)") {
 		board.poke(0, 0x89);
 		board.poke(1, 0x7c);
-		EightBit::Chip::setFlag(cpu.CC(), EightBit::mc6809::CF);
+		cpu.CC() = EightBit::Chip::setBit(cpu.CC(), EightBit::mc6809::CF);
 		cpu.A() = 0x3a;
 		cpu.step();
 		REQUIRE(cpu.A() == 0xb7);
@@ -648,7 +648,7 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 		board.poke(0, 0x82);
 		board.poke(1, 0x34);
 		cpu.A() = 0x14;
-		cpu.setFlag(cpu.CC(), EightBit::mc6809::CF);
+		cpu.CC() = cpu.setBit(cpu.CC(), EightBit::mc6809::CF);
 		cpu.step();
 		REQUIRE(cpu.A() == 0xdf);
 		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);

@@ -195,10 +195,10 @@ namespace EightBit {
 
 		// Flag adjustment
 
-		template<class T> void adjustZero(const T datum) { clearFlag(CC(), ZF, datum); }
-		void adjustZero(const register16_t datum) { clearFlag(CC(), ZF, datum.word); }
-		void adjustNegative(const uint8_t datum) { setFlag(CC(), NF, datum & Bit7); }
-		void adjustNegative(const uint16_t datum) { setFlag(CC(), NF, datum & Bit15); }
+		template<class T> void adjustZero(const T datum) { CC() = clearBit(CC(), ZF, datum); }
+		void adjustZero(const register16_t datum) { CC() = clearBit(CC(), ZF, datum.word); }
+		void adjustNegative(const uint8_t datum) { CC() = setBit(CC(), NF, datum & Bit7); }
+		void adjustNegative(const uint16_t datum) { CC() = setBit(CC(), NF, datum & Bit15); }
 		void adjustNegative(const register16_t datum) { adjustNegative(datum.word); }
 
 		template<class T> void adjustNZ(const T datum) {
@@ -206,24 +206,24 @@ namespace EightBit {
 			adjustNegative(datum);
 		}
 
-		void adjustCarry(const uint16_t datum) { setFlag(CC(), CF, datum & Bit8); }		// 8-bit addition
-		void adjustCarry(const uint32_t datum) { setFlag(CC(), CF, datum & Bit16); }		// 16-bit addition
+		void adjustCarry(const uint16_t datum) { CC() = setBit(CC(), CF, datum & Bit8); }		// 8-bit addition
+		void adjustCarry(const uint32_t datum) { CC() = setBit(CC(), CF, datum & Bit16); }		// 16-bit addition
 		void adjustCarry(const register16_t datum) { adjustCarry(datum.word); }
 
-		void adjustBorrow(const uint16_t datum) { clearFlag(CC(), CF, datum & Bit8); }	// 8-bit subtraction
-		void adjustBorrow(const uint32_t datum) { clearFlag(CC(), CF, datum & Bit16); }	// 16-bit subtraction
+		void adjustBorrow(const uint16_t datum) { CC() = clearBit(CC(), CF, datum & Bit8); }	// 8-bit subtraction
+		void adjustBorrow(const uint32_t datum) { CC() = clearBit(CC(), CF, datum & Bit16); }	// 16-bit subtraction
 		void adjustBorrow(const register16_t datum) { adjustBorrow(datum.word); }
 
 		void adjustOverflow(const uint8_t before, const uint8_t data, const register16_t after) {
 			const uint8_t lowAfter = after.low;
 			const uint8_t highAfter = after.high;
-			setFlag(CC(), VF, (before ^ data ^ lowAfter ^ (highAfter << 7)) & Bit7);
+			CC() = setBit(CC(), VF, (before ^ data ^ lowAfter ^ (highAfter << 7)) & Bit7);
 		}
 
 		void adjustOverflow(const uint16_t before, const uint16_t data, const uint32_t after) {
 			const uint16_t lowAfter = after & Mask16;
 			const uint16_t highAfter = after >> 16;
-			setFlag(CC(), VF, (before ^ data ^ lowAfter ^ (highAfter << 15)) & Bit15);
+			CC() = setBit(CC(), VF, (before ^ data ^ lowAfter ^ (highAfter << 15)) & Bit15);
 		}
 
 		void adjustOverflow(const register16_t before, const register16_t data, const register16_t after) {
@@ -231,7 +231,7 @@ namespace EightBit {
 		}
 
 		void adjustHalfCarry(const uint8_t before, const uint8_t data, const uint8_t after) {
-			setFlag(CC(), HF, (before ^ data ^ after) & Bit4);
+			CC() = setBit(CC(), HF, (before ^ data ^ after) & Bit4);
 		}
 
 		void adjustAddition(const uint8_t before, const uint8_t data, const register16_t after) {
@@ -314,7 +314,7 @@ namespace EightBit {
 		void restoreRegisterState();
 
 		template <class T> T through(const T data) {
-			clearFlag(CC(), VF);
+			CC() = clearBit(CC(), VF);
 			adjustNZ(data);
 			return data;
 		}

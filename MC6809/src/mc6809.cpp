@@ -55,8 +55,8 @@ void EightBit::mc6809::handleRESET() {
 	lowerBA();
 	raiseBS();
 	DP() = 0;
-	setFlag(CC(), IF);	// Disable IRQ
-	setFlag(CC(), FF);	// Disable FIRQ
+	CC() = setBit(CC(), IF);	// Disable IRQ
+	CC() = setBit(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, RESETvector));
 	tick(10);
 }
@@ -66,8 +66,8 @@ void EightBit::mc6809::handleNMI() {
 	lowerBA();
 	raiseBS();
 	saveEntireRegisterState();
-	setFlag(CC(), IF);	// Disable IRQ
-	setFlag(CC(), FF);	// Disable FIRQ
+	CC() = setBit(CC(), IF);	// Disable IRQ
+	CC() = setBit(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, NMIvector));
 	tick(12);
 }
@@ -77,7 +77,7 @@ void EightBit::mc6809::handleINT() {
 	lowerBA();
 	raiseBS();
 	saveEntireRegisterState();
-	setFlag(CC(), IF);	// Disable IRQ
+	CC() = setBit(CC(), IF);	// Disable IRQ
 	jump(getWordPaged(0xff, IRQvector));
 	tick(12);
 }
@@ -87,8 +87,8 @@ void EightBit::mc6809::handleFIRQ() {
 	lowerBA();
 	raiseBS();
 	savePartialRegisterState();
-	setFlag(CC(), IF);	// Disable IRQ
-	setFlag(CC(), FF);	// Disable FIRQ
+	CC() = setBit(CC(), IF);	// Disable IRQ
+	CC() = setBit(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, FIRQvector));
 	tick(12);
 }
@@ -765,12 +765,12 @@ EightBit::register16_t EightBit::mc6809::AM_extended_word() {
 //
 
 void EightBit::mc6809::saveEntireRegisterState() {
-	setFlag(CC(), EF);
+	CC() = setBit(CC(), EF);
 	saveRegisterState();
 }
 
 void EightBit::mc6809::savePartialRegisterState() {
-	clearFlag(CC(), EF);
+	CC() = clearBit(CC(), EF);
 	saveRegisterState();
 }
 
@@ -805,15 +805,15 @@ uint8_t EightBit::mc6809::andr(const uint8_t operand, const uint8_t data) {
 }
 
 uint8_t EightBit::mc6809::asl(uint8_t operand) {
-	setFlag(CC(), CF, operand & Bit7);
+	CC() = setBit(CC(), CF, operand & Bit7);
 	adjustNZ(operand <<= 1);
 	const auto overflow = carry() ^ (negative() >> 3);
-	setFlag(CC(), VF, overflow);
+	CC() = setBit(CC(), VF, overflow);
 	return operand;
 }
 
 uint8_t EightBit::mc6809::asr(uint8_t operand) {
-	setFlag(CC(), CF, operand & Bit0);
+	CC() = setBit(CC(), CF, operand & Bit0);
 	const uint8_t result = (operand >> 1) | Bit7;
 	adjustNZ(result);
 	return result;
@@ -824,7 +824,7 @@ void EightBit::mc6809::bit(const uint8_t operand, const uint8_t data) {
 }
 
 uint8_t EightBit::mc6809::clr() {
-	clearFlag(CC(), CF);
+	CC() = clearBit(CC(), CF);
 	return through((uint8_t)0U);
 }
 
@@ -837,7 +837,7 @@ void EightBit::mc6809::cmp(const register16_t operand, const register16_t data) 
 }
 
 uint8_t EightBit::mc6809::com(const uint8_t operand) {
-	setFlag(CC(), CF);
+	CC() = setBit(CC(), CF);
 	return through((uint8_t)~operand);
 }
 
@@ -849,7 +849,7 @@ void EightBit::mc6809::cwai(const uint8_t data) {
 
 uint8_t EightBit::mc6809::da(uint8_t operand) {
 
-	setFlag(CC(), CF, operand > 0x99);
+	CC() = setBit(CC(), CF, operand > 0x99);
 
 	const auto lowAdjust = halfCarry() || (lowNibble(operand) > 9);
 	const auto highAdjust = carry() || (operand > 0x99);
@@ -936,7 +936,7 @@ void EightBit::mc6809::jsr(const register16_t address) {
 }
 
 uint8_t EightBit::mc6809::lsr(uint8_t operand) {
-	setFlag(CC(), CF, operand & Bit0);
+	CC() = setBit(CC(), CF, operand & Bit0);
 	adjustNZ(operand >>= 1);
 	return operand;
 }
@@ -944,12 +944,12 @@ uint8_t EightBit::mc6809::lsr(uint8_t operand) {
 EightBit::register16_t EightBit::mc6809::mul(const uint8_t first, const uint8_t second) {
 	const register16_t result = first * second;
 	adjustZero(result);
-	setFlag(CC(), CF, result.low & Bit7);
+	CC() = setBit(CC(), CF, result.low & Bit7);
 	return result;
 }
 
 uint8_t EightBit::mc6809::neg(uint8_t operand) {
-	setFlag(CC(), VF, operand == Bit7);
+	CC() = setBit(CC(), VF, operand == Bit7);
 	const register16_t result = 0 - operand;
 	operand = result.low;
 	adjustNZ(operand);
@@ -1035,8 +1035,8 @@ void EightBit::mc6809::pul(register16_t& stack, const uint8_t data) {
 
 uint8_t EightBit::mc6809::rol(const uint8_t operand) {
 	const auto carryIn = carry();
-	setFlag(CC(), CF, operand & Bit7);
-	setFlag(CC(), VF, ((operand & Bit7) >> 7) ^ ((operand & Bit6) >> 6));
+	CC() = setBit(CC(), CF, operand & Bit7);
+	CC() = setBit(CC(), VF, ((operand & Bit7) >> 7) ^ ((operand & Bit6) >> 6));
 	const uint8_t result = (operand << 1) | carryIn;
 	adjustNZ(result);
 	return result;
@@ -1044,7 +1044,7 @@ uint8_t EightBit::mc6809::rol(const uint8_t operand) {
 		
 uint8_t EightBit::mc6809::ror(const uint8_t operand) {
 	const auto carryIn = carry();
-	setFlag(CC(), CF, operand & Bit0);
+	CC() = setBit(CC(), CF, operand & Bit0);
 	const uint8_t result = (operand >> 1) | (carryIn << 7);
 	adjustNZ(result);
 	return result;
@@ -1060,8 +1060,8 @@ void EightBit::mc6809::rts() {
 
 void EightBit::mc6809::swi() {
 	saveEntireRegisterState();
-	setFlag(CC(), IF);	// Disable IRQ
-	setFlag(CC(), FF);	// Disable FIRQ
+	CC() = setBit(CC(), IF);	// Disable IRQ
+	CC() = setBit(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, SWIvector));
 }
 

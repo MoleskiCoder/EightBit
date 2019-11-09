@@ -19,7 +19,7 @@ std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) {
 	
 	for (int bit = 0; bit < 8; ++bit) {
 	
-		const auto mask = 1 << bit;
+		const auto mask = Chip::bit(bit);
 	
 		const auto bitLow = planeLow & mask ? 1 : 0;
 		const auto bitHigh = planeHigh & mask ? 0b10 : 0;

@@ -36,7 +36,6 @@ void EightBit::Intel8080::handleINT() {
 		di();
 		Processor::execute(BUS().DATA());
 	}
-	tick(3);
 }
 
 void EightBit::Intel8080::di() {
@@ -48,13 +47,13 @@ void EightBit::Intel8080::ei() {
 }
 
 void EightBit::Intel8080::increment(uint8_t& operand) {
-	adjustSZP<Intel8080>(F(), ++operand);
-	clearFlag(F(), AC, lowNibble(operand));
+	F() = adjustSZP<Intel8080>(F(), ++operand);
+	F() = clearBit(F(), AC, lowNibble(operand));
 }
 
 void EightBit::Intel8080::decrement(uint8_t& operand) {
-	adjustSZP<Intel8080>(F(), --operand);
-	setFlag(F(), AC, lowNibble(operand) != Mask4);
+	F() = adjustSZP<Intel8080>(F(), --operand);
+	F() = setBit(F(), AC, lowNibble(operand) != Mask4);
 }
 
 bool EightBit::Intel8080::jumpConditionalFlag(const int flag) {
@@ -129,7 +128,7 @@ bool EightBit::Intel8080::callConditionalFlag(const int flag) {
 void EightBit::Intel8080::add(const register16_t value) {
 	const auto result = HL().word + value.word;
 	HL() = result;
-	setFlag(F(), CF, result & Bit16);
+	F() = setBit(F(), CF, result & Bit16);
 }
 
 void EightBit::Intel8080::add(const uint8_t value, const int carry) {
@@ -140,8 +139,8 @@ void EightBit::Intel8080::add(const uint8_t value, const int carry) {
 
 	A() = result.low;
 
-	setFlag(F(), CF, result.word & Bit8);
-	adjustSZP<Intel8080>(F(), A());
+	F() = setBit(F(), CF, result.word & Bit8);
+	F() = adjustSZP<Intel8080>(F(), A());
 }
 
 void EightBit::Intel8080::adc(const uint8_t value) {
@@ -156,8 +155,8 @@ void EightBit::Intel8080::subtract(uint8_t& operand, const uint8_t value, const 
 
 	operand = result.low;
 
-	setFlag(F(), CF, result.word & Bit8);
-	adjustSZP<Intel8080>(F(), operand);
+	F() = setBit(F(), CF, result.word & Bit8);
+	F() = adjustSZP<Intel8080>(F(), operand);
 }
 
 void EightBit::Intel8080::sbb(const uint8_t value) {
@@ -165,19 +164,19 @@ void EightBit::Intel8080::sbb(const uint8_t value) {
 }
 
 void EightBit::Intel8080::andr(const uint8_t value) {
-	setFlag(F(), AC, (A() | value) & Bit3);
-	clearFlag(F(), CF);
-	adjustSZP<Intel8080>(F(), A() &= value);
+	F() = setBit(F(), AC, (A() | value) & Bit3);
+	F() = clearBit(F(), CF);
+	F() = adjustSZP<Intel8080>(F(), A() &= value);
 }
 
 void EightBit::Intel8080::xorr(const uint8_t value) {
-	clearFlag(F(), AC | CF);
-	adjustSZP<Intel8080>(F(), A() ^= value);
+	F() = clearBit(F(), AC | CF);
+	F() = adjustSZP<Intel8080>(F(), A() ^= value);
 }
 
 void EightBit::Intel8080::orr(const uint8_t value) {
-	clearFlag(F(), AC | CF);
-	adjustSZP<Intel8080>(F(), A() |= value);
+	F() = clearBit(F(), AC | CF);
+	F() = adjustSZP<Intel8080>(F(), A() |= value);
 }
 
 void EightBit::Intel8080::compare(const uint8_t value) {
@@ -188,24 +187,24 @@ void EightBit::Intel8080::compare(const uint8_t value) {
 void EightBit::Intel8080::rlc() {
 	const auto carry = A() & Bit7;
 	A() = (A() << 1) | (carry >> 7);
-	setFlag(F(), CF, carry);
+	F() = setBit(F(), CF, carry);
 }
 
 void EightBit::Intel8080::rrc() {
 	const auto carry = A() & Bit0;
 	A() = (A() >> 1) | (carry << 7);
-	setFlag(F(), CF, carry);
+	F() = setBit(F(), CF, carry);
 }
 
 void EightBit::Intel8080::rl() {
 	const auto carry = F() & CF;
-	setFlag(F(), CF, A() & Bit7);
+	F() = setBit(F(), CF, A() & Bit7);
 	A() = (A() << 1) | carry;
 }
 
 void EightBit::Intel8080::rr() {
 	const auto carry = F() & CF;
-	setFlag(F(), CF, A() & Bit0);
+	F() = setBit(F(), CF, A() & Bit0);
 	A() = (A() >> 1) | (carry << 7);
 }
 
@@ -221,7 +220,7 @@ void EightBit::Intel8080::daa() {
 		carry = true;
 	}
 	add(addition);
-	setFlag(F(), CF, carry);
+	F() = setBit(F(), CF, carry);
 }
 
 void EightBit::Intel8080::cma() {
@@ -229,11 +228,11 @@ void EightBit::Intel8080::cma() {
 }
 
 void EightBit::Intel8080::stc() {
-	setFlag(F(), CF);
+	F() = setBit(F(), CF);
 }
 
 void EightBit::Intel8080::cmc() {
-	clearFlag(F(), CF, F() & CF);
+	F() = clearBit(F(), CF, F() & CF);
 }
 
 void EightBit::Intel8080::xhtl(register16_t& exchange) {

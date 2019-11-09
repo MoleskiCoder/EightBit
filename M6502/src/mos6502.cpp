@@ -84,7 +84,7 @@ void EightBit::MOS6502::interrupt() {
 		pushWord(PC());
 		push(P() | (software ? BF : 0));
 	}
-	setFlag(P(), IF);	// Disable IRQ
+	P() = setBit(P(), IF);	// Disable IRQ
 	const uint8_t vector = reset ? RSTvector : (nmi ? NMIvector : IRQvector);
 	jump(getWordPaged(0xff, vector));
 	m_handlingRESET = m_handlingNMI = m_handlingINT = false;
@@ -137,13 +137,13 @@ int EightBit::MOS6502::execute() {
 	case 0x15:	A() = orr(A(), AM_ZeroPageX());								break;	// ORA (zero page, X)
 	case 0x16:	busReadModifyWrite(asl(AM_ZeroPageX()));					break;	// ASL (zero page, X)
 	case 0x17:	slo(AM_ZeroPageX());										break;	// *SLO (zero page, X)
-	case 0x18:	busRead(); clearFlag(P(), CF);								break;	// CLC (implied)
+	case 0x18:	busRead(); P() = clearBit(P(), CF);							break;	// CLC (implied)
 	case 0x19:	A() = orr(A(), AM_AbsoluteY());								break;	// ORA (absolute, Y)
 	case 0x1a:	busRead();													break;	// *NOP (implied)
 	case 0x1b:	slo(AM_AbsoluteY());										break;	// *SLO (absolute, Y)
 	case 0x1c:	AM_AbsoluteX();												break;	// *NOP (absolute, X)
 	case 0x1d:	A() = orr(A(), AM_AbsoluteX());								break;	// ORA (absolute, X)
-	case 0x1e:	busReadModifyWrite(asl(AM_AbsoluteX(AlwaysReadTwice)));		break;	// ASL (absolute, X)
+	case 0x1e:	busReadModifyWrite(asl(AM_AbsoluteX(PageCrossingBehavior::AlwaysReadTwice)));		break;	// ASL (absolute, X)
 	case 0x1f:	slo(AM_AbsoluteX());										break;	// *SLO (absolute, X)
 
 	case 0x20:	jsr();														break;	// JSR (absolute)
@@ -171,13 +171,13 @@ int EightBit::MOS6502::execute() {
 	case 0x35:	A() = andr(A(), AM_ZeroPageX());							break;	// AND (zero page, X)
 	case 0x36:	busReadModifyWrite(rol(AM_ZeroPageX()));					break;	// ROL (zero page, X)
 	case 0x37:	rla(AM_ZeroPageX());										break;	// *RLA (zero page, X)
-	case 0x38:	busRead(); setFlag(P(), CF);								break;	// SEC (implied)
+	case 0x38:	busRead(); P() = setBit(P(), CF);							break;	// SEC (implied)
 	case 0x39:	A() = andr(A(), AM_AbsoluteY());							break;	// AND (absolute, Y)
 	case 0x3a:	busRead();													break;	// *NOP (implied)
 	case 0x3b:	rla(AM_AbsoluteY());										break;	// *RLA (absolute, Y)
 	case 0x3c:	AM_AbsoluteX();												break;	// *NOP (absolute, X)
 	case 0x3d:	A() = andr(A(), AM_AbsoluteX());							break;	// AND (absolute, X)
-	case 0x3e:	busReadModifyWrite(rol(AM_AbsoluteX(AlwaysReadTwice)));		break;	// ROL (absolute, X)
+	case 0x3e:	busReadModifyWrite(rol(AM_AbsoluteX(PageCrossingBehavior::AlwaysReadTwice)));		break;	// ROL (absolute, X)
 	case 0x3f:	rla(AM_AbsoluteX());										break;	// *RLA (absolute, X)
 
 	case 0x40:	busRead(); rti();											break;	// RTI (implied)
@@ -205,13 +205,13 @@ int EightBit::MOS6502::execute() {
 	case 0x55:	A() = eorr(A(), AM_ZeroPageX());							break;	// EOR (zero page, X)
 	case 0x56:	busReadModifyWrite(lsr(AM_ZeroPageX()));					break;	// LSR (zero page, X)
 	case 0x57:	sre(AM_ZeroPageX());										break;	// *SRE (zero page, X)
-	case 0x58:	busRead(); clearFlag(P(), IF);								break;	// CLI (implied)
+	case 0x58:	busRead(); P() = clearBit(P(), IF);							break;	// CLI (implied)
 	case 0x59:	A() = eorr(A(), AM_AbsoluteY());							break;	// EOR (absolute, Y)
 	case 0x5a:	busRead();													break;	// *NOP (implied)
 	case 0x5b:	sre(AM_AbsoluteY());										break;	// *SRE (absolute, Y)
 	case 0x5c:	AM_AbsoluteX();												break;	// *NOP (absolute, X)
 	case 0x5d:	A() = eorr(A(), AM_AbsoluteX());							break;	// EOR (absolute, X)
-	case 0x5e:	busReadModifyWrite(lsr(AM_AbsoluteX(AlwaysReadTwice)));		break;	// LSR (absolute, X)
+	case 0x5e:	busReadModifyWrite(lsr(AM_AbsoluteX(PageCrossingBehavior::AlwaysReadTwice)));		break;	// LSR (absolute, X)
 	case 0x5f:	sre(AM_AbsoluteX());										break;	// *SRE (absolute, X)
 
 	case 0x60:	busRead(); rts();											break;	// RTS (implied)
@@ -239,13 +239,13 @@ int EightBit::MOS6502::execute() {
 	case 0x75:	A() = adc(A(), AM_ZeroPageX());								break;	// ADC (zero page, X)
 	case 0x76:	busReadModifyWrite(ror(AM_ZeroPageX()));					break;	// ROR (zero page, X)
 	case 0x77:	rra(AM_ZeroPageX());										break;	// *RRA (zero page, X)
-	case 0x78:	busRead(); setFlag(P(), IF);								break;	// SEI (implied)
+	case 0x78:	busRead(); P() = setBit(P(), IF);							break;	// SEI (implied)
 	case 0x79:	A() = adc(A(), AM_AbsoluteY());								break;	// ADC (absolute, Y)
 	case 0x7a:	busRead();													break;	// *NOP (implied)
 	case 0x7b:	rra(AM_AbsoluteY());										break;	// *RRA (absolute, Y)
 	case 0x7c:	AM_AbsoluteX();												break;	// *NOP (absolute, X)
 	case 0x7d:	A() = adc(A(), AM_AbsoluteX());								break;	// ADC (absolute, X)
-	case 0x7e:	busReadModifyWrite(ror(AM_AbsoluteX(AlwaysReadTwice)));		break;	// ROR (absolute, X)
+	case 0x7e:	busReadModifyWrite(ror(AM_AbsoluteX(PageCrossingBehavior::AlwaysReadTwice)));		break;	// ROR (absolute, X)
 	case 0x7f:	rra(AM_AbsoluteX());										break;	// *RRA (absolute, X)
 
 	case 0x80:	AM_Immediate();												break;	// *NOP (immediate)
@@ -307,7 +307,7 @@ int EightBit::MOS6502::execute() {
 	case 0xb5:	A() = through(AM_ZeroPageX());								break;	// LDA (zero page, X)
 	case 0xb6:	X() = through(AM_ZeroPageY());								break;	// LDX (zero page, Y)
 	case 0xb7:	A() = X() = through(AM_ZeroPageY());						break;	// *LAX (zero page, Y)
-	case 0xb8:	busRead(); clearFlag(P(), VF);								break;	// CLV (implied)
+	case 0xb8:	busRead(); P() = clearBit(P(), VF);							break;	// CLV (implied)
 	case 0xb9:	A() = through(AM_AbsoluteY());								break;	// LDA (absolute, Y)
 	case 0xba:	busRead(); X() = through(S());								break;	// TSX (implied)
 	case 0xbb:																break;
@@ -341,13 +341,13 @@ int EightBit::MOS6502::execute() {
 	case 0xd5:	cmp(A(), AM_ZeroPageX());									break;	// CMP (zero page, X)
 	case 0xd6:	busReadModifyWrite(dec(AM_ZeroPageX()));					break;	// DEC (zero page, X)
 	case 0xd7:	dcp(AM_ZeroPageX());										break;	// *DCP (zero page, X)
-	case 0xd8:	busRead(); clearFlag(P(), DF);								break;	// CLD (implied)
+	case 0xd8:	busRead(); P() = clearBit(P(), DF);							break;	// CLD (implied)
 	case 0xd9:	cmp(A(), AM_AbsoluteY());									break;	// CMP (absolute, Y)
 	case 0xda:	busRead();													break;	// *NOP (implied)
 	case 0xdb:	dcp(AM_AbsoluteY());										break;	// *DCP (absolute, Y)
 	case 0xdc:	AM_AbsoluteX();												break;	// *NOP (absolute, X)
 	case 0xdd:	cmp(A(), AM_AbsoluteX());									break;	// CMP (absolute, X)
-	case 0xde:	busReadModifyWrite(dec(AM_AbsoluteX(AlwaysReadTwice)));		break;	// DEC (absolute, X)
+	case 0xde:	busReadModifyWrite(dec(AM_AbsoluteX(PageCrossingBehavior::AlwaysReadTwice)));		break;	// DEC (absolute, X)
 	case 0xdf:	dcp(AM_AbsoluteX());										break;	// *DCP (absolute, X)
 
 	case 0xe0:	cmp(X(), AM_Immediate());									break;	// CPX (immediate)
@@ -375,13 +375,13 @@ int EightBit::MOS6502::execute() {
 	case 0xf5:	A() = sbc(A(), AM_ZeroPageX());								break;	// SBC (zero page, X)
 	case 0xf6:	busReadModifyWrite(inc(AM_ZeroPageX()));					break;	// INC (zero page, X)
 	case 0xf7:	isb(AM_ZeroPageX());										break;	// *ISB (zero page, X)
-	case 0xf8:	busRead(); setFlag(P(), DF);								break;	// SED (implied)
+	case 0xf8:	busRead(); P() = setBit(P(), DF);							break;	// SED (implied)
 	case 0xf9:	A() = sbc(A(), AM_AbsoluteY());								break;	// SBC (absolute, Y)
 	case 0xfa:	busRead();													break;	// *NOP (implied)
 	case 0xfb:	isb(AM_AbsoluteY());										break;	// *ISB (absolute, Y)
 	case 0xfc:	AM_AbsoluteX();												break;	// *NOP (absolute, X)
 	case 0xfd:	A() = sbc(A(), AM_AbsoluteX());								break;	// SBC (absolute, X)
-	case 0xfe:	busReadModifyWrite(inc(AM_AbsoluteX(AlwaysReadTwice)));		break;	// INC (absolute, X)
+	case 0xfe:	busReadModifyWrite(inc(AM_AbsoluteX(PageCrossingBehavior::AlwaysReadTwice)));		break;	// INC (absolute, X)
 	case 0xff:	isb(AM_AbsoluteX());										break;	// *ISB (absolute, X)
 	}
 
@@ -482,7 +482,7 @@ uint8_t EightBit::MOS6502::AM_ZeroPage() {
 uint8_t EightBit::MOS6502::AM_AbsoluteX(const PageCrossingBehavior behaviour) {
 	const auto [address, page] = Address_AbsoluteX();
 	auto possible = getBytePaged(page, address.low);
-	if ((behaviour == AlwaysReadTwice) || UNLIKELY(page != address.high))
+	if ((behaviour == PageCrossingBehavior::AlwaysReadTwice) || UNLIKELY(page != address.high))
 		possible = Processor::busRead(address);
 	return possible;
 }
@@ -536,8 +536,8 @@ uint8_t EightBit::MOS6502::sbc(const uint8_t operand, const uint8_t data) {
 
 	const auto difference = m_intermediate;
 	adjustNZ(difference.low);
-	setFlag(P(), VF, (operand ^ data) & (operand ^ difference.low) & NF);
-	clearFlag(P(), CF, difference.high);
+	P() = setBit(P(), VF, (operand ^ data) & (operand ^ difference.low) & NF);
+	P() = clearBit(P(), CF, difference.high);
 
 	return returned;
 }
@@ -580,8 +580,8 @@ uint8_t EightBit::MOS6502::add(uint8_t operand, uint8_t data, int carry) {
 uint8_t EightBit::MOS6502::add_b(uint8_t operand, uint8_t data, int carry) {
 	m_intermediate.word = operand + data + carry;
 
-	setFlag(P(), VF, ~(operand ^ data) & (operand ^ m_intermediate.low) & NF);
-	setFlag(P(), CF, m_intermediate.high & CF);
+	P() = setBit(P(), VF, ~(operand ^ data) & (operand ^ m_intermediate.low) & NF);
+	P() = setBit(P(), CF, m_intermediate.high & CF);
 
 	return m_intermediate.low;
 }
@@ -595,12 +595,12 @@ uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) {
 		low += 6;
 
 	uint8_t high = highNibble(operand) + highNibble(data) + (low > 0xf ? 1 : 0);
-	setFlag(P(), VF, ~(operand ^ data) & (operand ^ promoteNibble(high)) & NF);
+	P() = setBit(P(), VF, ~(operand ^ data) & (operand ^ promoteNibble(high)) & NF);
 
 	if (high > 9)
 		high += 6;
 
-	setFlag(P(), CF, high > 0xf);
+	P() = setBit(P(), CF, high > 0xf);
 
 	return promoteNibble(high) | lowNibble(low);
 }
@@ -610,12 +610,12 @@ uint8_t EightBit::MOS6502::andr(const uint8_t operand, const uint8_t data) {
 }
 
 uint8_t EightBit::MOS6502::asl(const uint8_t value) {
-	setFlag(P(), CF, value & Bit7);
+	P() = setBit(P(), CF, value & Bit7);
 	return through(value << 1);
 }
 
 void EightBit::MOS6502::bit(const uint8_t operand, const uint8_t data) {
-	setFlag(P(), VF, data & VF);
+	P() = setBit(P(), VF, data & VF);
 	adjustZero(operand & data);
 	adjustNegative(data);
 }
@@ -623,7 +623,7 @@ void EightBit::MOS6502::bit(const uint8_t operand, const uint8_t data) {
 void EightBit::MOS6502::cmp(const uint8_t first, const uint8_t second) {
 	const register16_t result = first - second;
 	adjustNZ(result.low);
-	clearFlag(P(), CF, result.high);
+	P() = clearBit(P(), CF, result.high);
 }
 
 uint8_t EightBit::MOS6502::dec(const uint8_t value) {
@@ -647,7 +647,7 @@ void EightBit::MOS6502::jsr() {
 }
 
 uint8_t EightBit::MOS6502::lsr(const uint8_t value) {
-	setFlag(P(), CF, value & Bit0);
+	P() = setBit(P(), CF, value & Bit0);
 	return through(value >> 1);
 }
 
@@ -665,14 +665,14 @@ void EightBit::MOS6502::plp() {
 
 uint8_t EightBit::MOS6502::rol(const uint8_t operand) {
 	const auto carryIn = carry();
-	setFlag(P(), CF, operand & Bit7);
+	P() = setBit(P(), CF, operand & Bit7);
 	const uint8_t result = (operand << 1) | carryIn;
 	return through(result);
 }
 
 uint8_t EightBit::MOS6502::ror(const uint8_t operand) {
 	const auto carryIn = carry();
-	setFlag(P(), CF, operand & Bit0);
+	P() = setBit(P(), CF, operand & Bit0);
 	const uint8_t result = (operand >> 1) | (carryIn << 7);
 	return through(result);
 }
@@ -693,14 +693,14 @@ void EightBit::MOS6502::rts() {
 
 void EightBit::MOS6502::anc(const uint8_t value) {
 	A() = andr(A(), value);
-	setFlag(P(), CF, A() & Bit7);
+	P() = setBit(P(), CF, A() & Bit7);
 }
 
 void EightBit::MOS6502::arr(const uint8_t value) {
 	A() = andr(A(), value);
 	A() = ror(A());
-	setFlag(P(), CF, A() & Bit6);
-	setFlag(P(), VF, ((A() & Bit6) >> 6) ^((A() & Bit5) >> 5));
+	P() = setBit(P(), CF, A() & Bit6);
+	P() = setBit(P(), VF, ((A() & Bit6) >> 6) ^((A() & Bit5) >> 5));
 }
 
 void EightBit::MOS6502::asr(const uint8_t value) {
@@ -710,7 +710,7 @@ void EightBit::MOS6502::asr(const uint8_t value) {
 
 void EightBit::MOS6502::axs(const uint8_t value) {
 	X() = through(sub(A() & X(), value));
-	clearFlag(P(), CF, m_intermediate.high);
+	P() = clearBit(P(), CF, m_intermediate.high);
 }
 
 void EightBit::MOS6502::dcp(const uint8_t value) {

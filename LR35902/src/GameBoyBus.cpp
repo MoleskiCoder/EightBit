@@ -125,7 +125,7 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 		default:
 			if (romSizeSpecification > 6)
 				throw std::domain_error("Invalid ROM size specification");
-			gameRomBanks = 1 << (romSizeSpecification + 1);
+			gameRomBanks = Chip::bit(romSizeSpecification + 1);
 			if (gameRomBanks != m_gameRomBanks.size())
 				throw std::domain_error("ROM size specification mismatch");
 		}

@@ -150,11 +150,11 @@ namespace EightBit {
 			}
 
 			void adjustHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) {
-				setFlag(F(), HC, calculateHalfCarryAdd(before, value, calculation));
+				F() = setBit(F(), HC, calculateHalfCarryAdd(before, value, calculation));
 			}
 
 			void adjustHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) {
-				setFlag(F(), HC, calculateHalfCarrySub(before, value, calculation));
+				F() = setBit(F(), HC, calculateHalfCarrySub(before, value, calculation));
 			}
 
 			void subtract(uint8_t& operand, uint8_t value, int carry = 0);
