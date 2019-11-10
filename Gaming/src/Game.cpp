@@ -20,7 +20,9 @@ void Game::raisePOWER() {
 		SDLWrapper::throwSDLException("Unable to create window: ");
 
 	::SDL_DisplayMode mode;
-	SDLWrapper::verifySDLCall(::SDL_GetWindowDisplayMode(m_window.get(), &mode), "Unable to obtain window information");
+	SDLWrapper::verifySDLCall(
+		::SDL_GetWindowDisplayMode(m_window.get(), &mode),
+		"Unable to obtain window information: ");
 
 	Uint32 rendererFlags = 0;
 	m_vsync = useVsync();
@@ -39,7 +41,9 @@ void Game::raisePOWER() {
 		SDLWrapper::throwSDLException("Unable to create renderer: ");
 
 	::SDL_RendererInfo info;
-	SDLWrapper::verifySDLCall(::SDL_GetRendererInfo(m_renderer.get(), &info), "Unable to obtain renderer information");
+	SDLWrapper::verifySDLCall(
+		::SDL_GetRendererInfo(m_renderer.get(), &info),
+		"Unable to obtain renderer information");
 
 	if (m_vsync) {
 		if ((info.flags & SDL_RENDERER_PRESENTVSYNC) == 0) {
@@ -57,7 +61,9 @@ void Game::raisePOWER() {
 }
 
 void Game::configureBackground() const {
-	SDLWrapper::verifySDLCall(::SDL_SetRenderDrawColor(m_renderer.get(), 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE), "Unable to set render draw colour");
+	SDLWrapper::verifySDLCall(
+		::SDL_SetRenderDrawColor(m_renderer.get(), 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE),
+		"Unable to set render draw colour");
 }
 
 void Game::createBitmapTexture() {
@@ -169,13 +175,15 @@ std::shared_ptr<GameController> Game::chooseController(const int who) const {
 }
 
 void Game::updateTexture() {
-	SDLWrapper::verifySDLCall(::SDL_UpdateTexture(m_bitmapTexture.get(), nullptr, pixels(), displayWidth() * sizeof(Uint32)), "Unable to update texture: ");
+	SDLWrapper::verifySDLCall(
+		::SDL_UpdateTexture(m_bitmapTexture.get(), nullptr, pixels(), displayWidth() * sizeof(Uint32)),
+		"Unable to update texture: ");
 }
 
 void Game::copyTexture() {
 	SDLWrapper::verifySDLCall(
 		::SDL_RenderCopy(m_renderer.get(), m_bitmapTexture.get(), nullptr, nullptr),
-		"Unable to copy texture to renderer");
+		"Unable to copy texture to renderer: ");
 }
 
 void Game::displayTexture() {
@@ -184,7 +192,9 @@ void Game::displayTexture() {
 
 void Game::toggleFullscreen() {
 	auto wasFullscreen = ::SDL_GetWindowFlags(m_window.get()) & SDL_WINDOW_FULLSCREEN_DESKTOP;
-	SDLWrapper::verifySDLCall(::SDL_SetWindowFullscreen(m_window.get(), wasFullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP), "Failed to modify the window full screen setting");
+	SDLWrapper::verifySDLCall(
+		::SDL_SetWindowFullscreen(m_window.get(), wasFullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP),
+		"Failed to modify the window full screen setting: ");
 	::SDL_ShowCursor(wasFullscreen ? 1 : 0);
 }
 
