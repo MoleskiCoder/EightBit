@@ -459,7 +459,7 @@ void EightBit::Z80::bit(uint8_t& f, const int n, const uint8_t operand) {
 uint8_t EightBit::Z80::res(const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
-	return operand & ~Chip::bit(n);
+	return clearBit(operand, Chip::bit(n));
 }
 
 uint8_t EightBit::Z80::set(const int n, const uint8_t operand) {
