@@ -80,7 +80,7 @@ namespace EightBit {
 		}
 
 		void exxAF() {
-			m_accumulatorFlagsSet = !m_accumulatorFlagsSet;
+			m_accumulatorFlagsSet ^= 1;
 		}
 
 		DECLARE_PIN_INPUT(NMI)
@@ -282,26 +282,26 @@ namespace EightBit {
 			return setBit(f, HC, calculateHalfCarryAdd(before, value, calculation));
 		}
 
-		static void adjustHalfCarrySub(uint8_t& f, const uint8_t before, const uint8_t value, const int calculation) {
-			f = setBit(f, HC, calculateHalfCarrySub(before, value, calculation));
+		[[nodiscard]] static uint8_t adjustHalfCarrySub(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
+			return setBit(f, HC, calculateHalfCarrySub(before, value, calculation));
 		}
 
-		static void adjustOverflowAdd(uint8_t& f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
-			adjustOverflowAdd(f, before & SF, value & SF, calculation & SF);
+		[[nodiscard]] static uint8_t adjustOverflowAdd(uint8_t f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
+			return adjustOverflowAdd(f, before & SF, value & SF, calculation & SF);
 		}
 
-		static void adjustOverflowAdd(uint8_t& f, const int beforeNegative, const int valueNegative, const int afterNegative) {
+		[[nodiscard]] static uint8_t adjustOverflowAdd(uint8_t f, const int beforeNegative, const int valueNegative, const int afterNegative) {
 			const auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
-			f = setBit(f, VF, overflow);
+			return setBit(f, VF, overflow);
 		}
 
-		static void adjustOverflowSub(uint8_t& f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
-			adjustOverflowSub(f, before & SF, value & SF, calculation & SF);
+		[[nodiscard]] static uint8_t adjustOverflowSub(uint8_t f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
+			return adjustOverflowSub(f, before & SF, value & SF, calculation & SF);
 		}
 
-		static void adjustOverflowSub(uint8_t& f, const int beforeNegative, const int valueNegative, const int afterNegative) {
+		[[nodiscard]] static uint8_t adjustOverflowSub(uint8_t f, const int beforeNegative, const int valueNegative, const int afterNegative) {
 			const auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
-			f = setBit(f, VF, overflow);
+			return setBit(f, VF, overflow);
 		}
 
 		static uint8_t subtract(uint8_t& f, uint8_t operand, uint8_t value, int carry = 0);

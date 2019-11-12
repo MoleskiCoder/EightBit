@@ -253,13 +253,12 @@ bool EightBit::Z80::callConditionalFlag(const uint8_t f, const int flag) {
 EightBit::register16_t EightBit::Z80::sbc(uint8_t& f, const register16_t operand, const register16_t value) {
 
 	const auto subtraction = operand.word - value.word - (f & CF);
-
 	const register16_t result = subtraction;
 
 	f = setBit(f, NF);
 	f = clearBit(f, ZF, result.word);
 	f = setBit(f, CF, subtraction & Bit16);
-	adjustHalfCarrySub(f, operand.high, value.high, result.high);
+	f = adjustHalfCarrySub(f, operand.high, value.high, result.high);
 	f = adjustXY<Z80>(f, result.high);
 
 	const auto beforeNegative = operand.high & SF;
@@ -267,7 +266,7 @@ EightBit::register16_t EightBit::Z80::sbc(uint8_t& f, const register16_t operand
 	const auto afterNegative = result.high & SF;
 
 	f = setBit(f, SF, afterNegative);
-	adjustOverflowSub(f, beforeNegative, valueNegative, afterNegative);
+	f = adjustOverflowSub(f, beforeNegative, valueNegative, afterNegative);
 
 	MEMPTR() = operand + 1;
 
@@ -284,7 +283,7 @@ EightBit::register16_t EightBit::Z80::adc(uint8_t& f, const register16_t operand
 	const auto afterNegative = result.high & SF;
 
 	f = setBit(f, SF, afterNegative);
-	adjustOverflowAdd(f, beforeNegative, valueNegative, afterNegative);
+	f = adjustOverflowAdd(f, beforeNegative, valueNegative, afterNegative);
 
 	return result;
 }
@@ -310,7 +309,7 @@ uint8_t EightBit::Z80::add(uint8_t& f, const uint8_t operand, const uint8_t valu
 	const auto result = addition.low;
 
 	f = adjustHalfCarryAdd(f, operand, value, result);
-	adjustOverflowAdd(f, operand, value, result);
+	f = adjustOverflowAdd(f, operand, value, result);
 
 	f = clearBit(f, NF);
 	f = setBit(f, CF, addition.high & CF);
@@ -328,8 +327,8 @@ uint8_t EightBit::Z80::subtract(uint8_t& f, const uint8_t operand, const uint8_t
 	const register16_t subtraction = operand - value - carry;
 	const auto result = subtraction.low;
 
-	adjustHalfCarrySub(f, operand, value, result);
-	adjustOverflowSub(f, operand, value, result);
+	f = adjustHalfCarrySub(f, operand, value, result);
+	f = adjustOverflowSub(f, operand, value, result);
 
 	f = setBit(f, NF);
 	f = setBit(f, CF, subtraction.high & CF);
@@ -465,7 +464,7 @@ uint8_t EightBit::Z80::res(const int n, const uint8_t operand) {
 uint8_t EightBit::Z80::set(const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
-	return operand | Chip::bit(n);
+	return setBit(operand, Chip::bit(n));
 }
 
 uint8_t EightBit::Z80::neg(uint8_t& f, uint8_t operand) {
@@ -476,8 +475,8 @@ uint8_t EightBit::Z80::neg(uint8_t& f, uint8_t operand) {
 
 	const uint8_t result = (~operand + 1);	// two's complement
 
-	adjustHalfCarrySub(f, 0U, operand, result);
-	adjustOverflowSub(f, 0U, operand, result);
+	f = adjustHalfCarrySub(f, 0U, operand, result);
+	f = adjustOverflowSub(f, 0U, operand, result);
 
 	f = adjustSZXY<Z80>(f, result);
 
@@ -549,7 +548,7 @@ void EightBit::Z80::blockCompare(uint8_t& f, const uint8_t value, const register
 	f = setBit(f, PF, --counter.word);
 
 	f = adjustSZ<Z80>(f, result);
-	adjustHalfCarrySub(f, value, contents, result);
+	f = adjustHalfCarrySub(f, value, contents, result);
 	f = setBit(f, NF);
 
 	result -= ((f & HC) >> 4);
