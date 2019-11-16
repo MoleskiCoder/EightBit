@@ -69,7 +69,19 @@ namespace EightBit {
 		[[nodiscard]] auto& IYH() { return IY().high; }
 		[[nodiscard]] auto& IYL() { return IY().low; }
 
+		// ** From the Z80 CPU User Manual
+		// Memory Refresh(R) Register.The Z80 CPU contains a memory refresh counter,
+		// enabling dynamic memories to be used with the same ease as static memories.Seven bits
+		// of this 8-bit register are automatically incremented after each instruction fetch.The eighth
+		// bit remains as programmed, resulting from an LD R, A instruction. The data in the refresh
+		// counter is sent out on the lower portion of the address bus along with a refresh control
+		// signal while the CPU is decoding and executing the fetched instruction. This mode of refresh
+		// is transparent to the programmer and does not slow the CPU operation.The programmer
+		// can load the R register for testing purposes, but this register is normally not used by the
+		// programmer. During refresh, the contents of the I Register are placed on the upper eight
+		// bits of the address bus.
 		[[nodiscard]] auto& REFRESH() { return m_refresh; }
+
 		[[nodiscard]] auto& IV() { return iv; }
 		[[nodiscard]] auto& IM() { return m_interruptMode; }
 		[[nodiscard]] auto& IFF1() { return m_iff1; }
@@ -85,6 +97,13 @@ namespace EightBit {
 
 		DECLARE_PIN_INPUT(NMI)
 		DECLARE_PIN_OUTPUT(M1)
+
+		// ** From the Z80 CPU User Manual
+		// RFSH.Refresh(output, active Low). RFSH, together with MREQ, indicates that the lower
+		// seven bits of the system’s address bus can be used as a refresh address to the system’s
+		// dynamic memories.
+		DECLARE_PIN_OUTPUT(RFSH)
+
 		DECLARE_PIN_OUTPUT(MREQ)
 		DECLARE_PIN_OUTPUT(IORQ)
 		DECLARE_PIN_OUTPUT(RD)
@@ -137,10 +156,37 @@ namespace EightBit {
 			m_displacement = fetchByte();
 		}
 
-		uint8_t fetchInitialOpCode() {
+		// ** From the Z80 CPU User Manual
+		// Figure 5 depicts the timing during an M1 (op code fetch) cycle. The Program Counter is
+		// placed on the address bus at the beginning of the M1 cycle. One half clock cycle later, the
+		// MREQ signal goes active. At this time, the address to memory has had time to stabilize so
+		// that the falling edge of MREQ can be used directly as a chip enable clock to dynamic
+		// memories. The RD line also goes active to indicate that the memory read data should be
+		// enabled onto the CPU data bus. The CPU samples the data from the memory space on the
+		// data bus with the rising edge of the clock of state T3, and this same edge is used by the
+		// CPU to turn off the RD and MREQ signals. As a result, the data is sampled by the CPU
+		// before the RD signal becomes inactive. Clock states T3 and T4 of a fetch cycle are used to
+		// refresh dynamic memories. The CPU uses this time to decode and execute the fetched
+		// instruction so that no other concurrent operation can be performed.
+		uint8_t readInitialOpCode() {
 			lowerM1();
-			const auto returned = fetchByte();
+			const auto returned = IntelProcessor::busRead(PC());
 			raiseM1();
+			tick(2);
+			BUS().ADDRESS().low = REFRESH();
+			BUS().ADDRESS().high = IV();
+			lowerRFSH();
+			lowerMREQ();
+			tick();
+			raiseMREQ();
+			raiseRFSH();
+			tick();
+			return returned;
+		}
+
+		uint8_t fetchInitialOpCode() {
+			const auto returned = readInitialOpCode();
+			++PC();
 			return returned;
 		}
 
