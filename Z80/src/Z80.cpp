@@ -28,13 +28,14 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 		m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	});
 
-	LoweredM1.connect([this](EventArgs) {
+	RaisedM1.connect([this](EventArgs) {
 		++REFRESH();
 	});
 }
 
 DEFINE_PIN_LEVEL_CHANGERS(NMI, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(M1, Z80);
+DEFINE_PIN_LEVEL_CHANGERS(RFSH, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(MREQ, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(IORQ, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(RD, Z80);
@@ -725,13 +726,28 @@ int EightBit::Z80::step() {
 			handleNMI();
 			handled = true;
 		} else if (lowered(INT())) {
-			lowerINT();
+			raiseINT();
 			raiseHALT();
 			if (IFF1()) {
 				handleINT();
 				handled = true;
 			}
 		} else if (lowered(HALT())) {
+			// ** From the Z80 CPU User Manual
+			// When a software HALT instruction is executed, the CPU executes NOPs until an interrupt
+			// is received(either a nonmaskable or a maskable interrupt while the interrupt flip-flop is
+			// enabled). The two interrupt lines are sampled with the rising clock edge during each T4
+			// state as depicted in Figure 11.If a nonmaskable interrupt is received or a maskable interrupt
+			// is received and the interrupt enable flip-flop is set, then the HALT state is exited on
+			// the next rising clock edge.The following cycle is an interrupt acknowledge cycle corresponding
+			// to the type of interrupt that was received.If both are received at this time, then
+			// the nonmaskable interrupt is acknowledged because it is the highest priority.The purpose
+			// of executing NOP instructions while in the HALT state is to keep the memory refresh signals
+			// active.Each cycle in the HALT state is a normal M1(fetch) cycle except that the data
+			// received from the memory is ignored and an NOP instruction is forced internally to the
+			// CPU.The HALT acknowledge signal is active during this time indicating that the processor
+			// is in the HALT state.
+			const auto discarded = readInitialOpCode();
 			execute(0);	// NOP
 			handled = true;
 		}
@@ -801,10 +817,10 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 			UNREACHABLE;
 		}
 		F() = adjustSZP<Z80>(F(), operand);
-		tick(8);
+		tick(4);
 		break;
 	} case 1:	// BIT y, r[z]
-		tick(8);
+		tick(4);
 		bit(F(), y, operand);
 		if (indirect) {
 			F() = adjustXY<Z80>(F(), MEMPTR().high);
@@ -814,11 +830,11 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		}
 		break;
 	case 2:	// RES y, r[z]
-		tick(8);
+		tick(4);
 		operand = res(y, operand);
 		break;
 	case 3:	// SET y, r[z]
-		tick(8);
+		tick(4);
 		operand = set(y, operand);
 		break;
 	default:
@@ -844,7 +860,6 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 	switch (x) {
 	case 0:
 	case 3:	// Invalid instruction, equivalent to NONI followed by NOP
-		tick(8);
 		break;
 	case 1:
 		switch (z) {
@@ -855,7 +870,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				R(y, BUS().DATA());
 			F() = adjustSZPXY<Z80>(F(), BUS().DATA());
 			F() = clearBit(F(), NF | HC);
-			tick(12);
+			tick(4);
 			break;
 		case 1:	// Output to port with 16-bit address
 			(MEMPTR() = BUS().ADDRESS() = BC())++;
@@ -864,7 +879,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			else				// OUT (C),r[y]
 				BUS().DATA() = R(y);
 			writePort();
-			tick(12);
+			tick(4);
 			break;
 		case 2:	// 16-bit add/subtract with carry
 			switch (q) {
@@ -877,7 +892,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			default:
 				UNREACHABLE;
 			}
-			tick(15);
+			tick(7);
 			break;
 		case 3:	// Retrieve/store register pair from/to immediate address
 			BUS().ADDRESS() = fetchWord();
@@ -891,11 +906,10 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			default:
 				UNREACHABLE;
 			}
-			tick(20);
+			tick(12);
 			break;
 		case 4:	// Negate accumulator
 			A() = neg(F(), A());
-			tick(8);
 			break;
 		case 5:	// Return from interrupt
 			switch (y) {
@@ -906,7 +920,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				retn();	// RETN
 				break;
 			}
-			tick(14);
+			tick(6);
 			break;
 		case 6:	// Set interrupt mode
 			switch (y) {
@@ -927,41 +941,39 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			default:
 				UNREACHABLE;
 			}
-			tick(8);
 			break;
 		case 7:	// Assorted ops
 			switch (y) {
 			case 0:	// LD I,A
 				IV() = A();
-				tick(9);
+				tick();
 				break;
 			case 1:	// LD R,A
 				REFRESH() = A();
-				tick(9);
+				tick();
 				break;
 			case 2:	// LD A,I
 				F() = adjustSZXY<Z80>(F(), A() = IV());
 				F() = clearBit(F(), NF | HC);
 				F() = setBit(F(), PF, IFF2());
-				tick(9);
+				tick();
 				break;
 			case 3:	// LD A,R
 				F() = adjustSZXY<Z80>(F(), A() = REFRESH());
 				F() = clearBit(F(), NF | HC);
 				F() = setBit(F(), PF, IFF2());
-				tick(9);
+				tick();
 				break;
 			case 4:	// RRD
 				rrd(F(), HL(), A());
-				tick(18);
+				tick(10);
 				break;
 			case 5:	// RLD
 				rld(F(), HL(), A());
-				tick(18);
+				tick(10);
 				break;
 			case 6:	// NOP
 			case 7:	// NOP
-				tick(4);
 				break;
 			default:
 				UNREACHABLE;
@@ -1068,7 +1080,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			}
 			break;
 		}
-		tick(16);
+		tick(8);
 		break;
 	}
 }
@@ -1082,22 +1094,18 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 0:	// Relative jumps and assorted ops
 			switch (y) {
 			case 0:	// NOP
-				if (m_prefixDD)
-					tick(4);
-				tick(4);
 				break;
 			case 1:	// EX AF AF'
 				exxAF();
-				tick(4);
 				break;
 			case 2:	// DJNZ d
 				if (jrConditional(--B()))
 					tick(5);
-				tick(8);
+				tick(4);
 				break;
 			case 3:	// JR d
 				jr(fetchByte());
-				tick(12);
+				tick(8);
 				break;
 			case 4: // JR cc,d
 			case 5:
@@ -1105,7 +1113,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			case 7:
 				if (jrConditionalFlag(F(), y - 4))
 					tick(5);
-				tick(5);
+				tick(3);
 				break;
 			default:
 				UNREACHABLE;
@@ -1115,11 +1123,11 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			switch (q) {
 			case 0: // LD rp,nn
 				RP(p) = fetchWord();
-				tick(10);
+				tick(6);
 				break;
 			case 1:	// ADD HL,rp
 				HL2() = add(F(), HL2(), RP(p));
-				tick(11);
+				tick(7);
 				break;
 			default:
 				UNREACHABLE;
@@ -1133,24 +1141,24 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					(MEMPTR() = BUS().ADDRESS() = BC())++;
 					MEMPTR().high = BUS().DATA() = A();
 					busWrite();
-					tick(7);
+					tick(3);
 					break;
 				case 1:	// LD (DE),A
 					(MEMPTR() = BUS().ADDRESS() = DE())++;
 					MEMPTR().high = BUS().DATA() = A();
 					busWrite();
-					tick(7);
+					tick(3);
 					break;
 				case 2:	// LD (nn),HL
 					BUS().ADDRESS() = fetchWord();
 					setWord(HL2());
-					tick(16);
+					tick(12);
 					break;
 				case 3: // LD (nn),A
 					(MEMPTR() = BUS().ADDRESS() = fetchWord())++;
 					MEMPTR().high = BUS().DATA() = A();
 					busWrite();
-					tick(13);
+					tick(9);
 					break;
 				default:
 					UNREACHABLE;
@@ -1161,22 +1169,22 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				case 0:	// LD A,(BC)
 					(MEMPTR() = BUS().ADDRESS() = BC())++;
 					A() = busRead();
-					tick(7);
+					tick(3);
 					break;
 				case 1:	// LD A,(DE)
 					(MEMPTR() = BUS().ADDRESS() = DE())++;
 					A() = busRead();
-					tick(7);
+					tick(3);
 					break;
 				case 2:	// LD HL,(nn)
 					BUS().ADDRESS() = fetchWord();
 					HL2() = getWord();
-					tick(16);
+					tick(12);
 					break;
 				case 3:	// LD A,(nn)
 					(MEMPTR() = BUS().ADDRESS() = fetchWord())++;
 					A() = busRead();
-					tick(13);
+					tick(9);
 					break;
 				default:
 					UNREACHABLE;
@@ -1197,13 +1205,12 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			default:
 				UNREACHABLE;
 			}
-			tick(6);
+			tick(2);
 			break;
 		case 4:	// 8-bit INC
 			if (m_displaced && memoryY)
 				fetchDisplacement();
 			R(y, increment(F(), R(y)));
-			tick(4);
 			break;
 		case 5:	// 8-bit DEC
 			if (memoryY) {
@@ -1212,7 +1219,6 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					fetchDisplacement();
 			}
 			R(y, decrement(F(), R(y)));
-			tick(4);
 			break;
 		case 6:	// 8-bit load immediate
 			if (memoryY) {
@@ -1221,7 +1227,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					fetchDisplacement();
 			}
 			R(y, fetchByte());	// LD r,n
-			tick(7);
+			tick(3);
 			break;
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
@@ -1252,7 +1258,6 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			default:
 				UNREACHABLE;
 			}
-			tick(4);
 			break;
 		default:
 			UNREACHABLE;
@@ -1296,7 +1301,6 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			if (memoryY || memoryZ)	// M operations
 				tick(3);
 		}
-		tick(4);
 		break;
 	case 2: { // Operate on accumulator and register/memory location
 		if (memoryZ) {
@@ -1333,7 +1337,6 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		default:
 			UNREACHABLE;
 		}
-		tick(4);
 		break;
 	}
 	case 3:
@@ -1341,31 +1344,28 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 0:	// Conditional return
 			if (returnConditionalFlag(F(), y))
 				tick(6);
-			tick(5);
+			tick(1);
 			break;
 		case 1:	// POP & various ops
 			switch (q) {
 			case 0:	// POP rp2[p]
 				RP2(p) = popWord();
-				tick(10);
+				tick(6);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// RET
 					ret();
-					tick(10);
+					tick(6);
 					break;
 				case 1:	// EXX
 					exx();
-					tick(4);
 					break;
 				case 2:	// JP (HL)
 					jump(HL2());
-					tick(4);
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL2();
-					tick(4);
 					break;
 				default:
 					UNREACHABLE;
@@ -1377,13 +1377,13 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			break;
 		case 2:	// Conditional jump
 			jumpConditionalFlag(F(), y);
-			tick(10);
+			tick(6);
 			break;
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0:	// JP nn
 				jump(MEMPTR() = fetchWord());
-				tick(10);
+				tick(6);
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
@@ -1396,27 +1396,24 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				break;
 			case 2:	// OUT (n),A
 				writePort(fetchByte());
-				tick(11);
+				tick(7);
 				break;
 			case 3:	// IN A,(n)
 				A() = readPort(fetchByte());
-				tick(11);
+				tick(7);
 				break;
 			case 4:	// EX (SP),HL
 				xhtl(HL2());
-				tick(19);
+				tick(15);
 				break;
 			case 5:	// EX DE,HL
 				std::swap(DE(), HL());
-				tick(4);
 				break;
 			case 6:	// DI
 				di();
-				tick(4);
 				break;
 			case 7:	// EI
 				ei();
-				tick(4);
 				break;
 			default:
 				UNREACHABLE;
@@ -1425,19 +1422,19 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 4:	// Conditional call: CALL cc[y], nn
 			if (callConditionalFlag(F(), y))
 				tick(7);
-			tick(10);
+			tick(6);
 			break;
 		case 5:	// PUSH & various ops
 			switch (q) {
 			case 0:	// PUSH rp2[p]
 				pushWord(RP2(p));
-				tick(11);
+				tick(7);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
 					call(MEMPTR() = fetchWord());
-					tick(17);
+					tick(13);
 					break;
 				case 1:	// DD prefix
 					m_displaced = m_prefixDD = true;
@@ -1489,12 +1486,12 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			default:
 				UNREACHABLE;
 			}
-			tick(7);
+			tick(3);
 			break;
 		}
 		case 7:	// Restart: RST y * 8
 			restart(y << 3);
-			tick(11);
+			tick(7);
 			break;
 		default:
 			UNREACHABLE;
