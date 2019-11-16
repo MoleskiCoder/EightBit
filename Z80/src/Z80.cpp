@@ -725,6 +725,7 @@ int EightBit::Z80::step() {
 			handleNMI();
 			handled = true;
 		} else if (lowered(INT())) {
+			lowerINT();
 			raiseHALT();
 			if (IFF1()) {
 				handleINT();
