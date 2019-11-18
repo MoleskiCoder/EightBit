@@ -55,8 +55,8 @@ namespace EightBit {
 			void loadBootRom(const std::string& path);
 			void loadGameRom(const std::string& path);
 
-			int runRasterLines();
-			int runVerticalBlankLines();
+			void runRasterLines();
+			void runVerticalBlankLines();
 
 		protected:
 			virtual MemoryMapping mapping(uint16_t address) override;
@@ -90,13 +90,15 @@ namespace EightBit {
 			int m_romBank = 1;
 			int m_ramBank = 0;
 
+			int m_allowed = 0;
+
 			void validateCartridgeType();
 
 			void Bus_WrittenByte(EightBit::EventArgs);
 
-			int runRasterLines(int lines);
-			int runVerticalBlankLines(int lines);
-			int runRasterLine(int limit);
+			void runRasterLines(int lines);
+			void runVerticalBlankLines(int lines);
+			void runRasterLine(int suggested);
 		};
 	}
 }

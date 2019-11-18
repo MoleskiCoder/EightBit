@@ -191,24 +191,18 @@ EightBit::MemoryMapping EightBit::GameBoy::Bus::mapping(uint16_t address) {
 	return { m_highInternalRam, 0xff80, 0xffff, MemoryMapping::AccessLevel::ReadWrite };
 }
 
-int EightBit::GameBoy::Bus::runRasterLines() {
+void EightBit::GameBoy::Bus::runRasterLines() {
 	m_enabledLCD = !!(IO().peek(IoRegisters::LCDC) & IoRegisters::LcdEnable);
 	IO().resetLY();
-	return runRasterLines(Display::RasterHeight);
+	runRasterLines(Display::RasterHeight);
 }
 
-int EightBit::GameBoy::Bus::runRasterLines(int lines) {
-	int count = 0;
-	int allowed = CyclesPerLine;
-	for (int line = 0; line < lines; ++line) {
-		auto executed = runRasterLine(allowed);
-		count += executed;
-		allowed = CyclesPerLine - (executed - CyclesPerLine);
-	}
-	return count;
+void EightBit::GameBoy::Bus::runRasterLines(int lines) {
+	for (int line = 0; line < lines; ++line)
+		runRasterLine(CyclesPerLine);
 }
 
-int EightBit::GameBoy::Bus::runRasterLine(int limit) {
+void EightBit::GameBoy::Bus::runRasterLine(int suggested) {
 
 	/*
 	A scanline normally takes 456 clocks (912 clocks in double speed
@@ -233,7 +227,7 @@ int EightBit::GameBoy::Bus::runRasterLine(int limit) {
 	The rest of the clocks of line 153 are spent in line 0 in mode 1!
 	*/
 
-	int count = 0;
+	m_allowed += suggested;
 	if (m_enabledLCD) {
 
 		if ((IO().peek(IoRegisters::STAT) & Chip::Bit6) && (IO().peek(IoRegisters::LYC) == IO().peek(IoRegisters::LY)))
@@ -243,32 +237,30 @@ int EightBit::GameBoy::Bus::runRasterLine(int limit) {
 		IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::SearchingOamRam);
 		if (IO().peek(IoRegisters::STAT) & Chip::Bit5)
 			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
-		count += CPU().run(80);	// ~19us
+		m_allowed -= CPU().run(80);	// ~19us
 
 		// Mode 3, OAM/VRAM unavailable
 		IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::TransferringDataToLcd);
-		count += CPU().run(170);	// ~41us
+		m_allowed -= CPU().run(170);	// ~41us
 
 		// Mode 0
 		IO().updateLcdStatusMode(IoRegisters::LcdStatusMode::HBlank);
 		if (IO().peek(IoRegisters::STAT) & Chip::Bit3)
 			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
-		count += CPU().run(limit - count);	// ~48.6us
+		m_allowed -= CPU().run(m_allowed);	// ~48.6us
 
 		IO().incrementLY();
 	} else {
-		count += CPU().run(CyclesPerLine);
+		m_allowed -= CPU().run(CyclesPerLine);
 	}
-
-	return count;
 }
 
-int EightBit::GameBoy::Bus::runVerticalBlankLines() {
+void EightBit::GameBoy::Bus::runVerticalBlankLines() {
 	const auto lines = TotalLineCount - Display::RasterHeight;
-	return runVerticalBlankLines(lines);
+	runVerticalBlankLines(lines);
 }
 
-int EightBit::GameBoy::Bus::runVerticalBlankLines(int lines) {
+void EightBit::GameBoy::Bus::runVerticalBlankLines(int lines) {
 
 	/*
 	Vertical Blank interrupt is triggered when the LCD
@@ -293,5 +285,5 @@ int EightBit::GameBoy::Bus::runVerticalBlankLines(int lines) {
 			IO().triggerInterrupt(IoRegisters::Interrupts::DisplayControlStatus);
 		IO().triggerInterrupt(IoRegisters::Interrupts::VerticalBlank);
 	}
-	return runRasterLines(lines);
+	runRasterLines(lines);
 }
