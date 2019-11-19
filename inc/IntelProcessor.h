@@ -58,7 +58,7 @@ namespace EightBit {
 		[[nodiscard]] auto& H() { return HL().high; }
 		[[nodiscard]] auto& L() { return HL().low; }
 
-		DECLARE_PIN_INPUT(HALT)
+		DECLARE_PIN_OUTPUT(HALT)
 
 	protected:
 		IntelProcessor(Bus& bus);
