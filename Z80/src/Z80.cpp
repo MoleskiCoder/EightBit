@@ -9,6 +9,7 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 	RaisedPOWER.connect([this](EventArgs) {
 
 		raiseM1();
+		raiseRFSH();
 		raiseIORQ();
 		raiseMREQ();
 		raiseRD();
