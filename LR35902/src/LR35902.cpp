@@ -61,7 +61,7 @@ void EightBit::GameBoy::LR35902::decrement(uint8_t& operand) {
 	F() = adjustZero<LR35902>(F(), --operand);
 }
 
-bool EightBit::GameBoy::LR35902::jrConditionalFlag(const int flag) {
+int EightBit::GameBoy::LR35902::jrConditionalFlag(const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jrConditional(!(F() & ZF));
@@ -76,7 +76,7 @@ bool EightBit::GameBoy::LR35902::jrConditionalFlag(const int flag) {
 	}
 }
 
-bool EightBit::GameBoy::LR35902::jumpConditionalFlag(const int flag) {
+int EightBit::GameBoy::LR35902::jumpConditionalFlag(const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jumpConditional(!(F() & ZF));
@@ -96,7 +96,7 @@ void EightBit::GameBoy::LR35902::reti() {
 	ei();
 }
 
-bool EightBit::GameBoy::LR35902::returnConditionalFlag(const int flag) {
+int EightBit::GameBoy::LR35902::returnConditionalFlag(const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return returnConditional(!(F() & ZF));
@@ -111,7 +111,7 @@ bool EightBit::GameBoy::LR35902::returnConditionalFlag(const int flag) {
 	}
 }
 
-bool EightBit::GameBoy::LR35902::callConditionalFlag(const int flag) {
+int EightBit::GameBoy::LR35902::callConditionalFlag(const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return callConditional(!(F() & ZF));

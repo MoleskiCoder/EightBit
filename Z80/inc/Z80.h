@@ -113,6 +113,11 @@ namespace EightBit {
 		void handleRESET() final;
 		void handleINT() final;
 
+		void call(const register16_t destination) override {
+			tick();
+			IntelProcessor::call(destination);
+		}
+
 		void busWrite() final;
 		uint8_t busRead() final;
 
@@ -169,18 +174,16 @@ namespace EightBit {
 		// refresh dynamic memories. The CPU uses this time to decode and execute the fetched
 		// instruction so that no other concurrent operation can be performed.
 		uint8_t readInitialOpCode() {
+			tick();
 			lowerM1();
 			const auto returned = IntelProcessor::busRead(PC());
 			raiseM1();
-			tick(2);
 			BUS().ADDRESS().low = REFRESH();
 			BUS().ADDRESS().high = IV();
 			lowerRFSH();
 			lowerMREQ();
-			tick();
 			raiseMREQ();
 			raiseRFSH();
-			tick();
 			return returned;
 		}
 
@@ -350,6 +353,8 @@ namespace EightBit {
 			return setBit(f, VF, overflow);
 		}
 
+		[[nodiscard]] static bool convertCondition(uint8_t f, int flag);
+
 		static uint8_t subtract(uint8_t& f, uint8_t operand, uint8_t value, int carry = 0);
 
 		void executeCB(int x, int y, int z);
@@ -365,9 +370,9 @@ namespace EightBit {
 		void retn();
 		void reti();
 
-		[[nodiscard]] bool jrConditionalFlag(uint8_t f, int flag);
-		[[nodiscard]] bool returnConditionalFlag(uint8_t f, int flag);
-		[[nodiscard]] bool callConditionalFlag(uint8_t f, int flag);
+		void returnConditionalFlag(uint8_t f, int flag);
+		void jrConditionalFlag(uint8_t f, int flag);
+		void callConditionalFlag(uint8_t f, int flag);
 		void jumpConditionalFlag(uint8_t f, int flag);
 
 		[[nodiscard]] register16_t sbc(uint8_t& f, register16_t operand, register16_t value);

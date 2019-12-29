@@ -138,20 +138,20 @@ namespace EightBit {
 			MEMPTR() = fetchWord();
 			if (condition)
 				call(MEMPTR());
-			return !!condition;
+			return condition;
 		}
 
 		auto jumpConditional(const int condition) {
 			MEMPTR() = fetchWord();
 			if (condition)
 				jump(MEMPTR());
-			return !!condition;
+			return condition;
 		}
 
 		auto returnConditional(const int condition) {
 			if (condition)
 				ret();
-			return !!condition;
+			return condition;
 		}
 
 		void jr(const int8_t offset) noexcept {
@@ -164,7 +164,7 @@ namespace EightBit {
 				const auto offset = busRead(offsetAddress);
 				jr(offset);
 			}
-			return !!condition;
+			return condition;
 		}
 
 		void ret() final;

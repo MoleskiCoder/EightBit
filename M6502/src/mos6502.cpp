@@ -402,7 +402,7 @@ uint8_t EightBit::MOS6502::pop() {
 void EightBit::MOS6502::dummyPush(const uint8_t value) {
 	tick();
 	BUS().DATA() = value;
-	BUS().ADDRESS() = register16_t(S()--, 1);
+	BUS().ADDRESS() = { S()--, 1 };
 }
 
 ////

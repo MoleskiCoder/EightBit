@@ -174,10 +174,10 @@ namespace EightBit {
 
 			void reti();
 
-			bool jrConditionalFlag(int flag);
-			bool returnConditionalFlag(int flag);
-			bool jumpConditionalFlag(int flag);
-			bool callConditionalFlag(int flag);
+			int jrConditionalFlag(int flag);
+			int returnConditionalFlag(int flag);
+			int jumpConditionalFlag(int flag);
+			int callConditionalFlag(int flag);
 
 			void add(register16_t& operand, register16_t value);
 

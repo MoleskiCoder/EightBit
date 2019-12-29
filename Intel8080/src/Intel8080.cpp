@@ -56,7 +56,7 @@ void EightBit::Intel8080::decrement(uint8_t& operand) {
 	F() = setBit(F(), AC, lowNibble(operand) != Mask4);
 }
 
-bool EightBit::Intel8080::jumpConditionalFlag(const int flag) {
+int EightBit::Intel8080::jumpConditionalFlag(const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return jumpConditional(!(F() & ZF));
@@ -79,7 +79,7 @@ bool EightBit::Intel8080::jumpConditionalFlag(const int flag) {
 	}
 }
 
-bool EightBit::Intel8080::returnConditionalFlag(const int flag) {
+int EightBit::Intel8080::returnConditionalFlag(const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return returnConditional(!(F() & ZF));
@@ -102,7 +102,7 @@ bool EightBit::Intel8080::returnConditionalFlag(const int flag) {
 	}
 }
 
-bool EightBit::Intel8080::callConditionalFlag(const int flag) {
+int EightBit::Intel8080::callConditionalFlag(const int flag) {
 	switch (flag) {
 	case 0:	// NZ
 		return callConditional(!(F() & ZF));

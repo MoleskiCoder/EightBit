@@ -2,10 +2,48 @@
 #include "FuseTestRunner.h"
 #include "Disassembler.h"
 
-Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expected)
+#include <boost/algorithm/string/predicate.hpp>
+
+Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& result)
 : m_test(test),
-  m_expected(expected),
-  m_cpu(*this, m_ports) {
+  m_result(result),
+  m_cpu(*this, m_ports),
+  m_totalCycles(0) {
+
+	for (const auto& event : m_result.events.events) {
+		if (!boost::algorithm::ends_with(event.specifier, "C"))
+			m_expectedEvents.events.push_back(event);
+	}
+
+	m_cpu.ExecutedInstruction.connect([this](EightBit::Z80& cpu) {
+		m_totalCycles += cpu.cycles();
+	});
+
+	ReadByte.connect([this](EightBit::EventArgs&) {
+		addActualEvent("MR");
+	});
+	
+	WrittenByte.connect([this](EightBit::EventArgs&) {
+		addActualEvent("MW");
+	});
+
+	m_ports.ReadPort.connect([this](uint8_t port) {
+		addActualEvent("PR");
+	});
+
+	m_ports.WrittenPort.connect([this](uint8_t port) {
+		addActualEvent("PW");
+	});
+}
+
+void Fuse::TestRunner::addActualEvent(const std::string& specifier) {
+	TestEvent actual;
+	actual.address = ADDRESS().word;
+	actual.cycles = m_totalCycles + m_cpu.cycles();
+	actual.specifier = specifier;
+	actual.value = DATA();
+	actual.valid = true;
+	m_actualEvents.events.push_back(actual);
 }
 
 //
@@ -71,8 +109,9 @@ void Fuse::TestRunner::initialiseMemory() {
 //
 
 void Fuse::TestRunner::check() {
-	checkregisters();
+	checkRegisters();
 	checkMemory();
+	checkEvents();
 }
 
 void Fuse::TestRunner::dumpDifference(const std::string& description, uint8_t actual, uint8_t expected) const {
@@ -102,9 +141,9 @@ void Fuse::TestRunner::dumpDifference(
 		dumpDifference(lowDescription, actualLow, expectedLow);
 }
 
-void Fuse::TestRunner::checkregisters() {
+void Fuse::TestRunner::checkRegisters() {
 
-	const auto& expectedState = m_expected.registerState;
+	const auto& expectedState = m_result.registerState;
 	const auto& expectedRegisters = expectedState.registers;
 
 	auto af = m_cpu.AF() == expectedRegisters[Fuse::RegisterState::AF];
@@ -306,7 +345,7 @@ void Fuse::TestRunner::checkMemory() {
 
 	bool first = true;
 
-	for (auto memoryDatum : m_expected.memoryData) {
+	for (auto memoryDatum : m_result.memoryData) {
 		auto bytes = memoryDatum.bytes;
 		for (int i = 0; i < bytes.size(); ++i) {
 			auto expected = bytes[i];
@@ -327,6 +366,61 @@ void Fuse::TestRunner::checkMemory() {
 			}
 		}
 	}
+}
+
+void Fuse::TestRunner::checkEvents() {
+
+	const auto& expectations = m_expectedEvents.events;
+	const auto& actuals = m_actualEvents.events;
+
+	auto eventFailure = expectations.size() != actuals.size();
+	for (auto i = 0; !eventFailure && (i < expectations.size()); ++i) {
+
+		const auto& expectation = expectations[i];
+		const auto& actual = actuals[i];
+
+		const auto equalCycles = expectation.cycles == actual.cycles;
+		const auto equalSpecifier = expectation.specifier == actual.specifier;
+		const auto equalAddress = expectation.address == actual.address;
+		const auto equalValue = expectation.value == actual.value;
+
+		const auto equal = equalCycles && equalSpecifier && equalAddress && equalValue;
+		eventFailure = !equal;
+	}
+
+	if (eventFailure) {
+		dumpExpectedEvents();
+		dumpActualEvents();
+	}
+
+	if (!m_failed)
+		m_failed = eventFailure;
+}
+
+void Fuse::TestRunner::dumpExpectedEvents() const {
+	std::cerr << "++++ Dumping expected events:" << std::endl;
+	dumpEvents(m_expectedEvents.events);
+}
+
+void Fuse::TestRunner::dumpActualEvents() const {
+	std::cerr << "++++ Dumping actual events:" << std::endl;
+	dumpEvents(m_actualEvents.events);
+}
+
+void Fuse::TestRunner::dumpEvents(const std::vector<TestEvent>& events) {
+	for (const auto& event : events) {
+		dumpEvent(event);
+	}
+}
+
+void Fuse::TestRunner::dumpEvent(const TestEvent& event) {
+	std::cerr << " Event issue " <<
+		"Cycles = " << event.cycles <<
+		", Specifier = " << event.specifier <<
+		", Address = " << EightBit::Disassembler::hex((uint16_t)event.address);
+	if (!boost::algorithm::ends_with(event.specifier, "C"))
+		std::cerr << ", Value=" << EightBit::Disassembler::hex((uint8_t)event.value);
+	std::cerr << std::endl;
 }
 
 void Fuse::TestRunner::run() {

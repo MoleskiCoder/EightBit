@@ -88,7 +88,7 @@ namespace EightBit {
 			PC() = destination;
 		}
 
-		void call(const register16_t destination) {
+		virtual void call(const register16_t destination) {
 			pushWord(PC());
 			jump(destination);
 		}
