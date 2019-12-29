@@ -23,7 +23,7 @@ namespace EightBit {
 
 		register16_t fetchWord() final;
 
-		void pushWord(register16_t value) final;
-		register16_t popWord() final;
+		void pushWord(register16_t value) override;
+		register16_t popWord() override;
 	};
 }

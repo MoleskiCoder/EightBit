@@ -113,9 +113,9 @@ namespace EightBit {
 		void handleRESET() final;
 		void handleINT() final;
 
-		void call(const register16_t destination) override {
+		void pushWord(const register16_t destination) override {
 			tick();
-			IntelProcessor::call(destination);
+			IntelProcessor::pushWord(destination);
 		}
 
 		void busWrite() final;
