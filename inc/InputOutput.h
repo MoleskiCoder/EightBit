@@ -4,36 +4,51 @@
 #include <array>
 
 #include "Signal.h"
+#include "Memory.h"
+#include "Ram.h"
 
 namespace EightBit {
-	class InputOutput final {
+	class InputOutput final : public Memory {
 	public:
+		enum class AccessType { Unknown, Reading, Writing };
+
 		InputOutput() = default;
 
-		[[nodiscard]] auto read(const uint8_t port) { return readInputPort(port); }
-		void write(const uint8_t port, const uint8_t value) { writeOutputPort(port, value); }
+		[[nodiscard]] size_t size() const override;
+		[[nodiscard]] uint8_t peek(uint16_t address) const override;
 
-		[[nodiscard]] uint8_t readInputPort(uint8_t port);
-		void writeInputPort(const uint8_t port, const uint8_t value) noexcept { m_input[port] = value; }
+		[[nodiscard]] uint8_t& reference(uint16_t address) override;
 
-		[[nodiscard]] auto readOutputPort(const uint8_t port) noexcept { return m_output[port]; }
-		void writeOutputPort(uint8_t port, uint8_t value);
+		int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) override;
+		int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) override;
+		int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) override;
 
-		Signal<uint8_t> ReadingPort;
-		Signal<uint8_t> ReadPort;
+		AccessType getAccessType() const noexcept { return m_access; }
+		void setAccessType(AccessType value) noexcept { m_access = value; }
 
-		Signal<uint8_t> WritingPort;
-		Signal<uint8_t> WrittenPort;
+		auto readPort(uint8_t port, AccessType access) {
+			setAccessType(access);
+			return reference(port);
+		}
+
+		auto readInputPort(uint8_t port) { return readPort(port, AccessType::Reading); }
+		auto readOutputPort(uint8_t port) { return readPort(port, AccessType::Writing); }
+
+		void writePort(uint8_t port, uint8_t value, AccessType access) {
+			setAccessType(access);
+			reference(port) = value;
+		}
+
+		auto writeInputPort(uint8_t port, uint8_t value) { return writePort(port, value, AccessType::Reading); }
+		auto writeOutputPort(uint8_t port, uint8_t value) { return writePort(port, value,  AccessType::Writing); }
 
 	protected:
-		void OnReadingPort(uint8_t port);
-		void OnReadPort(uint8_t port);
-
-		void OnWritingPort(uint8_t port);
-		void OnWrittenPort(uint8_t port);
+		void poke(uint16_t address, uint8_t value) override;
 
 	private:
-		std::array<uint8_t, 0x100> m_input = { 0 };
-		std::array<uint8_t, 0x100> m_output = { 0 };
+		Ram m_input = 0x100;
+		Ram m_output = 0x100;
+
+		AccessType m_access = AccessType::Unknown;
 	};
 }

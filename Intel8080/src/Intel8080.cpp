@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "Intel8080.h"
 
-EightBit::Intel8080::Intel8080(Bus& bus, InputOutput& ports)
-: IntelProcessor(bus),
-  m_ports(ports) {
+EightBit::Intel8080::Intel8080(Bus& bus)
+: IntelProcessor(bus){
 }
+
+DEFINE_PIN_LEVEL_CHANGERS(DBIN, Intel8080);
+DEFINE_PIN_LEVEL_CHANGERS(WR, Intel8080);
 
 EightBit::register16_t& EightBit::Intel8080::AF() {
 	af.low = (af.low | Bit1) & ~(Bit5 | Bit3);
@@ -21,6 +23,31 @@ EightBit::register16_t& EightBit::Intel8080::DE() {
 
 EightBit::register16_t& EightBit::Intel8080::HL() {
 	return hl;
+}
+
+void EightBit::Intel8080::memoryWrite() {
+	m_requestMemory = true;
+	IntelProcessor::memoryWrite();
+	m_requestMemory = false;
+}
+
+uint8_t EightBit::Intel8080::memoryRead() {
+	m_requestMemory = true;
+	return IntelProcessor::memoryRead();
+	m_requestMemory = false;
+}
+
+void EightBit::Intel8080::busWrite() {
+	lowerWR();
+	IntelProcessor::busWrite();
+	raiseWR();
+}
+
+uint8_t EightBit::Intel8080::busRead() {
+	raiseDBIN();
+	const auto returned = IntelProcessor::busRead();
+	lowerDBIN();
+	return returned;
 }
 
 void EightBit::Intel8080::handleRESET() {
@@ -236,33 +263,37 @@ void EightBit::Intel8080::cmc() {
 }
 
 void EightBit::Intel8080::xhtl(register16_t& exchange) {
-	MEMPTR().low = busRead(SP());
+	MEMPTR().low = IntelProcessor::memoryRead(SP());
 	++BUS().ADDRESS();
-	MEMPTR().high = busRead();
-	busWrite(exchange.high);
+	MEMPTR().high = memoryRead();
+	IntelProcessor::memoryWrite(exchange.high);
 	exchange.high = MEMPTR().high;
 	--BUS().ADDRESS();
-	busWrite(exchange.low);
+	IntelProcessor::memoryWrite(exchange.low);
 	exchange.low = MEMPTR().low;
 }
 
-void EightBit::Intel8080::writePort(const uint8_t port) {
-	BUS().ADDRESS() = register16_t(port, A());
-	BUS().DATA() = A();
-	writePort();
+void EightBit::Intel8080::portWrite(const uint8_t port) {
+	BUS().ADDRESS() = { port, port };
+	portWrite();
 }
 
-void EightBit::Intel8080::writePort() {
-	m_ports.write(BUS().ADDRESS().low, BUS().DATA());
+void EightBit::Intel8080::portWrite() {
+	m_requestIO = true;
+	busWrite();
+	m_requestIO = false;
 }
 
-uint8_t EightBit::Intel8080::readPort(const uint8_t port) {
-	BUS().ADDRESS() = register16_t(port, A());
-	return readPort();
+uint8_t EightBit::Intel8080::portRead(const uint8_t port) {
+	BUS().ADDRESS() = { port, port };
+	return portRead();
 }
 
-uint8_t EightBit::Intel8080::readPort() {
-	return BUS().DATA() = m_ports.read(BUS().ADDRESS().low);
+uint8_t EightBit::Intel8080::portRead() {
+	m_requestIO = true;
+	const auto returned = busRead();
+	m_requestIO = false;
+	return returned;
 }
 
 int EightBit::Intel8080::step() {
@@ -330,11 +361,11 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					busWrite(BC(), A());
+					IntelProcessor::memoryWrite(BC(), A());
 					tick(7);
 					break;
 				case 1:	// LD (DE),A
-					busWrite(DE(), A());
+					IntelProcessor::memoryWrite(DE(), A());
 					tick(7);
 					break;
 				case 2:	// LD (nn),HL
@@ -344,7 +375,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 					break;
 				case 3: // LD (nn),A
 					BUS().ADDRESS() = fetchWord();
-					busWrite(A());
+					IntelProcessor::memoryWrite(A());
 					tick(13);
 					break;
 				default:
@@ -354,11 +385,11 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					A() = busRead(BC());
+					A() = IntelProcessor::memoryRead(BC());
 					tick(7);
 					break;
 				case 1:	// LD A,(DE)
-					A() = busRead(DE());
+					A() = IntelProcessor::memoryRead(DE());
 					tick(7);
 					break;
 				case 2:	// LD HL,(nn)
@@ -534,11 +565,11 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 				tick(10);
 				break;
 			case 2:	// OUT (n),A
-				writePort(fetchByte());
+				portWrite(fetchByte());
 				tick(11);
 				break;
 			case 3:	// IN A,(n)
-				A() = readPort(fetchByte());
+				A() = portRead(fetchByte());
 				tick(11);
 				break;
 			case 4:	// EX (SP),HL

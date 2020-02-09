@@ -5,7 +5,6 @@
 #include <stdexcept>
 
 #include <Bus.h>
-#include <InputOutput.h>
 #include <IntelProcessor.h>
 #include <EventArgs.h>
 #include <Signal.h>
@@ -47,12 +46,11 @@ namespace EightBit {
 			CF = Bit0,
 		};
 
-		Z80(Bus& bus, InputOutput& ports);
+		Z80(Bus& bus);
 
 		Signal<Z80> ExecutingInstruction;
 		Signal<Z80> ExecutedInstruction;
 
-		int execute(uint8_t opcode) { return IntelProcessor::execute(opcode); }
 		int execute() final;
 		int step() final;
 
@@ -95,6 +93,12 @@ namespace EightBit {
 			m_accumulatorFlagsSet ^= 1;
 		}
 
+		bool requestingIO() { return lowered(IORQ()); }
+		bool requestingMemory() { return lowered(MREQ()); }
+
+		bool requestingRead() { return lowered(RD()); }
+		bool requestingWrite() { return lowered(WR()); }
+
 		DECLARE_PIN_INPUT(NMI)
 		DECLARE_PIN_OUTPUT(M1)
 
@@ -118,12 +122,13 @@ namespace EightBit {
 			IntelProcessor::pushWord(destination);
 		}
 
+		void memoryWrite() final;
+		uint8_t memoryRead() final;
+
 		void busWrite() final;
 		uint8_t busRead() final;
 
 	private:
-		InputOutput& m_ports;
-
 		enum { BC_IDX, DE_IDX, HL_IDX };
 
 		std::array<std::array<register16_t, 3>, 2> m_registers;
@@ -176,10 +181,9 @@ namespace EightBit {
 		uint8_t readInitialOpCode() {
 			tick();
 			lowerM1();
-			const auto returned = IntelProcessor::busRead(PC());
+			const auto returned = IntelProcessor::memoryRead(PC());
 			raiseM1();
-			BUS().ADDRESS().low = REFRESH();
-			BUS().ADDRESS().high = IV();
+			BUS().ADDRESS() = { REFRESH(), IV() };
 			lowerRFSH();
 			lowerMREQ();
 			raiseMREQ();
@@ -253,7 +257,7 @@ namespace EightBit {
 			case 5:
 				return HL2().low;
 			case 6:
-				return IntelProcessor::busRead(UNLIKELY(m_displaced) ?  displacedAddress() : HL().word);
+				return IntelProcessor::memoryRead(UNLIKELY(m_displaced) ?  displacedAddress() : HL().word);
 			case 7:
 				return A();
 			default:
@@ -284,7 +288,7 @@ namespace EightBit {
 				HL2().low = value;
 				break;
 			case 6:
-				IntelProcessor::busWrite(UNLIKELY(m_displaced) ? displacedAddress() : HL().word, value);
+				IntelProcessor::memoryWrite(UNLIKELY(m_displaced) ? displacedAddress() : HL().word, value);
 				break;
 			case 7:
 				A() = value;
@@ -317,7 +321,7 @@ namespace EightBit {
 				L() = value;
 				break;
 			case 6:
-				IntelProcessor::busWrite(HL(), value);
+				IntelProcessor::memoryWrite(HL(), value);
 				break;
 			case 7:
 				A() = value;
@@ -446,10 +450,10 @@ namespace EightBit {
 		void rrd(uint8_t& f, register16_t address, uint8_t& update);
 		void rld(uint8_t& f, register16_t address, uint8_t& update);
 
-		void writePort(uint8_t port);
-		void writePort();
+		void portWrite(uint8_t port);
+		void portWrite();
 
-		uint8_t readPort(uint8_t port);
-		uint8_t readPort();
+		uint8_t portRead(uint8_t port);
+		uint8_t portRead();
 	};
 }

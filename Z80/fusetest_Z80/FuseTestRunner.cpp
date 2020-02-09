@@ -2,12 +2,13 @@
 #include "FuseTestRunner.h"
 #include "Disassembler.h"
 
+#include <stdexcept>
 #include <boost/algorithm/string/predicate.hpp>
 
 Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& result)
 : m_test(test),
   m_result(result),
-  m_cpu(*this, m_ports),
+  m_cpu(*this),
   m_totalCycles(0) {
 
 	for (const auto& event : m_result.events.events) {
@@ -20,20 +21,27 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& result)
 	});
 
 	ReadByte.connect([this](EightBit::EventArgs&) {
-		addActualEvent("MR");
+		addActualEvent(currentBusAccessType() + "R");
 	});
 	
 	WrittenByte.connect([this](EightBit::EventArgs&) {
-		addActualEvent("MW");
+		addActualEvent(currentBusAccessType() + "W");
 	});
+}
 
-	m_ports.ReadPort.connect([this](uint8_t port) {
-		addActualEvent("PR");
-	});
+std::string Fuse::TestRunner::currentBusAccessType() {
 
-	m_ports.WrittenPort.connect([this](uint8_t port) {
-		addActualEvent("PW");
-	});
+	const bool ioRequest = m_cpu.requestingIO();
+	const bool memoryRequest = m_cpu.requestingMemory();
+	if (ioRequest && memoryRequest)
+		throw std::logic_error("Invalid bus state (both IORQ and MREQ lowered");
+
+	if (ioRequest)
+		return "P";
+	if (memoryRequest)
+		return "M";
+
+	throw std::logic_error("Invalid bus state (neither IORQ and MREQ lowered");
 }
 
 void Fuse::TestRunner::addActualEvent(const std::string& specifier) {
@@ -60,6 +68,39 @@ void Fuse::TestRunner::raisePOWER() {
 void Fuse::TestRunner::lowerPOWER() {
 	m_cpu.lowerPOWER();
 	EightBit::Bus::lowerPOWER();
+}
+
+EightBit::MemoryMapping Fuse::TestRunner::mapping(uint16_t address) {
+
+	const bool memory = m_cpu.requestingMemory();
+	if (memory)
+		return {
+			m_ram,
+			0x0000,
+			0xffff,
+			EightBit::MemoryMapping::AccessLevel::ReadWrite
+		};
+
+	const bool io = m_cpu.requestingIO();
+	if (io) {
+
+		m_ports.setAccessType(EightBit::InputOutput::AccessType::Unknown);
+
+		const bool reading = m_cpu.requestingRead();
+		if (reading)
+			m_ports.setAccessType(EightBit::InputOutput::AccessType::Reading);
+
+		const bool writing = m_cpu.requestingWrite();
+		if (writing)
+			m_ports.setAccessType(EightBit::InputOutput::AccessType::Writing);
+
+		return {
+			m_ports,
+			0x0000,
+			0xff,
+			EightBit::MemoryMapping::AccessLevel::ReadWrite
+		};
+	}
 }
 
 void Fuse::TestRunner::initialise() {
@@ -102,7 +143,7 @@ void Fuse::TestRunner::initialiseMemory() {
 		auto address = memoryDatum.address;
 		auto bytes = memoryDatum.bytes;
 		for (int i = 0; i < bytes.size(); ++i)
-			poke(address + i, bytes[i]);
+			m_ram.poke(address + i, bytes[i]);
 	}
 }
 
@@ -350,7 +391,7 @@ void Fuse::TestRunner::checkMemory() {
 		for (int i = 0; i < bytes.size(); ++i) {
 			auto expected = bytes[i];
 			uint16_t address = memoryDatum.address + i;
-			auto actual = peek(address);
+			auto actual = m_ram.peek(address);
 			if (expected != actual) {
 				m_failed = true;
 				if (first) {

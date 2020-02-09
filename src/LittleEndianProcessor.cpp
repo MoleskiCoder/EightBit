@@ -5,29 +5,29 @@ EightBit::LittleEndianProcessor::LittleEndianProcessor(Bus& memory)
 : Processor(memory) {}
 
 EightBit::register16_t EightBit::LittleEndianProcessor::getWord() {
-	const auto low = busRead();
+	const auto low = memoryRead();
 	++BUS().ADDRESS();
-	const auto high = busRead();
+	const auto high = memoryRead();
 	return { low, high };
 }
 
 void EightBit::LittleEndianProcessor::setWord(const register16_t value) {
-	busWrite(value.low);
+	memoryWrite(value.low);
 	++BUS().ADDRESS();
-	busWrite(value.high);
+	memoryWrite(value.high);
 }
 
 EightBit::register16_t EightBit::LittleEndianProcessor::getWordPaged(const uint8_t page, const uint8_t offset) {
 	const auto low = getBytePaged(page, offset);
 	++BUS().ADDRESS().low;
-	const auto high = busRead();
+	const auto high = memoryRead();
 	return { low, high };
 }
 
 void EightBit::LittleEndianProcessor::setWordPaged(const uint8_t page, const uint8_t offset, const register16_t value) {
 	setBytePaged(page, offset, value.low);
 	++BUS().ADDRESS().low;
-	busWrite(value.high);
+	memoryWrite(value.high);
 }
 
 EightBit::register16_t EightBit::LittleEndianProcessor::fetchWord() {

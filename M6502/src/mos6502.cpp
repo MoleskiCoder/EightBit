@@ -249,30 +249,30 @@ int EightBit::MOS6502::execute() {
 	case 0x7f:	rra(AM_AbsoluteX());										break;	// *RRA (absolute, X)
 
 	case 0x80:	AM_Immediate();												break;	// *NOP (immediate)
-	case 0x81:	Processor::busWrite(Address_IndexedIndirectX(), A());		break;	// STA (indexed indirect X)
+	case 0x81:	memoryWrite(Address_IndexedIndirectX(), A());		break;	// STA (indexed indirect X)
 	case 0x82:	AM_Immediate();												break;	// *NOP (immediate)
-	case 0x83:	Processor::busWrite(Address_IndexedIndirectX(), A() & X());	break;	// *SAX (indexed indirect X)
-	case 0x84:	Processor::busWrite(Address_ZeroPage(), Y());				break;	// STY (zero page)
-	case 0x85:	Processor::busWrite(Address_ZeroPage(), A());				break;	// STA (zero page)
-	case 0x86:	Processor::busWrite(Address_ZeroPage(), X());				break;	// STX (zero page)
-	case 0x87:	Processor::busWrite(Address_ZeroPage(), A() & X());			break;	// *SAX (zero page)
+	case 0x83:	memoryWrite(Address_IndexedIndirectX(), A() & X());	break;	// *SAX (indexed indirect X)
+	case 0x84:	memoryWrite(Address_ZeroPage(), Y());				break;	// STY (zero page)
+	case 0x85:	memoryWrite(Address_ZeroPage(), A());				break;	// STA (zero page)
+	case 0x86:	memoryWrite(Address_ZeroPage(), X());				break;	// STX (zero page)
+	case 0x87:	memoryWrite(Address_ZeroPage(), A() & X());			break;	// *SAX (zero page)
 	case 0x88:	busRead(); Y() = dec(Y());									break;	// DEY (implied)
 	case 0x89:	AM_Immediate();												break;	// *NOP (immediate)
 	case 0x8a:	busRead(); A() = through(X());								break;	// TXA (implied)
 	case 0x8b:																break;
-	case 0x8c:	Processor::busWrite(Address_Absolute(), Y());				break;	// STY (absolute)
-	case 0x8d:	Processor::busWrite(Address_Absolute(), A());				break;	// STA (absolute)
-	case 0x8e:	Processor::busWrite(Address_Absolute(), X());				break;	// STX (absolute)
-	case 0x8f:	Processor::busWrite(Address_Absolute(), A() & X());			break;	// *SAX (absolute)
+	case 0x8c:	memoryWrite(Address_Absolute(), Y());				break;	// STY (absolute)
+	case 0x8d:	memoryWrite(Address_Absolute(), A());				break;	// STA (absolute)
+	case 0x8e:	memoryWrite(Address_Absolute(), X());				break;	// STX (absolute)
+	case 0x8f:	memoryWrite(Address_Absolute(), A() & X());			break;	// *SAX (absolute)
 
 	case 0x90:	branch(!carry());											break;	// BCC (relative)
-	case 0x91:	AM_IndirectIndexedY(); Processor::busWrite(A());			break;	// STA (indirect indexed Y)
+	case 0x91:	AM_IndirectIndexedY(); memoryWrite(A());			break;	// STA (indirect indexed Y)
 	case 0x92:																break;
 	case 0x93:																break;
-	case 0x94:	Processor::busWrite(Address_ZeroPageX(), Y());				break;	// STY (zero page, X)
-	case 0x95:	Processor::busWrite(Address_ZeroPageX(), A());				break;	// STA (zero page, X)
-	case 0x96:	Processor::busWrite(Address_ZeroPageY(), X());				break;	// STX (zero page, Y)
-	case 0x97:	Processor::busWrite(Address_ZeroPageY(), A() & X());		break;	// *SAX (zero page, Y)
+	case 0x94:	memoryWrite(Address_ZeroPageX(), Y());				break;	// STY (zero page, X)
+	case 0x95:	memoryWrite(Address_ZeroPageX(), A());				break;	// STA (zero page, X)
+	case 0x96:	memoryWrite(Address_ZeroPageY(), X());				break;	// STX (zero page, Y)
+	case 0x97:	memoryWrite(Address_ZeroPageY(), A() & X());		break;	// *SAX (zero page, Y)
 	case 0x98:	busRead(); A() = through(Y());								break;	// TYA (implied)
 	case 0x99:	sta_AbsoluteY();											break;	// STA (absolute, Y)
 	case 0x9a:	busRead(); S() = X();										break;	// TXS (implied)
@@ -426,13 +426,13 @@ EightBit::register16_t EightBit::MOS6502::Address_Indirect() {
 
 uint8_t EightBit::MOS6502::Address_ZeroPageX() {
 	const auto address = Address_ZeroPage();
-	Processor::busRead(address);
+	memoryRead(address);
 	return address + X();
 }
 
 uint8_t EightBit::MOS6502::Address_ZeroPageY() {
 	const auto address = Address_ZeroPage();
-	Processor::busRead(address);
+	memoryRead(address);
 	return address + Y();
 }
 
@@ -472,18 +472,18 @@ uint8_t EightBit::MOS6502::AM_Immediate() {
 }
 
 uint8_t EightBit::MOS6502::AM_Absolute() {
-	return Processor::busRead(Address_Absolute());
+	return memoryRead(Address_Absolute());
 }
 
 uint8_t EightBit::MOS6502::AM_ZeroPage() {
-	return Processor::busRead(Address_ZeroPage());
+	return memoryRead(Address_ZeroPage());
 }
 
 uint8_t EightBit::MOS6502::AM_AbsoluteX(const PageCrossingBehavior behaviour) {
 	const auto [address, page] = Address_AbsoluteX();
 	auto possible = getBytePaged(page, address.low);
 	if ((behaviour == PageCrossingBehavior::AlwaysReadTwice) || UNLIKELY(page != address.high))
-		possible = Processor::busRead(address);
+		possible = memoryRead(address);
 	return possible;
 }
 
@@ -491,27 +491,27 @@ uint8_t EightBit::MOS6502::AM_AbsoluteY() {
 	const auto[address, page] = Address_AbsoluteY();
 	auto possible = getBytePaged(page, address.low);
 	if (UNLIKELY(page != address.high))
-		possible = Processor::busRead(address);
+		possible = memoryRead(address);
 	return possible;
 }
 
 uint8_t EightBit::MOS6502::AM_ZeroPageX() {
-	return Processor::busRead(Address_ZeroPageX());
+	return memoryRead(Address_ZeroPageX());
 }
 
 uint8_t EightBit::MOS6502::AM_ZeroPageY() {
-	return Processor::busRead(Address_ZeroPageY());
+	return memoryRead(Address_ZeroPageY());
 }
 
 uint8_t EightBit::MOS6502::AM_IndexedIndirectX() {
-	return Processor::busRead(Address_IndexedIndirectX());
+	return memoryRead(Address_IndexedIndirectX());
 }
 
 uint8_t EightBit::MOS6502::AM_IndirectIndexedY() {
 	const auto [address, page] = Address_IndirectIndexedY();
 	auto possible = getBytePaged(page, address.low);
 	if (page != address.high)
-		possible = Processor::busRead(address);
+		possible = memoryRead(address);
 	return possible;
 }
 
@@ -524,7 +524,7 @@ void EightBit::MOS6502::branch(const int condition) {
 		const auto page = PC().high;
 		jump(destination);
 		if (UNLIKELY(PC().high != page))
-			Processor::busRead(register16_t(PC().low, page));
+			memoryRead(register16_t(PC().low, page));
 	}
 }
 
@@ -748,11 +748,11 @@ void EightBit::MOS6502::sre(const uint8_t value) {
 void EightBit::MOS6502::sta_AbsoluteX() {
 	const auto [address, page] = Address_AbsoluteX();
 	getBytePaged(page, address.low);
-	Processor::busWrite(address, A());
+	memoryWrite(address, A());
 }
 
 void EightBit::MOS6502::sta_AbsoluteY() {
 	const auto [address, page] = Address_AbsoluteY();
 	getBytePaged(page, address.low);
-	Processor::busWrite(address, A());
+	memoryWrite(address, A());
 }

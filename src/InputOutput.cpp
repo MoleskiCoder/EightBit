@@ -1,31 +1,43 @@
 #include "stdafx.h"
 #include "InputOutput.h"
 
-uint8_t EightBit::InputOutput::readInputPort(const uint8_t port) {
-	OnReadingPort(port);
-	const auto value = m_input[port];
-	OnReadPort(port);
-	return value;
+#include <stdexcept>
+
+#include "Register.h"
+
+size_t EightBit::InputOutput::size() const {
+	return 0x100;
 }
 
-void EightBit::InputOutput::writeOutputPort(const uint8_t port, const uint8_t value) {
-	OnWritingPort(port);
-	m_output[port] = value;
-	OnWrittenPort(port);
+uint8_t EightBit::InputOutput::peek(uint16_t) const {
+	throw std::logic_error("Peek operation not allowed.");
 }
 
-void EightBit::InputOutput::OnReadingPort(uint8_t port) {
-	ReadingPort.fire(port);
+uint8_t& EightBit::InputOutput::reference(uint16_t address) {
+	const auto port = register16_t(address).low;
+	switch (getAccessType()) {
+	case AccessType::Reading:
+		return m_input.reference(port);
+	case AccessType::Writing:
+		return m_output.reference(port);
+	case AccessType::Unknown:
+	default:
+		throw std::logic_error("Unknown I/O access type.");
+	}
 }
 
-void EightBit::InputOutput::OnReadPort(uint8_t port) {
-	ReadPort.fire(port);
+int EightBit::InputOutput::load(std::ifstream&, int, int, int) {
+	throw std::logic_error("load operation not allowed.");
 }
 
-void EightBit::InputOutput::OnWritingPort(uint8_t port) {
-	WritingPort.fire(port);
+int EightBit::InputOutput::load(const std::string&, int, int, int) {
+	throw std::logic_error("load operation not allowed.");
 }
 
-void EightBit::InputOutput::OnWrittenPort(uint8_t port) {
-	WrittenPort.fire(port);
+int EightBit::InputOutput::load(const std::vector<uint8_t>&, int, int, int) {
+	throw std::logic_error("load operation not allowed.");
+}
+
+void EightBit::InputOutput::poke(uint16_t, uint8_t) {
+	throw std::logic_error("Poke operation not allowed.");
 }

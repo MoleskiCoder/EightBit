@@ -23,11 +23,11 @@ void EightBit::IntelProcessor::handleRESET() {
 }
 
 void EightBit::IntelProcessor::push(const uint8_t value) {
-	busWrite(--SP(), value);
+	memoryWrite(--SP(), value);
 }
 
 uint8_t EightBit::IntelProcessor::pop() {
-	return busRead(SP()++);
+	return memoryRead(SP()++);
 }
 
 EightBit::register16_t EightBit::IntelProcessor::getWord() {

@@ -8,7 +8,7 @@
 namespace EightBit {
 	// Memory is:
 	// *) Definitely has a size
-	// *) Definitely 'peek'able (although you might not like the answer you get!)
+	// *) Probably 'peek'able (although you might not like the answer you get!)
 	// *) Probably 'load'able (i.e. able to be externally initialised)
 	// *) At the implementation level, probably 'poke'able (although may not be exposed to users)
 	// *) Possibly 'reference'able (Very likely if you've exposed 'poke')

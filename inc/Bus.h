@@ -27,11 +27,11 @@ namespace EightBit {
 		[[nodiscard]] auto& DATA() noexcept { return m_data; }
 
 		[[nodiscard]] auto peek() { return reference(); }
-		[[nodiscard]] auto peek(const uint16_t address) { return reference(address); }
-		[[nodiscard]] auto peek(const register16_t address) { return reference(address.word); }
+		[[nodiscard]] virtual uint8_t peek(const uint16_t address) { return reference(address); }
+		[[nodiscard]] auto peek(const register16_t address) { return peek(address.word); }
 		void poke(const uint8_t value) { reference() = value; }
-		void poke(const uint16_t address, const uint8_t value) { reference(address) = value; }
-		void poke(const register16_t address, const uint8_t value) { reference(address.word) = value; }
+		virtual void poke(const uint16_t address, const uint8_t value) { reference(address) = value; }
+		void poke(const register16_t address, const uint8_t value) { poke(address.word, value); }
 
 		[[nodiscard]] uint8_t read();
 		template<class T> [[nodiscard]] auto read(const T address) {

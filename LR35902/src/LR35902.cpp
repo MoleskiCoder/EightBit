@@ -473,19 +473,19 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					busWrite(BC(), A());
+					IntelProcessor::memoryWrite(BC(), A());
 					tick(2);
 					break;
 				case 1:	// LD (DE),A
-					busWrite(DE(), A());
+					IntelProcessor::memoryWrite(DE(), A());
 					tick(2);
 					break;
 				case 2:	// GB: LDI (HL),A
-					busWrite(HL()++, A());
+					IntelProcessor::memoryWrite(HL()++, A());
 					tick(2);
 					break;
 				case 3: // GB: LDD (HL),A
-					busWrite(HL()--, A());
+					IntelProcessor::memoryWrite(HL()--, A());
 					tick(2);
 					break;
 				default:
@@ -495,19 +495,19 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					A() = busRead(BC());
+					A() = IntelProcessor::memoryRead(BC());
 					tick(2);
 					break;
 				case 1:	// LD A,(DE)
-					A() = busRead(DE());
+					A() = IntelProcessor::memoryRead(DE());
 					tick(2);
 					break;
 				case 2:	// GB: LDI A,(HL)
-					A() = busRead(HL()++);
+					A() = IntelProcessor::memoryRead(HL()++);
 					tick(2);
 					break;
 				case 3:	// GB: LDD A,(HL)
-					A() = busRead(HL()--);
+					A() = IntelProcessor::memoryRead(HL()--);
 					tick(2);
 					break;
 				default:
@@ -642,7 +642,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				tick(2);
 				break;
 			case 4:	// GB: LD (FF00 + n),A
-				busWrite(IoRegisters::BASE + fetchByte(), A());
+				IntelProcessor::memoryWrite(IoRegisters::BASE + fetchByte(), A());
 				tick(3);
 				break;
 			case 5: { // GB: ADD SP,dd
@@ -658,7 +658,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				tick(4);
 				break;
 			case 6:	// GB: LD A,(FF00 + n)
-				A() = busRead(IoRegisters::BASE + fetchByte());
+				A() = IntelProcessor::memoryRead(IoRegisters::BASE + fetchByte());
 				tick(3);
 				break;
 			case 7: { // GB: LD HL,SP + dd
@@ -719,16 +719,16 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				tick(3);
 				break;
 			case 4:	// GB: LD (FF00 + C),A
-				busWrite(IoRegisters::BASE + C(), A());
+				IntelProcessor::memoryWrite(IoRegisters::BASE + C(), A());
 				tick(2);
 				break;
 			case 5:	// GB: LD (nn),A
 				BUS().ADDRESS() = MEMPTR() = fetchWord();
-				busWrite(A());
+				IntelProcessor::memoryWrite(A());
 				tick(4);
 				break;
 			case 6:	// GB: LD A,(FF00 + C)
-				A() = busRead(IoRegisters::BASE + C());
+				A() = IntelProcessor::memoryRead(IoRegisters::BASE + C());
 				tick(2);
 				break;
 			case 7:	// GB: LD A,(nn)

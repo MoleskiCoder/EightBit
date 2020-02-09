@@ -6,7 +6,6 @@
 #include <stdexcept>
 
 #include <Bus.h>
-#include <InputOutput.h>
 #include <IntelProcessor.h>
 #include <EventArgs.h>
 #include <Signal.h>
@@ -23,7 +22,7 @@ namespace EightBit {
 			CF = Bit0,
 		};
 
-		Intel8080(Bus& bus, InputOutput& ports);
+		Intel8080(Bus& bus);
 
 		Signal<Intel8080> ExecutingInstruction;
 		Signal<Intel8080> ExecutedInstruction;
@@ -36,14 +35,30 @@ namespace EightBit {
 		virtual register16_t& DE() final;
 		virtual register16_t& HL() final;
 
+		bool requestingIO() { return m_requestIO; }
+		bool requestingMemory() { return m_requestMemory; }
+
+		bool requestingRead() { return raised(DBIN()); }
+		bool requestingWrite() { return lowered(WR()); }
+
+		DECLARE_PIN_OUTPUT(DBIN)	// Active high
+		DECLARE_PIN_OUTPUT(WR)		// Active low
+
 	protected:
-		virtual void handleRESET() final;
-		virtual void handleINT() final;
+		void handleRESET() final;
+		void handleINT() final;
+
+		void memoryWrite() final;
+		uint8_t memoryRead() final;
+
+		void busWrite() final;
+		uint8_t busRead() final;
 
 	private:
-		bool m_interruptEnable = false;
+		bool m_requestIO = false;
+		bool m_requestMemory = false;
 
-		InputOutput& m_ports;
+		bool m_interruptEnable = false;
 
 		register16_t af;
 		register16_t bc = Mask16;
@@ -65,7 +80,7 @@ namespace EightBit {
 			case 0b101:
 				return L();
 			case 0b110:
-				return busRead(HL());
+				return IntelProcessor::memoryRead(HL());
 			case 0b111:
 				return A();
 			default:
@@ -94,7 +109,7 @@ namespace EightBit {
 				L() = value;
 				break;
 			case 0b110:
-				busWrite(HL(), value);
+				IntelProcessor::memoryWrite(HL(), value);
 				break;
 			case 0b111:
 				A() = value;
@@ -179,10 +194,10 @@ namespace EightBit {
 
 		void xhtl(register16_t& exchange);
 
-		void writePort(uint8_t port);
-		void writePort();
+		void portWrite(uint8_t port);
+		void portWrite();
 
-		uint8_t readPort(uint8_t port);
-		uint8_t readPort();
+		uint8_t portRead(uint8_t port);
+		uint8_t portRead();
 	};
 }

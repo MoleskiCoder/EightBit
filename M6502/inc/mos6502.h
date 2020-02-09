@@ -140,8 +140,8 @@ namespace EightBit {
 
 		void busReadModifyWrite(const uint8_t data) {
 			// The read will have already taken place...
-			busWrite();
-			Processor::busWrite(data);
+			memoryWrite();
+			memoryWrite(data);
 		}
 
 		// Instruction implementations

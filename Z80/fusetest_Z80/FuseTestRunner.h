@@ -40,6 +40,7 @@ namespace Fuse {
 			const std::string& lowDescription,
 			EightBit::register16_t actual, EightBit::register16_t expected) const;
 
+		std::string currentBusAccessType();
 		void addActualEvent(const std::string& specifier);
 		void dumpExpectedEvents() const;
 		void dumpActualEvents() const;
@@ -48,9 +49,7 @@ namespace Fuse {
 		static void dumpEvent(const TestEvent& event);
 
 	protected:
-		virtual EightBit::MemoryMapping mapping(uint16_t address) final {
-			return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
-		}
+		virtual EightBit::MemoryMapping mapping(uint16_t address) final;
 
 	public:
 		TestRunner(const Test& test, const ExpectedTestResult& expected);

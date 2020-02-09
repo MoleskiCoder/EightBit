@@ -41,23 +41,25 @@ namespace EightBit {
 		virtual void handleRESET();
 		virtual void handleINT();
 
-		void busWrite(register16_t address, uint8_t data);
-		void busWrite(uint8_t data);
+		void memoryWrite(register16_t address, uint8_t data);
+		void memoryWrite(uint8_t data);
+		virtual void memoryWrite();
 		virtual void busWrite();
 
-		uint8_t busRead(register16_t address);
+		uint8_t memoryRead(register16_t address);
+		virtual uint8_t memoryRead();
 		virtual uint8_t busRead();
 
 		auto getBytePaged(const uint8_t page, const uint8_t offset) {
-			return busRead(register16_t(offset, page));
+			return memoryRead(register16_t(offset, page));
 		}
 
 		void setBytePaged(const uint8_t page, const uint8_t offset, const uint8_t value) {
-			busWrite(register16_t(offset, page), value);
+			memoryWrite(register16_t(offset, page), value);
 		}
 
 		auto fetchByte() {
-			return busRead(PC()++);
+			return memoryRead(PC()++);
 		}
 
 		[[nodiscard]] virtual register16_t getWord() = 0;

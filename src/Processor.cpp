@@ -16,13 +16,17 @@ void EightBit::Processor::handleINT() {
 	raiseINT();
 }
 
-void EightBit::Processor::busWrite(const register16_t address, const uint8_t data) {
+void EightBit::Processor::memoryWrite(const register16_t address, const uint8_t data) {
 	BUS().ADDRESS() = address;
-	busWrite(data);
+	memoryWrite(data);
 }
 
-void EightBit::Processor::busWrite(const uint8_t data) {
+void EightBit::Processor::memoryWrite(const uint8_t data) {
 	BUS().DATA() = data;
+	memoryWrite();
+}
+
+void EightBit::Processor::memoryWrite() {
 	busWrite();
 }
 
@@ -30,8 +34,12 @@ void EightBit::Processor::busWrite() {
 	BUS().write();
 }
 
-uint8_t EightBit::Processor::busRead(const register16_t address) {
+uint8_t EightBit::Processor::memoryRead(const register16_t address) {
 	BUS().ADDRESS() = address;
+	return memoryRead();
+}
+
+uint8_t EightBit::Processor::memoryRead() {
 	return busRead();
 }
 
