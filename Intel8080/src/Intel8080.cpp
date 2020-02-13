@@ -2,7 +2,18 @@
 #include "Intel8080.h"
 
 EightBit::Intel8080::Intel8080(Bus& bus)
-: IntelProcessor(bus){
+: IntelProcessor(bus) {
+
+	RaisedPOWER.connect([this](EventArgs) {
+
+		releaseMemory();
+		releaseIO();
+
+		releaseRead();
+		releaseWrite();
+
+		di();
+	});
 }
 
 DEFINE_PIN_LEVEL_CHANGERS(DBIN, Intel8080);
@@ -26,27 +37,28 @@ EightBit::register16_t& EightBit::Intel8080::HL() {
 }
 
 void EightBit::Intel8080::memoryWrite() {
-	m_requestMemory = true;
+	requestMemory();
 	IntelProcessor::memoryWrite();
-	m_requestMemory = false;
+	releaseMemory();
 }
 
 uint8_t EightBit::Intel8080::memoryRead() {
-	m_requestMemory = true;
-	return IntelProcessor::memoryRead();
-	m_requestMemory = false;
+	requestMemory();
+	const auto returned = IntelProcessor::memoryRead();
+	releaseMemory();
+	return returned;
 }
 
 void EightBit::Intel8080::busWrite() {
-	lowerWR();
+	requestWrite();
 	IntelProcessor::busWrite();
-	raiseWR();
+	releaseWrite();
 }
 
 uint8_t EightBit::Intel8080::busRead() {
-	raiseDBIN();
+	requestRead();
 	const auto returned = IntelProcessor::busRead();
-	lowerDBIN();
+	releaseRead();
 	return returned;
 }
 
@@ -275,13 +287,14 @@ void EightBit::Intel8080::xhtl(register16_t& exchange) {
 
 void EightBit::Intel8080::portWrite(const uint8_t port) {
 	BUS().ADDRESS() = { port, port };
+	BUS().DATA() = A();
 	portWrite();
 }
 
 void EightBit::Intel8080::portWrite() {
-	m_requestIO = true;
+	requestIO();
 	busWrite();
-	m_requestIO = false;
+	releaseIO();;
 }
 
 uint8_t EightBit::Intel8080::portRead(const uint8_t port) {
@@ -290,9 +303,9 @@ uint8_t EightBit::Intel8080::portRead(const uint8_t port) {
 }
 
 uint8_t EightBit::Intel8080::portRead() {
-	m_requestIO = true;
+	requestIO();
 	const auto returned = busRead();
-	m_requestIO = false;
+	releaseIO();;
 	return returned;
 }
 
@@ -399,7 +412,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 					break;
 				case 3:	// LD A,(nn)
 					BUS().ADDRESS() = fetchWord();
-					A() = busRead();
+					A() = memoryRead();
 					tick(13);
 					break;
 				default:

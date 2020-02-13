@@ -35,8 +35,8 @@ namespace EightBit {
 		virtual register16_t& DE() final;
 		virtual register16_t& HL() final;
 
-		bool requestingIO() { return m_requestIO; }
-		bool requestingMemory() { return m_requestMemory; }
+		bool requestingIO() noexcept { return m_requestIO; }
+		bool requestingMemory() noexcept { return m_requestMemory; }
 
 		bool requestingRead() { return raised(DBIN()); }
 		bool requestingWrite() { return lowered(WR()); }
@@ -199,5 +199,15 @@ namespace EightBit {
 
 		uint8_t portRead(uint8_t port);
 		uint8_t portRead();
+
+		void requestIO() noexcept { assert(!requestingMemory());  m_requestIO = true; }
+		void releaseIO() noexcept { m_requestIO = false; }
+		void requestMemory() noexcept { assert(!requestingIO()); m_requestMemory = true; }
+		void releaseMemory() noexcept { m_requestMemory = false; }
+
+		void requestRead() { raise(DBIN()); }
+		void releaseRead() { lower(DBIN()); }
+		void requestWrite() { lower(WR()); }
+		void releaseWrite() { raise(WR()); }
 	};
 }
