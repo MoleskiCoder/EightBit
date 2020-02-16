@@ -1048,9 +1048,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				break;
 			case 2:	// DJNZ d
 				tick();
-				if (jrConditional(--B()))
-					tick(2);
-				tick(3);
+				jrConditional(--B());
 				break;
 			case 3:	// JR d
 				jr(fetchByte());
@@ -1072,6 +1070,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				break;
 			case 1:	// ADD HL,rp
 				HL2() = add(F(), HL2(), RP(p));
+				tick(7);
 				break;
 			default:
 				UNREACHABLE;
@@ -1141,6 +1140,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			default:
 				UNREACHABLE;
 			}
+			tick(2);
 			break;
 		case 4: { // 8-bit INC
 			if (memoryY && m_displaced) {
@@ -1148,7 +1148,8 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				tick(5);
 			}
 			const auto original = R(y);
-			tick();
+			if (memoryY)
+				tick();
 			R(y, increment(F(), original));
 			break;
 		}
@@ -1158,7 +1159,8 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				tick(5);
 			}
 			const auto original = R(y);
-			tick();
+			if (memoryY)
+				tick();
 			R(y, decrement(F(), original));
 			break;
 		}

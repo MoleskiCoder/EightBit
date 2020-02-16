@@ -128,6 +128,17 @@ namespace EightBit {
 		void busWrite() final;
 		uint8_t busRead() final;
 
+		void jr(int8_t offset) final {
+			IntelProcessor::jr(offset);
+			tick(5);
+		}
+
+		int jrConditional(const int condition) final {
+			if (!IntelProcessor::jrConditional(condition))
+				tick(3);
+			return condition;
+		}
+
 	private:
 		enum { BC_IDX, DE_IDX, HL_IDX };
 

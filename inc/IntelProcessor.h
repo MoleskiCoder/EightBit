@@ -154,11 +154,11 @@ namespace EightBit {
 			return condition;
 		}
 
-		void jr(const int8_t offset) noexcept {
+		virtual void jr(const int8_t offset) {
 			jump(MEMPTR() = PC() + offset);
 		}
 
-		auto jrConditional(const int condition) {
+		virtual int jrConditional(const int condition) {
 			const auto offsetAddress = PC()++;
 			if (condition) {
 				const auto offset = memoryRead(offsetAddress);
