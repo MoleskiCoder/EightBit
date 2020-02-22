@@ -1,0 +1,1555 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!-- saved from url=(0044)http://www.baltazarstudios.com/files/ed.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><title>Z80 Instructions Timing</title></head><body>
+<h1>Opcodes with ED prefix</h1>
+ED 40 .. <a href="http://www.baltazarstudios.com/files/ed.html#40">IN B,(C)</a><br>
+ED 41 .. <a href="http://www.baltazarstudios.com/files/ed.html#41">OUT (C),B</a><br>
+ED 42 .. <a href="http://www.baltazarstudios.com/files/ed.html#42">SBC HL,BC</a><br>
+ED 43 .. <a href="http://www.baltazarstudios.com/files/ed.html#43">LD (nn),BC</a><br>
+ED 44 .. <a href="http://www.baltazarstudios.com/files/ed.html#44">NEG</a><br>
+ED 45 .. <a href="http://www.baltazarstudios.com/files/ed.html#45">RETN</a><br>
+ED 46 .. <a href="http://www.baltazarstudios.com/files/ed.html#46">IM 0</a><br>
+ED 47 .. <a href="http://www.baltazarstudios.com/files/ed.html#47">LD I,A</a><br>
+ED 48 .. <a href="http://www.baltazarstudios.com/files/ed.html#48">IN C,(C)</a><br>
+ED 49 .. <a href="http://www.baltazarstudios.com/files/ed.html#49">OUT (C),C</a><br>
+ED 4A .. <a href="http://www.baltazarstudios.com/files/ed.html#4A">ADC HL,BC</a><br>
+ED 4B .. <a href="http://www.baltazarstudios.com/files/ed.html#4B">LD BC,(nn)</a><br>
+ED 4C .. <a href="http://www.baltazarstudios.com/files/ed.html#4C">NEG*</a><br>
+ED 4D .. <a href="http://www.baltazarstudios.com/files/ed.html#4D">RETI</a><br>
+ED 4E .. <a href="http://www.baltazarstudios.com/files/ed.html#4E">IM 0*</a><br>
+ED 4F .. <a href="http://www.baltazarstudios.com/files/ed.html#4F">LD R,A</a><br>
+ED 50 .. <a href="http://www.baltazarstudios.com/files/ed.html#50">IN D,(C)</a><br>
+ED 51 .. <a href="http://www.baltazarstudios.com/files/ed.html#51">OUT (C),D</a><br>
+ED 52 .. <a href="http://www.baltazarstudios.com/files/ed.html#52">SBC HL,DE</a><br>
+ED 53 .. <a href="http://www.baltazarstudios.com/files/ed.html#53">LD (nn),DE</a><br>
+ED 54 .. <a href="http://www.baltazarstudios.com/files/ed.html#54">NEG*</a><br>
+ED 55 .. <a href="http://www.baltazarstudios.com/files/ed.html#55">RETN*</a><br>
+ED 56 .. <a href="http://www.baltazarstudios.com/files/ed.html#56">IM 1</a><br>
+ED 57 .. <a href="http://www.baltazarstudios.com/files/ed.html#57">LD A,I</a><br>
+ED 58 .. <a href="http://www.baltazarstudios.com/files/ed.html#58">IN E,(C)</a><br>
+ED 59 .. <a href="http://www.baltazarstudios.com/files/ed.html#59">OUT (C),E</a><br>
+ED 5A .. <a href="http://www.baltazarstudios.com/files/ed.html#5A">ADC HL,DE</a><br>
+ED 5B .. <a href="http://www.baltazarstudios.com/files/ed.html#5B">LD DE,(nn)</a><br>
+ED 5C .. <a href="http://www.baltazarstudios.com/files/ed.html#5C">NEG*</a><br>
+ED 5D .. <a href="http://www.baltazarstudios.com/files/ed.html#5D">RETN*</a><br>
+ED 5E .. <a href="http://www.baltazarstudios.com/files/ed.html#5E">IM 2</a><br>
+ED 5F .. <a href="http://www.baltazarstudios.com/files/ed.html#5F">LD A,R</a><br>
+ED 60 .. <a href="http://www.baltazarstudios.com/files/ed.html#60">IN H,(C)</a><br>
+ED 61 .. <a href="http://www.baltazarstudios.com/files/ed.html#61">OUT (C),H</a><br>
+ED 62 .. <a href="http://www.baltazarstudios.com/files/ed.html#62">SBC HL,HL</a><br>
+ED 63 .. <a href="http://www.baltazarstudios.com/files/ed.html#63">LD (nn),HL</a><br>
+ED 64 .. <a href="http://www.baltazarstudios.com/files/ed.html#64">NEG*</a><br>
+ED 65 .. <a href="http://www.baltazarstudios.com/files/ed.html#65">RETN*</a><br>
+ED 66 .. <a href="http://www.baltazarstudios.com/files/ed.html#66">IM 0*</a><br>
+ED 67 .. <a href="http://www.baltazarstudios.com/files/ed.html#67">RRD</a><br>
+ED 68 .. <a href="http://www.baltazarstudios.com/files/ed.html#68">IN L,(C)</a><br>
+ED 69 .. <a href="http://www.baltazarstudios.com/files/ed.html#69">OUT (C),L</a><br>
+ED 6A .. <a href="http://www.baltazarstudios.com/files/ed.html#6A">ADC HL,HL</a><br>
+ED 6B .. <a href="http://www.baltazarstudios.com/files/ed.html#6B">LD HL,(nn)</a><br>
+ED 6C .. <a href="http://www.baltazarstudios.com/files/ed.html#6C">NEG*</a><br>
+ED 6D .. <a href="http://www.baltazarstudios.com/files/ed.html#6D">RETN*</a><br>
+ED 6E .. <a href="http://www.baltazarstudios.com/files/ed.html#6E">IM 0*</a><br>
+ED 6F .. <a href="http://www.baltazarstudios.com/files/ed.html#6F">RLD</a><br>
+ED 70 .. <a href="http://www.baltazarstudios.com/files/ed.html#70">IN F,(C)*</a><br>
+ED 71 .. <a href="http://www.baltazarstudios.com/files/ed.html#71">OUT (C),0*</a><br>
+ED 72 .. <a href="http://www.baltazarstudios.com/files/ed.html#72">SBC HL,SP</a><br>
+ED 73 .. <a href="http://www.baltazarstudios.com/files/ed.html#73">LD (nn),SP</a><br>
+ED 74 .. <a href="http://www.baltazarstudios.com/files/ed.html#74">NEG*</a><br>
+ED 75 .. <a href="http://www.baltazarstudios.com/files/ed.html#75">RETN*</a><br>
+ED 76 .. <a href="http://www.baltazarstudios.com/files/ed.html#76">IM 1*</a><br>
+ED 78 .. <a href="http://www.baltazarstudios.com/files/ed.html#78">IN A,(C)</a><br>
+ED 79 .. <a href="http://www.baltazarstudios.com/files/ed.html#79">OUT (C),A</a><br>
+ED 7A .. <a href="http://www.baltazarstudios.com/files/ed.html#7A">ADC HL,SP</a><br>
+ED 7B .. <a href="http://www.baltazarstudios.com/files/ed.html#7B">LD SP,(nn)</a><br>
+ED 7C .. <a href="http://www.baltazarstudios.com/files/ed.html#7C">NEG*</a><br>
+ED 7D .. <a href="http://www.baltazarstudios.com/files/ed.html#7D">RETN*</a><br>
+ED 7E .. <a href="http://www.baltazarstudios.com/files/ed.html#7E">IM 2*</a><br>
+ED A0 .. <a href="http://www.baltazarstudios.com/files/ed.html#A0">LDI</a><br>
+ED A1 .. <a href="http://www.baltazarstudios.com/files/ed.html#A1">CPI</a><br>
+ED A2 .. <a href="http://www.baltazarstudios.com/files/ed.html#A2">INI</a><br>
+ED A3 .. <a href="http://www.baltazarstudios.com/files/ed.html#A3">OUTI</a><br>
+ED A8 .. <a href="http://www.baltazarstudios.com/files/ed.html#A8">LDD</a><br>
+ED A9 .. <a href="http://www.baltazarstudios.com/files/ed.html#A9">CPD</a><br>
+ED AA .. <a href="http://www.baltazarstudios.com/files/ed.html#AA">IND</a><br>
+ED AB .. <a href="http://www.baltazarstudios.com/files/ed.html#AB">OUTD</a><br>
+ED B0 .. <a href="http://www.baltazarstudios.com/files/ed.html#B0">LDIR</a><br>
+ED B1 .. <a href="http://www.baltazarstudios.com/files/ed.html#B1">CPIR</a><br>
+ED B2 .. <a href="http://www.baltazarstudios.com/files/ed.html#B2">INIR</a><br>
+ED B3 .. <a href="http://www.baltazarstudios.com/files/ed.html#B3">OTIR</a><br>
+ED B8 .. <a href="http://www.baltazarstudios.com/files/ed.html#B8">LDDR</a><br>
+ED B9 .. <a href="http://www.baltazarstudios.com/files/ed.html#B9">CPDR</a><br>
+ED BA .. <a href="http://www.baltazarstudios.com/files/ed.html#BA">INDR</a><br>
+ED BB .. <a href="http://www.baltazarstudios.com/files/ed.html#BB">OTDR</a><br>
+<h1>Instructions Timing</h1>
+<h3 id="40">Opcode: ED 40 =&gt; IN B,(C)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:40  M1      MREQ RD                    | Opcode read from 001 -&gt; 40
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:0FF DB:--                                     | 
+#010H T6  AB:0FF DB:--               RD    IORQ            | I/O read from 0FF
+#011H T7  AB:0FF DB:--               RD    IORQ            | I/O read from 0FF
+#012H T8  AB:0FF DB:--               RD    IORQ            | I/O read from 0FF
+-----------------------------------------------------------+
+</pre>
+<h3 id="41">Opcode: ED 41 =&gt; OUT (C),B</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:41  M1      MREQ RD                    | Opcode read from 001 -&gt; 41
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:0FF DB:--                                     | 
+#010H T6  AB:0FF DB:C3                  WR IORQ            | I/O write to 0FF &lt;- C3
+#011H T7  AB:0FF DB:C3                  WR IORQ            | I/O write to 0FF &lt;- C3
+#012H T8  AB:0FF DB:C3                  WR IORQ            | I/O write to 0FF &lt;- C3
+-----------------------------------------------------------+
+</pre>
+<h3 id="42">Opcode: ED 42 =&gt; SBC HL,BC</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:42  M1      MREQ RD                    | Opcode read from 001 -&gt; 42
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:001 DB:--                                     | 
+#011H T7  AB:001 DB:--                                     | 
+#012H T8  AB:001 DB:--                                     | 
+#013H T9  AB:001 DB:--                                     | 
+#014H T10 AB:001 DB:--                                     | 
+#015H T11 AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="43">Opcode: ED 43 n n =&gt; LD (nn),BC</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:43  M1      MREQ RD                    | Opcode read from 001 -&gt; 43
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:002 DB:--                                     | 
+#010H T6  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#011H T7  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#012H T8  AB:003 DB:--                                     | 
+#013H T9  AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#014H T10 AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#015H T11 AB:001 DB:--                                     | 
+#016H T12 AB:001 DB:FF          MREQ                       | 
+#017H T13 AB:001 DB:FF          MREQ    WR                 | Memory write to  001 &lt;- FF
+#018H T14 AB:002 DB:--                                     | 
+#019H T15 AB:002 DB:C3          MREQ                       | 
+#020H T16 AB:002 DB:C3          MREQ    WR                 | Memory write to  002 &lt;- C3
+-----------------------------------------------------------+
+</pre>
+<h3 id="44">Opcode: ED 44 =&gt; NEG</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:44  M1      MREQ RD                    | Opcode read from 001 -&gt; 44
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="45">Opcode: ED 45 =&gt; RETN</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:45  M1      MREQ RD                    | Opcode read from 001 -&gt; 45
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:001 DB:45          MREQ RD                    | Memory read from 001 -&gt; 45
+#011H T7  AB:001 DB:45          MREQ RD                    | Memory read from 001 -&gt; 45
+#012H T8  AB:002 DB:--                                     | 
+#013H T9  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#014H T10 AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+-----------------------------------------------------------+
+</pre>
+<h3 id="46">Opcode: ED 46 =&gt; IM 0</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:46  M1      MREQ RD                    | Opcode read from 001 -&gt; 46
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="47">Opcode: ED 47 =&gt; LD I,A</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:47  M1      MREQ RD                    | Opcode read from 001 -&gt; 47
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="48">Opcode: ED 48 =&gt; IN C,(C)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:48  M1      MREQ RD                    | Opcode read from 001 -&gt; 48
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:0FF DB:--                                     | 
+#010H T6  AB:0FF DB:--               RD    IORQ            | I/O read from 0FF
+#011H T7  AB:0FF DB:--               RD    IORQ            | I/O read from 0FF
+#012H T8  AB:0FF DB:--               RD    IORQ            | I/O read from 0FF
+-----------------------------------------------------------+
+</pre>
+<h3 id="49">Opcode: ED 49 =&gt; OUT (C),C</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:49  M1      MREQ RD                    | Opcode read from 001 -&gt; 49
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:0CB DB:--                                     | 
+#010H T6  AB:0CB DB:CB                  WR IORQ            | I/O write to 0CB &lt;- CB
+#011H T7  AB:0CB DB:CB                  WR IORQ            | I/O write to 0CB &lt;- CB
+#012H T8  AB:0CB DB:CB                  WR IORQ            | I/O write to 0CB &lt;- CB
+-----------------------------------------------------------+
+</pre>
+<h3 id="4A">Opcode: ED 4A =&gt; ADC HL,BC</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:4A  M1      MREQ RD                    | Opcode read from 001 -&gt; 4A
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:001 DB:--                                     | 
+#011H T7  AB:001 DB:--                                     | 
+#012H T8  AB:001 DB:--                                     | 
+#013H T9  AB:001 DB:--                                     | 
+#014H T10 AB:001 DB:--                                     | 
+#015H T11 AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="4B">Opcode: ED 4B n n =&gt; LD BC,(nn)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:4B  M1      MREQ RD                    | Opcode read from 001 -&gt; 4B
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:002 DB:--                                     | 
+#010H T6  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#011H T7  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#012H T8  AB:003 DB:--                                     | 
+#013H T9  AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#014H T10 AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#015H T11 AB:001 DB:--                                     | 
+#016H T12 AB:001 DB:4B          MREQ RD                    | Memory read from 001 -&gt; 4B
+#017H T13 AB:001 DB:4B          MREQ RD                    | Memory read from 001 -&gt; 4B
+#018H T14 AB:002 DB:--                                     | 
+#019H T15 AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#020H T16 AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+-----------------------------------------------------------+
+</pre>
+<h3 id="4C">Opcode: ED 4C =&gt; NEG*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:4C  M1      MREQ RD                    | Opcode read from 001 -&gt; 4C
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="4D">Opcode: ED 4D =&gt; RETI</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:4D  M1      MREQ RD                    | Opcode read from 001 -&gt; 4D
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:003 DB:--                                     | 
+#010H T6  AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#011H T7  AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#012H T8  AB:004 DB:--                                     | 
+#013H T9  AB:004 DB:03          MREQ RD                    | Memory read from 004 -&gt; 03
+#014H T10 AB:004 DB:03          MREQ RD                    | Memory read from 004 -&gt; 03
+-----------------------------------------------------------+
+</pre>
+<h3 id="4E">Opcode: ED 4E =&gt; IM 0*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:4E  M1      MREQ RD                    | Opcode read from 001 -&gt; 4E
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="4F">Opcode: ED 4F =&gt; LD R,A</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:4F  M1      MREQ RD                    | Opcode read from 001 -&gt; 4F
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="50">Opcode: ED 50 =&gt; IN D,(C)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:50  M1      MREQ RD                    | Opcode read from 001 -&gt; 50
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#011H T7  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#012H T8  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+-----------------------------------------------------------+
+</pre>
+<h3 id="51">Opcode: ED 51 =&gt; OUT (C),D</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:51  M1      MREQ RD                    | Opcode read from 001 -&gt; 51
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:D3                  WR IORQ            | I/O write to 04B &lt;- D3
+#011H T7  AB:04B DB:D3                  WR IORQ            | I/O write to 04B &lt;- D3
+#012H T8  AB:04B DB:D3                  WR IORQ            | I/O write to 04B &lt;- D3
+-----------------------------------------------------------+
+</pre>
+<h3 id="52">Opcode: ED 52 =&gt; SBC HL,DE</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:52  M1      MREQ RD                    | Opcode read from 001 -&gt; 52
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:001 DB:--                                     | 
+#011H T7  AB:001 DB:--                                     | 
+#012H T8  AB:001 DB:--                                     | 
+#013H T9  AB:001 DB:--                                     | 
+#014H T10 AB:001 DB:--                                     | 
+#015H T11 AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="53">Opcode: ED 53 n n =&gt; LD (nn),DE</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:53  M1      MREQ RD                    | Opcode read from 001 -&gt; 53
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:002 DB:--                                     | 
+#010H T6  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#011H T7  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#012H T8  AB:003 DB:--                                     | 
+#013H T9  AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#014H T10 AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#015H T11 AB:001 DB:--                                     | 
+#016H T12 AB:001 DB:FF          MREQ                       | 
+#017H T13 AB:001 DB:FF          MREQ    WR                 | Memory write to  001 &lt;- FF
+#018H T14 AB:002 DB:--                                     | 
+#019H T15 AB:002 DB:D3          MREQ                       | 
+#020H T16 AB:002 DB:D3          MREQ    WR                 | Memory write to  002 &lt;- D3
+-----------------------------------------------------------+
+</pre>
+<h3 id="54">Opcode: ED 54 =&gt; NEG*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:54  M1      MREQ RD                    | Opcode read from 001 -&gt; 54
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="55">Opcode: ED 55 =&gt; RETN*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:55  M1      MREQ RD                    | Opcode read from 001 -&gt; 55
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:005 DB:--                                     | 
+#010H T6  AB:005 DB:04          MREQ RD                    | Memory read from 005 -&gt; 04
+#011H T7  AB:005 DB:04          MREQ RD                    | Memory read from 005 -&gt; 04
+#012H T8  AB:006 DB:--                                     | 
+#013H T9  AB:006 DB:05          MREQ RD                    | Memory read from 006 -&gt; 05
+#014H T10 AB:006 DB:05          MREQ RD                    | Memory read from 006 -&gt; 05
+-----------------------------------------------------------+
+</pre>
+<h3 id="56">Opcode: ED 56 =&gt; IM 1</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:56  M1      MREQ RD                    | Opcode read from 001 -&gt; 56
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="57">Opcode: ED 57 =&gt; LD A,I</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:57  M1      MREQ RD                    | Opcode read from 001 -&gt; 57
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="58">Opcode: ED 58 =&gt; IN E,(C)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:58  M1      MREQ RD                    | Opcode read from 001 -&gt; 58
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#011H T7  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#012H T8  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+-----------------------------------------------------------+
+</pre>
+<h3 id="59">Opcode: ED 59 =&gt; OUT (C),E</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:59  M1      MREQ RD                    | Opcode read from 001 -&gt; 59
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:DB                  WR IORQ            | I/O write to 04B &lt;- DB
+#011H T7  AB:04B DB:DB                  WR IORQ            | I/O write to 04B &lt;- DB
+#012H T8  AB:04B DB:DB                  WR IORQ            | I/O write to 04B &lt;- DB
+-----------------------------------------------------------+
+</pre>
+<h3 id="5A">Opcode: ED 5A =&gt; ADC HL,DE</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:5A  M1      MREQ RD                    | Opcode read from 001 -&gt; 5A
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:001 DB:--                                     | 
+#011H T7  AB:001 DB:--                                     | 
+#012H T8  AB:001 DB:--                                     | 
+#013H T9  AB:001 DB:--                                     | 
+#014H T10 AB:001 DB:--                                     | 
+#015H T11 AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="5B">Opcode: ED 5B n n =&gt; LD DE,(nn)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:5B  M1      MREQ RD                    | Opcode read from 001 -&gt; 5B
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:002 DB:--                                     | 
+#010H T6  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#011H T7  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#012H T8  AB:003 DB:--                                     | 
+#013H T9  AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#014H T10 AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#015H T11 AB:001 DB:--                                     | 
+#016H T12 AB:001 DB:5B          MREQ RD                    | Memory read from 001 -&gt; 5B
+#017H T13 AB:001 DB:5B          MREQ RD                    | Memory read from 001 -&gt; 5B
+#018H T14 AB:002 DB:--                                     | 
+#019H T15 AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#020H T16 AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+-----------------------------------------------------------+
+</pre>
+<h3 id="5C">Opcode: ED 5C =&gt; NEG*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:5C  M1      MREQ RD                    | Opcode read from 001 -&gt; 5C
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="5D">Opcode: ED 5D =&gt; RETN*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:5D  M1      MREQ RD                    | Opcode read from 001 -&gt; 5D
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:007 DB:--                                     | 
+#010H T6  AB:007 DB:06          MREQ RD                    | Memory read from 007 -&gt; 06
+#011H T7  AB:007 DB:06          MREQ RD                    | Memory read from 007 -&gt; 06
+#012H T8  AB:008 DB:--                                     | 
+#013H T9  AB:008 DB:07          MREQ RD                    | Memory read from 008 -&gt; 07
+#014H T10 AB:008 DB:07          MREQ RD                    | Memory read from 008 -&gt; 07
+-----------------------------------------------------------+
+</pre>
+<h3 id="5E">Opcode: ED 5E =&gt; IM 2</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:5E  M1      MREQ RD                    | Opcode read from 001 -&gt; 5E
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="5F">Opcode: ED 5F =&gt; LD A,R</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:5F  M1      MREQ RD                    | Opcode read from 001 -&gt; 5F
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="60">Opcode: ED 60 =&gt; IN H,(C)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:60  M1      MREQ RD                    | Opcode read from 001 -&gt; 60
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#011H T7  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#012H T8  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+-----------------------------------------------------------+
+</pre>
+<h3 id="61">Opcode: ED 61 =&gt; OUT (C),H</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:61  M1      MREQ RD                    | Opcode read from 001 -&gt; 61
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:E3                  WR IORQ            | I/O write to 04B &lt;- E3
+#011H T7  AB:04B DB:E3                  WR IORQ            | I/O write to 04B &lt;- E3
+#012H T8  AB:04B DB:E3                  WR IORQ            | I/O write to 04B &lt;- E3
+-----------------------------------------------------------+
+</pre>
+<h3 id="62">Opcode: ED 62 =&gt; SBC HL,HL</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:62  M1      MREQ RD                    | Opcode read from 001 -&gt; 62
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:001 DB:--                                     | 
+#011H T7  AB:001 DB:--                                     | 
+#012H T8  AB:001 DB:--                                     | 
+#013H T9  AB:001 DB:--                                     | 
+#014H T10 AB:001 DB:--                                     | 
+#015H T11 AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="63">Opcode: ED 63 n n =&gt; LD (nn),HL</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:63  M1      MREQ RD                    | Opcode read from 001 -&gt; 63
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:002 DB:--                                     | 
+#010H T6  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#011H T7  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#012H T8  AB:003 DB:--                                     | 
+#013H T9  AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#014H T10 AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#015H T11 AB:001 DB:--                                     | 
+#016H T12 AB:001 DB:00          MREQ                       | 
+#017H T13 AB:001 DB:00          MREQ    WR                 | Memory write to  001 &lt;- 00
+#018H T14 AB:002 DB:--                                     | 
+#019H T15 AB:002 DB:00          MREQ                       | 
+#020H T16 AB:002 DB:00          MREQ    WR                 | Memory write to  002 &lt;- 00
+-----------------------------------------------------------+
+</pre>
+<h3 id="64">Opcode: ED 64 =&gt; NEG*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:64  M1      MREQ RD                    | Opcode read from 001 -&gt; 64
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="65">Opcode: ED 65 =&gt; RETN*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:65  M1      MREQ RD                    | Opcode read from 001 -&gt; 65
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:009 DB:--                                     | 
+#010H T6  AB:009 DB:08          MREQ RD                    | Memory read from 009 -&gt; 08
+#011H T7  AB:009 DB:08          MREQ RD                    | Memory read from 009 -&gt; 08
+#012H T8  AB:00A DB:--                                     | 
+#013H T9  AB:00A DB:09          MREQ RD                    | Memory read from 00A -&gt; 09
+#014H T10 AB:00A DB:09          MREQ RD                    | Memory read from 00A -&gt; 09
+-----------------------------------------------------------+
+</pre>
+<h3 id="66">Opcode: ED 66 =&gt; IM 0*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:66  M1      MREQ RD                    | Opcode read from 001 -&gt; 66
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="67">Opcode: ED 67 =&gt; RRD</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:67  M1      MREQ RD                    | Opcode read from 001 -&gt; 67
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:000 DB:--                                     | 
+#010H T6  AB:000 DB:ED          MREQ RD                    | Memory read from 000 -&gt; ED
+#011H T7  AB:000 DB:ED          MREQ RD                    | Memory read from 000 -&gt; ED
+#012H T8  AB:000 DB:--                                     | 
+#013H T9  AB:000 DB:--                                     | 
+#014H T10 AB:000 DB:--                                     | 
+#015H T11 AB:000 DB:--                                     | 
+#016H T12 AB:000 DB:--                                     | 
+#017H T13 AB:000 DB:EE          MREQ                       | 
+#018H T14 AB:000 DB:EE          MREQ    WR                 | Memory write to  000 &lt;- EE
+-----------------------------------------------------------+
+</pre>
+<h3 id="68">Opcode: ED 68 =&gt; IN L,(C)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:68  M1      MREQ RD                    | Opcode read from 001 -&gt; 68
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#011H T7  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#012H T8  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+-----------------------------------------------------------+
+</pre>
+<h3 id="69">Opcode: ED 69 =&gt; OUT (C),L</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:69  M1      MREQ RD                    | Opcode read from 001 -&gt; 69
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:EB                  WR IORQ            | I/O write to 04B &lt;- EB
+#011H T7  AB:04B DB:EB                  WR IORQ            | I/O write to 04B &lt;- EB
+#012H T8  AB:04B DB:EB                  WR IORQ            | I/O write to 04B &lt;- EB
+-----------------------------------------------------------+
+</pre>
+<h3 id="6A">Opcode: ED 6A =&gt; ADC HL,HL</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:6A  M1      MREQ RD                    | Opcode read from 001 -&gt; 6A
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:001 DB:--                                     | 
+#011H T7  AB:001 DB:--                                     | 
+#012H T8  AB:001 DB:--                                     | 
+#013H T9  AB:001 DB:--                                     | 
+#014H T10 AB:001 DB:--                                     | 
+#015H T11 AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="6B">Opcode: ED 6B n n =&gt; LD HL,(nn)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:6B  M1      MREQ RD                    | Opcode read from 001 -&gt; 6B
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:002 DB:--                                     | 
+#010H T6  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#011H T7  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#012H T8  AB:003 DB:--                                     | 
+#013H T9  AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#014H T10 AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#015H T11 AB:001 DB:--                                     | 
+#016H T12 AB:001 DB:6B          MREQ RD                    | Memory read from 001 -&gt; 6B
+#017H T13 AB:001 DB:6B          MREQ RD                    | Memory read from 001 -&gt; 6B
+#018H T14 AB:002 DB:--                                     | 
+#019H T15 AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#020H T16 AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+-----------------------------------------------------------+
+</pre>
+<h3 id="6C">Opcode: ED 6C =&gt; NEG*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:6C  M1      MREQ RD                    | Opcode read from 001 -&gt; 6C
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="6D">Opcode: ED 6D =&gt; RETN*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:6D  M1      MREQ RD                    | Opcode read from 001 -&gt; 6D
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:00B DB:--                                     | 
+#010H T6  AB:00B DB:0A          MREQ RD                    | Memory read from 00B -&gt; 0A
+#011H T7  AB:00B DB:0A          MREQ RD                    | Memory read from 00B -&gt; 0A
+#012H T8  AB:00C DB:--                                     | 
+#013H T9  AB:00C DB:0B          MREQ RD                    | Memory read from 00C -&gt; 0B
+#014H T10 AB:00C DB:0B          MREQ RD                    | Memory read from 00C -&gt; 0B
+-----------------------------------------------------------+
+</pre>
+<h3 id="6E">Opcode: ED 6E =&gt; IM 0*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:6E  M1      MREQ RD                    | Opcode read from 001 -&gt; 6E
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="6F">Opcode: ED 6F =&gt; RLD</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:6F  M1      MREQ RD                    | Opcode read from 001 -&gt; 6F
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:06B DB:--                                     | 
+#010H T6  AB:06B DB:00          MREQ RD                    | Memory read from 06B -&gt; 00
+#011H T7  AB:06B DB:00          MREQ RD                    | Memory read from 06B -&gt; 00
+#012H T8  AB:06B DB:--                                     | 
+#013H T9  AB:06B DB:--                                     | 
+#014H T10 AB:06B DB:--                                     | 
+#015H T11 AB:06B DB:--                                     | 
+#016H T12 AB:06B DB:--                                     | 
+#017H T13 AB:06B DB:03          MREQ                       | 
+#018H T14 AB:06B DB:03          MREQ    WR                 | Memory write to  06B &lt;- 03
+-----------------------------------------------------------+
+</pre>
+<h3 id="70">Opcode: ED 70 =&gt; IN F,(C)*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:70  M1      MREQ RD                    | Opcode read from 001 -&gt; 70
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#011H T7  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#012H T8  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+-----------------------------------------------------------+
+</pre>
+<h3 id="71">Opcode: ED 71 =&gt; OUT (C),0*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:71  M1      MREQ RD                    | Opcode read from 001 -&gt; 71
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:00                  WR IORQ            | I/O write to 04B &lt;- 00
+#011H T7  AB:04B DB:00                  WR IORQ            | I/O write to 04B &lt;- 00
+#012H T8  AB:04B DB:00                  WR IORQ            | I/O write to 04B &lt;- 00
+-----------------------------------------------------------+
+</pre>
+<h3 id="72">Opcode: ED 72 =&gt; SBC HL,SP</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:72  M1      MREQ RD                    | Opcode read from 001 -&gt; 72
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:001 DB:--                                     | 
+#011H T7  AB:001 DB:--                                     | 
+#012H T8  AB:001 DB:--                                     | 
+#013H T9  AB:001 DB:--                                     | 
+#014H T10 AB:001 DB:--                                     | 
+#015H T11 AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="73">Opcode: ED 73 n n =&gt; LD (nn),SP</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:73  M1      MREQ RD                    | Opcode read from 001 -&gt; 73
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:002 DB:--                                     | 
+#010H T6  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#011H T7  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#012H T8  AB:003 DB:--                                     | 
+#013H T9  AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#014H T10 AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#015H T11 AB:001 DB:--                                     | 
+#016H T12 AB:001 DB:0D          MREQ                       | 
+#017H T13 AB:001 DB:0D          MREQ    WR                 | Memory write to  001 &lt;- 0D
+#018H T14 AB:002 DB:--                                     | 
+#019H T15 AB:002 DB:D1          MREQ                       | 
+#020H T16 AB:002 DB:D1          MREQ    WR                 | Memory write to  002 &lt;- D1
+-----------------------------------------------------------+
+</pre>
+<h3 id="74">Opcode: ED 74 =&gt; NEG*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:74  M1      MREQ RD                    | Opcode read from 001 -&gt; 74
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="75">Opcode: ED 75 =&gt; RETN*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:75  M1      MREQ RD                    | Opcode read from 001 -&gt; 75
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:00D DB:--                                     | 
+#010H T6  AB:00D DB:0C          MREQ RD                    | Memory read from 00D -&gt; 0C
+#011H T7  AB:00D DB:0C          MREQ RD                    | Memory read from 00D -&gt; 0C
+#012H T8  AB:00E DB:--                                     | 
+#013H T9  AB:00E DB:0D          MREQ RD                    | Memory read from 00E -&gt; 0D
+#014H T10 AB:00E DB:0D          MREQ RD                    | Memory read from 00E -&gt; 0D
+-----------------------------------------------------------+
+</pre>
+<h3 id="76">Opcode: ED 76 =&gt; IM 1*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:76  M1      MREQ RD                    | Opcode read from 001 -&gt; 76
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="78">Opcode: ED 78 =&gt; IN A,(C)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:78  M1      MREQ RD                    | Opcode read from 001 -&gt; 78
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#011H T7  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+#012H T8  AB:04B DB:--               RD    IORQ            | I/O read from 04B
+-----------------------------------------------------------+
+</pre>
+<h3 id="79">Opcode: ED 79 =&gt; OUT (C),A</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:79  M1      MREQ RD                    | Opcode read from 001 -&gt; 79
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:04B DB:--                                     | 
+#010H T6  AB:04B DB:FB                  WR IORQ            | I/O write to 04B &lt;- FB
+#011H T7  AB:04B DB:FB                  WR IORQ            | I/O write to 04B &lt;- FB
+#012H T8  AB:04B DB:FB                  WR IORQ            | I/O write to 04B &lt;- FB
+-----------------------------------------------------------+
+</pre>
+<h3 id="7A">Opcode: ED 7A =&gt; ADC HL,SP</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:7A  M1      MREQ RD                    | Opcode read from 001 -&gt; 7A
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:001 DB:--                                     | 
+#011H T7  AB:001 DB:--                                     | 
+#012H T8  AB:001 DB:--                                     | 
+#013H T9  AB:001 DB:--                                     | 
+#014H T10 AB:001 DB:--                                     | 
+#015H T11 AB:001 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="7B">Opcode: ED 7B n n =&gt; LD SP,(nn)</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:7B  M1      MREQ RD                    | Opcode read from 001 -&gt; 7B
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:002 DB:--                                     | 
+#010H T6  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#011H T7  AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#012H T8  AB:003 DB:--                                     | 
+#013H T9  AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#014H T10 AB:003 DB:02          MREQ RD                    | Memory read from 003 -&gt; 02
+#015H T11 AB:001 DB:--                                     | 
+#016H T12 AB:001 DB:7B          MREQ RD                    | Memory read from 001 -&gt; 7B
+#017H T13 AB:001 DB:7B          MREQ RD                    | Memory read from 001 -&gt; 7B
+#018H T14 AB:002 DB:--                                     | 
+#019H T15 AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+#020H T16 AB:002 DB:01          MREQ RD                    | Memory read from 002 -&gt; 01
+-----------------------------------------------------------+
+</pre>
+<h3 id="7C">Opcode: ED 7C =&gt; NEG*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:7C  M1      MREQ RD                    | Opcode read from 001 -&gt; 7C
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="7D">Opcode: ED 7D =&gt; RETN*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:7D  M1      MREQ RD                    | Opcode read from 001 -&gt; 7D
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:07B DB:--                                     | 
+#010H T6  AB:07B DB:00          MREQ RD                    | Memory read from 07B -&gt; 00
+#011H T7  AB:07B DB:00          MREQ RD                    | Memory read from 07B -&gt; 00
+#012H T8  AB:07C DB:--                                     | 
+#013H T9  AB:07C DB:00          MREQ RD                    | Memory read from 07C -&gt; 00
+#014H T10 AB:07C DB:00          MREQ RD                    | Memory read from 07C -&gt; 00
+-----------------------------------------------------------+
+</pre>
+<h3 id="7E">Opcode: ED 7E =&gt; IM 2*</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:7E  M1      MREQ RD                    | Opcode read from 001 -&gt; 7E
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+-----------------------------------------------------------+
+</pre>
+<h3 id="A0">Opcode: ED A0 =&gt; LDI</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:A0  M1      MREQ RD                    | Opcode read from 001 -&gt; A0
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:06C DB:--                                     | 
+#010H T6  AB:06C DB:00          MREQ RD                    | Memory read from 06C -&gt; 00
+#011H T7  AB:06C DB:00          MREQ RD                    | Memory read from 06C -&gt; 00
+#012H T8  AB:05B DB:--                                     | 
+#013H T9  AB:05B DB:00          MREQ                       | 
+#014H T10 AB:05B DB:00          MREQ    WR                 | Memory write to  05B &lt;- 00
+#015H T11 AB:05B DB:00                                     | 
+#016H T12 AB:05B DB:00                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="A1">Opcode: ED A1 =&gt; CPI</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:A1  M1      MREQ RD                    | Opcode read from 001 -&gt; A1
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:06D DB:--                                     | 
+#010H T6  AB:06D DB:00          MREQ RD                    | Memory read from 06D -&gt; 00
+#011H T7  AB:06D DB:00          MREQ RD                    | Memory read from 06D -&gt; 00
+#012H T8  AB:06D DB:--                                     | 
+#013H T9  AB:06D DB:--                                     | 
+#014H T10 AB:06D DB:--                                     | 
+#015H T11 AB:06D DB:--                                     | 
+#016H T12 AB:06D DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="A2">Opcode: ED A2 =&gt; INI</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:A2  M1      MREQ RD                    | Opcode read from 001 -&gt; A2
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:049 DB:--                                     | 
+#011H T7  AB:049 DB:--               RD    IORQ            | I/O read from 049
+#012H T8  AB:049 DB:--               RD    IORQ            | I/O read from 049
+#013H T9  AB:049 DB:--               RD    IORQ            | I/O read from 049
+#014H T10 AB:06E DB:--                                     | 
+#015H T11 AB:06E DB:A3          MREQ                       | 
+#016H T12 AB:06E DB:A3          MREQ    WR                 | Memory write to  06E &lt;- A3
+-----------------------------------------------------------+
+</pre>
+<h3 id="A3">Opcode: ED A3 =&gt; OUTI</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:A3  M1      MREQ RD                    | Opcode read from 001 -&gt; A3
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:06F DB:--                                     | 
+#011H T7  AB:06F DB:00          MREQ RD                    | Memory read from 06F -&gt; 00
+#012H T8  AB:06F DB:00          MREQ RD                    | Memory read from 06F -&gt; 00
+#013H T9  AB:049 DB:--                                     | 
+#014H T10 AB:049 DB:00                  WR IORQ            | I/O write to 049 &lt;- 00
+#015H T11 AB:049 DB:00                  WR IORQ            | I/O write to 049 &lt;- 00
+#016H T12 AB:049 DB:00                  WR IORQ            | I/O write to 049 &lt;- 00
+-----------------------------------------------------------+
+</pre>
+<h3 id="A8">Opcode: ED A8 =&gt; LDD</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:A8  M1      MREQ RD                    | Opcode read from 001 -&gt; A8
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:070 DB:--                                     | 
+#010H T6  AB:070 DB:00          MREQ RD                    | Memory read from 070 -&gt; 00
+#011H T7  AB:070 DB:00          MREQ RD                    | Memory read from 070 -&gt; 00
+#012H T8  AB:05C DB:--                                     | 
+#013H T9  AB:05C DB:00          MREQ                       | 
+#014H T10 AB:05C DB:00          MREQ    WR                 | Memory write to  05C &lt;- 00
+#015H T11 AB:05C DB:00                                     | 
+#016H T12 AB:05C DB:00                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="A9">Opcode: ED A9 =&gt; CPD</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:A9  M1      MREQ RD                    | Opcode read from 001 -&gt; A9
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:06F DB:--                                     | 
+#010H T6  AB:06F DB:00          MREQ RD                    | Memory read from 06F -&gt; 00
+#011H T7  AB:06F DB:00          MREQ RD                    | Memory read from 06F -&gt; 00
+#012H T8  AB:06F DB:--                                     | 
+#013H T9  AB:06F DB:--                                     | 
+#014H T10 AB:06F DB:--                                     | 
+#015H T11 AB:06F DB:--                                     | 
+#016H T12 AB:06F DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="AA">Opcode: ED AA =&gt; IND</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:AA  M1      MREQ RD                    | Opcode read from 001 -&gt; AA
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:047 DB:--                                     | 
+#011H T7  AB:047 DB:--               RD    IORQ            | I/O read from 047
+#012H T8  AB:047 DB:--               RD    IORQ            | I/O read from 047
+#013H T9  AB:047 DB:--               RD    IORQ            | I/O read from 047
+#014H T10 AB:06E DB:--                                     | 
+#015H T11 AB:06E DB:AB          MREQ                       | 
+#016H T12 AB:06E DB:AB          MREQ    WR                 | Memory write to  06E &lt;- AB
+-----------------------------------------------------------+
+</pre>
+<h3 id="AB">Opcode: ED AB =&gt; OUTD</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:AB  M1      MREQ RD                    | Opcode read from 001 -&gt; AB
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:06D DB:--                                     | 
+#011H T7  AB:06D DB:00          MREQ RD                    | Memory read from 06D -&gt; 00
+#012H T8  AB:06D DB:00          MREQ RD                    | Memory read from 06D -&gt; 00
+#013H T9  AB:047 DB:--                                     | 
+#014H T10 AB:047 DB:00                  WR IORQ            | I/O write to 047 &lt;- 00
+#015H T11 AB:047 DB:00                  WR IORQ            | I/O write to 047 &lt;- 00
+#016H T12 AB:047 DB:00                  WR IORQ            | I/O write to 047 &lt;- 00
+-----------------------------------------------------------+
+</pre>
+<h3 id="B0">Opcode: ED B0 =&gt; LDIR</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:B0  M1      MREQ RD                    | Opcode read from 001 -&gt; B0
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:06C DB:--                                     | 
+#010H T6  AB:06C DB:00          MREQ RD                    | Memory read from 06C -&gt; 00
+#011H T7  AB:06C DB:00          MREQ RD                    | Memory read from 06C -&gt; 00
+#012H T8  AB:05B DB:--                                     | 
+#013H T9  AB:05B DB:00          MREQ                       | 
+#014H T10 AB:05B DB:00          MREQ    WR                 | Memory write to  05B &lt;- 00
+#015H T11 AB:05B DB:00                                     | 
+#016H T12 AB:05B DB:00                                     | 
+#017H T13 AB:05B DB:--                                     | 
+#018H T14 AB:05B DB:--                                     | 
+#019H T15 AB:05B DB:--                                     | 
+#020H T16 AB:05B DB:--                                     | 
+#021H T17 AB:05B DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="B1">Opcode: ED B1 =&gt; CPIR</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:B1  M1      MREQ RD                    | Opcode read from 001 -&gt; B1
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:06D DB:--                                     | 
+#010H T6  AB:06D DB:00          MREQ RD                    | Memory read from 06D -&gt; 00
+#011H T7  AB:06D DB:00          MREQ RD                    | Memory read from 06D -&gt; 00
+#012H T8  AB:06D DB:--                                     | 
+#013H T9  AB:06D DB:--                                     | 
+#014H T10 AB:06D DB:--                                     | 
+#015H T11 AB:06D DB:--                                     | 
+#016H T12 AB:06D DB:--                                     | 
+#017H T13 AB:06D DB:--                                     | 
+#018H T14 AB:06D DB:--                                     | 
+#019H T15 AB:06D DB:--                                     | 
+#020H T16 AB:06D DB:--                                     | 
+#021H T17 AB:06D DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="B2">Opcode: ED B2 =&gt; INIR</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:B2  M1      MREQ RD                    | Opcode read from 001 -&gt; B2
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:045 DB:--                                     | 
+#011H T7  AB:045 DB:--               RD    IORQ            | I/O read from 045
+#012H T8  AB:045 DB:--               RD    IORQ            | I/O read from 045
+#013H T9  AB:045 DB:--               RD    IORQ            | I/O read from 045
+#014H T10 AB:06E DB:--                                     | 
+#015H T11 AB:06E DB:B3          MREQ                       | 
+#016H T12 AB:06E DB:B3          MREQ    WR                 | Memory write to  06E &lt;- B3
+#017H T13 AB:06E DB:--                                     | 
+#018H T14 AB:06E DB:--                                     | 
+#019H T15 AB:06E DB:--                                     | 
+#020H T16 AB:06E DB:--                                     | 
+#021H T17 AB:06E DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="B3">Opcode: ED B3 =&gt; OTIR</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:B3  M1      MREQ RD                    | Opcode read from 001 -&gt; B3
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:06F DB:--                                     | 
+#011H T7  AB:06F DB:00          MREQ RD                    | Memory read from 06F -&gt; 00
+#012H T8  AB:06F DB:00          MREQ RD                    | Memory read from 06F -&gt; 00
+#013H T9  AB:045 DB:--                                     | 
+#014H T10 AB:045 DB:00                  WR IORQ            | I/O write to 045 &lt;- 00
+#015H T11 AB:045 DB:00                  WR IORQ            | I/O write to 045 &lt;- 00
+#016H T12 AB:045 DB:00                  WR IORQ            | I/O write to 045 &lt;- 00
+#017H T13 AB:045 DB:--                                     | 
+#018H T14 AB:045 DB:--                                     | 
+#019H T15 AB:045 DB:--                                     | 
+#020H T16 AB:045 DB:--                                     | 
+#021H T17 AB:045 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="B8">Opcode: ED B8 =&gt; LDDR</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:B8  M1      MREQ RD                    | Opcode read from 001 -&gt; B8
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:070 DB:--                                     | 
+#010H T6  AB:070 DB:00          MREQ RD                    | Memory read from 070 -&gt; 00
+#011H T7  AB:070 DB:00          MREQ RD                    | Memory read from 070 -&gt; 00
+#012H T8  AB:05C DB:--                                     | 
+#013H T9  AB:05C DB:00          MREQ                       | 
+#014H T10 AB:05C DB:00          MREQ    WR                 | Memory write to  05C &lt;- 00
+#015H T11 AB:05C DB:00                                     | 
+#016H T12 AB:05C DB:00                                     | 
+#017H T13 AB:05C DB:--                                     | 
+#018H T14 AB:05C DB:--                                     | 
+#019H T15 AB:05C DB:--                                     | 
+#020H T16 AB:05C DB:--                                     | 
+#021H T17 AB:05C DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="B9">Opcode: ED B9 =&gt; CPDR</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:B9  M1      MREQ RD                    | Opcode read from 001 -&gt; B9
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:06F DB:--                                     | 
+#010H T6  AB:06F DB:00          MREQ RD                    | Memory read from 06F -&gt; 00
+#011H T7  AB:06F DB:00          MREQ RD                    | Memory read from 06F -&gt; 00
+#012H T8  AB:06F DB:--                                     | 
+#013H T9  AB:06F DB:--                                     | 
+#014H T10 AB:06F DB:--                                     | 
+#015H T11 AB:06F DB:--                                     | 
+#016H T12 AB:06F DB:--                                     | 
+#017H T13 AB:06F DB:--                                     | 
+#018H T14 AB:06F DB:--                                     | 
+#019H T15 AB:06F DB:--                                     | 
+#020H T16 AB:06F DB:--                                     | 
+#021H T17 AB:06F DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="BA">Opcode: ED BA =&gt; INDR</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:BA  M1      MREQ RD                    | Opcode read from 001 -&gt; BA
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:043 DB:--                                     | 
+#011H T7  AB:043 DB:--               RD    IORQ            | I/O read from 043
+#012H T8  AB:043 DB:--               RD    IORQ            | I/O read from 043
+#013H T9  AB:043 DB:--               RD    IORQ            | I/O read from 043
+#014H T10 AB:06E DB:--                                     | 
+#015H T11 AB:06E DB:BB          MREQ                       | 
+#016H T12 AB:06E DB:BB          MREQ    WR                 | Memory write to  06E &lt;- BB
+#017H T13 AB:06E DB:--                                     | 
+#018H T14 AB:06E DB:--                                     | 
+#019H T15 AB:06E DB:--                                     | 
+#020H T16 AB:06E DB:--                                     | 
+#021H T17 AB:06E DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+<h3 id="BB">Opcode: ED BB =&gt; OTDR</h3>
+<pre>-----------------------------------------------------------+
+#001H T1  AB:000 DB:--  M1                                 | 
+#002H T2  AB:000 DB:ED  M1      MREQ RD                    | Opcode read from 000 -&gt; ED
+#003H T3  AB:000 DB:--     RFSH                            | 
+#004H T4  AB:000 DB:--     RFSH MREQ                       | Refresh address  000
+-----------------------------------------------------------+
+#005H T1  AB:001 DB:--  M1                                 | 
+#006H T2  AB:001 DB:BB  M1      MREQ RD                    | Opcode read from 001 -&gt; BB
+#007H T3  AB:001 DB:--     RFSH                            | 
+#008H T4  AB:001 DB:--     RFSH MREQ                       | Refresh address  001
+#009H T5  AB:001 DB:--                                     | 
+#010H T6  AB:06D DB:--                                     | 
+#011H T7  AB:06D DB:00          MREQ RD                    | Memory read from 06D -&gt; 00
+#012H T8  AB:06D DB:00          MREQ RD                    | Memory read from 06D -&gt; 00
+#013H T9  AB:043 DB:--                                     | 
+#014H T10 AB:043 DB:00                  WR IORQ            | I/O write to 043 &lt;- 00
+#015H T11 AB:043 DB:00                  WR IORQ            | I/O write to 043 &lt;- 00
+#016H T12 AB:043 DB:00                  WR IORQ            | I/O write to 043 &lt;- 00
+#017H T13 AB:043 DB:--                                     | 
+#018H T14 AB:043 DB:--                                     | 
+#019H T15 AB:043 DB:--                                     | 
+#020H T16 AB:043 DB:--                                     | 
+#021H T17 AB:043 DB:--                                     | 
+-----------------------------------------------------------+
+</pre>
+
+</body></html>
