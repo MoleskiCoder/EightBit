@@ -184,10 +184,9 @@ bool EightBit::Z80::convertCondition(const uint8_t f, int flag) {
 }
 
 void EightBit::Z80::returnConditionalFlag(const uint8_t f, const int flag) {
-	if (convertCondition(f, flag)) {
-		tick();
+	tick();
+	if (convertCondition(f, flag))
 		ret();
-	}
 }
 
 void EightBit::Z80::jrConditionalFlag(const uint8_t f, const int flag) {
@@ -500,6 +499,7 @@ void EightBit::Z80::xhtl(register16_t& exchange) {
 	--BUS().ADDRESS();
 	IntelProcessor::memoryWrite(exchange.low);
 	exchange.low = MEMPTR().low;
+	tick(2);
 }
 
 void EightBit::Z80::blockCompare(uint8_t& f, const uint8_t value, const register16_t source, register16_t& counter) {
@@ -517,6 +517,8 @@ void EightBit::Z80::blockCompare(uint8_t& f, const uint8_t value, const register
 
 	f = setBit(f, YF, result & Bit1);
 	f = setBit(f, XF, result & Bit3);
+
+	tick(5);
 }
 
 void EightBit::Z80::cpi(uint8_t& f, uint8_t value) {
@@ -547,6 +549,7 @@ void EightBit::Z80::blockLoad(uint8_t& f, const uint8_t a, const register16_t so
 	f = setBit(f, YF, xy & Bit1);
 	f = clearBit(f, NF | HC);
 	f = setBit(f, PF, --counter.word);
+	tick(2);
 }
 
 void EightBit::Z80::ldd(uint8_t& f, const uint8_t a) {
@@ -571,7 +574,6 @@ void EightBit::Z80::blockIn(register16_t& source, const register16_t destination
 	MEMPTR() = BUS().ADDRESS() = source;
 	tick();
 	const auto value = portRead();
-	tick(3);
 	IntelProcessor::memoryWrite(destination, value);
 	source.high = decrement(F(), source.high);
 	F() = setBit(F(), NF);
@@ -660,6 +662,7 @@ void EightBit::Z80::portWrite() {
 	lowerIORQ();
 	busWrite();
 	raiseIORQ();
+	tick(3);
 }
 
 uint8_t EightBit::Z80::portRead(const uint8_t port) {
@@ -672,6 +675,7 @@ uint8_t EightBit::Z80::portRead() {
 	lowerIORQ();
 	const auto returned = busRead();
 	raiseIORQ();
+	tick(3);
 	return returned;
 }
 
@@ -792,6 +796,8 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 	} case 1:	// BIT y, r[z]
 		bit(F(), y, operand);
 		F() = adjustXY<Z80>(F(), direct ? operand : MEMPTR().high);
+		if (memoryZ)
+			tick();
 		break;
 	case 2:	// RES y, r[z]
 		operand = res(y, operand);
@@ -846,6 +852,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			default:
 				UNREACHABLE;
 			}
+			tick(7);
 			break;
 		case 3:	// Retrieve/store register pair from/to immediate address
 			BUS().ADDRESS() = fetchWord();
@@ -897,19 +904,23 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			switch (y) {
 			case 0:	// LD I,A
 				IV() = A();
+				tick();
 				break;
 			case 1:	// LD R,A
 				REFRESH() = A();
+				tick();
 				break;
 			case 2:	// LD A,I
 				F() = adjustSZXY<Z80>(F(), A() = IV());
 				F() = clearBit(F(), NF | HC);
 				F() = setBit(F(), PF, IFF2());
+				tick();
 				break;
 			case 3:	// LD A,R
 				F() = adjustSZXY<Z80>(F(), A() = REFRESH());
 				F() = clearBit(F(), NF | HC);
 				F() = setBit(F(), PF, IFF2());
+				tick();
 				break;
 			case 4:	// RRD
 				rrd(F(), HL(), A());
@@ -942,15 +953,15 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				if (ldir(F(), A())) {
 					MEMPTR() = --PC();
 					--PC();
+					tick(5);
 				}
-				tick(7);
 				break;
 			case 7:	// LDDR
 				if (lddr(F(), A())) {
 					MEMPTR() = --PC();
 					--PC();
+					tick(5);
 				}
-				tick(7);
 				break;
 			}
 			break;
@@ -968,17 +979,16 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 					--PC();
 					tick(5);
 				}
-				tick(5);
 				break;
 			case 7:	// CPDR
 				if (cpdr(F(), A())) {
 					MEMPTR() = --PC();
 					--PC();
-					tick(3);
+					tick(5);
 				} else {
 					MEMPTR() = PC() - 2;
+					tick(2);
 				}
-				tick(7);
 				break;
 			}
 			break;
@@ -1017,14 +1027,12 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 					PC() -= 2;
 					tick(5);
 				}
-				tick(3);
 				break;
 			case 7:	// OTDR
 				if (otdr()) {
 					PC() -= 2;
 					tick(5);
 				}
-				tick(3);
 				break;
 			}
 			break;
@@ -1314,6 +1322,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL2();
+					tick(2);
 					break;
 				default:
 					UNREACHABLE;
