@@ -18,6 +18,7 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& result)
 
 	m_cpu.ExecutedInstruction.connect([this](EightBit::Z80& cpu) {
 		m_totalCycles += cpu.cycles();
+		std::cout << "**** Cycle count: " << cpu.cycles() << std::endl;
 	});
 
 	ReadByte.connect([this](EightBit::EventArgs&) {
