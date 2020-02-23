@@ -230,6 +230,7 @@ EightBit::register16_t EightBit::Z80::sbc(uint8_t& f, const register16_t operand
 
 	MEMPTR() = operand + 1;
 
+	tick(7);
 	return result;
 }
 
@@ -260,6 +261,7 @@ EightBit::register16_t EightBit::Z80::add(uint8_t& f, const register16_t operand
 
 	MEMPTR() = operand + 1;
 
+	tick(7);
 	return result;
 }
 
@@ -852,7 +854,6 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			default:
 				UNREACHABLE;
 			}
-			tick(7);
 			break;
 		case 3:	// Retrieve/store register pair from/to immediate address
 			BUS().ADDRESS() = fetchWord();
@@ -1078,7 +1079,6 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				break;
 			case 1:	// ADD HL,rp
 				HL2() = add(F(), HL2(), RP(p));
-				tick(7);
 				break;
 			default:
 				UNREACHABLE;
