@@ -51,6 +51,18 @@ namespace EightBit {
 		Signal<Z80> ExecutingInstruction;
 		Signal<Z80> ExecutedInstruction;
 
+		Signal<EventArgs> ReadingMemory;
+		Signal<EventArgs> ReadMemory;
+
+		Signal<EventArgs> WritingMemory;
+		Signal<EventArgs> WrittenMemory;
+
+		Signal<EventArgs> ReadingIO;
+		Signal<EventArgs> ReadIO;
+
+		Signal<EventArgs> WritingIO;
+		Signal<EventArgs> WrittenIO;
+
 		int execute() final;
 		int step() final;
 
@@ -189,22 +201,34 @@ namespace EightBit {
 		// before the RD signal becomes inactive. Clock states T3 and T4 of a fetch cycle are used to
 		// refresh dynamic memories. The CPU uses this time to decode and execute the fetched
 		// instruction so that no other concurrent operation can be performed.
-		uint8_t readInitialOpCode() {
+		//
+		// When a software HALT instruction is executed, the CPU executes NOPs until an interrupt
+		// is received(either a nonmaskable or a maskable interrupt while the interrupt flip-flop is
+		// enabled). The two interrupt lines are sampled with the rising clock edge during each T4
+		// state as depicted in Figure 11.If a nonmaskable interrupt is received or a maskable interrupt
+		// is received and the interrupt enable flip-flop is set, then the HALT state is exited on
+		// the next rising clock edge.The following cycle is an interrupt acknowledge cycle corresponding
+		// to the type of interrupt that was received.If both are received at this time, then
+		// the nonmaskable interrupt is acknowledged because it is the highest priority.The purpose
+		// of executing NOP instructions while in the HALT state is to keep the memory refresh signals
+		// active.Each cycle in the HALT state is a normal M1(fetch) cycle except that the data
+		// received from the memory is ignored and an NOP instruction is forced internally to the
+		// CPU.The HALT acknowledge signal is active during this time indicating that the processor
+		// is in the HALT state
+		uint8_t fetchInitialOpCode() {
 			tick();
 			lowerM1();
-			const auto returned = IntelProcessor::memoryRead(PC());
+			auto returned = IntelProcessor::memoryRead(PC());
+			if (UNLIKELY(lowered(HALT())))
+				returned = 0;	// NOP
+			else
+				PC()++;
 			raiseM1();
 			BUS().ADDRESS() = { REFRESH(), IV() };
 			lowerRFSH();
 			lowerMREQ();
 			raiseMREQ();
 			raiseRFSH();
-			return returned;
-		}
-
-		uint8_t fetchInitialOpCode() {
-			const auto returned = readInitialOpCode();
-			++PC();
 			return returned;
 		}
 

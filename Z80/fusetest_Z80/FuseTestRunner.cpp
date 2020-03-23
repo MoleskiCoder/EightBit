@@ -21,28 +21,21 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& result)
 		std::cout << "**** Cycle count: " << cpu.cycles() << std::endl;
 	});
 
-	ReadByte.connect([this](EightBit::EventArgs&) {
-		addActualEvent(currentBusAccessType() + "R");
+	m_cpu.ReadMemory.connect([this](EightBit::EventArgs&) {
+		addActualEvent("MR");
 	});
 	
-	WrittenByte.connect([this](EightBit::EventArgs&) {
-		addActualEvent(currentBusAccessType() + "W");
+	m_cpu.WrittenMemory.connect([this](EightBit::EventArgs&) {
+		addActualEvent("MW");
 	});
-}
 
-std::string Fuse::TestRunner::currentBusAccessType() {
+	m_cpu.ReadIO.connect([this](EightBit::EventArgs&) {
+		addActualEvent("PR");
+	});
 
-	const bool ioRequest = m_cpu.requestingIO();
-	const bool memoryRequest = m_cpu.requestingMemory();
-	if (ioRequest && memoryRequest)
-		throw std::logic_error("Invalid bus state (both IORQ and MREQ lowered");
-
-	if (ioRequest)
-		return "P";
-	if (memoryRequest)
-		return "M";
-
-	throw std::logic_error("Invalid bus state (neither IORQ and MREQ lowered");
+	m_cpu.WrittenIO.connect([this](EightBit::EventArgs&) {
+		addActualEvent("PW");
+	});
 }
 
 void Fuse::TestRunner::addActualEvent(const std::string& specifier) {
@@ -50,7 +43,8 @@ void Fuse::TestRunner::addActualEvent(const std::string& specifier) {
 	actual.address = ADDRESS().word;
 	actual.cycles = m_totalCycles + m_cpu.cycles();
 	actual.specifier = specifier;
-	actual.value = DATA();
+	if (!boost::algorithm::ends_with(specifier, "C"))
+		actual.value = DATA();
 	actual.valid = true;
 	m_actualEvents.events.push_back(actual);
 }

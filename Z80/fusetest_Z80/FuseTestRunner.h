@@ -40,7 +40,6 @@ namespace Fuse {
 			const std::string& lowDescription,
 			EightBit::register16_t actual, EightBit::register16_t expected) const;
 
-		std::string currentBusAccessType();
 		void addActualEvent(const std::string& specifier);
 		void dumpExpectedEvents() const;
 		void dumpActualEvents() const;

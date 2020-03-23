@@ -58,17 +58,21 @@ EightBit::register16_t& EightBit::Z80::HL() {
 }
 
 void EightBit::Z80::memoryWrite() {
+	WritingMemory.fire(EventArgs::empty());
 	tick(2);
 	lowerMREQ();
 	IntelProcessor::memoryWrite();
 	raiseMREQ();
+	WrittenMemory.fire(EventArgs::empty());
 }
 
 uint8_t EightBit::Z80::memoryRead() {
+	ReadingMemory.fire(EventArgs::empty());
 	tick(2);
 	lowerMREQ();
 	const auto returned = IntelProcessor::memoryRead();
 	raiseMREQ();
+	ReadMemory.fire(EventArgs::empty());
 	return returned;
 }
 
@@ -661,10 +665,15 @@ void EightBit::Z80::portWrite(const uint8_t port) {
 }
 
 void EightBit::Z80::portWrite() {
+	WritingIO.fire(EventArgs::empty());
 	lowerIORQ();
 	busWrite();
 	raiseIORQ();
-	tick(3);
+	WrittenIO.fire(EventArgs::empty());
+	tick(3);	// I guess this means the extra three ticks on
+				// port writing are just a quirk of the
+				// individual instructions, rather than a
+				// fundamental aspect of port IO. Hmmm.
 }
 
 uint8_t EightBit::Z80::portRead(const uint8_t port) {
@@ -674,9 +683,11 @@ uint8_t EightBit::Z80::portRead(const uint8_t port) {
 }
 
 uint8_t EightBit::Z80::portRead() {
+	ReadingIO.fire(EventArgs::empty());
 	lowerIORQ();
 	const auto returned = busRead();
 	raiseIORQ();
+	ReadIO.fire(EventArgs::empty());
 	tick(3);
 	return returned;
 }
@@ -700,24 +711,6 @@ int EightBit::Z80::step() {
 				handleINT();
 				handled = true;
 			}
-		} else if (lowered(HALT())) {
-			// ** From the Z80 CPU User Manual
-			// When a software HALT instruction is executed, the CPU executes NOPs until an interrupt
-			// is received(either a nonmaskable or a maskable interrupt while the interrupt flip-flop is
-			// enabled). The two interrupt lines are sampled with the rising clock edge during each T4
-			// state as depicted in Figure 11.If a nonmaskable interrupt is received or a maskable interrupt
-			// is received and the interrupt enable flip-flop is set, then the HALT state is exited on
-			// the next rising clock edge.The following cycle is an interrupt acknowledge cycle corresponding
-			// to the type of interrupt that was received.If both are received at this time, then
-			// the nonmaskable interrupt is acknowledged because it is the highest priority.The purpose
-			// of executing NOP instructions while in the HALT state is to keep the memory refresh signals
-			// active.Each cycle in the HALT state is a normal M1(fetch) cycle except that the data
-			// received from the memory is ignored and an NOP instruction is forced internally to the
-			// CPU.The HALT acknowledge signal is active during this time indicating that the processor
-			// is in the HALT state.
-			const auto discarded = readInitialOpCode();
-			IntelProcessor::execute(0);	// NOP
-			handled = true;
 		}
 		if (!handled)
 			IntelProcessor::execute(fetchInitialOpCode());
