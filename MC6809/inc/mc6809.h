@@ -111,6 +111,8 @@ namespace EightBit {
 		virtual void busWrite() final;
 		virtual uint8_t busRead() final;
 
+		virtual void call(register16_t destination) final;
+
 	private:
 		const uint8_t RESETvector = 0xfe;		// RESET vector
 		const uint8_t NMIvector = 0xfc;			// NMI vector
@@ -303,7 +305,7 @@ namespace EightBit {
 
 		void branchLong(const int condition) {
 			if (branch(Address_relative_word(), condition))
-				tick();
+				memoryRead(0xffff);
 		}
 
 		// Miscellaneous
@@ -336,7 +338,7 @@ namespace EightBit {
 		uint8_t asl(uint8_t operand);
 		uint8_t asr(uint8_t operand);
 		void bit(uint8_t operand, uint8_t data);
-		uint8_t clr();
+		uint8_t clr(uint8_t data = 0);	// In this form for Read/Modify/Write operations
 		void cmp(uint8_t operand, uint8_t data);
 		void cmp(register16_t operand, register16_t data);
 		uint8_t com(uint8_t operand);

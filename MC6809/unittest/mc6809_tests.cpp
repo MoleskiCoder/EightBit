@@ -655,7 +655,7 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
 		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
 		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 4);
+		REQUIRE(cpu.cycles() == 2);
     }
 
 	// Test the subtraction with carry instruction.
@@ -691,7 +691,7 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
 		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) != 0);
 		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE(cpu.cycles() == 4);
+		REQUIRE(cpu.cycles() == 2);
     }
 
 	// Test the SBCA instruction.
@@ -707,7 +707,7 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
 		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
 		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE(cpu.cycles() == 4);
+		REQUIRE(cpu.cycles() == 2);
     }
 
 	// Test the SBCA instruction.
@@ -722,7 +722,7 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
 		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
 		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE(cpu.cycles() == 4);
+		REQUIRE(cpu.cycles() == 2);
     }
 }
 
@@ -935,7 +935,7 @@ TEST_CASE("Branch on Less than or Equal to Zero", "[BLE]") {
 
 	SECTION("BLE1") {
 		cpu.A() = 0;
- 		cpu.CC() = EightBit::mc6809::ZF;
+		cpu.CC() = EightBit::mc6809::ZF;
 		cpu.step();
 		cpu.step();
 		REQUIRE(cpu.A() == 2);
@@ -984,9 +984,14 @@ TEST_CASE("Branch on Less than or Equal to Zero", "[BLE]") {
 		cpu.step();
 		REQUIRE(cpu.A() == 2);
 	}
+}
 
-	cpu.lowerRESET();
-	cpu.step();
+TEST_CASE("Subroutines", "[JSR][RTS]") {
+
+	Board board;
+	board.raisePOWER();
+	auto& cpu = board.CPU();
+	cpu.step();	// Step over the reset
 
 	// Test the JSR - Jump to Subroutine - instruction.
 	// INDEXED mode:   JSR   D,Y
@@ -1029,7 +1034,7 @@ TEST_CASE("Branch on Less than or Equal to Zero", "[BLE]") {
 		REQUIRE(board.peek(0x914) == 2);
 		REQUIRE(board.peek(0x913) == 0xb);
 
-		REQUIRE(cpu.cycles() == 10);
+		REQUIRE(cpu.cycles() == 11);
 	}
 
 	cpu.lowerRESET();
