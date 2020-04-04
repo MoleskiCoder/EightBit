@@ -10,7 +10,7 @@
 	const auto data = ACCESSOR(); \
 	const auto address = BUS().ADDRESS(); \
 	const auto result = OPERATION(data); \
-	memoryRead(0xffff); \
+	eat(); \
 	memoryWrite(address, result); \
 }
 
@@ -72,7 +72,7 @@ void EightBit::mc6809::handleRESET() {
 	memoryRead(0xfffe);
 	memoryRead(0xfffe);
 	jump(getWordPaged(0xff, RESETvector));
-	memoryRead(0xffff);
+	eat();
 }
 
 void EightBit::mc6809::handleNMI() {
@@ -81,13 +81,13 @@ void EightBit::mc6809::handleNMI() {
 	raiseBS();
 	memoryRead();
 	memoryRead();
-	memoryRead(0xffff);
+	eat();
 	saveEntireRegisterState();
-	memoryRead(0xffff);
+	eat();
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	CC() = setBit(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, NMIvector));
-	memoryRead(0xffff);
+	eat();
 }
 
 void EightBit::mc6809::handleINT() {
@@ -96,12 +96,12 @@ void EightBit::mc6809::handleINT() {
 	raiseBS();
 	memoryRead();
 	memoryRead();
-	memoryRead(0xffff);
+	eat();
 	saveEntireRegisterState();
-	memoryRead(0xffff);
+	eat();
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	jump(getWordPaged(0xff, IRQvector));
-	memoryRead(0xffff);
+	eat();
 }
 
 void EightBit::mc6809::handleFIRQ() {
@@ -110,13 +110,13 @@ void EightBit::mc6809::handleFIRQ() {
 	raiseBS();
 	memoryRead();
 	memoryRead();
-	memoryRead(0xffff);
+	eat();
 	savePartialRegisterState();
-	memoryRead(0xffff);
+	eat();
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	CC() = setBit(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, FIRQvector));
-	memoryRead(0xffff);
+	eat();
 }
 
 //
@@ -137,7 +137,7 @@ uint8_t EightBit::mc6809::busRead() {
 
 void EightBit::mc6809::call(register16_t destination) {
 	memoryRead(destination);
-	memoryRead(0xffff);
+	eat();
 	BigEndianProcessor::pushWord(PC());
 	jump(destination);
 }
@@ -172,7 +172,7 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0x11:	m_prefix11 = true;	Processor::execute(fetchByte());	break;
 
 	// ABX
-	case 0x3a:	memoryRead(); X() += B(); memoryRead(0xffff);			break;		// ABX (inherent)
+	case 0x3a:	memoryRead(); X() += B(); eat();						break;		// ABX (inherent)
 
 	// ADC
 	case 0x89:	A() = adc(A(), AM_immediate_byte());					break;		// ADC (ADCA immediate)
@@ -212,7 +212,7 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0xe4:	B() = andr(B(), AM_indexed_byte());						break;		// AND (ANDB indexed)
 	case 0xf4:	B() = andr(B(), AM_extended_byte());					break;		// AND (ANDB extended)
 
-	case 0x1c:	CC() &= AM_immediate_byte(); memoryRead(0xffff);		break;		// AND (ANDCC immediate)
+	case 0x1c:	CC() &= AM_immediate_byte(); eat();						break;		// AND (ANDCC immediate)
 
 	// ASL/LSL
 	case 0x08:	RMW(AM_direct_byte, asl);								break;		// ASL (direct)
@@ -393,7 +393,7 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0xfa:	B() = orr(B(), AM_extended_byte());						break;		// OR (ORB extended)
 
 	// ORCC
-	case 0x1a:	CC() |= AM_immediate_byte(); memoryRead(0xffff);		break;		// OR (ORCC immediate)
+	case 0x1a:	CC() |= AM_immediate_byte(); eat();						break;		// OR (ORCC immediate)
 
 	// PSH
 	case 0x34:	psh(S(), AM_immediate_byte());							break;		// PSH (PSHS immediate)
@@ -670,7 +670,7 @@ EightBit::register16_t& EightBit::mc6809::RR(const int which) {
 
 EightBit::register16_t EightBit::mc6809::Address_relative_byte() {
 	const auto address = PC() + (int8_t)fetchByte();
-	memoryRead(0xffff);
+	eat();
 	return address;
 }
 
@@ -680,7 +680,7 @@ EightBit::register16_t EightBit::mc6809::Address_relative_word() {
 
 EightBit::register16_t EightBit::mc6809::Address_direct() {
 	const auto offset = fetchByte();
-	memoryRead(0xffff);
+	eat();
 	return register16_t(offset, DP());
 }
 
@@ -696,31 +696,25 @@ EightBit::register16_t EightBit::mc6809::Address_indexed() {
 			ASSUME(!indirect);
 			address = r++;
 			memoryRead(PC());
-			memoryRead(0xffff);
-			memoryRead(0xffff);
+			eat(2);
 			break;
 		case 0b0001:	// ,R++
 			address = r;
 			r += 2;
 			memoryRead(PC());
-			memoryRead(0xffff);
-			memoryRead(0xffff);
-			memoryRead(0xffff);
+			eat(3);
 			break;
 		case 0b0010:	// ,-R
 			ASSUME(!indirect);
 			address = --r;
 			memoryRead(PC());
-			memoryRead(0xffff);
-			memoryRead(0xffff);
+			eat(2);
 			break;
 		case 0b0011:	// ,--R
 			r -= 2;
 			address = r;
 			memoryRead(PC());
-			memoryRead(0xffff);
-			memoryRead(0xffff);
-			memoryRead(0xffff);
+			eat(3);
 			break;
 		case 0b0100:	// ,R
 			address = r;
@@ -729,30 +723,28 @@ EightBit::register16_t EightBit::mc6809::Address_indexed() {
 		case 0b0101:	// B,R
 			address = r + (int8_t)B();
 			memoryRead(PC());
-			memoryRead(0xffff);
+			eat();
 			break;
 		case 0b0110:	// A,R
 			address = r + (int8_t)A();
 			memoryRead(PC());
-			memoryRead(0xffff);
+			eat();
 			break;
 		case 0b1000:	// n,R (eight-bit)
 			address = r + (int8_t)fetchByte();
-			memoryRead(0xffff);
+			eat();
 			break;
 		case 0b1001:	// n,R (sixteen-bit)
 			address = r + (int16_t)fetchWord().word;
 			memoryRead(PC());
-			memoryRead(0xffff);
-			memoryRead(0xffff);
+			eat(2);
 			break;
 		case 0b1011:	// D,R
 			address = r + D();
 			memoryRead(PC());
 			memoryRead(PC() + 1);
 			memoryRead(PC() + 2);
-			memoryRead(0xffff);
-			memoryRead(0xffff);
+			eat(2);
 			break;
 		case 0b1100:	// n,PCR (eight-bit)
 			address = Address_relative_byte();
@@ -760,9 +752,7 @@ EightBit::register16_t EightBit::mc6809::Address_indexed() {
 		case 0b1101:	// n,PCR (sixteen-bit)
 			address = Address_relative_word();
 			memoryRead(PC());
-			memoryRead(0xffff);
-			memoryRead(0xffff);
-			memoryRead(0xffff);
+			eat(3);
 			break;
 		case 0b1111:	// [n]
 			assert(indirect);
@@ -774,19 +764,20 @@ EightBit::register16_t EightBit::mc6809::Address_indexed() {
 		}
 		if (indirect) {
 			address = Processor::getWord(address);
-			memoryRead(0xffff);
+			eat();
 		}
 	} else {
 		// EA = ,R + 5-bit offset
 		address = r + signExtend(5, type & Mask5);
-		memoryRead(0xffff);
+		memoryRead(PC());
+		eat();
 	}
 	return address;
 }
 
 EightBit::register16_t EightBit::mc6809::Address_extended() {
 	const auto ea = fetchWord();
-	memoryRead(0xffff);
+	eat();
 	return ea;
 }
 
@@ -861,7 +852,7 @@ uint8_t EightBit::mc6809::add(const uint8_t operand, const uint8_t data, const u
 EightBit::register16_t EightBit::mc6809::add(const register16_t operand, const register16_t data) {
 	const uint32_t addition = operand.word + data.word;
 	adjustAddition(operand, data, addition);
-	memoryRead(0xffff);
+	eat();
 	return addition & Mask16;
 }
 
@@ -909,7 +900,7 @@ uint8_t EightBit::mc6809::com(const uint8_t operand) {
 void EightBit::mc6809::cwai(const uint8_t data) {
 	CC() &= data;
 	memoryRead(PC());
-	memoryRead(0xffff);
+	eat();
 	saveEntireRegisterState();
 	halt();
 }
@@ -988,12 +979,7 @@ void EightBit::mc6809::exg(const uint8_t data) {
 	else
 		std::swap(referenceTransfer16(reg1), referenceTransfer16(reg2));
 
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
+	eat(6);
 }
 
 uint8_t EightBit::mc6809::inc(uint8_t operand) {
@@ -1019,15 +1005,7 @@ EightBit::register16_t EightBit::mc6809::mul(const uint8_t first, const uint8_t 
 	const register16_t result = first * second;
 	adjustZero(result);
 	CC() = setBit(CC(), CF, result.low & Bit7);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
+	eat(9);
 	return result;
 }
 
@@ -1045,8 +1023,7 @@ uint8_t EightBit::mc6809::orr(const uint8_t operand, const uint8_t data) {
 }
 
 void EightBit::mc6809::psh(register16_t& stack, const uint8_t data) {
-	memoryRead(0xffff);
-	memoryRead(0xffff);
+	eat(2);
 	memoryRead(stack);
 	if (data & Bit7)
 		pushWord(stack, PC());
@@ -1068,8 +1045,7 @@ void EightBit::mc6809::psh(register16_t& stack, const uint8_t data) {
 }
 
 void EightBit::mc6809::pul(register16_t& stack, const uint8_t data) {
-	memoryRead(0xffff);
-	memoryRead(0xffff);
+	eat(2);
 	if (data & Bit0)
 		CC() = pop(stack);
 	if (data & Bit1)
@@ -1109,35 +1085,35 @@ uint8_t EightBit::mc6809::ror(const uint8_t operand) {
 
 void EightBit::mc6809::rti() {
 	restoreRegisterState();
-	memoryRead(0xffff);
+	eat();
 }
 
 void EightBit::mc6809::rts() {
 	ret();
-	memoryRead(0xffff);
+	eat();
 }
 
 void EightBit::mc6809::swi() {
-	memoryRead(0xffff);
+	eat();
 	saveEntireRegisterState();
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	CC() = setBit(CC(), FF);	// Disable FIRQ
 	jump(getWordPaged(0xff, SWIvector));
-	memoryRead(0xffff);
+	eat();
 }
 
 void EightBit::mc6809::swi2() {
-	memoryRead(0xffff);
+	eat();
 	saveEntireRegisterState();
 	jump(getWordPaged(0xff, SWI2vector));
-	memoryRead(0xffff);
+	eat();
 }
 
 void EightBit::mc6809::swi3() {
-	memoryRead(0xffff);
+	eat();
 	saveEntireRegisterState();
 	jump(getWordPaged(0xff, SWI3vector));
-	memoryRead(0xffff);
+	eat();
 }
 
 uint8_t EightBit::mc6809::sex(const uint8_t from) {
@@ -1158,10 +1134,7 @@ void EightBit::mc6809::tfr(const uint8_t data) {
 	else
 		referenceTransfer16(reg2) = referenceTransfer16(reg1);
 
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
-	memoryRead(0xffff);
+	eat(4);
 }
 
 uint8_t EightBit::mc6809::sbc(const uint8_t operand, const uint8_t data) {
@@ -1177,7 +1150,7 @@ uint8_t EightBit::mc6809::sub(const uint8_t operand, const uint8_t data, const u
 EightBit::register16_t EightBit::mc6809::sub(const register16_t operand, const register16_t data) {
 	const uint32_t subtraction = operand.word - data.word;
 	adjustSubtraction(operand, data, subtraction);
-	memoryRead(0xffff);
+	eat();
 	return subtraction & Mask16;
 }
 

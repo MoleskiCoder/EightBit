@@ -123,6 +123,11 @@ namespace EightBit {
 		const uint8_t SWI3vector = 0xf2;		// SWI3 vector
 		const uint8_t RESERVEDvector = 0xf0;	// RESERVED vector
 
+		void eat(int cycles = 1) {
+			for (int cycle = 0; cycle < cycles; ++cycle)
+				memoryRead(0xffff);
+		}
+
 		// Stack manipulation
 
 		void push(register16_t& stack, uint8_t value);
@@ -305,7 +310,7 @@ namespace EightBit {
 
 		void branchLong(const int condition) {
 			if (branch(Address_relative_word(), condition))
-				memoryRead(0xffff);
+				eat();
 		}
 
 		// Miscellaneous
