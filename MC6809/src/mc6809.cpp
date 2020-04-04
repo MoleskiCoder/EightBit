@@ -212,7 +212,7 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0xe4:	B() = andr(B(), AM_indexed_byte());						break;		// AND (ANDB indexed)
 	case 0xf4:	B() = andr(B(), AM_extended_byte());					break;		// AND (ANDB extended)
 
-	case 0x1c:	CC() &= AM_immediate_byte();							break;		// AND (ANDCC immediate)
+	case 0x1c:	CC() &= AM_immediate_byte(); memoryRead(0xffff);		break;		// AND (ANDCC immediate)
 
 	// ASL/LSL
 	case 0x08:	RMW(AM_direct_byte, asl);								break;		// ASL (direct)
@@ -393,7 +393,7 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0xfa:	B() = orr(B(), AM_extended_byte());						break;		// OR (ORB extended)
 
 	// ORCC
-	case 0x1a:	CC() |= AM_immediate_byte();							break;		// OR (ORCC immediate)
+	case 0x1a:	CC() |= AM_immediate_byte(); memoryRead(0xffff);		break;		// OR (ORCC immediate)
 
 	// PSH
 	case 0x34:	psh(S(), AM_immediate_byte());							break;		// PSH (PSHS immediate)
