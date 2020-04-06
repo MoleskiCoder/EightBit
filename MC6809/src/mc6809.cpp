@@ -4,16 +4,6 @@
 #include <algorithm>
 #include <cassert>
 
-// Read/Modify/Write
-#define RMW(ACCESSOR, OPERATION) \
-{ \
-	const auto data = ACCESSOR(); \
-	const auto address = BUS().ADDRESS(); \
-	const auto result = OPERATION(data); \
-	eat(); \
-	memoryWrite(address, result); \
-}
-
 EightBit::mc6809::mc6809(Bus& bus)
 : BigEndianProcessor(bus) {
 	RaisedPOWER.connect([this](EventArgs) {
@@ -61,17 +51,17 @@ void EightBit::mc6809::handleHALT() {
 
 void EightBit::mc6809::handleRESET() {
 	BigEndianProcessor::handleRESET();
-	memoryRead(0xfffe);
+	memoryRead({ 0xff, RESETvector });
 	raiseNMI();
 	lowerBA();
 	raiseBS();
 	DP() = 0;
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	CC() = setBit(CC(), FF);	// Disable FIRQ
-	memoryRead(0xfffe);
-	memoryRead(0xfffe);
-	memoryRead(0xfffe);
-	jump(getWordPaged(0xff, RESETvector));
+	memoryRead();
+	memoryRead();
+	memoryRead();
+	jump(getWord());
 	eat();
 }
 
@@ -140,6 +130,11 @@ void EightBit::mc6809::call(register16_t destination) {
 	eat();
 	BigEndianProcessor::pushWord(PC());
 	jump(destination);
+}
+
+void EightBit::mc6809::ret() {
+	BigEndianProcessor::ret();
+	eat();
 }
 
 //
@@ -421,7 +416,7 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0x3B:	memoryRead(); rti();									break;		// RTI (inherent)
 
 	// RTS
-	case 0x39:	memoryRead(); rts(); 									break;		// RTS (inherent)
+	case 0x39:	memoryRead(); ret(); 									break;		// RTS (inherent)
 
 	// SBC
 
@@ -1085,11 +1080,6 @@ uint8_t EightBit::mc6809::ror(const uint8_t operand) {
 
 void EightBit::mc6809::rti() {
 	restoreRegisterState();
-	eat();
-}
-
-void EightBit::mc6809::rts() {
-	ret();
 	eat();
 }
 

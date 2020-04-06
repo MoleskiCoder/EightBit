@@ -4,6 +4,7 @@
 // http://www.cpu-world.com/Arch/6809.html
 
 #include <cstdint>
+#include <functional>
 
 #include <Bus.h>
 #include <BigEndianProcessor.h>
@@ -112,6 +113,7 @@ namespace EightBit {
 		virtual uint8_t busRead() final;
 
 		virtual void call(register16_t destination) final;
+		virtual void ret() final;
 
 	private:
 		const uint8_t RESETvector = 0xfe;		// RESET vector
@@ -125,7 +127,33 @@ namespace EightBit {
 
 		void eat(int cycles = 1) {
 			for (int cycle = 0; cycle < cycles; ++cycle)
-				memoryRead(0xffff);
+				memoryRead(Mask16);
+		}
+
+		// Read/Modify/Write
+
+		// Macro version: easy to use
+		// RMW(AM_direct_byte, asl)
+		#define RMW(ACCESSOR, OPERATION) \
+		{ \
+			const auto data = ACCESSOR(); \
+			const auto address = BUS().ADDRESS(); \
+			const auto result = OPERATION(data); \
+			eat(); \
+			memoryWrite(address, result); \
+		}
+
+		typedef std::function<uint8_t(void)> accessor_t;
+		typedef std::function<uint8_t(uint8_t)> operation_t;
+
+		// C++ 11 version: looks great, but verbose to use
+		// rmw([this]() { return AM_direct_byte(); }, [this](uint8_t data) { return asl(data); });
+		void rmw(accessor_t accessor, operation_t operation) {
+			const auto data = accessor();
+			const auto address = BUS().ADDRESS();
+			const auto result = operation(data);
+			eat();
+			memoryWrite(address, result);
 		}
 
 		// Stack manipulation
@@ -363,7 +391,6 @@ namespace EightBit {
 		uint8_t rol(uint8_t operand);
 		uint8_t ror(uint8_t operand);
 		void rti();
-		void rts();
 		uint8_t sbc(uint8_t operand, uint8_t data);
 		uint8_t sub(uint8_t operand, uint8_t data, uint8_t carry = 0);
 		register16_t sub(register16_t operand, register16_t data);
