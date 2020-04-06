@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Bus.h"
-#include "Register.h"
 #include "Processor.h"
 
 namespace EightBit {
+
+	class Bus;
+
 	class LittleEndianProcessor : public Processor {
 	public:
 		~LittleEndianProcessor() = default;

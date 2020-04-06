@@ -1,13 +1,14 @@
 #pragma once
 
-#include "Bus.h"
-#include "Register.h"
 #include "Processor.h"
 
 namespace EightBit {
+
+	class Bus;
+
 	class BigEndianProcessor : public Processor {
 	public:
-		~BigEndianProcessor() {};
+		~BigEndianProcessor() = default;
 
 		register16_t peekWord(register16_t address) final;
 		void pokeWord(register16_t address, register16_t value) final;

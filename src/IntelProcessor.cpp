@@ -4,7 +4,7 @@
 EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 : LittleEndianProcessor(bus) {
 	for (int i = 0; i < 0x100; ++i)
-		m_decodedOpcodes[i] = i;
+		m_decodedOpcodes.at(i) = i;
 
 	LoweredHALT.connect([this](EventArgs) { --PC(); });
 	RaisedHALT.connect([this](EventArgs) { ++PC(); });

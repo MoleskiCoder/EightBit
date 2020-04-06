@@ -40,7 +40,7 @@ void EightBit::GameBoy::IoRegisters::Bus_ReadingByte(EightBit::EventArgs) {
 				auto upOrSelect = (live && !m_p12) ? 0 : Chip::Bit2;
 				auto downOrStart = (live && !m_p13) ? 0 : Chip::Bit3;
 				auto lowNibble = rightOrA | leftOrB | upOrSelect | downOrStart;
-				auto highNibble = Chip::promoteNibble(Chip::Mask4);
+				constexpr auto highNibble = Chip::promoteNibble(Chip::Mask4);
 				auto value = lowNibble | highNibble;
 				poke(port, lowNibble | highNibble);
 			}

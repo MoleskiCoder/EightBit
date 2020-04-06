@@ -14,7 +14,7 @@ namespace EightBit {
 	class UnusedMemory final : public Memory {
 	public:
 		UnusedMemory(size_t size, uint8_t value);
-		~UnusedMemory() {};
+		~UnusedMemory() = default;
 
 		[[nodiscard]] size_t size() const final;
 		[[nodiscard]] uint8_t peek(uint16_t address) const final;

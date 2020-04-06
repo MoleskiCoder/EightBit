@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <array>
 
-#include "Signal.h"
 #include "Memory.h"
 #include "Ram.h"
 
@@ -14,7 +13,7 @@ namespace EightBit {
 
 		InputOutput() = default;
 
-		[[nodiscard]] size_t size() const override;
+		[[nodiscard]] size_t size() const noexcept override;
 		[[nodiscard]] uint8_t peek(uint16_t address) const override;
 
 		[[nodiscard]] uint8_t& reference(uint16_t address) override;

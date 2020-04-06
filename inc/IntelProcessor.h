@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <array>
 
-#include "Bus.h"
 #include "LittleEndianProcessor.h"
 #include "Register.h"
 #include "EventArgs.h"
@@ -11,6 +10,9 @@
 #include "EightBitCompilerDefinitions.h"
 
 namespace EightBit {
+
+	class Bus;
+
 	class IntelProcessor : public LittleEndianProcessor {
 	public:
 		struct opcode_decoded_t {

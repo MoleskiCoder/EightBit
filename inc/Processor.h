@@ -5,8 +5,6 @@
 #include "ClockedChip.h"
 #include "Bus.h"
 #include "Register.h"
-#include "EventArgs.h"
-#include "Signal.h"
 
 #include "EightBitCompilerDefinitions.h"
 
@@ -15,9 +13,9 @@ namespace EightBit {
 	public:
 		// b: number of bits representing the number in x
 		// x: sign extend this b-bit number to r
-		[[nodiscard]] static int8_t signExtend(int b, uint8_t x);
+		[[nodiscard]] static int8_t signExtend(int b, uint8_t x) noexcept;
 
-		~Processor() {};
+		~Processor() = default;
 
 		[[nodiscard]] auto& PC() noexcept { return m_pc; }
 
