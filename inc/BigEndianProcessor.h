@@ -8,7 +8,7 @@ namespace EightBit {
 
 	class BigEndianProcessor : public Processor {
 	public:
-		~BigEndianProcessor() = default;
+		virtual ~BigEndianProcessor() = default;
 
 		register16_t peekWord(register16_t address) final;
 		void pokeWord(register16_t address, register16_t value) final;

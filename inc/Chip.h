@@ -66,9 +66,9 @@ namespace EightBit {
 		[[nodiscard]] static constexpr auto promoteNibble(const int value) { return value << 4; }
 		[[nodiscard]] static constexpr auto demoteNibble(const int value) { return highNibble(value); }
 
-		virtual ~Chip();
+		virtual ~Chip() = default;
 
 	protected:
-		Chip();
+		Chip() = default;
 	};
 }

@@ -103,9 +103,6 @@
     <ClCompile Include="BigEndianProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Chip.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Rom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

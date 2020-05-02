@@ -34,7 +34,7 @@ namespace EightBit {
 			}
 		};
 
-		~IntelProcessor() = default;
+		virtual ~IntelProcessor() = default;
 
 		[[nodiscard]] const auto& getDecodedOpcode(const size_t i) const noexcept {
 			return m_decodedOpcodes.at(i);

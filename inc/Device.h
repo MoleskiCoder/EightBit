@@ -72,13 +72,13 @@ namespace EightBit {
 		static void match(PinLevel& line, bool condition) noexcept { condition ? raise(line) : lower(line); }
 		static void match(PinLevel& out, PinLevel in) noexcept { out = in; }
 
-		virtual ~Device() {};
+		virtual ~Device() = default;
 
 		[[nodiscard]] bool powered() noexcept { return raised(POWER()); }
 
 		DECLARE_PIN_INPUT(POWER)
 
 	protected:
-		Device() noexcept {};
+		Device() noexcept = default;
 	};
 }

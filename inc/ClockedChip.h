@@ -7,7 +7,7 @@
 namespace EightBit {
 	class ClockedChip : public Chip {
 	public:
-		~ClockedChip() {};
+		virtual ~ClockedChip() = default;
 
 		Signal<EventArgs> Ticked;
 

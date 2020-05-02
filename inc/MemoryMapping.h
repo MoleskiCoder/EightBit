@@ -7,7 +7,7 @@ namespace EightBit {
 
 	class Memory;
 
-	struct MemoryMapping {
+	struct MemoryMapping final {
 
 		enum class AccessLevel { Unknown, ReadOnly, WriteOnly, ReadWrite };
 

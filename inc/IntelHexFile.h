@@ -9,7 +9,7 @@
 #include <utility>
 
 namespace EightBit {
-	class IntelHexFile {
+	class IntelHexFile final {
 	public:
 		IntelHexFile(std::string path);
 

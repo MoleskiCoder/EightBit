@@ -178,7 +178,6 @@
   <ItemGroup>
     <ClCompile Include="BigEndianProcessor.cpp" />
     <ClCompile Include="Bus.cpp" />
-    <ClCompile Include="Chip.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="EventArgs.cpp" />
     <ClCompile Include="InputOutput.cpp" />
