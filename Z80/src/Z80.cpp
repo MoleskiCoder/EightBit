@@ -41,54 +41,58 @@ DEFINE_PIN_LEVEL_CHANGERS(IORQ, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(RD, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(WR, Z80);
 
-EightBit::register16_t& EightBit::Z80::AF() {
-	return m_accumulatorFlags[m_accumulatorFlagsSet];
-}
-
-EightBit::register16_t& EightBit::Z80::BC() {
-	return m_registers[m_registerSet][BC_IDX];
-}
-
-EightBit::register16_t& EightBit::Z80::DE() {
-	return m_registers[m_registerSet][DE_IDX];
-}
-
-EightBit::register16_t& EightBit::Z80::HL() {
-	return m_registers[m_registerSet][HL_IDX];
-}
-
 void EightBit::Z80::memoryWrite() {
-	WritingMemory.fire(EventArgs::empty());
-	tick(2);
-	lowerMREQ();
+
+	class _Writer final {
+		Z80& m_parent;
+	public:
+		_Writer(Z80& parent) : m_parent(parent) {
+			m_parent.WritingMemory.fire(EventArgs::empty());
+			m_parent.tick(2);
+			m_parent.lowerMREQ();
+		}
+
+		~_Writer() {
+			m_parent.raiseMREQ();
+			m_parent.WrittenMemory.fire(EventArgs::empty());
+		}
+	};
+
+	_Writer writer(*this);
 	IntelProcessor::memoryWrite();
-	raiseMREQ();
-	WrittenMemory.fire(EventArgs::empty());
 }
 
 uint8_t EightBit::Z80::memoryRead() {
-	ReadingMemory.fire(EventArgs::empty());
-	tick(2);
-	lowerMREQ();
-	const auto returned = IntelProcessor::memoryRead();
-	raiseMREQ();
-	ReadMemory.fire(EventArgs::empty());
-	return returned;
+
+	class _Reader final {
+		Z80& m_parent;
+	public:
+		_Reader(Z80& parent) : m_parent(parent) {
+			m_parent.ReadingMemory.fire(EventArgs::empty());
+			m_parent.tick(2);
+			m_parent.lowerMREQ();
+		}
+
+		~_Reader() {
+			m_parent.raiseMREQ();
+			m_parent.ReadMemory.fire(EventArgs::empty());
+		}
+	};
+
+	_Reader reader(*this);
+	return IntelProcessor::memoryRead();
 }
 
 void EightBit::Z80::busWrite() {
 	tick();
-	lowerWR();
+	_ActivateWR writer(*this);
 	IntelProcessor::busWrite();
-	raiseWR();
 }
 
 uint8_t EightBit::Z80::busRead() {
 	tick();
-	lowerRD();
-	const auto returned = IntelProcessor::busRead();
-	raiseRD();
-	return returned;
+	_ActivateRD reader(*this);
+	return IntelProcessor::busRead();
 }
 
 void EightBit::Z80::handleRESET() {
@@ -104,19 +108,17 @@ void EightBit::Z80::handleNMI() {
 	raiseHALT();
 	IFF2() = IFF1();
 	IFF1() = false;
-	lowerM1();
-	const auto discarded = BUS().DATA();
-	raiseM1();
+	readBusDataM1();
 	restart(0x66);
 }
 
 void EightBit::Z80::handleINT() {
 	IntelProcessor::handleINT();
-	lowerM1();
-	lowerIORQ();
-	const auto data = BUS().DATA();
-	raiseIORQ();
-	raiseM1();
+	uint8_t data;
+	{
+		_ActivateIORQ iorq(*this);
+		data = readBusDataM1();
+	}
 	di();
 	tick(5);
 	switch (IM()) {
@@ -665,15 +667,23 @@ void EightBit::Z80::portWrite(const uint8_t port) {
 }
 
 void EightBit::Z80::portWrite() {
-	WritingIO.fire(EventArgs::empty());
-	lowerIORQ();
+
+	class _Writer final {
+		Z80& m_parent;
+	public:
+		_Writer(Z80& parent) : m_parent(parent) {
+			m_parent.WritingIO.fire(EventArgs::empty());
+		}
+
+		~_Writer() {
+			m_parent.WrittenIO.fire(EventArgs::empty());
+			m_parent.tick(3);
+		}
+	};
+
+	_Writer writer(*this);
+	_ActivateIORQ iorq(*this);
 	busWrite();
-	raiseIORQ();
-	WrittenIO.fire(EventArgs::empty());
-	tick(3);	// I guess this means the extra three ticks on
-				// port writing are just a quirk of the
-				// individual instructions, rather than a
-				// fundamental aspect of port IO. Hmmm.
 }
 
 uint8_t EightBit::Z80::portRead(const uint8_t port) {
@@ -683,12 +693,80 @@ uint8_t EightBit::Z80::portRead(const uint8_t port) {
 }
 
 uint8_t EightBit::Z80::portRead() {
-	ReadingIO.fire(EventArgs::empty());
-	lowerIORQ();
-	const auto returned = busRead();
-	raiseIORQ();
-	ReadIO.fire(EventArgs::empty());
-	tick(3);
+
+	class _Reader final {
+		Z80& m_parent;
+	public:
+		_Reader(Z80& parent) : m_parent(parent) {
+			m_parent.ReadingIO.fire(EventArgs::empty());
+		}
+
+		~_Reader() {
+			m_parent.ReadIO.fire(EventArgs::empty());
+			m_parent.tick(3);
+		}
+	};
+
+	_Reader reader(*this);
+	_ActivateIORQ iorq(*this);
+	return busRead();
+}
+
+//
+
+uint16_t EightBit::Z80::displacedAddress() {
+	assert(m_displaced);
+	return MEMPTR().word = (m_prefixDD ? IX() : IY()).word + m_displacement;
+}
+
+void EightBit::Z80::fetchDisplacement() {
+	m_displacement = fetchByte();
+}
+
+// ** From the Z80 CPU User Manual
+
+// Figure 5 depicts the timing during an M1 (op code fetch) cycle. The Program Counter is
+// placed on the address bus at the beginning of the M1 cycle. One half clock cycle later, the
+// MREQ signal goes active. At this time, the address to memory has had time to stabilize so
+// that the falling edge of MREQ can be used directly as a chip enable clock to dynamic
+// memories. The RD line also goes active to indicate that the memory read data should be
+// enabled onto the CPU data bus. The CPU samples the data from the memory space on the
+// data bus with the rising edge of the clock of state T3, and this same edge is used by the
+// CPU to turn off the RD and MREQ signals. As a result, the data is sampled by the CPU
+// before the RD signal becomes inactive. Clock states T3 and T4 of a fetch cycle are used to
+// refresh dynamic memories. The CPU uses this time to decode and execute the fetched
+// instruction so that no other concurrent operation can be performed.
+
+// When a software HALT instruction is executed, the CPU executes NOPs until an interrupt
+// is received(either a nonmaskable or a maskable interrupt while the interrupt flip-flop is
+// enabled). The two interrupt lines are sampled with the rising clock edge during each T4
+// state as depicted in Figure 11.If a nonmaskable interrupt is received or a maskable interrupt
+// is received and the interrupt enable flip-flop is set, then the HALT state is exited on
+// the next rising clock edge.The following cycle is an interrupt acknowledge cycle corresponding
+// to the type of interrupt that was received.If both are received at this time, then
+// the nonmaskable interrupt is acknowledged because it is the highest priority.The purpose
+// of executing NOP instructions while in the HALT state is to keep the memory refresh signals
+// active.Each cycle in the HALT state is a normal M1(fetch) cycle except that the data
+// received from the memory is ignored and an NOP instruction is forced internally to the
+// CPU.The HALT acknowledge signal is active during this time indicating that the processor
+// is in the HALT state
+uint8_t EightBit::Z80::fetchOpCode() {
+	tick();
+	uint8_t returned;
+	{
+		_ActivateM1 m1(*this);
+		const auto halted = lowered(HALT());
+		returned = IntelProcessor::memoryRead(PC());
+		if (UNLIKELY(halted))
+			returned = 0;	// NOP
+		else
+			PC()++;
+	}
+	BUS().ADDRESS() = { REFRESH(), IV() };
+	{
+		_ActivateRFSH rfsh(*this);
+		_ActivateMREQ mreq(*this);
+	}
 	return returned;
 }
 
@@ -713,7 +791,7 @@ int EightBit::Z80::step() {
 			}
 		}
 		if (!handled)
-			IntelProcessor::execute(fetchInitialOpCode());
+			IntelProcessor::execute(fetchOpCode());
 	}
 	ExecutedInstruction.fire(*this);
 	return cycles();
@@ -905,15 +983,10 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				tick();
 				break;
 			case 2:	// LD A,I
-				F() = adjustSZXY<Z80>(F(), A() = IV());
-				F() = clearBit(F(), NF | HC);
-				F() = setBit(F(), PF, IFF2());
-				tick();
+				readInternalRegister([this]() { return IV(); });
 				break;
 			case 3:	// LD A,R
-				F() = adjustSZXY<Z80>(F(), A() = REFRESH());
-				F() = clearBit(F(), NF | HC);
-				F() = setBit(F(), PF, IFF2());
+				readInternalRegister([this]() { return REFRESH(); });
 				tick();
 				break;
 			case 4:	// RRD
@@ -1082,23 +1155,17 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					(MEMPTR() = BUS().ADDRESS() = BC())++;
-					MEMPTR().high = BUS().DATA() = A();
-					memoryWrite();
+					storeAccumulatorIndirect([this]() { return BC(); });
 					break;
 				case 1:	// LD (DE),A
-					(MEMPTR() = BUS().ADDRESS() = DE())++;
-					MEMPTR().high = BUS().DATA() = A();
-					memoryWrite();
+					storeAccumulatorIndirect([this]() { return DE(); });
 					break;
 				case 2:	// LD (nn),HL
 					BUS().ADDRESS() = fetchWord();
 					setWord(HL2());
 					break;
 				case 3: // LD (nn),A
-					(MEMPTR() = BUS().ADDRESS() = fetchWord())++;
-					MEMPTR().high = BUS().DATA() = A();
-					memoryWrite();
+					storeAccumulatorIndirect([this]() { return fetchWord(); });
 					break;
 				default:
 					UNREACHABLE;
@@ -1107,20 +1174,17 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					(MEMPTR() = BUS().ADDRESS() = BC())++;
-					A() = memoryRead();
+					loadAccumulatorIndirect([this]() { return BC(); });
 					break;
 				case 1:	// LD A,(DE)
-					(MEMPTR() = BUS().ADDRESS() = DE())++;
-					A() = memoryRead();
+					loadAccumulatorIndirect([this]() { return DE(); });
 					break;
 				case 2:	// LD HL,(nn)
 					BUS().ADDRESS() = fetchWord();
 					HL2() = getWord();
 					break;
 				case 3:	// LD A,(nn)
-					(MEMPTR() = BUS().ADDRESS() = fetchWord())++;
-					A() = memoryRead();
+					loadAccumulatorIndirect([this]() { return fetchWord(); });
 					break;
 				default:
 					UNREACHABLE;
@@ -1339,7 +1403,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					fetchDisplacement();
 					IntelProcessor::execute(fetchByte());
 				} else {
-					IntelProcessor::execute(fetchInitialOpCode());
+					IntelProcessor::execute(fetchOpCode());
 				}
 				break;
 			case 2:	// OUT (n),A
@@ -1379,15 +1443,15 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					break;
 				case 1:	// DD prefix
 					m_displaced = m_prefixDD = true;
-					IntelProcessor::execute(fetchInitialOpCode());
+					IntelProcessor::execute(fetchOpCode());
 					break;
 				case 2:	// ED prefix
 					m_prefixED = true;
-					IntelProcessor::execute(fetchInitialOpCode());
+					IntelProcessor::execute(fetchOpCode());
 					break;
 				case 3:	// FD prefix
 					m_displaced = m_prefixFD = true;
-					IntelProcessor::execute(fetchInitialOpCode());
+					IntelProcessor::execute(fetchOpCode());
 					break;
 				default:
 					UNREACHABLE;

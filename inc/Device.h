@@ -44,17 +44,43 @@
 #define DECLARE_PIN_MEMBER(name) \
 	PinLevel m_## name ## _Line = PinLevel::Low;
 
+#define DEFINE_PIN_ACTIVATOR(name, on, off) \
+	template <class T> class _Activate ## name final { \
+		T& m_parent; \
+	public: \
+		_Activate ## name(T& parent) \
+		: m_parent(parent) { \
+			m_parent. on ## name(); \
+		 } \
+		~_Activate ## name() { \
+			m_parent. off ## name(); \
+		} \
+	};
+
+#define DEFINE_PIN_ACTIVATOR_LOW(name) \
+	DEFINE_PIN_ACTIVATOR(name, lower, raise)
+
+#define DEFINE_PIN_ACTIVATOR_HIGH(name) \
+	DEFINE_PIN_ACTIVATOR(name, raise, lower)
+
 #define DECLARE_PIN(name, visibility) \
-	public: DECLARE_PIN_SIGNALS(name) \
-	[[nodiscard]] PinLevel& name () noexcept { return m_## name ## _Line; } \
-	visibility : DECLARE_PIN_LEVEL_CHANGERS(name) \
-	private: DECLARE_PIN_MEMBER(name)
+	public: \
+		DECLARE_PIN_SIGNALS(name) \
+		[[nodiscard]] PinLevel& name () noexcept { \
+			return m_## name ## _Line; \
+		} \
+	visibility : \
+		DECLARE_PIN_LEVEL_CHANGERS(name) \
+	private: \
+		DECLARE_PIN_MEMBER(name)
 
-// Input pins have a degree of external control
-#define DECLARE_PIN_INPUT(name) DECLARE_PIN(name, public)
+// Input pins may be external controlled
+#define DECLARE_PIN_INPUT(name) \
+	DECLARE_PIN(name, public)
 
-// Output pins may only be internally controlled
-#define DECLARE_PIN_OUTPUT(name) DECLARE_PIN(name, protected)
+// Output pins can only be internally controlled
+#define DECLARE_PIN_OUTPUT(name) \
+	DECLARE_PIN(name, protected)
 
 namespace EightBit {
 	class Device {
