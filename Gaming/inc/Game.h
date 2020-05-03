@@ -38,6 +38,12 @@ namespace Gaming {
 
 		virtual std::string title() const = 0;
 
+		virtual void handleEvents();
+		virtual void update();
+		virtual void draw();
+		virtual bool maybeSynchronise();	// true, if manual synchronisation required
+		virtual void synchronise();
+
 		virtual void runRasterLines() {};
 		virtual void runVerticalBlank() {}
 

@@ -58,6 +58,9 @@ void Game::raisePOWER() {
 
 	configureBackground();
 	createBitmapTexture();
+
+	m_frames = 0UL;
+	m_startTicks = ::SDL_GetTicks();
 }
 
 void Game::configureBackground() const {
@@ -73,62 +76,74 @@ void Game::createBitmapTexture() {
 }
 
 void Game::runLoop() {
-
-	m_frames = 0UL;
-	m_startTicks = ::SDL_GetTicks();
-
 	while (powered()) {
-		::SDL_Event e;
-		while (::SDL_PollEvent(&e)) {
-			switch (e.type) {
-			case SDL_QUIT:
-				lowerPOWER();
-				break;
-			case SDL_KEYDOWN:
-				handleKeyDown(e.key.keysym.sym);
-				break;
-			case SDL_KEYUP:
-				handleKeyUp(e.key.keysym.sym);
-				break;
-			case SDL_JOYBUTTONDOWN:
-				handleJoyButtonDown(e.jbutton);
-				break;
-			case SDL_JOYBUTTONUP:
-				handleJoyButtonUp(e.jbutton);
-				break;
-			case SDL_CONTROLLERBUTTONDOWN:
-				handleControllerButtonDown(e.cbutton);
-				break;
-			case SDL_CONTROLLERBUTTONUP:
-				handleControllerButtonUp(e.cbutton);
-				break;
-			case SDL_JOYDEVICEADDED:
-				addJoystick(e);
-				break;
-			case SDL_JOYDEVICEREMOVED:
-				removeJoystick(e);
-				break;
-			}
-		}
+		update();
+		draw();
+		maybeSynchronise();
+	}
+}
 
-		runVerticalBlank();
-		runRasterLines();
+void Game::update() {
+	handleEvents();
+	runVerticalBlank();
+	runRasterLines();
+}
 
-		updateTexture();
-		copyTexture();
-		displayTexture();
-
-		++m_frames;
-
-		if (!m_vsync) {
-			const auto elapsedTicks = ::SDL_GetTicks() - m_startTicks;
-			const auto neededTicks = (m_frames / fps()) * 1000.0;
-			const auto sleepNeeded = (int)(neededTicks - elapsedTicks);
-			if (sleepNeeded > 0) {
-				::SDL_Delay(sleepNeeded);
-			}
+void Game::handleEvents() {
+	::SDL_Event e;
+	while (::SDL_PollEvent(&e)) {
+		switch (e.type) {
+		case SDL_QUIT:
+			lowerPOWER();
+			break;
+		case SDL_KEYDOWN:
+			handleKeyDown(e.key.keysym.sym);
+			break;
+		case SDL_KEYUP:
+			handleKeyUp(e.key.keysym.sym);
+			break;
+		case SDL_JOYBUTTONDOWN:
+			handleJoyButtonDown(e.jbutton);
+			break;
+		case SDL_JOYBUTTONUP:
+			handleJoyButtonUp(e.jbutton);
+			break;
+		case SDL_CONTROLLERBUTTONDOWN:
+			handleControllerButtonDown(e.cbutton);
+			break;
+		case SDL_CONTROLLERBUTTONUP:
+			handleControllerButtonUp(e.cbutton);
+			break;
+		case SDL_JOYDEVICEADDED:
+			addJoystick(e);
+			break;
+		case SDL_JOYDEVICEREMOVED:
+			removeJoystick(e);
+			break;
 		}
 	}
+}
+
+void Game::draw() {
+	updateTexture();
+	copyTexture();
+	displayTexture();
+}
+
+bool Game::maybeSynchronise() {
+	++m_frames;
+	const bool synchronising = !m_vsync;
+	if (synchronising)
+		synchronise();
+	return synchronising;
+}
+
+void Game::synchronise() {
+	const auto elapsedTicks = ::SDL_GetTicks() - m_startTicks;
+	const auto neededTicks = (m_frames / fps()) * 1000.0;
+	const auto sleepNeeded = (int)(neededTicks - elapsedTicks);
+	if (sleepNeeded > 0)
+		::SDL_Delay(sleepNeeded);
 }
 
 void Game::removeJoystick(SDL_Event& e) {
