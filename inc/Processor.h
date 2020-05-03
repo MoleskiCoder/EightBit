@@ -15,7 +15,7 @@ namespace EightBit {
 		// x: sign extend this b-bit number to r
 		[[nodiscard]] static int8_t signExtend(int b, uint8_t x) noexcept;
 
-		virtual ~Processor() = default;
+		~Processor() = default;
 
 		[[nodiscard]] auto& PC() noexcept { return m_pc; }
 

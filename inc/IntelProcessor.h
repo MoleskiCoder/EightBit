@@ -34,10 +34,10 @@ namespace EightBit {
 			}
 		};
 
-		virtual ~IntelProcessor() = default;
+		~IntelProcessor() = default;
 
 		[[nodiscard]] const auto& getDecodedOpcode(const size_t i) const noexcept {
-			return m_decodedOpcodes.at(i);
+			return m_decodedOpcodes[i];
 		}
 
 		[[nodiscard]] auto& MEMPTR() noexcept { return m_memptr; }
@@ -111,13 +111,13 @@ namespace EightBit {
 		[[nodiscard]] static auto calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) noexcept {
 			static std::array<int, 8> halfCarryTableAdd = { { 0, 0, 1, 0, 1, 0, 1, 1} };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
-			return halfCarryTableAdd.at(index & Mask3);
+			return halfCarryTableAdd[index & Mask3];
 		}
 
 		[[nodiscard]] static auto calculateHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) noexcept {
 			std::array<int, 8> halfCarryTableSub = { { 0, 1, 1, 1, 0, 0, 0, 1 } };
 			const auto index = buildHalfCarryIndex(before, value, calculation);
-			return halfCarryTableSub.at(index & Mask3);
+			return halfCarryTableSub[index & Mask3];
 		}
 
 		void handleRESET() override;
