@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <ios>
+#include <sstream>
 #include <map>
 #include <optional>
 #include <vector>
