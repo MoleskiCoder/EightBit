@@ -1,10 +1,15 @@
 LDFLAGS += -g
 
+LDFLAGS_OPT = -flto
+LDFLAGS_COVERAGE = -lgcov
+LDFLAGS_PROFILE = $(LDFLAGS_COVERAGE) $(LDFLAGS_OPT)
+
+opt: LDFLAGS += $(LDFLAGS_OPT)
 opt: $(EXE)
 debug: $(EXE)
-coverage: LDFLAGS += -lgcov
+coverage: LDFLAGS += $(LDFLAGS_COVERAGE)
 coverage: $(EXE)
-profile: LDFLAGS += -lgcov
+profile: LDFLAGS += $(LDFLAGS_PROFILE)
 profile: $(EXE)
 profiled: $(EXE)
 
