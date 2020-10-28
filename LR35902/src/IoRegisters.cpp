@@ -11,7 +11,7 @@ EightBit::GameBoy::IoRegisters::IoRegisters(Bus& bus)
 
 void EightBit::GameBoy::IoRegisters::reset() {
 	poke(NR52, 0xf1);
-	poke(LCDC, DisplayBackground | BackgroundCharacterDataSelection | LcdEnable);
+	poke(LCDC, BG_EN | BG_MAP | LCD_EN);
 	m_divCounter = 0xabcc;
 	m_timerCounter = 0;
 }

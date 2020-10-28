@@ -22,10 +22,10 @@ void EightBit::GameBoy::Display::render() {
 	m_scanLine = m_bus.IO().peek(IoRegisters::LY);
 	if (m_scanLine < RasterHeight) {
 		m_control = m_bus.IO().peek(IoRegisters::LCDC);
-		if (m_control & IoRegisters::LcdEnable) {
-			if (m_control & IoRegisters::DisplayBackground)
+		if (m_control & IoRegisters::LCD_EN) {
+			if (m_control & IoRegisters::BG_EN)
 				renderBackground();
-			if (m_control & IoRegisters::ObjectEnable)
+			if (m_control & IoRegisters::OBJ_EN)
 				renderObjects();
 		}
 	}
@@ -49,7 +49,7 @@ void EightBit::GameBoy::Display::loadObjectAttributes() {
 
 void EightBit::GameBoy::Display::renderObjects() {
 	
-	const auto objBlockHeight = (m_control & IoRegisters::ObjectBlockCompositionSelection) ? 16 : 8;
+	const auto objBlockHeight = (m_control & IoRegisters::OBJ_SIZE) ? 16 : 8;
 
 	const std::array<std::array<int, 4>, 2> palettes = {
 		createPalette(IoRegisters::OBP0),
@@ -90,9 +90,9 @@ void EightBit::GameBoy::Display::renderBackground() {
 
 	const auto palette = createPalette(IoRegisters::BGP);
 
-	const auto window = !!(m_control & IoRegisters::WindowEnable);
-	const auto bgArea = (m_control & IoRegisters::BackgroundCodeAreaSelection) ? 0x1c00 : 0x1800;
-	const auto bgCharacters = (m_control & IoRegisters::BackgroundCharacterDataSelection) ? 0 : 0x800;
+	const auto window = !!(m_control & IoRegisters::WIN_EN);
+	const auto bgArea = (m_control & IoRegisters::BG_MAP) ? 0x1c00 : 0x1800;
+	const auto bgCharacters = (m_control & IoRegisters::TILE_SEL) ? 0 : 0x1000;
 
 	const auto wx = m_bus.IO().peek(IoRegisters::WX);
 	const auto wy = m_bus.IO().peek(IoRegisters::WY);
@@ -103,11 +103,12 @@ void EightBit::GameBoy::Display::renderBackground() {
 	const auto scrollX = m_bus.IO().peek(IoRegisters::SCX);
 	const auto scrollY = m_bus.IO().peek(IoRegisters::SCY);
 
-	renderBackground(bgArea, bgCharacters, offsetX - scrollX, offsetY - scrollY, palette);
+	const auto offsetType = bgCharacters == 0 ? tile_offset_t::Unsigned : tile_offset_t::Signed;
+	renderBackground(bgArea, bgCharacters, offsetType, offsetX - scrollX, offsetY - scrollY, palette);
 }
 
 void EightBit::GameBoy::Display::renderBackground(
-		int bgArea, int bgCharacters,
+		int bgArea, int bgCharacters, tile_offset_t offsetType,
 		int offsetX, int offsetY,
 		const std::array<int, 4>& palette) {
 
@@ -118,7 +119,8 @@ void EightBit::GameBoy::Display::renderBackground(
 
 		const auto character = m_vram.peek(address++);
 
-		auto definition = CharacterDefinition(m_vram, bgCharacters + 16 * character);
+		const auto definitionOffset = offsetType == tile_offset_t::Signed ? 16 * (int8_t)character : 16 * character;
+		auto definition = CharacterDefinition(m_vram, bgCharacters + definitionOffset);
 		renderTile(
 			8,
 			column * 8 + offsetX, row * 8 + offsetY,

@@ -192,7 +192,7 @@ EightBit::MemoryMapping EightBit::GameBoy::Bus::mapping(uint16_t address) {
 }
 
 void EightBit::GameBoy::Bus::runRasterLines() {
-	m_enabledLCD = !!(IO().peek(IoRegisters::LCDC) & IoRegisters::LcdEnable);
+	m_enabledLCD = !!(IO().peek(IoRegisters::LCDC) & IoRegisters::LCD_EN);
 	IO().resetLY();
 	runRasterLines(Display::RasterHeight);
 }

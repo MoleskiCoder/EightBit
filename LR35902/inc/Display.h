@@ -35,6 +35,10 @@ namespace EightBit {
 			void loadObjectAttributes();
 
 		private:
+			enum class tile_offset_t  {
+				Signed, Unsigned,
+			};
+
 			std::array<uint32_t, PixelCount> m_pixels = { 0 };
 			Bus& m_bus;
 			Ram& m_oam;
@@ -49,6 +53,7 @@ namespace EightBit {
 			void renderBackground();
 			void renderBackground(
 				int bgArea, int bgCharacters,
+				tile_offset_t offsetType, 
 				int offsetX, int offsetY,
 				const std::array<int, 4>& palette);
 

@@ -88,14 +88,14 @@ namespace EightBit {
 			};
 
 			enum LcdcControl {
-				DisplayBackground = Chip::Bit0,
-				ObjectEnable = Chip::Bit1,
-				ObjectBlockCompositionSelection = Chip::Bit2,
-				BackgroundCodeAreaSelection = Chip::Bit3,
-				BackgroundCharacterDataSelection = Chip::Bit4,
-				WindowEnable = Chip::Bit5,
-				WindowCodeAreaSelection = Chip::Bit6,
-				LcdEnable = Chip::Bit7
+				LCD_EN = Chip::Bit7,	// 0: Stop completely (no picture on screen), 1 : operation
+				WIN_MAP = Chip::Bit6,	// 0 : $9800 - $9BFF, 1 : $9C00 - $9FFF
+				WIN_EN = Chip::Bit5,	// 0 : off, 1 : on
+				TILE_SEL = Chip::Bit4,	// 0 : $8800 - $97FF, 1 : $8000 - $8FFF < -Same area as OBJ
+				BG_MAP = Chip::Bit3,	// 0 : $9800 - $9BFF, 1 : $9C00 - $9FFF
+				OBJ_SIZE = Chip::Bit2,	// 0 : 8 * 8, 1 : 8 * 16 (width * height)
+				OBJ_EN = Chip::Bit1,	// 0 : off, 1 : on
+				BG_EN = Chip::Bit0,		// 0 : off, 1 : on
 			};
 
 			enum LcdStatusMode {
