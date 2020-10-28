@@ -25,7 +25,7 @@ namespace EightBit {
 			auto lowPriority() const { return !priority(); }
 			auto flipY() const { return !!(flags() & Chip::Bit6); }
 			auto flipX() const { return !!(flags() & Chip::Bit5); }
-			auto palette() const { return (flags() & Chip::Bit4) >> 3; }
+			auto palette() const { return (flags() & Chip::Bit4) >> 4; }
 
 		private:
 			uint8_t m_positionY;
