@@ -26,7 +26,7 @@ namespace EightBit {
 			Signal<LR35902> ExecutingInstruction;
 			Signal<LR35902> ExecutedInstruction;
 
-			auto clockCycles() const {
+			[[nodiscard]] auto clockCycles() const noexcept {
 				return cycles() * 4;
 			}
 
@@ -34,6 +34,8 @@ namespace EightBit {
 			virtual register16_t& BC() final;
 			virtual register16_t& DE() final;
 			virtual register16_t& HL() final;
+
+			uint8_t maskedInterrupts();
 
 		protected:
 			virtual int execute() final;
@@ -55,7 +57,7 @@ namespace EightBit {
 
 			bool m_prefixCB = false;
 
-			bool& IME() { return m_ime; }
+			bool& IME() noexcept { return m_ime; }
 
 			auto R(const int r) {
 				ASSUME(r >= 0);
@@ -165,9 +167,9 @@ namespace EightBit {
 			void increment(uint8_t& operand);
 			void decrement(uint8_t& operand);
 
-			void stop() { m_stopped = true; }
-			void start() { m_stopped = false; }
-			bool stopped() const { return m_stopped; }
+			void stop(bool value = true) noexcept { m_stopped = value; }
+			void start() noexcept { stop(false); }
+			bool stopped() const noexcept { return m_stopped; }
 
 			void di();
 			void ei();

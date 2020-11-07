@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include <Processor.h>
+#include <Chip.h>
 
 namespace EightBit {
 
@@ -14,18 +14,18 @@ namespace EightBit {
 			ObjectAttribute() = default;
 			ObjectAttribute(Ram& ram, uint16_t address);
 
-			auto positionY() const { return m_positionY; }
-			auto positionX() const { return m_positionX; }
-			auto pattern() const { return m_pattern; }
-			auto flags() const { return m_flags; }
+			[[nodiscard]] auto positionY() const noexcept { return m_positionY; }
+			[[nodiscard]] auto positionX() const noexcept { return m_positionX; }
+			[[nodiscard]] auto pattern() const noexcept { return m_pattern; }
+			[[nodiscard]] auto flags() const noexcept { return m_flags; }
 
-			auto priority() const { return flags() & Chip::Bit7; }
+			[[nodiscard]] auto priority() const noexcept { return flags() & Chip::Bit7; }
 
-			auto highPriority() const { return !!priority(); }
-			auto lowPriority() const { return !priority(); }
-			auto flipY() const { return !!(flags() & Chip::Bit6); }
-			auto flipX() const { return !!(flags() & Chip::Bit5); }
-			auto palette() const { return (flags() & Chip::Bit4) >> 4; }
+			[[nodiscard]] auto highPriority() const noexcept { return !!priority(); }
+			[[nodiscard]] auto lowPriority() const noexcept { return !priority(); }
+			[[nodiscard]] auto flipY() const noexcept { return !!(flags() & Chip::Bit6); }
+			[[nodiscard]] auto flipX() const noexcept { return !!(flags() & Chip::Bit5); }
+			[[nodiscard]] auto palette() const noexcept { return (flags() & Chip::Bit4) >> 4; }
 
 		private:
 			uint8_t m_positionY;

@@ -10,7 +10,7 @@ namespace EightBit {
 	public:
 		virtual ~BigEndianProcessor() = default;
 
-		register16_t peekWord(register16_t address) final;
+		[[nodiscard]] register16_t peekWord(register16_t address) final;
 		void pokeWord(register16_t address, register16_t value) final;
 
 	protected:

@@ -20,7 +20,7 @@ namespace EightBit {
 			static std::string state(LR35902& cpu);
 			std::string disassemble(LR35902& cpu);
 
-			static std::string flag(uint8_t value, int flag, const std::string& represents);
+			static std::string flag(uint8_t value, int flag, std::string represents);
 			static std::string flags(uint8_t value);
 			static std::string hex(uint8_t value);
 			static std::string hex(uint16_t value);
@@ -70,7 +70,7 @@ namespace EightBit {
 			static std::string cc(int flag);
 			static std::string alu(int which);
 
-			Bus& BUS() { return m_bus; }
+			Bus& BUS() noexcept { return m_bus; }
 		};
 	}
 }

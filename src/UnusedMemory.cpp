@@ -16,7 +16,7 @@ int EightBit::UnusedMemory::load(std::ifstream&, int, int, int) {
 	throw std::logic_error("load operation not allowed.");
 }
 
-int EightBit::UnusedMemory::load(const std::string&, int, int, int) {
+int EightBit::UnusedMemory::load(std::string, int, int, int) {
 	throw std::logic_error("load operation not allowed.");
 }
 		

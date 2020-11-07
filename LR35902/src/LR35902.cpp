@@ -297,6 +297,12 @@ void EightBit::GameBoy::LR35902::ccf() {
 	F() = clearBit(F(), CF, F() & CF);
 }
 
+uint8_t EightBit::GameBoy::LR35902::maskedInterrupts() {
+	const auto interruptEnable = BUS().peek(IoRegisters::BASE + IoRegisters::IE);
+	const auto interruptFlags = m_bus.IO().peek(IoRegisters::IF);
+	return interruptEnable & interruptFlags;
+}
+
 int EightBit::GameBoy::LR35902::step() {
 
 	ExecutingInstruction.fire(*this);
@@ -304,10 +310,7 @@ int EightBit::GameBoy::LR35902::step() {
 	resetCycles();
 	if (LIKELY(powered())) {
 
-		const auto interruptEnable = BUS().peek(IoRegisters::BASE + IoRegisters::IE);
-		const auto interruptFlags = m_bus.IO().peek(IoRegisters::IF);
-
-		const auto masked = interruptEnable & interruptFlags;
+		const auto masked = maskedInterrupts();
 		if (masked) {
 			if (IME()) {
 				m_bus.IO().poke(IoRegisters::IF, 0);
@@ -331,7 +334,6 @@ int EightBit::GameBoy::LR35902::step() {
 
 		m_bus.IO().checkTimers(clockCycles());
 		m_bus.IO().transferDma();
-
 	}
 	ExecutedInstruction.fire(*this);
 	return clockCycles();

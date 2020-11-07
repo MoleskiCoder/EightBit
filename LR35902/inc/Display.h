@@ -29,9 +29,9 @@ namespace EightBit {
 
 			Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram);
 
-			const std::array<uint32_t, PixelCount>& pixels() const;
+			[[nodiscard]] const auto& pixels() const noexcept { return m_pixels; }
 
-			void render();
+			void renderCurrentScanline();
 			void loadObjectAttributes();
 
 		private:
@@ -48,7 +48,7 @@ namespace EightBit {
 			uint8_t m_control = 0;
 			uint8_t m_scanLine = 0;
 
-			std::array<int, 4> createPalette(int address);
+			[[nodiscard]] std::array<int, 4> createPalette(int address);
 
 			void renderBackground();
 			void renderBackground(
@@ -59,12 +59,24 @@ namespace EightBit {
 
 			void renderObjects();
 
+			void renderSpriteTile(
+				int height,
+				int drawX, int drawY,
+				bool flipX, bool flipY,
+				const std::array<int, 4>& palette,
+				const CharacterDefinition& definition);
+
+			void renderBackgroundTile(
+				int drawX, int drawY,
+				const std::array<int, 4>& palette,
+				const CharacterDefinition& definition);
+
 			void renderTile(
 				int height,
 				int drawX, int drawY,
 				bool flipX, bool flipY, bool allowTransparencies,
 				const std::array<int, 4>& palette,
-				CharacterDefinition& definition);
+				const CharacterDefinition& definition);
 		};
 	}
 }

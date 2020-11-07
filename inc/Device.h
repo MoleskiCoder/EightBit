@@ -89,9 +89,9 @@ namespace EightBit {
 			Low, High
 		};
 
-		static constexpr auto raised(const PinLevel line) { return line == PinLevel::High; }
+		[[nodiscard]] static constexpr auto raised(const PinLevel line) { return line == PinLevel::High; }
 		static void raise(PinLevel& line) noexcept { line = PinLevel::High; }
-		static constexpr auto lowered(const PinLevel line) { return line == PinLevel::Low; }
+		[[nodiscard]] static constexpr auto lowered(const PinLevel line) { return line == PinLevel::Low; }
 		static void lower(PinLevel& line) noexcept { line = PinLevel::Low; }
 
 		static void match(PinLevel& line, int condition) noexcept { match(line, condition != 0); }

@@ -22,7 +22,7 @@ namespace EightBit {
 		[[nodiscard]] virtual uint8_t& reference(uint16_t);
 
 		virtual int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) = 0;
-		virtual int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) = 0;
+		virtual int load(std::string path, int writeOffset = 0, int readOffset = 0, int limit = -1) = 0;
 		virtual int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) = 0;
 
 	protected:

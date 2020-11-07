@@ -8,7 +8,7 @@ EightBit::GameBoy::CharacterDefinition::CharacterDefinition(Ram& vram, const uin
   m_address(address) {
 }
 
-std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) {
+std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) const {
 
 	std::array<int, 8> returned;
 
@@ -26,7 +26,8 @@ std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) {
 	
 		const auto colour = bitHigh | bitLow;
 	
-		returned[7 - bit] = colour;
+		const auto index = 7 - bit;
+		returned[index] = colour;
 	}
 
 	return returned;

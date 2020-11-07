@@ -2,6 +2,7 @@
 #pragma once
 #endif
 
+#include <cassert>
 #include <cstdint>
 #include <stdexcept>
 

@@ -25,7 +25,7 @@ int EightBit::Rom::load(std::ifstream& file, std::vector<uint8_t>& output, const
 	return size;
 }
 
-int EightBit::Rom::load(const std::string& path, std::vector<uint8_t>& output, const int writeOffset, const int readOffset, const int limit, const int maximumSize) {
+int EightBit::Rom::load(const std::string path, std::vector<uint8_t>& output, const int writeOffset, const int readOffset, const int limit, const int maximumSize) {
 
 	std::ifstream file;
 	file.exceptions(std::ios::failbit | std::ios::badbit);
@@ -53,7 +53,7 @@ int EightBit::Rom::load(std::ifstream& file, const int writeOffset, const int re
 	return load(file, m_bytes, writeOffset, readOffset, limit, maximumSize);
 }
 
-int EightBit::Rom::load(const std::string& path, const int writeOffset, const int readOffset, const int limit) {
+int EightBit::Rom::load(const std::string path, const int writeOffset, const int readOffset, const int limit) {
 	const auto maximumSize = size() - writeOffset;
 	return load(path, m_bytes, writeOffset, readOffset, limit, maximumSize);
 }

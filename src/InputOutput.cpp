@@ -30,7 +30,7 @@ int EightBit::InputOutput::load(std::ifstream&, int, int, int) {
 	throw std::logic_error("load operation not allowed.");
 }
 
-int EightBit::InputOutput::load(const std::string&, int, int, int) {
+int EightBit::InputOutput::load(std::string, int, int, int) {
 	throw std::logic_error("load operation not allowed.");
 }
 

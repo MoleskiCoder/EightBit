@@ -525,7 +525,7 @@ void EightBit::GameBoy::Disassembler::disassembleOther(
 	}
 }
 
-std::string EightBit::GameBoy::Disassembler::flag(uint8_t value, int flag, const std::string& represents) {
+std::string EightBit::GameBoy::Disassembler::flag(uint8_t value, int flag, const std::string represents) {
 	std::ostringstream output;
 	output << (value & flag ? represents : "-");
 	return output.str();

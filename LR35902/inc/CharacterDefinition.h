@@ -12,7 +12,7 @@ namespace EightBit {
 		public:
 			CharacterDefinition(Ram& vram, uint16_t address);
 
-			std::array<int, 8> get(int row);
+			[[nodiscard]] std::array<int, 8> get(int row) const;
 
 		private:
 			Ram& m_vram;

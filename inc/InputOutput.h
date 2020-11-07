@@ -17,10 +17,10 @@ namespace EightBit {
 		[[nodiscard]] uint8_t& reference(uint16_t address) override;
 
 		int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) override;
-		int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) override;
+		int load(std::string path, int writeOffset = 0, int readOffset = 0, int limit = -1) override;
 		int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) override;
 
-		AccessType getAccessType() const noexcept { return m_access; }
+		[[nodiscard]] AccessType getAccessType() const noexcept { return m_access; }
 		void setAccessType(AccessType value) noexcept { m_access = value; }
 
 		auto readPort(uint8_t port, AccessType access) {

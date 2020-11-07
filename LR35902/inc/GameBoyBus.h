@@ -39,21 +39,21 @@ namespace EightBit {
 			virtual void raisePOWER() override;
 			virtual void lowerPOWER() override;
 
-			auto& CPU() { return m_cpu; }
-			auto& VRAM() { return m_videoRam; }
-			auto& OAMRAM() { return m_oamRam; }
-			auto& IO() { return m_ioPorts; }
+			[[nodiscard]] auto& CPU() noexcept { return m_cpu; }
+			[[nodiscard]] auto& VRAM() noexcept { return m_videoRam; }
+			[[nodiscard]] auto& OAMRAM() noexcept { return m_oamRam; }
+			[[nodiscard]] auto& IO() noexcept { return m_ioPorts; }
 
 			void reset();
 
-			void disableGameRom() { m_disableGameRom = true; }
-			void enableGameRom() { m_disableGameRom = false; }
+			void disableGameRom() noexcept { m_disableGameRom = true; }
+			void enableGameRom() noexcept { m_disableGameRom = false; }
 
-			bool gameRomDisabled() const { return m_disableGameRom; }
-			bool gameRomEnabled() const { return !gameRomDisabled(); }
+			[[nodiscard]] bool gameRomDisabled() const noexcept { return m_disableGameRom; }
+			[[nodiscard]] bool gameRomEnabled() const noexcept { return !gameRomDisabled(); }
 
-			void loadBootRom(const std::string& path);
-			void loadGameRom(const std::string& path);
+			void loadBootRom(std::string path);
+			void loadGameRom(std::string path);
 
 			void runRasterLines();
 			void runVerticalBlankLines();

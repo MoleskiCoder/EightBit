@@ -14,20 +14,15 @@ EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& b
   m_colours(colours) {
 }
 
-const std::array<uint32_t, EightBit::GameBoy::Display::PixelCount>& EightBit::GameBoy::Display::pixels() const {
-	return m_pixels;
-}
-
-void EightBit::GameBoy::Display::render() {
+void EightBit::GameBoy::Display::renderCurrentScanline() {
 	m_scanLine = m_bus.IO().peek(IoRegisters::LY);
 	if (m_scanLine < RasterHeight) {
 		m_control = m_bus.IO().peek(IoRegisters::LCDC);
-		if (m_control & IoRegisters::LCD_EN) {
-			if (m_control & IoRegisters::BG_EN)
-				renderBackground();
-			if (m_control & IoRegisters::OBJ_EN)
-				renderObjects();
-		}
+		assert(m_control & IoRegisters::LCD_EN);
+		if (m_control & IoRegisters::BG_EN)
+			renderBackground();
+		if (m_control & IoRegisters::OBJ_EN)
+			renderObjects();
 	}
 }
 
@@ -71,15 +66,15 @@ void EightBit::GameBoy::Display::renderObjects() {
 			const auto drawX = spriteX - 8;
 
 			const auto sprite = current.pattern();
-			auto definition = CharacterDefinition(m_vram, characterAddressMultiplier * sprite);
+			const auto definition = CharacterDefinition(m_vram, characterAddressMultiplier * sprite);
 			const auto& palette = palettes[current.palette()];
 			const auto flipX = current.flipX();
 			const auto flipY = current.flipY();
 
-			renderTile(
+			renderSpriteTile(
 				objBlockHeight,
 				drawX, drawY,
-				flipX, flipY, true,
+				flipX, flipY,
 				palette,
 				definition);
 		}
@@ -120,14 +115,38 @@ void EightBit::GameBoy::Display::renderBackground(
 		const auto character = m_vram.peek(address++);
 
 		const auto definitionOffset = offsetType == tile_offset_t::Signed ? 16 * (int8_t)character : 16 * character;
-		auto definition = CharacterDefinition(m_vram, bgCharacters + definitionOffset);
-		renderTile(
-			8,
+		const auto definition = CharacterDefinition(m_vram, bgCharacters + definitionOffset);
+		renderBackgroundTile(
 			column * 8 + offsetX, row * 8 + offsetY,
-			false, false, false,
 			palette,
 			definition);
 	}
+}
+
+void EightBit::GameBoy::Display::renderSpriteTile(
+		const int height,
+		const int drawX, const int drawY,
+		const bool flipX, const bool flipY,
+		const std::array<int, 4>& palette,
+		const CharacterDefinition& definition) {
+	renderTile(
+		height,
+		drawX, drawY,
+		flipX, flipY, true,
+		palette,
+		definition);
+}
+
+void EightBit::GameBoy::Display::renderBackgroundTile(
+		const int drawX, const int drawY,
+		const std::array<int, 4>& palette,
+		const CharacterDefinition& definition) {
+	renderTile(
+		8,
+		drawX, drawY,
+		false, false, false,
+		palette,
+		definition);
 }
 
 void EightBit::GameBoy::Display::renderTile(
@@ -135,7 +154,7 @@ void EightBit::GameBoy::Display::renderTile(
 		const int drawX, const int drawY,
 		const bool flipX, const bool flipY, const bool allowTransparencies,
 		const std::array<int, 4>& palette,
-		CharacterDefinition& definition) {
+		const CharacterDefinition& definition) {
 
 	const auto width = 8;
 
@@ -160,7 +179,7 @@ void EightBit::GameBoy::Display::renderTile(
 		const auto colour = rowDefinition[cx];
 		if (!allowTransparencies || (allowTransparencies && (colour > 0))) {
 			const auto outputPixel = lineAddress + x;
-			m_pixels[outputPixel] = m_colours->getColour(palette[colour]);
+			m_pixels[outputPixel] = m_colours->colour(palette[colour]);
 		}
 	}
 }

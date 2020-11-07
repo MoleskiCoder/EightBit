@@ -20,7 +20,7 @@ namespace EightBit {
 		[[nodiscard]] uint8_t peek(uint16_t address) const final;
 
 		int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
-		int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
+		int load(std::string path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 		int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 
 	protected:

@@ -6,8 +6,8 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 	for (int i = 0; i < 0x100; ++i)
 		m_decodedOpcodes.at(i) = i;
 
-	LoweredHALT.connect([this](EventArgs) { --PC(); });
-	RaisedHALT.connect([this](EventArgs) { ++PC(); });
+	LoweredHALT.connect([this](EventArgs) noexcept { --PC(); });
+	RaisedHALT.connect([this](EventArgs) noexcept { ++PC(); });
 
 	RaisedPOWER.connect([this](EventArgs) {
 		PC() = SP() = AF() = BC() = DE() = HL() = Mask16;

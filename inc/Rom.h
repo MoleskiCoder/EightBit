@@ -23,14 +23,14 @@ namespace EightBit {
 
 	public:
 		static int load(std::ifstream& file, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
-		static int load(const std::string& path, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
+		static int load(std::string path, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
 
 		Rom(size_t size = 0);
 
 		[[nodiscard]] size_t size() const final;
 
 		int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
-		int load(const std::string& path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
+		int load(std::string path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 		int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 
 		[[nodiscard]] uint8_t peek(uint16_t address) const final;

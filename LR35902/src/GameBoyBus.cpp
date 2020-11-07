@@ -25,11 +25,11 @@ void EightBit::GameBoy::Bus::reset() {
 	CPU().lowerRESET();
 }
 
-void EightBit::GameBoy::Bus::loadBootRom(const std::string& path) {
+void EightBit::GameBoy::Bus::loadBootRom(const std::string path) {
 	m_bootRom.load(path);
 }
 
-void EightBit::GameBoy::Bus::loadGameRom(const std::string& path) {
+void EightBit::GameBoy::Bus::loadGameRom(const std::string path) {
 	const auto bankSize = 0x4000;
 	m_gameRomBanks.resize(1);
 	const auto size = m_gameRomBanks[0].load(path, 0, 0, bankSize);

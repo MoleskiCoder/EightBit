@@ -1,7 +1,8 @@
 #pragma once
 
-#include <vector>
+#include <array>
 #include <cstdint>
+#include <cassert>
 
 namespace EightBit {
 	namespace GameBoy {
@@ -14,16 +15,15 @@ namespace EightBit {
 				Dark
 			};
 
-			AbstractColourPalette() noexcept
-			: m_colours(4) {
-			}
+			AbstractColourPalette() = default;
 
-			auto getColour(size_t index) const {
+			[[nodiscard]] auto colour(size_t index) const noexcept {
+				assert(index < m_colours.size());
 				return m_colours[index];
 			}
 
 		protected:
-			std::vector<uint32_t> m_colours;
+			std::array<uint32_t, 4> m_colours;
 		};
 	}
 }
