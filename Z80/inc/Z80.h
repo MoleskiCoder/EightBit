@@ -4,7 +4,6 @@
 #include <cassert>
 #include <stdexcept>
 
-#include <Bus.h>
 #include <IntelProcessor.h>
 #include <EventArgs.h>
 #include <Signal.h>
@@ -12,6 +11,9 @@
 #include <EightBitCompilerDefinitions.h>
 
 namespace EightBit {
+
+	class Bus;
+
 	class Z80 final : public IntelProcessor {
 	public:
 		struct refresh_t {
@@ -230,13 +232,13 @@ namespace EightBit {
 			ASSUME(rp >= 0);
 			ASSUME(rp <= 3);
 			switch (rp) {
-			case 0:
+			case 0b00:
 				return BC();
-			case 1:
+			case 0b01:
 				return DE();
-			case 2:
+			case 0b10:
 				return HL2();
-			case 3:
+			case 0b11:
 				return SP();
 			default:
 				UNREACHABLE;
@@ -247,13 +249,13 @@ namespace EightBit {
 			ASSUME(rp >= 0);
 			ASSUME(rp <= 3);
 			switch (rp) {
-			case 0:
+			case 0b00:
 				return BC();
-			case 1:
+			case 0b01:
 				return DE();
-			case 2:
+			case 0b10:
 				return HL2();
-			case 3:
+			case 0b11:
 				return AF();
 			default:
 				UNREACHABLE;
@@ -351,11 +353,11 @@ namespace EightBit {
 			}
 		}
 
-		[[nodiscard]] static uint8_t adjustHalfCarryAdd(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
+		[[nodiscard]] static auto adjustHalfCarryAdd(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
 			return setBit(f, HC, calculateHalfCarryAdd(before, value, calculation));
 		}
 
-		[[nodiscard]] static uint8_t adjustHalfCarrySub(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
+		[[nodiscard]] static auto adjustHalfCarrySub(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
 			return setBit(f, HC, calculateHalfCarrySub(before, value, calculation));
 		}
 

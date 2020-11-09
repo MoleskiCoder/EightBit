@@ -136,21 +136,21 @@ namespace EightBit {
 			call(MEMPTR() = { address, 0 });
 		}
 
-		auto callConditional(const int condition) {
+		virtual int callConditional(const int condition) {
 			MEMPTR() = fetchWord();
 			if (condition)
 				call(MEMPTR());
 			return condition;
 		}
 
-		auto jumpConditional(const int condition) {
+		virtual int jumpConditional(const int condition) {
 			MEMPTR() = fetchWord();
 			if (condition)
 				jump(MEMPTR());
 			return condition;
 		}
 
-		auto returnConditional(const int condition) {
+		virtual int returnConditional(const int condition) {
 			if (condition)
 				ret();
 			return condition;
