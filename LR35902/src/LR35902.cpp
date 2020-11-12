@@ -295,10 +295,16 @@ void EightBit::GameBoy::LR35902::ccf(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, CF, f & CF);
 }
 
+uint8_t EightBit::GameBoy::LR35902::enabledInterrupts() {
+	return BUS().peek(IoRegisters::BASE + IoRegisters::IE);
+}
+
+uint8_t EightBit::GameBoy::LR35902::flaggedInterrupts() {
+	return m_bus.IO().peek(IoRegisters::IF);
+}
+
 uint8_t EightBit::GameBoy::LR35902::maskedInterrupts() {
-	const auto interruptEnable = BUS().peek(IoRegisters::BASE + IoRegisters::IE);
-	const auto interruptFlags = m_bus.IO().peek(IoRegisters::IF);
-	return interruptEnable & interruptFlags;
+	return enabledInterrupts() & flaggedInterrupts();
 }
 
 int EightBit::GameBoy::LR35902::step() {

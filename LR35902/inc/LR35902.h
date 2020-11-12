@@ -35,6 +35,10 @@ namespace EightBit {
 			[[nodiscard]] register16_t& DE() final;
 			[[nodiscard]] register16_t& HL() final;
 
+			bool& IME() noexcept { return m_ime; }
+
+			[[nodiscard]] uint8_t enabledInterrupts();
+			[[nodiscard]] uint8_t flaggedInterrupts();
 			[[nodiscard]] uint8_t maskedInterrupts();
 
 		protected:
@@ -88,8 +92,6 @@ namespace EightBit {
 			bool m_stopped = false;
 
 			bool m_prefixCB = false;
-
-			bool& IME() noexcept { return m_ime; }
 
 			[[nodiscard]] auto R(const int r) {
 				ASSUME(r >= 0);

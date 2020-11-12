@@ -31,6 +31,9 @@ std::string EightBit::GameBoy::Disassembler::state(LR35902& cpu) {
 	auto h = cpu.H();
 	auto l = cpu.L();
 
+	const auto maskedInterrupts = cpu.maskedInterrupts();
+	const auto ime = cpu.IME();
+
 	std::ostringstream output;
 
 	output
@@ -41,6 +44,12 @@ std::string EightBit::GameBoy::Disassembler::state(LR35902& cpu) {
 		<< " " << "B=" << hex(b) << " " << "C=" << hex(c)
 		<< " " << "D=" << hex(d) << " " << "E=" << hex(e)
 		<< " " << "H=" << hex(h) << " " << "L=" << hex(l);
+
+	// Interrupt handling
+	output << " IME:" << (ime ? "I" : "-");
+	output << " IE:" << interrupt(cpu.enabledInterrupts());
+	output << " IF:" << interrupt(cpu.flaggedInterrupts());
+	output << " (" << interrupt(cpu.maskedInterrupts()) << ")";
 
 	return output.str();
 }
@@ -682,4 +691,19 @@ std::string EightBit::GameBoy::Disassembler::io(uint8_t value) {
 	default:
 		return hex(value);
 	}
+}
+
+std::string EightBit::GameBoy::Disassembler::interrupt(uint8_t value) {
+	std::ostringstream output;
+	const auto ik = value & IoRegisters::KeypadPressed;
+	output << (ik ? "K" : "-");
+	const auto is = value & IoRegisters::SerialTransfer;
+	output << (is ? "S" : "-");
+	const auto it = value & IoRegisters::TimerOverflow;
+	output << (it ? "T" : "-");
+	const auto id = value & IoRegisters::DisplayControlStatus;
+	output << (id ? "D" : "-");
+	const auto iv = value & IoRegisters::VerticalBlank;
+	output << (iv ? "V" : "-");
+	return output.str();
 }

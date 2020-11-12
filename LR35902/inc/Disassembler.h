@@ -27,6 +27,7 @@ namespace EightBit {
 			static std::string binary(uint8_t value);
 			static std::string decimal(uint8_t value);
 			static std::string io(uint8_t value);
+			static std::string interrupt(uint8_t value);
 
 			static std::string invalid(uint8_t value);
 
