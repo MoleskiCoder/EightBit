@@ -38,7 +38,6 @@ void EightBit::GameBoy::LR35902::handleINT() {
 	raiseHALT();
 	di();
 	restart(BUS().DATA());
-	tick(4);
 }
 
 void EightBit::GameBoy::LR35902::di() {
@@ -83,11 +82,7 @@ bool EightBit::GameBoy::LR35902::convertCondition(const uint8_t f, int flag) {
 }
 
 void EightBit::GameBoy::LR35902::returnConditionalFlag(const uint8_t f, const int flag) {
-	if (convertCondition(f, flag)) {
-		tick(3);
-		ret();
-	}
-	tick(2);
+	returnConditional(convertCondition(f, flag));
 }
 
 void EightBit::GameBoy::LR35902::jrConditionalFlag(const uint8_t f, const int flag) {
@@ -108,6 +103,8 @@ void EightBit::GameBoy::LR35902::reti() {
 }
 
 EightBit::register16_t EightBit::GameBoy::LR35902::add(uint8_t& f, const register16_t operand, const register16_t value) {
+
+	tick();
 
 	const int addition = operand.word + value.word;
 	const register16_t result = addition;
@@ -238,8 +235,7 @@ void EightBit::GameBoy::LR35902::bit(uint8_t& f, const int n, const uint8_t oper
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
 	const auto carry = f & CF;
-	uint8_t discarded = operand;
-	andr(f, discarded, Chip::bit(n));
+	andr(f, operand, Chip::bit(n));
 	f = setBit(f, CF, carry);
 }
 
@@ -331,6 +327,7 @@ int EightBit::GameBoy::LR35902::step() {
 		} else if (UNLIKELY(lowered(INT()))) {
 			handleINT();
 		} else if (UNLIKELY(lowered(HALT()))) {
+			IntelProcessor::memoryRead(PC());
 			Processor::execute(0);	// NOP
 		} else {
 			Processor::execute(fetchByte());
@@ -397,29 +394,17 @@ void EightBit::GameBoy::LR35902::executeCB(const int x, const int y, const int z
 		default:
 			UNREACHABLE;
 		}
-		tick(2);
 		R(z, operand);
 		F() = adjustZero<LR35902>(F(), operand);
-		if (UNLIKELY(z == 6))
-			tick(2);
 		break;
 	} case 1:	// BIT y, r[z]
 		bit(F(), y, R(z));
-		tick(2);
-		if (UNLIKELY(z == 6))
-			tick(2);
 		break;
 	case 2:	// RES y, r[z]
 		R(z, res(y, R(z)));
-		tick(2);
-		if (UNLIKELY(z == 6))
-			tick(2);
 		break;
 	case 3:	// SET y, r[z]
 		R(z, set(y, R(z)));
-		tick(2);
-		if (UNLIKELY(z == 6))
-			tick(2);
 		break;
 	default:
 		UNREACHABLE;
@@ -433,20 +418,16 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 		case 0:	// Relative jumps and assorted ops
 			switch (y) {
 			case 0:	// NOP
-				tick();
 				break;
 			case 1:	// GB: LD (nn),SP
 				BUS().ADDRESS() = fetchWord();
 				setWord(SP());
-				tick(5);
 				break;
 			case 2:	// GB: STOP
 				stop();
-				tick();
 				break;
 			case 3:	// JR d
 				jr(fetchByte());
-				tick(4);
 				break;
 			case 4: // JR cc,d
 			case 5:
@@ -462,11 +443,9 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			switch (q) {
 			case 0: // LD rp,nn
 				RP(p) = fetchWord();
-				tick(3);
 				break;
 			case 1:	// ADD HL,rp
 				HL() = add(F(), HL(), RP(p));
-				tick(2);
 				break;
 			default:
 				UNREACHABLE;
@@ -478,19 +457,15 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				switch (p) {
 				case 0:	// LD (BC),A
 					IntelProcessor::memoryWrite(BC(), A());
-					tick(2);
 					break;
 				case 1:	// LD (DE),A
 					IntelProcessor::memoryWrite(DE(), A());
-					tick(2);
 					break;
 				case 2:	// GB: LDI (HL),A
 					IntelProcessor::memoryWrite(HL()++, A());
-					tick(2);
 					break;
 				case 3: // GB: LDD (HL),A
 					IntelProcessor::memoryWrite(HL()--, A());
-					tick(2);
 					break;
 				default:
 					UNREACHABLE;
@@ -500,19 +475,15 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				switch (p) {
 				case 0:	// LD A,(BC)
 					A() = IntelProcessor::memoryRead(BC());
-					tick(2);
 					break;
 				case 1:	// LD A,(DE)
 					A() = IntelProcessor::memoryRead(DE());
-					tick(2);
 					break;
 				case 2:	// GB: LDI A,(HL)
 					A() = IntelProcessor::memoryRead(HL()++);
-					tick(2);
 					break;
 				case 3:	// GB: LDD A,(HL)
 					A() = IntelProcessor::memoryRead(HL()--);
-					tick(2);
 					break;
 				default:
 					UNREACHABLE;
@@ -533,25 +504,18 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			default:
 				UNREACHABLE;
 			}
-			tick(2);
+			tick();
 			break;
 		case 4: { // 8-bit INC
 			auto operand = R(y);
 			R(y, increment(F(), operand));
-			tick();
-			if (UNLIKELY(y == 6))
-				tick(2);
 			break;
 		} case 5: {	// 8-bit DEC
 			auto operand = R(y);
 			R(y, decrement(F(), operand));
-			tick();
-			if (UNLIKELY(y == 6))
-				tick(2);
 			break;
 		} case 6:	// 8-bit load immediate
 			R(y, fetchByte());	// LD r,n
-			tick(2);
 			break;
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
@@ -582,7 +546,6 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			default:
 				UNREACHABLE;
 			}
-			tick();
 			break;
 		default:
 			UNREACHABLE;
@@ -593,10 +556,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			lowerHALT();
 		} else {
 			R(y, R(z));
-			if (UNLIKELY((y == 6) || (z == 6))) // M operations
-				tick();
 		}
-		tick();
 		break;
 	case 2:	// Operate on accumulator and register/memory location
 		switch (y) {
@@ -627,9 +587,6 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 		default:
 			UNREACHABLE;
 		}
-		tick();
-		if (UNLIKELY(z == 6))
-			tick();
 		break;
 	case 3:
 		switch (z) {
@@ -643,11 +600,11 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				break;
 			case 4:	// GB: LD (FF00 + n),A
 				IntelProcessor::memoryWrite(IoRegisters::BASE + fetchByte(), A());
-				tick(3);
 				break;
 			case 5: { // GB: ADD SP,dd
 					const auto before = SP().word;
 					const int8_t value = fetchByte();
+					tick(2);
 					const auto result = before + value;
 					SP() = result;
 					const auto carried = before ^ value ^ (result & Mask16);
@@ -655,15 +612,14 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 					F() = setBit(F(), CF, carried & Bit8);
 					F() = setBit(F(), HC, carried & Bit4);
 				}
-				tick(4);
 				break;
 			case 6:	// GB: LD A,(FF00 + n)
 				A() = IntelProcessor::memoryRead(IoRegisters::BASE + fetchByte());
-				tick(3);
 				break;
 			case 7: { // GB: LD HL,SP + dd
 					const auto before = SP().word;
 					const int8_t value = fetchByte();
+					tick();
 					const auto result = before + value;
 					HL() = result;
 					const auto carried = before ^ value ^ (result & Mask16);
@@ -671,7 +627,6 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 					F() = setBit(F(), CF, carried & Bit8);
 					F() = setBit(F(), HC, carried & Bit4);
 				}
-				tick(3);
 				break;
 			default:
 				UNREACHABLE;
@@ -681,25 +636,21 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			switch (q) {
 			case 0:	// POP rp2[p]
 				RP2(p) = popWord();
-				tick(3);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// RET
 					ret();
-					tick(4);
 					break;
 				case 1:	// GB: RETI
 					reti();
-					tick(4);
 					break;
 				case 2:	// JP HL
 					jump(HL());
-					tick();
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL();
-					tick(2);
+					tick();
 					break;
 				default:
 					UNREACHABLE;
@@ -719,21 +670,17 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				break;
 			case 4:	// GB: LD (FF00 + C),A
 				IntelProcessor::memoryWrite(IoRegisters::BASE + C(), A());
-				tick(2);
 				break;
 			case 5:	// GB: LD (nn),A
 				BUS().ADDRESS() = MEMPTR() = fetchWord();
 				IntelProcessor::memoryWrite(A());
-				tick(4);
 				break;
 			case 6:	// GB: LD A,(FF00 + C)
 				A() = IntelProcessor::memoryRead(IoRegisters::BASE + C());
-				tick(2);
 				break;
 			case 7:	// GB: LD A,(nn)
 				BUS().ADDRESS() = MEMPTR() = fetchWord();
-				A() = busRead();
-				tick(4);
+				A() = memoryRead();
 				break;
 			default:
 				UNREACHABLE;
@@ -743,7 +690,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			switch (y) {
 			case 0:	// JP nn
 				jump(MEMPTR() = fetchWord());
-				tick(4);
+				tick();
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
@@ -751,11 +698,9 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				break;
 			case 6:	// DI
 				di();
-				tick();
 				break;
 			case 7:	// EI
 				ei();
-				tick();
 				break;
 			}
 			break;
@@ -766,13 +711,11 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			switch (q) {
 			case 0:	// PUSH rp2[p]
 				pushWord(RP2(p));
-				tick(4);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
 					call(MEMPTR() = fetchWord());
-					tick(6);
 					break;
 				}
 				break;
@@ -809,11 +752,9 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			default:
 				UNREACHABLE;
 			}
-			tick(2);
 			break;
 		case 7:	// Restart: RST y * 8
 			restart(y << 3);
-			tick(4);
 			break;
 		default:
 			UNREACHABLE;

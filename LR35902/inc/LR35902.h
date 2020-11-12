@@ -48,36 +48,47 @@ namespace EightBit {
 			void handleRESET() final;
 			void handleINT() final;
 
-			void jr(int8_t offset) final {
-				IntelProcessor::jr(offset);
-				tick(5);
+			void memoryWrite() final {
+				tick();
+				IntelProcessor::memoryWrite();
 			}
 
-			int callConditional(const int condition) final {
-				if (IntelProcessor::callConditional(condition))
-					tick(3);
-				tick(3);
-				return condition;
+			uint8_t memoryRead() final {
+				tick();
+				return IntelProcessor::memoryRead();
+			}
+
+			void pushWord(register16_t value) final {
+				tick();
+				IntelProcessor::pushWord(value);
+			}
+
+			void jr(int8_t offset) final {
+				IntelProcessor::jr(offset);
+				tick();
 			}
 
 			int jumpConditional(const int condition) final {
-				IntelProcessor::jumpConditional(condition);
-				tick(3);
+				if (IntelProcessor::jumpConditional(condition))
+					tick();
 				return condition;
 			}
 
 			int returnConditional(const int condition) final {
-				if (IntelProcessor::returnConditional(condition))
-					tick(3);
-				tick(2);
+				IntelProcessor::returnConditional(condition);
+				tick();
 				return condition;
 			}
 
 			int jrConditional(const int condition) final {
-				if (IntelProcessor::jrConditional(condition))
+				if (!IntelProcessor::jrConditional(condition))
 					tick();
-				tick(2);
 				return condition;
+			}
+
+			void ret() final {
+				IntelProcessor::ret();
+				tick();
 			}
 
 		private:
@@ -222,7 +233,7 @@ namespace EightBit {
 			[[nodiscard]] static uint8_t add(uint8_t& f, uint8_t operand, uint8_t value, int carry = 0);
 			[[nodiscard]] static uint8_t adc(uint8_t& f, uint8_t operand, uint8_t value);
 			[[nodiscard]] static uint8_t sbc(uint8_t& f, uint8_t operand, uint8_t value);
-			[[nodiscard]] static uint8_t andr(uint8_t& f, uint8_t operand, uint8_t value);
+			static uint8_t andr(uint8_t& f, uint8_t operand, uint8_t value);
 			[[nodiscard]] static uint8_t xorr(uint8_t& f, uint8_t operand, uint8_t value);
 			[[nodiscard]] static uint8_t orr(uint8_t& f, uint8_t operand, uint8_t value);
 			[[nodiscard]] static void compare(uint8_t& f, uint8_t operand, uint8_t value);

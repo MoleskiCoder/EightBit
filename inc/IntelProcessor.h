@@ -132,7 +132,7 @@ namespace EightBit {
 
 		//
 
-		void restart(const uint8_t address) {
+		virtual void restart(const uint8_t address) {
 			call(MEMPTR() = { address, 0 });
 		}
 
@@ -169,7 +169,10 @@ namespace EightBit {
 			return condition;
 		}
 
-		void ret() final;
+		void ret() override {
+			Processor::ret();
+			MEMPTR() = PC();
+		}
 
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
