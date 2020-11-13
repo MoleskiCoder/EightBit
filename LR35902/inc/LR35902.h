@@ -37,6 +37,11 @@ namespace EightBit {
 			[[nodiscard]] uint8_t flaggedInterrupts();
 			[[nodiscard]] uint8_t maskedInterrupts();
 
+			Signal<EventArgs> MachineTicked;
+
+			void tickMachine(const int extra) { for (int i = 0; i < extra; ++i) tickMachine(); }
+			void tickMachine() { tick(4); MachineTicked.fire(EventArgs::empty()); }
+
 		protected:
 			virtual int execute() final;
 			virtual int step() final;
@@ -45,46 +50,46 @@ namespace EightBit {
 			void handleINT() final;
 
 			void memoryWrite() final {
-				tick(4);
+				tickMachine();
 				IntelProcessor::memoryWrite();
 			}
 
 			uint8_t memoryRead() final {
-				tick(4);
+				tickMachine();
 				return IntelProcessor::memoryRead();
 			}
 
 			void pushWord(register16_t value) final {
-				tick(4);
+				tickMachine();
 				IntelProcessor::pushWord(value);
 			}
 
 			void jr(int8_t offset) final {
 				IntelProcessor::jr(offset);
-				tick(4);
+				tickMachine();
 			}
 
 			int jumpConditional(const int condition) final {
 				if (IntelProcessor::jumpConditional(condition))
-					tick(4);
+					tickMachine();
 				return condition;
 			}
 
 			int returnConditional(const int condition) final {
 				IntelProcessor::returnConditional(condition);
-				tick(4);
+				tickMachine();
 				return condition;
 			}
 
 			int jrConditional(const int condition) final {
 				if (!IntelProcessor::jrConditional(condition))
-					tick(4);
+					tickMachine();
 				return condition;
 			}
 
 			void ret() final {
 				IntelProcessor::ret();
-				tick(4);
+				tickMachine();
 			}
 
 		private:

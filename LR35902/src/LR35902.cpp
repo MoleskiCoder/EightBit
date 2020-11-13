@@ -7,11 +7,9 @@
 EightBit::GameBoy::LR35902::LR35902(Bus& memory)
 : IntelProcessor(memory),
   m_bus(memory) {
-	Ticked.connect([this](EventArgs) {
-		if ((cycles() % 4) == 0) {
-			m_bus.IO().incrementTimers();
-			m_bus.IO().transferDma();
-		}
+	MachineTicked.connect([this](EventArgs) {
+		m_bus.IO().incrementTimers();
+		m_bus.IO().transferDma();
 	});
 }
 
@@ -36,7 +34,7 @@ void EightBit::GameBoy::LR35902::handleRESET() {
 	IntelProcessor::handleRESET();
 	di();
 	SP() = Mask16 - 1;
-	tick(4 * 4);
+	tickMachine(4);
 }
 
 void EightBit::GameBoy::LR35902::handleINT() {
@@ -110,7 +108,7 @@ void EightBit::GameBoy::LR35902::reti() {
 
 EightBit::register16_t EightBit::GameBoy::LR35902::add(uint8_t& f, const register16_t operand, const register16_t value) {
 
-	tick(4);
+	tickMachine();
 
 	const int addition = operand.word + value.word;
 	const register16_t result = addition;
@@ -508,7 +506,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			default:
 				UNREACHABLE;
 			}
-			tick(4);
+			tickMachine();
 			break;
 		case 4: { // 8-bit INC
 			auto operand = R(y);
@@ -608,7 +606,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			case 5: { // GB: ADD SP,dd
 					const auto before = SP().word;
 					const int8_t value = fetchByte();
-					tick(2 * 4);
+					tickMachine(2);
 					const auto result = before + value;
 					SP() = result;
 					const auto carried = before ^ value ^ (result & Mask16);
@@ -623,7 +621,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			case 7: { // GB: LD HL,SP + dd
 					const auto before = SP().word;
 					const int8_t value = fetchByte();
-					tick(4);
+					tickMachine();
 					const auto result = before + value;
 					HL() = result;
 					const auto carried = before ^ value ^ (result & Mask16);
@@ -654,7 +652,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL();
-					tick(4);
+					tickMachine();
 					break;
 				default:
 					UNREACHABLE;
@@ -694,7 +692,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			switch (y) {
 			case 0:	// JP nn
 				jump(MEMPTR() = fetchWord());
-				tick(4);
+				tickMachine();
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
