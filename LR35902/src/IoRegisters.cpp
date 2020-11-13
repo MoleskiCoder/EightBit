@@ -146,15 +146,14 @@ void EightBit::GameBoy::IoRegisters::Bus_WrittenByte(EightBit::EventArgs) {
 	}
 }
 
-void EightBit::GameBoy::IoRegisters::checkTimers(int cycles) {
-	incrementDIV(cycles);
-	checkTimer(cycles);
+void EightBit::GameBoy::IoRegisters::incrementTimers() {
+	incrementDIV();
+	incrementTimer();
 }
 
-void EightBit::GameBoy::IoRegisters::checkTimer(int cycles) {
+void EightBit::GameBoy::IoRegisters::incrementTimer() {
 	if (timerEnabled()) {
-		m_timerCounter -= cycles;
-		if (m_timerCounter <= 0) {
+		if (--m_timerCounter == 0) {
 			m_timerCounter += m_timerRate;
 			incrementTIMA();
 		}
@@ -164,13 +163,13 @@ void EightBit::GameBoy::IoRegisters::checkTimer(int cycles) {
 int EightBit::GameBoy::IoRegisters::timerClockTicks() {
 	switch (timerClock()) {
 	case 0b00:
-		return 1024;	// 4.096 Khz
+		return 256;		// 4.096 Khz
 	case 0b01:
-		return 16;		// 262.144 Khz
+		return 4;		// 262.144 Khz
 	case 0b10:
-		return 64;		// 65.536 Khz
+		return 16;		// 65.536 Khz
 	case 0b11:
-		return 256;		// 16.384 Khz
+		return 64;		// 16.384 Khz
 	default:
 		UNREACHABLE;
 	}
@@ -189,8 +188,8 @@ bool EightBit::GameBoy::IoRegisters::timerDisabled() {
 	return (peek(TAC) & Chip::Bit2) == 0;
 }
 
-void EightBit::GameBoy::IoRegisters::incrementDIV(int cycles) {
-	m_divCounter += cycles;
+void EightBit::GameBoy::IoRegisters::incrementDIV() {
+	++m_divCounter;
 	poke(DIV, m_divCounter.high);
 }
 

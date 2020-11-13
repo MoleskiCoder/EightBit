@@ -117,7 +117,7 @@ namespace EightBit {
 				poke(IF, peek(IF) | cause);
 			}
 
-			void checkTimers(int cycles);
+			void incrementTimers();
 
 			int timerClockTicks();
 
@@ -125,7 +125,7 @@ namespace EightBit {
 			bool timerEnabled();
 			bool timerDisabled();
 
-			void incrementDIV(int cycles);
+			void incrementDIV();
 			void incrementTIMA();
 
 			void incrementLY();
@@ -185,7 +185,7 @@ namespace EightBit {
 			bool m_p11 = true;	// left/b
 			bool m_p10 = true;	// right/a
 
-			void checkTimer(int cycles);
+			void incrementTimer();
 
 			void mask(const uint16_t address, const uint8_t masking) {
 				poke(address, peek(address) | ~masking);

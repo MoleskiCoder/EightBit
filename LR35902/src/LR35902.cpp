@@ -7,6 +7,12 @@
 EightBit::GameBoy::LR35902::LR35902(Bus& memory)
 : IntelProcessor(memory),
   m_bus(memory) {
+	Ticked.connect([this](EventArgs) {
+		if ((cycles() % 4) == 0) {
+			m_bus.IO().incrementTimers();
+			m_bus.IO().transferDma();
+		}
+	});
 }
 
 EightBit::register16_t& EightBit::GameBoy::LR35902::AF() {
@@ -30,7 +36,7 @@ void EightBit::GameBoy::LR35902::handleRESET() {
 	IntelProcessor::handleRESET();
 	di();
 	SP() = Mask16 - 1;
-	tick(4);
+	tick(4 * 4);
 }
 
 void EightBit::GameBoy::LR35902::handleINT() {
@@ -104,7 +110,7 @@ void EightBit::GameBoy::LR35902::reti() {
 
 EightBit::register16_t EightBit::GameBoy::LR35902::add(uint8_t& f, const register16_t operand, const register16_t value) {
 
-	tick();
+	tick(4);
 
 	const int addition = operand.word + value.word;
 	const register16_t result = addition;
@@ -332,12 +338,9 @@ int EightBit::GameBoy::LR35902::step() {
 		} else {
 			Processor::execute(fetchByte());
 		}
-
-		m_bus.IO().checkTimers(clockCycles());
-		m_bus.IO().transferDma();
 	}
 	ExecutedInstruction.fire(*this);
-	return clockCycles();
+	return cycles();
 }
 
 int EightBit::GameBoy::LR35902::execute() {
@@ -359,7 +362,7 @@ int EightBit::GameBoy::LR35902::execute() {
 	if (UNLIKELY(cycles() == 0))
 		throw std::logic_error("Unhandled opcode");
 
-	return clockCycles();
+	return cycles();
 }
 
 void EightBit::GameBoy::LR35902::executeCB(const int x, const int y, const int z, int, int) {
@@ -504,7 +507,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			default:
 				UNREACHABLE;
 			}
-			tick();
+			tick(4);
 			break;
 		case 4: { // 8-bit INC
 			auto operand = R(y);
@@ -604,7 +607,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			case 5: { // GB: ADD SP,dd
 					const auto before = SP().word;
 					const int8_t value = fetchByte();
-					tick(2);
+					tick(2 * 4);
 					const auto result = before + value;
 					SP() = result;
 					const auto carried = before ^ value ^ (result & Mask16);
@@ -619,7 +622,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			case 7: { // GB: LD HL,SP + dd
 					const auto before = SP().word;
 					const int8_t value = fetchByte();
-					tick();
+					tick(4);
 					const auto result = before + value;
 					HL() = result;
 					const auto carried = before ^ value ^ (result & Mask16);
@@ -650,7 +653,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL();
-					tick();
+					tick(4);
 					break;
 				default:
 					UNREACHABLE;
@@ -690,7 +693,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			switch (y) {
 			case 0:	// JP nn
 				jump(MEMPTR() = fetchWord());
-				tick();
+				tick(4);
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;

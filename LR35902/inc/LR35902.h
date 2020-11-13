@@ -26,10 +26,6 @@ namespace EightBit {
 			Signal<LR35902> ExecutingInstruction;
 			Signal<LR35902> ExecutedInstruction;
 
-			[[nodiscard]] auto clockCycles() const noexcept {
-				return cycles() * 4;
-			}
-
 			[[nodiscard]] register16_t& AF() final;
 			[[nodiscard]] register16_t& BC() final;
 			[[nodiscard]] register16_t& DE() final;
@@ -49,46 +45,46 @@ namespace EightBit {
 			void handleINT() final;
 
 			void memoryWrite() final {
-				tick();
+				tick(4);
 				IntelProcessor::memoryWrite();
 			}
 
 			uint8_t memoryRead() final {
-				tick();
+				tick(4);
 				return IntelProcessor::memoryRead();
 			}
 
 			void pushWord(register16_t value) final {
-				tick();
+				tick(4);
 				IntelProcessor::pushWord(value);
 			}
 
 			void jr(int8_t offset) final {
 				IntelProcessor::jr(offset);
-				tick();
+				tick(4);
 			}
 
 			int jumpConditional(const int condition) final {
 				if (IntelProcessor::jumpConditional(condition))
-					tick();
+					tick(4);
 				return condition;
 			}
 
 			int returnConditional(const int condition) final {
 				IntelProcessor::returnConditional(condition);
-				tick();
+				tick(4);
 				return condition;
 			}
 
 			int jrConditional(const int condition) final {
 				if (!IntelProcessor::jrConditional(condition))
-					tick();
+					tick(4);
 				return condition;
 			}
 
 			void ret() final {
 				IntelProcessor::ret();
-				tick();
+				tick(4);
 			}
 
 		private:
