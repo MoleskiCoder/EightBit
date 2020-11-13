@@ -340,6 +340,7 @@ int EightBit::GameBoy::LR35902::step() {
 		}
 	}
 	ExecutedInstruction.fire(*this);
+	assert(cycles() % 4 == 0);
 	return cycles();
 }
 

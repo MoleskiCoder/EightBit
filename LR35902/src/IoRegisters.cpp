@@ -153,7 +153,7 @@ void EightBit::GameBoy::IoRegisters::incrementTimers() {
 
 void EightBit::GameBoy::IoRegisters::incrementTimer() {
 	if (timerEnabled()) {
-		if (--m_timerCounter == 0) {
+		if (--m_timerCounter <= 0) {
 			m_timerCounter += m_timerRate;
 			incrementTIMA();
 		}
