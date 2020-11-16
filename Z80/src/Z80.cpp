@@ -1049,9 +1049,8 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				break;
 			case 7:	// CPDR
 				if (cpdr(F(), A())) {
-					MEMPTR() = PC() - 2;
-					//MEMPTR() = --PC();
-					//--PC();
+					MEMPTR() = --PC();
+					--PC();
 					tick(5);
 				} else {
 					MEMPTR() = PC() - 2;
