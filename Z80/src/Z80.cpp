@@ -114,23 +114,22 @@ void EightBit::Z80::handleNMI() {
 
 void EightBit::Z80::handleINT() {
 	IntelProcessor::handleINT();
+	tick(2);	// 2 extra clock cycles introduced to allow the bus to settle
 	uint8_t data;
 	{
 		_ActivateIORQ iorq(*this);
 		data = readBusDataM1();
 	}
 	di();
-	tick(5);
 	switch (IM()) {
 	case 0:		// i8080 equivalent
 		IntelProcessor::execute(data);
 		break;
 	case 1:
-		tick();
 		restart(7 << 3);
 		break;
 	case 2:
-		tick(7);
+		tick(7);	// How long to allow fetching data from the device...
 		call(MEMPTR() = { data, IV() });
 		break;
 	default:
