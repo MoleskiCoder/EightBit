@@ -79,15 +79,15 @@ EightBit::MemoryMapping Fuse::TestRunner::mapping(uint16_t address) {
 	const bool io = m_cpu.requestingIO();
 	if (io) {
 
-		m_ports.setAccessType(EightBit::InputOutput::AccessType::Unknown);
+		m_ports.accessType() = EightBit::InputOutput::AccessType::Unknown;
 
 		const bool reading = m_cpu.requestingRead();
 		if (reading)
-			m_ports.setAccessType(EightBit::InputOutput::AccessType::Reading);
+			m_ports.accessType() = EightBit::InputOutput::AccessType::Reading;
 
 		const bool writing = m_cpu.requestingWrite();
 		if (writing)
-			m_ports.setAccessType(EightBit::InputOutput::AccessType::Writing);
+			m_ports.accessType() = EightBit::InputOutput::AccessType::Writing;
 
 		return {
 			m_ports,

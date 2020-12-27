@@ -20,24 +20,24 @@ namespace EightBit {
 		int load(std::string path, int writeOffset = 0, int readOffset = 0, int limit = -1) override;
 		int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) override;
 
-		[[nodiscard]] AccessType getAccessType() const noexcept { return m_access; }
-		void setAccessType(AccessType value) noexcept { m_access = value; }
+		[[nodiscard]] const AccessType& accessType() const noexcept { return m_access; }
+		[[nodiscard]] AccessType& accessType() noexcept { return m_access; }
 
-		auto readPort(uint8_t port, AccessType access) {
-			setAccessType(access);
+		[[nodiscard]] auto readPort(uint8_t port, AccessType access) {
+			accessType() = access;
 			return reference(port);
 		}
 
-		auto readInputPort(uint8_t port) { return readPort(port, AccessType::Reading); }
-		auto readOutputPort(uint8_t port) { return readPort(port, AccessType::Writing); }
+		[[nodiscard]] auto readInputPort(uint8_t port) { return readPort(port, AccessType::Reading); }
+		[[nodiscard]] auto readOutputPort(uint8_t port) { return readPort(port, AccessType::Writing); }
 
 		void writePort(uint8_t port, uint8_t value, AccessType access) {
-			setAccessType(access);
+			accessType() = access;
 			reference(port) = value;
 		}
 
-		auto writeInputPort(uint8_t port, uint8_t value) { return writePort(port, value, AccessType::Reading); }
-		auto writeOutputPort(uint8_t port, uint8_t value) { return writePort(port, value,  AccessType::Writing); }
+		void writeInputPort(uint8_t port, uint8_t value) { writePort(port, value, AccessType::Reading); }
+		void writeOutputPort(uint8_t port, uint8_t value) { writePort(port, value,  AccessType::Writing); }
 
 	protected:
 		void poke(uint16_t address, uint8_t value) override;

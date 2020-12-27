@@ -15,12 +15,11 @@ uint8_t EightBit::InputOutput::peek(uint16_t) const {
 
 uint8_t& EightBit::InputOutput::reference(uint16_t address) {
 	const auto port = register16_t(address).low;
-	switch (getAccessType()) {
+	switch (accessType()) {
 	case AccessType::Reading:
 		return m_input.reference(port);
 	case AccessType::Writing:
 		return m_output.reference(port);
-	case AccessType::Unknown:
 	default:
 		throw std::logic_error("Unknown I/O access type.");
 	}
