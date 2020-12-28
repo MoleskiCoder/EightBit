@@ -132,17 +132,6 @@ namespace EightBit {
 
 		// Read/Modify/Write
 
-		// Macro version: easy to use
-		// RMW(AM_direct_byte, asl)
-		#define RMW(ACCESSOR, OPERATION) \
-		{ \
-			const auto data = ACCESSOR(); \
-			const auto address = BUS().ADDRESS(); \
-			const auto result = OPERATION(data); \
-			eat(); \
-			memoryWrite(address, result); \
-		}
-
 		typedef std::function<uint8_t(void)> accessor_t;
 		typedef std::function<uint8_t(uint8_t)> operation_t;
 
@@ -155,6 +144,10 @@ namespace EightBit {
 			eat();
 			memoryWrite(address, result);
 		}
+
+		// So define a helper macro
+		#define RMW(ACCESSOR, OPERATION) \
+			rmw([this]() { return ACCESSOR(); }, [this](uint8_t data) { return OPERATION(data); });
 
 		// Stack manipulation
 
@@ -326,17 +319,17 @@ namespace EightBit {
 
 		// Branching
 
-		auto branch(const register16_t destination, const int condition) {
+		auto branch(const register16_t destination, const bool condition) {
 			if (condition)
 				jump(destination);
-			return !!condition;
+			return condition;
 		}
 
-		void branchShort(const int condition) {
+		void branchShort(const bool condition) {
 			branch(Address_relative_byte(), condition);
 		}
 
-		void branchLong(const int condition) {
+		void branchLong(const bool condition) {
 			if (branch(Address_relative_word(), condition))
 				eat();
 		}
