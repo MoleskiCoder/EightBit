@@ -51,7 +51,7 @@ void EightBit::mc6809::handleHALT() {
 
 void EightBit::mc6809::handleRESET() {
 	BigEndianProcessor::handleRESET();
-	memoryRead({ 0xff, RESETvector });
+	memoryRead({ RESETvector, 0xff });
 	raiseNMI();
 	lowerBA();
 	raiseBS();
