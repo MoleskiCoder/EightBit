@@ -69,6 +69,8 @@ uint8_t EightBit::Z80::memoryRead() {
 	public:
 		_Reader(Z80& parent) : m_parent(parent) {
 			m_parent.ReadingMemory.fire(EventArgs::empty());
+			if (lowered(m_parent.M1()))
+				m_parent.tick();
 			m_parent.tick(2);
 			m_parent.lowerMREQ();
 		}
@@ -750,7 +752,6 @@ void EightBit::Z80::fetchDisplacement() {
 // CPU.The HALT acknowledge signal is active during this time indicating that the processor
 // is in the HALT state
 uint8_t EightBit::Z80::fetchOpCode() {
-	tick();
 	uint8_t returned;
 	{
 		_ActivateM1 m1(*this);
