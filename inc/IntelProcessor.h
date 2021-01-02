@@ -132,47 +132,13 @@ namespace EightBit {
 
 		//
 
-		virtual void restart(const uint8_t address) {
-			call(MEMPTR() = { address, 0 });
-		}
-
-		virtual int callConditional(const int condition) {
-			MEMPTR() = fetchWord();
-			if (condition)
-				call(MEMPTR());
-			return condition;
-		}
-
-		virtual int jumpConditional(const int condition) {
-			MEMPTR() = fetchWord();
-			if (condition)
-				jump(MEMPTR());
-			return condition;
-		}
-
-		virtual int returnConditional(const int condition) {
-			if (condition)
-				ret();
-			return condition;
-		}
-
-		virtual void jr(const int8_t offset) {
-			jump(MEMPTR() = PC() + offset);
-		}
-
-		virtual int jrConditional(const int condition) {
-			const auto offsetAddress = PC()++;
-			if (condition) {
-				const auto offset = memoryRead(offsetAddress);
-				jr(offset);
-			}
-			return condition;
-		}
-
-		void ret() override {
-			Processor::ret();
-			MEMPTR() = PC();
-		}
+		virtual void restart(uint8_t address);
+		virtual int callConditional(int condition);
+		virtual int jumpConditional(int condition);
+		virtual int returnConditional(int condition);
+		virtual void jr(int8_t offset);
+		virtual int jrConditional(int condition);
+		void ret() override;
 
 	private:
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;

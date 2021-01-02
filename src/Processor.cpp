@@ -67,6 +67,11 @@ int8_t EightBit::Processor::signExtend(const int b, uint8_t x) noexcept {
 	return result;
 }
 
+void EightBit::Processor::call(const register16_t destination) {
+	pushWord(PC());
+	jump(destination);
+}
+
 void EightBit::Processor::ret() {
 	jump(popWord());
 }

@@ -40,3 +40,45 @@ void EightBit::IntelProcessor::setWord(const register16_t value) {
 	LittleEndianProcessor::setWord(value);
 	MEMPTR() = BUS().ADDRESS();
 }
+
+void EightBit::IntelProcessor::restart(const uint8_t address) {
+	call(MEMPTR() = { address, 0 });
+}
+
+int EightBit::IntelProcessor::callConditional(const int condition) {
+	MEMPTR() = fetchWord();
+	if (condition)
+		call(MEMPTR());
+	return condition;
+}
+
+int EightBit::IntelProcessor::jumpConditional(const int condition) {
+	MEMPTR() = fetchWord();
+	if (condition)
+		jump(MEMPTR());
+	return condition;
+}
+
+int EightBit::IntelProcessor::returnConditional(const int condition) {
+	if (condition)
+		ret();
+	return condition;
+}
+
+void EightBit::IntelProcessor::jr(const int8_t offset) {
+	jump(MEMPTR() = PC() + offset);
+}
+
+int EightBit::IntelProcessor::jrConditional(const int condition) {
+	const auto offsetAddress = PC()++;
+	if (condition) {
+		const auto offset = memoryRead(offsetAddress);
+		jr(offset);
+	}
+	return condition;
+}
+
+void EightBit::IntelProcessor::ret() {
+	Processor::ret();
+	MEMPTR() = PC();
+}

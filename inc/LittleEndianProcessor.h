@@ -16,15 +16,15 @@ namespace EightBit {
 	protected:
 		LittleEndianProcessor(Bus& memory);
 
-		register16_t getWord() override;
+		[[nodiscard]] register16_t getWord() override;
 		void setWord(register16_t value) override;
 
-		register16_t getWordPaged(uint8_t page, uint8_t offset) override;
+		[[nodiscard]] register16_t getWordPaged(uint8_t page, uint8_t offset) override;
 		void setWordPaged(uint8_t page, uint8_t offset, register16_t value) override;
 
-		register16_t fetchWord() final;
+		[[nodiscard]] register16_t fetchWord() final;
 
 		void pushWord(register16_t value) override;
-		register16_t popWord() override;
+		[[nodiscard]] register16_t popWord() override;
 	};
 }
