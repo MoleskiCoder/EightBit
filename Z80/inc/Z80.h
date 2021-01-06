@@ -68,10 +68,10 @@ namespace EightBit {
 		int execute() final;
 		int step() final;
 
-		[[nodiscard]] register16_t& AF() final { return m_accumulatorFlags[m_accumulatorFlagsSet]; }
-		[[nodiscard]] register16_t& BC() final { return m_registers[m_registerSet][BC_IDX]; }
-		[[nodiscard]] register16_t& DE() final { return m_registers[m_registerSet][DE_IDX]; }
-		[[nodiscard]] register16_t& HL() final { return m_registers[m_registerSet][HL_IDX]; }
+		[[nodiscard]] register16_t& AF() final;
+		[[nodiscard]] register16_t& BC() final;
+		[[nodiscard]] register16_t& DE() final;
+		[[nodiscard]] register16_t& HL() final;
 
 		[[nodiscard]] auto& IX() { return m_ix; }
 		[[nodiscard]] auto& IXH() { return IX().high; }
@@ -107,11 +107,11 @@ namespace EightBit {
 			m_accumulatorFlagsSet ^= 1;
 		}
 
-		bool requestingIO() { return lowered(IORQ()); }
-		bool requestingMemory() { return lowered(MREQ()); }
+		[[nodiscard]] bool requestingIO() const { return lowered(IORQ()); }
+		[[nodiscard]] bool requestingMemory() const { return lowered(MREQ()); }
 
-		bool requestingRead() { return lowered(RD()); }
-		bool requestingWrite() { return lowered(WR()); }
+		[[nodiscard]] bool requestingRead() const { return lowered(RD()); }
+		[[nodiscard]] bool requestingWrite() const { return lowered(WR()); }
 
 		// ** From the Z80 CPU User Manual
 		// RFSH.Refresh(output, active Low). RFSH, together with MREQ, indicates that the lower
@@ -130,10 +130,7 @@ namespace EightBit {
 		void handleRESET() final;
 		void handleINT() final;
 
-		void pushWord(const register16_t destination) override {
-			tick();
-			IntelProcessor::pushWord(destination);
-		}
+		void pushWord(register16_t destination) final;
 
 		void memoryWrite() final;
 		uint8_t memoryRead() final;
@@ -141,16 +138,8 @@ namespace EightBit {
 		void busWrite() final;
 		uint8_t busRead() final;
 
-		void jr(int8_t offset) final {
-			IntelProcessor::jr(offset);
-			tick(5);
-		}
-
-		int jrConditional(const int condition) final {
-			if (!IntelProcessor::jrConditional(condition))
-				tick(3);
-			return condition;
-		}
+		void jr(int8_t offset) final;
+		int jrConditional(int condition) final;
 
 	private:
 

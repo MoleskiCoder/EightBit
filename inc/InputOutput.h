@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <array>
 
 #include "Memory.h"
 #include "Ram.h"

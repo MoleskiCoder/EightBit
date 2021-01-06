@@ -1,14 +1,14 @@
 #pragma once
 
 #include <cstdint>
-//#include <fstream>
+#include <fstream>
 #include <string>
-//#include <ios>
-//#include <sstream>
+#include <ios>
+#include <sstream>
 #include <map>
 #include <optional>
 #include <vector>
-//#include <utility>
+#include <utility>
 
 namespace EightBit {
 	class IntelHexFile final {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cassert>
-#include <bitset>
 
 #ifdef _MSC_VER
 #	include <intrin.h>
@@ -9,6 +8,8 @@
 
 #ifdef __GNUG__
 #	include <x86intrin.h>
+#else
+#	include <bitset>
 #endif
 
 namespace EightBit {

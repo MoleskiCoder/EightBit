@@ -41,6 +41,27 @@ DEFINE_PIN_LEVEL_CHANGERS(IORQ, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(RD, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(WR, Z80);
 
+EightBit::register16_t& EightBit::Z80::AF() {
+	return m_accumulatorFlags[m_accumulatorFlagsSet];
+}
+
+EightBit::register16_t& EightBit::Z80::BC() {
+	return m_registers[m_registerSet][BC_IDX];
+}
+
+EightBit::register16_t& EightBit::Z80::DE() {
+	return m_registers[m_registerSet][DE_IDX];
+}
+
+EightBit::register16_t& EightBit::Z80::HL() {
+	return m_registers[m_registerSet][HL_IDX];
+}
+
+void EightBit::Z80::pushWord(const register16_t destination) {
+	tick();
+	IntelProcessor::pushWord(destination);
+}
+
 void EightBit::Z80::memoryWrite() {
 
 	class _Writer final {
@@ -215,6 +236,17 @@ void EightBit::Z80::retn() {
 
 void EightBit::Z80::reti() {
 	retn();
+}
+
+void EightBit::Z80::jr(int8_t offset) {
+	IntelProcessor::jr(offset);
+	tick(5);
+}
+
+int EightBit::Z80::jrConditional(const int condition) {
+	if (!IntelProcessor::jrConditional(condition))
+		tick(3);
+	return condition;
 }
 
 EightBit::register16_t EightBit::Z80::sbc(uint8_t& f, const register16_t operand, const register16_t value) {
@@ -582,8 +614,9 @@ bool EightBit::Z80::lddr(uint8_t& f, const uint8_t a) {
 void EightBit::Z80::blockIn(register16_t& source, const register16_t destination) {
 	MEMPTR() = BUS().ADDRESS() = source;
 	tick();
-	const auto value = portRead();
-	IntelProcessor::memoryWrite(destination, value);
+	portRead();
+	BUS().ADDRESS() = destination;
+	memoryWrite();
 	source.high = decrement(F(), source.high);
 	F() = setBit(F(), NF);
 }
@@ -823,7 +856,6 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 
 	const bool memoryZ = z == 6;
 	const bool indirect = (!m_displaced && memoryZ) || m_displaced;
-	const bool direct = !indirect;
 
 	uint8_t operand;
 	if (m_displaced) {
@@ -868,7 +900,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 		break;
 	} case 1:	// BIT y, r[z]
 		bit(F(), y, operand);
-		F() = adjustXY<Z80>(F(), direct ? operand : MEMPTR().high);
+		F() = adjustXY<Z80>(F(), indirect ? MEMPTR().high : operand);
 		if (memoryZ)
 			tick();
 		break;

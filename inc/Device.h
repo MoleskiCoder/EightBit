@@ -69,6 +69,9 @@
 		[[nodiscard]] PinLevel& name () noexcept { \
 			return m_## name ## _Line; \
 		} \
+		[[nodiscard]] const PinLevel& name () const noexcept { \
+			return m_## name ## _Line; \
+		} \
 	visibility : \
 		DECLARE_PIN_LEVEL_CHANGERS(name) \
 	private: \
