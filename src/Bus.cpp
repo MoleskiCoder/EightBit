@@ -9,16 +9,16 @@ void EightBit::Bus::raisePOWER() {}
 void EightBit::Bus::lowerPOWER() {}
 
 uint8_t EightBit::Bus::read() {
-	ReadingByte.fire(EventArgs::empty());
+	ReadingByte.fire();
 	const auto returned = DATA() = reference();
-	ReadByte.fire(EventArgs::empty());
+	ReadByte.fire();
 	return returned;
 }
 
 void EightBit::Bus::write() {
-	WritingByte.fire(EventArgs::empty());
+	WritingByte.fire();
 	reference() = DATA();
-	WrittenByte.fire(EventArgs::empty());
+	WrittenByte.fire();
 }
 
 void EightBit::Bus::write(const uint8_t value) {

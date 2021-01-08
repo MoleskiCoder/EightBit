@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <functional>
+#include "EventArgs.h"
 
 namespace EightBit {
 	template<class T> class Signal final {
@@ -16,7 +17,7 @@ namespace EightBit {
 			m_delegates.push_back(functor);
 		}
 
-		void fire(T& e) const {
+		void fire(T& e = EventArgs::empty()) const {
 			for (auto& delegate : m_delegates)
 				delegate(e);
 		}

@@ -68,14 +68,14 @@ void EightBit::Z80::memoryWrite() {
 		Z80& m_parent;
 	public:
 		_Writer(Z80& parent) : m_parent(parent) {
-			m_parent.WritingMemory.fire(EventArgs::empty());
+			m_parent.WritingMemory.fire();
 			m_parent.tick(2);
 			m_parent.lowerMREQ();
 		}
 
 		~_Writer() {
 			m_parent.raiseMREQ();
-			m_parent.WrittenMemory.fire(EventArgs::empty());
+			m_parent.WrittenMemory.fire();
 		}
 	};
 
@@ -89,7 +89,7 @@ uint8_t EightBit::Z80::memoryRead() {
 		Z80& m_parent;
 	public:
 		_Reader(Z80& parent) : m_parent(parent) {
-			m_parent.ReadingMemory.fire(EventArgs::empty());
+			m_parent.ReadingMemory.fire();
 			if (lowered(m_parent.M1()))
 				m_parent.tick();
 			m_parent.tick(2);
@@ -98,7 +98,7 @@ uint8_t EightBit::Z80::memoryRead() {
 
 		~_Reader() {
 			m_parent.raiseMREQ();
-			m_parent.ReadMemory.fire(EventArgs::empty());
+			m_parent.ReadMemory.fire();
 		}
 	};
 
@@ -706,11 +706,11 @@ void EightBit::Z80::portWrite() {
 		Z80& m_parent;
 	public:
 		_Writer(Z80& parent) : m_parent(parent) {
-			m_parent.WritingIO.fire(EventArgs::empty());
+			m_parent.WritingIO.fire();
 		}
 
 		~_Writer() {
-			m_parent.WrittenIO.fire(EventArgs::empty());
+			m_parent.WrittenIO.fire();
 			m_parent.tick(3);
 		}
 	};
@@ -732,11 +732,11 @@ uint8_t EightBit::Z80::portRead() {
 		Z80& m_parent;
 	public:
 		_Reader(Z80& parent) : m_parent(parent) {
-			m_parent.ReadingIO.fire(EventArgs::empty());
+			m_parent.ReadingIO.fire();
 		}
 
 		~_Reader() {
-			m_parent.ReadIO.fire(EventArgs::empty());
+			m_parent.ReadIO.fire();
 			m_parent.tick(3);
 		}
 	};

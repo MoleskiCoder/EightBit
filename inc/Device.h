@@ -22,18 +22,18 @@
 #define DEFINE_PIN_LEVEL_RAISE(name, within) \
 	void EightBit:: within ::raise ## name() { \
 		if (lowered( name ())) { \
-			Raising ## name.fire(EventArgs::empty()); \
+			Raising ## name.fire(); \
 			raise( name ()); \
-			Raised ## name.fire(EventArgs::empty()); \
+			Raised ## name.fire(); \
 		} \
 	}
 
 #define DEFINE_PIN_LEVEL_LOWER(name, within) \
 	void EightBit:: within ::lower ## name() { \
 		if (raised( name ())) { \
-			Lowering ## name.fire(EventArgs::empty()); \
+			Lowering ## name.fire(); \
 			lower( name ()); \
-			Lowered ## name.fire(EventArgs::empty()); \
+			Lowered ## name.fire(); \
 		} \
 	}
 
