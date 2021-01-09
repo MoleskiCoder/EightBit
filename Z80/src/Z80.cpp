@@ -25,7 +25,7 @@ EightBit::Z80::Z80(Bus& bus)
 
 		AF() = IX() = IY() = BC() = DE() = HL() = Mask16;
 
-		m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
+		resetPrefixes();
 	});
 
 	RaisedM1.connect([this](EventArgs) {
@@ -186,9 +186,33 @@ uint8_t EightBit::Z80::decrement(uint8_t& f, const uint8_t operand) {
 	return result;
 }
 
+uint8_t EightBit::Z80::adjustHalfCarryAdd(const uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
+	return setBit(f, HC, calculateHalfCarryAdd(before, value, calculation));
+}
+
+uint8_t EightBit::Z80::adjustHalfCarrySub(const uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
+	return setBit(f, HC, calculateHalfCarrySub(before, value, calculation));
+}
+
+uint8_t EightBit::Z80::adjustOverflowAdd(const uint8_t f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
+	return adjustOverflowAdd(f, before & SF, value & SF, calculation & SF);
+}
+
+uint8_t EightBit::Z80::adjustOverflowAdd(const uint8_t f, const int beforeNegative, const int valueNegative, const int afterNegative) {
+	const auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
+	return setBit(f, VF, overflow);
+}
+
+uint8_t EightBit::Z80::adjustOverflowSub(const uint8_t f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
+	return adjustOverflowSub(f, before & SF, value & SF, calculation & SF);
+}
+
+uint8_t EightBit::Z80::adjustOverflowSub(const uint8_t f, const int beforeNegative, const int valueNegative, const int afterNegative) {
+	const auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
+	return setBit(f, VF, overflow);
+}
+
 bool EightBit::Z80::convertCondition(const uint8_t f, int flag) {
-	ASSUME(flag >= 0);
-	ASSUME(flag <= 7);
 	switch (flag) {
 	case 0:
 		return !(f & ZF);
@@ -447,8 +471,6 @@ uint8_t EightBit::Z80::srl(uint8_t& f, const uint8_t operand) {
 }
 
 void EightBit::Z80::bit(uint8_t& f, const int n, const uint8_t operand) {
-	ASSUME(n >= 0);
-	ASSUME(n <= 7);
 	f = setBit(f, HC);
 	f = clearBit(f, NF);
 	const auto discarded = operand & Chip::bit(n);
@@ -457,14 +479,10 @@ void EightBit::Z80::bit(uint8_t& f, const int n, const uint8_t operand) {
 }
 
 uint8_t EightBit::Z80::res(const int n, const uint8_t operand) {
-	ASSUME(n >= 0);
-	ASSUME(n <= 7);
 	return clearBit(operand, Chip::bit(n));
 }
 
 uint8_t EightBit::Z80::set(const int n, const uint8_t operand) {
-	ASSUME(n >= 0);
-	ASSUME(n <= 7);
 	return setBit(operand, Chip::bit(n));
 }
 
@@ -584,7 +602,7 @@ bool EightBit::Z80::cpdr(uint8_t& f, uint8_t value) {
 
 void EightBit::Z80::blockLoad(uint8_t& f, const uint8_t a, const register16_t source, const register16_t destination, register16_t& counter) {
 	const auto value = IntelProcessor::memoryRead(source);
-	IntelProcessor::memoryWrite(destination, value);
+	IntelProcessor::memoryWrite(destination);
 	const auto xy = a + value;
 	f = setBit(f, XF, xy & Bit3);
 	f = setBit(f, YF, xy & Bit1);
@@ -748,13 +766,25 @@ uint8_t EightBit::Z80::portRead() {
 
 //
 
+void EightBit::Z80::resetPrefixes() {
+	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
+}
+
+//
+
 uint16_t EightBit::Z80::displacedAddress() {
-	assert(m_displaced);
 	return MEMPTR().word = (m_prefixDD ? IX() : IY()).word + m_displacement;
 }
 
 void EightBit::Z80::fetchDisplacement() {
 	m_displacement = fetchByte();
+}
+
+//
+
+uint8_t EightBit::Z80::readBusDataM1() {
+	_ActivateM1 m1(*this);
+	return BUS().DATA();
 }
 
 // ** From the Z80 CPU User Manual
@@ -803,11 +833,152 @@ uint8_t EightBit::Z80::fetchOpCode() {
 	return returned;
 }
 
+void EightBit::Z80::loadAccumulatorIndirect(addresser_t addresser) {
+	(MEMPTR() = BUS().ADDRESS() = addresser())++;
+	A() = memoryRead();
+}
+
+void EightBit::Z80::storeAccumulatorIndirect(addresser_t addresser) {
+	(MEMPTR() = BUS().ADDRESS() = addresser())++;
+	MEMPTR().high = BUS().DATA() = A();
+	memoryWrite();
+}
+
+void EightBit::Z80::readInternalRegister(reader_t reader) {
+	F() = adjustSZXY<Z80>(F(), A() = reader());
+	F() = clearBit(F(), NF | HC);
+	F() = setBit(F(), PF, IFF2());
+	tick();
+}
+
+EightBit::register16_t& EightBit::Z80::HL2() {
+	if (UNLIKELY(m_prefixDD))
+		return IX();
+	if (UNLIKELY(m_prefixFD))
+		return IY();
+	return HL();
+}
+
+EightBit::register16_t& EightBit::Z80::RP(const int rp) {
+	switch (rp) {
+	case 0b00:
+		return BC();
+	case 0b01:
+		return DE();
+	case 0b10:
+		return HL2();
+	case 0b11:
+		return SP();
+	default:
+		UNREACHABLE;
+	}
+}
+
+EightBit::register16_t& EightBit::Z80::RP2(const int rp) {
+	switch (rp) {
+	case 0b00:
+		return BC();
+	case 0b01:
+		return DE();
+	case 0b10:
+		return HL2();
+	case 0b11:
+		return AF();
+	default:
+		UNREACHABLE;
+	}
+}
+
+uint8_t EightBit::Z80::R(const int r) {
+	switch (r) {
+	case 0:
+		return B();
+	case 1:
+		return C();
+	case 2:
+		return D();
+	case 3:
+		return E();
+	case 4:
+		return HL2().high;
+	case 5:
+		return HL2().low;
+	case 6:
+		return IntelProcessor::memoryRead(UNLIKELY(displaced()) ? displacedAddress() : HL().word);
+	case 7:
+		return A();
+	default:
+		UNREACHABLE;
+	}
+}
+
+void EightBit::Z80::R(const int r, const uint8_t value) {
+	switch (r) {
+	case 0:
+		B() = value;
+		break;
+	case 1:
+		C() = value;
+		break;
+	case 2:
+		D() = value;
+		break;
+	case 3:
+		E() = value;
+		break;
+	case 4:
+		HL2().high = value;
+		break;
+	case 5:
+		HL2().low = value;
+		break;
+	case 6:
+		IntelProcessor::memoryWrite(UNLIKELY(displaced()) ? displacedAddress() : HL().word, value);
+		break;
+	case 7:
+		A() = value;
+		break;
+	default:
+		UNREACHABLE;
+	}
+}
+
+void EightBit::Z80::R2(const int r, const uint8_t value) {
+	switch (r) {
+	case 0:
+		B() = value;
+		break;
+	case 1:
+		C() = value;
+		break;
+	case 2:
+		D() = value;
+		break;
+	case 3:
+		E() = value;
+		break;
+	case 4:
+		H() = value;
+		break;
+	case 5:
+		L() = value;
+		break;
+	case 6:
+		IntelProcessor::memoryWrite(HL(), value);
+		break;
+	case 7:
+		A() = value;
+		break;
+	default:
+		UNREACHABLE;
+	}
+}
+
 int EightBit::Z80::step() {
 	resetCycles();
 	ExecutingInstruction.fire(*this);
 	if (LIKELY(powered())) {
-		m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
+		resetPrefixes();
 		bool handled = false;
 		if (lowered(RESET())) {
 			handleRESET();
@@ -855,10 +1026,10 @@ int EightBit::Z80::execute() {
 void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 
 	const bool memoryZ = z == 6;
-	const bool indirect = (!m_displaced && memoryZ) || m_displaced;
+	const bool indirect = (!displaced() && memoryZ) || displaced();
 
 	uint8_t operand;
-	if (m_displaced) {
+	if (displaced()) {
 		tick(2);
 		operand = IntelProcessor::memoryRead(displacedAddress());
 	} else {
@@ -915,7 +1086,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) {
 	}
 	if (update) {
 		tick();
-		if (m_displaced) {
+		if (displaced()) {
 			IntelProcessor::memoryWrite(operand);
 			if (!memoryZ)
 				R2(z, operand);
@@ -1240,7 +1411,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			tick(2);
 			break;
 		case 4: { // 8-bit INC
-			if (memoryY && m_displaced) {
+			if (memoryY && displaced()) {
 				fetchDisplacement();
 				tick(5);
 			}
@@ -1251,7 +1422,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			break;
 		}
 		case 5: { // 8-bit DEC
-			if (memoryY && m_displaced) {
+			if (memoryY && displaced()) {
 				fetchDisplacement();
 				tick(5);
 			}
@@ -1262,10 +1433,10 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			break;
 		}
 		case 6: { // 8-bit load immediate
-			if (memoryY && m_displaced)
+			if (memoryY && displaced())
 				fetchDisplacement();
 			const auto value = fetchByte();
-			if (m_displaced)
+			if (displaced())
 				tick(2);
 			R(y, value);	// LD r,n
 			break;
@@ -1309,19 +1480,19 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			lowerHALT();
 		} else {
 			bool normal = true;
-			if (m_displaced) {
+			if (displaced()) {
 				if (memoryZ || memoryY)
 					fetchDisplacement();
 				if (memoryZ) {
 					switch (y) {
 					case 4:
-						if (m_displaced)
+						if (displaced())
 							tick(5);
 						H() = R(z);
 						normal = false;
 						break;
 					case 5:
-						if (m_displaced)
+						if (displaced())
 							tick(5);
 						L() = R(z);
 						normal = false;
@@ -1331,13 +1502,13 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				if (memoryY) {
 					switch (z) {
 					case 4:
-						if (m_displaced)
+						if (displaced())
 							tick(5);
 						R(y, H());
 						normal = false;
 						break;
 					case 5:
-						if (m_displaced)
+						if (displaced())
 							tick(5);
 						R(y, L());
 						normal = false;
@@ -1346,14 +1517,14 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				}
 			}
 			if (normal) {
-				if (m_displaced)
+				if (displaced())
 					tick(5);
 				R(y, R(z));
 			}
 		}
 		break;
 	case 2: { // Operate on accumulator and register/memory location
-		if (memoryZ && m_displaced) {
+		if (memoryZ && displaced()) {
 			fetchDisplacement();
 			tick(5);
 		}
@@ -1431,7 +1602,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
-				if (m_displaced) {
+				if (displaced()) {
 					fetchDisplacement();
 					IntelProcessor::execute(fetchByte());
 				} else {
@@ -1474,7 +1645,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					call(MEMPTR() = fetchWord());
 					break;
 				case 1:	// DD prefix
-					m_displaced = m_prefixDD = true;
+					m_prefixDD = true;
 					IntelProcessor::execute(fetchOpCode());
 					break;
 				case 2:	// ED prefix
@@ -1482,7 +1653,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					IntelProcessor::execute(fetchOpCode());
 					break;
 				case 3:	// FD prefix
-					m_displaced = m_prefixFD = true;
+					m_prefixFD = true;
 					IntelProcessor::execute(fetchOpCode());
 					break;
 				default:

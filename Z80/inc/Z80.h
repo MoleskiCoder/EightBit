@@ -1,14 +1,13 @@
 #pragma once
 
 #include <cstdint>
-#include <cassert>
-#include <stdexcept>
+#include <array>
+#include <functional>
 
 #include <IntelProcessor.h>
 #include <EventArgs.h>
 #include <Signal.h>
 #include <Register.h>
-#include <EightBitCompilerDefinitions.h>
 
 namespace EightBit {
 
@@ -99,19 +98,14 @@ namespace EightBit {
 		[[nodiscard]] auto& IFF1() { return m_iff1; }
 		[[nodiscard]] auto& IFF2() { return m_iff2; }
 
-		void exx() {
-			m_registerSet ^= 1;
-		}
+		void exx() { m_registerSet ^= 1; }
+		void exxAF() { m_accumulatorFlagsSet ^= 1; }
 
-		void exxAF() {
-			m_accumulatorFlagsSet ^= 1;
-		}
+		[[nodiscard]] auto requestingIO() const { return lowered(IORQ()); }
+		[[nodiscard]] auto requestingMemory() const { return lowered(MREQ()); }
 
-		[[nodiscard]] bool requestingIO() const { return lowered(IORQ()); }
-		[[nodiscard]] bool requestingMemory() const { return lowered(MREQ()); }
-
-		[[nodiscard]] bool requestingRead() const { return lowered(RD()); }
-		[[nodiscard]] bool requestingWrite() const { return lowered(WR()); }
+		[[nodiscard]] auto requestingRead() const { return lowered(RD()); }
+		[[nodiscard]] auto requestingWrite() const { return lowered(WR()); }
 
 		// ** From the Z80 CPU User Manual
 		// RFSH.Refresh(output, active Low). RFSH, together with MREQ, indicates that the lower
@@ -150,11 +144,6 @@ namespace EightBit {
 		DEFINE_PIN_ACTIVATOR_LOW(RD)
 		DEFINE_PIN_ACTIVATOR_LOW(WR)
 
-		auto readBusDataM1() {
-			_ActivateM1 m1(*this);
-			return BUS().DATA();
-		}
-
 		enum { BC_IDX, DE_IDX, HL_IDX };
 
 		std::array<std::array<register16_t, 3>, 2> m_registers;
@@ -179,194 +168,39 @@ namespace EightBit {
 		bool m_prefixFD = false;
 
 		int8_t m_displacement = 0;
-		bool m_displaced = false;
 
 		void handleNMI();
 
+		void resetPrefixes();
+
+		[[nodiscard]] auto displaced() const { return m_prefixDD || m_prefixFD; }
 		[[nodiscard]] uint16_t displacedAddress();
 		void fetchDisplacement();
 		[[nodiscard]] uint8_t fetchOpCode();
 
+		uint8_t readBusDataM1();
+
 		typedef std::function<register16_t(void)> addresser_t;
+		void loadAccumulatorIndirect(addresser_t addresser);
+		void storeAccumulatorIndirect(addresser_t addresser);
+
 		typedef std::function<uint8_t(void)> reader_t;
+		void readInternalRegister(reader_t reader);
 
-		void loadAccumulatorIndirect(addresser_t addresser) {
-			(MEMPTR() = BUS().ADDRESS() = addresser())++;
-			A() = memoryRead();
-		}
+		[[nodiscard]] register16_t& HL2();
+		[[nodiscard]] register16_t& RP(int rp);
+		[[nodiscard]] register16_t& RP2(int rp);
 
-		void storeAccumulatorIndirect(addresser_t addresser) {
-			(MEMPTR() = BUS().ADDRESS() = addresser())++;
-			MEMPTR().high = BUS().DATA() = A();
-			memoryWrite();
-		}
+		[[nodiscard]] uint8_t R(int r);
+		void R(int r, uint8_t value);
+		void R2(int r, uint8_t value);
 
-		void readInternalRegister(reader_t reader) {
-			F() = adjustSZXY<Z80>(F(), A() = reader());
-			F() = clearBit(F(), NF | HC);
-			F() = setBit(F(), PF, IFF2());
-			tick();
-		}
-
-		[[nodiscard]] auto& HL2() {
-			if (LIKELY(!m_displaced))
-				return HL();
-			if (m_prefixDD)
-				return IX();
-			// Must be FD prefix
-			return IY();
-		}
-
-		[[nodiscard]] auto& RP(const int rp) {
-			ASSUME(rp >= 0);
-			ASSUME(rp <= 3);
-			switch (rp) {
-			case 0b00:
-				return BC();
-			case 0b01:
-				return DE();
-			case 0b10:
-				return HL2();
-			case 0b11:
-				return SP();
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		[[nodiscard]] auto& RP2(const int rp) {
-			ASSUME(rp >= 0);
-			ASSUME(rp <= 3);
-			switch (rp) {
-			case 0b00:
-				return BC();
-			case 0b01:
-				return DE();
-			case 0b10:
-				return HL2();
-			case 0b11:
-				return AF();
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		[[nodiscard]] auto R(const int r) {
-			ASSUME(r >= 0);
-			ASSUME(r <= 7);
-			switch (r) {
-			case 0:
-				return B();
-			case 1:
-				return C();
-			case 2:
-				return D();
-			case 3:
-				return E();
-			case 4:
-				return HL2().high;
-			case 5:
-				return HL2().low;
-			case 6:
-				return IntelProcessor::memoryRead(UNLIKELY(m_displaced) ?  displacedAddress() : HL().word);
-			case 7:
-				return A();
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		void R(const int r, const uint8_t value) {
-			ASSUME(r >= 0);
-			ASSUME(r <= 7);
-			switch (r) {
-			case 0:
-				B() = value;
-				break;
-			case 1:
-				C() = value;
-				break;
-			case 2:
-				D() = value;
-				break;
-			case 3:
-				E() = value;
-				break;
-			case 4:
-				HL2().high = value;
-				break;
-			case 5:
-				HL2().low = value;
-				break;
-			case 6:
-				IntelProcessor::memoryWrite(UNLIKELY(m_displaced) ? displacedAddress() : HL().word, value);
-				break;
-			case 7:
-				A() = value;
-				break;
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		void R2(const int r, const uint8_t value) {
-			ASSUME(r >= 0);
-			ASSUME(r <= 7);
-			switch (r) {
-			case 0:
-				B() = value;
-				break;
-			case 1:
-				C() = value;
-				break;
-			case 2:
-				D() = value;
-				break;
-			case 3:
-				E() = value;
-				break;
-			case 4:
-				H() = value;
-				break;
-			case 5:
-				L() = value;
-				break;
-			case 6:
-				IntelProcessor::memoryWrite(HL(), value);
-				break;
-			case 7:
-				A() = value;
-				break;
-			default:
-				UNREACHABLE;
-			}
-		}
-
-		[[nodiscard]] static auto adjustHalfCarryAdd(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
-			return setBit(f, HC, calculateHalfCarryAdd(before, value, calculation));
-		}
-
-		[[nodiscard]] static auto adjustHalfCarrySub(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
-			return setBit(f, HC, calculateHalfCarrySub(before, value, calculation));
-		}
-
-		[[nodiscard]] static uint8_t adjustOverflowAdd(uint8_t f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
-			return adjustOverflowAdd(f, before & SF, value & SF, calculation & SF);
-		}
-
-		[[nodiscard]] static uint8_t adjustOverflowAdd(uint8_t f, const int beforeNegative, const int valueNegative, const int afterNegative) {
-			const auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
-			return setBit(f, VF, overflow);
-		}
-
-		[[nodiscard]] static uint8_t adjustOverflowSub(uint8_t f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
-			return adjustOverflowSub(f, before & SF, value & SF, calculation & SF);
-		}
-
-		[[nodiscard]] static uint8_t adjustOverflowSub(uint8_t f, const int beforeNegative, const int valueNegative, const int afterNegative) {
-			const auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
-			return setBit(f, VF, overflow);
-		}
+		[[nodiscard]] static uint8_t adjustHalfCarryAdd(uint8_t f, uint8_t before, uint8_t value, int calculation);
+		[[nodiscard]] static uint8_t adjustHalfCarrySub(uint8_t f, uint8_t before, uint8_t value, int calculation);
+		[[nodiscard]] static uint8_t adjustOverflowAdd(uint8_t f, uint8_t before, uint8_t value, uint8_t calculation);
+		[[nodiscard]] static uint8_t adjustOverflowAdd(uint8_t f, int beforeNegative, int valueNegative, int afterNegative);
+		[[nodiscard]] static uint8_t adjustOverflowSub(uint8_t f, uint8_t before, uint8_t value, uint8_t calculation);
+		[[nodiscard]] static uint8_t adjustOverflowSub(uint8_t f, int beforeNegative, int valueNegative, int afterNegative);
 
 		[[nodiscard]] static bool convertCondition(uint8_t f, int flag);
 
@@ -420,41 +254,41 @@ namespace EightBit {
 
 		static void scf(uint8_t& f, uint8_t operand);
 		static void ccf(uint8_t& f, uint8_t operand);
-		static uint8_t cpl(uint8_t& f, uint8_t operand);
+		[[nodiscard]] static uint8_t cpl(uint8_t& f, uint8_t operand);
 
 		void xhtl(register16_t& exchange);
 
 		void blockCompare(uint8_t& f, uint8_t value, register16_t source, register16_t& counter);
 
 		void cpi(uint8_t& f, uint8_t value);
-		bool cpir(uint8_t& f, uint8_t value);
+		[[nodiscard]] bool cpir(uint8_t& f, uint8_t value);
 
 		void cpd(uint8_t& f, uint8_t value);
-		bool cpdr(uint8_t& f, uint8_t value);
+		[[nodiscard]] bool cpdr(uint8_t& f, uint8_t value);
 
 		void blockLoad(uint8_t& f, uint8_t a, register16_t source, register16_t destination, register16_t& counter);
 
 		void ldi(uint8_t& f, uint8_t a);
-		bool ldir(uint8_t& f, uint8_t a);
+		[[nodiscard]] bool ldir(uint8_t& f, uint8_t a);
 
 		void ldd(uint8_t& f, uint8_t a);
-		bool lddr(uint8_t& f, uint8_t a);
+		[[nodiscard]] bool lddr(uint8_t& f, uint8_t a);
 
 		void blockIn(register16_t& source, register16_t destination);
 
 		void ini();
-		bool inir();
+		[[nodiscard]] bool inir();
 
 		void ind();
-		bool indr();
+		[[nodiscard]] bool indr();
 
 		void blockOut(register16_t source, register16_t& destination);
 
 		void outi();
-		bool otir();
+		[[nodiscard]] bool otir();
 
 		void outd();
-		bool otdr();
+		[[nodiscard]] bool otdr();
 
 		[[nodiscard]] uint8_t neg(uint8_t& f, uint8_t operand);
 

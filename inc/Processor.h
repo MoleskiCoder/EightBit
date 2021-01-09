@@ -40,6 +40,7 @@ namespace EightBit {
 		virtual void handleINT();
 
 		void memoryWrite(register16_t address, uint8_t data);
+		void memoryWrite(register16_t address);
 		void memoryWrite(uint8_t data);
 		virtual void memoryWrite();
 		virtual void busWrite();
@@ -48,17 +49,10 @@ namespace EightBit {
 		virtual uint8_t memoryRead();
 		virtual uint8_t busRead();
 
-		auto getBytePaged(const uint8_t page, const uint8_t offset) {
-			return memoryRead(register16_t(offset, page));
-		}
+		uint8_t getBytePaged(uint8_t page, uint8_t offset);
+		void setBytePaged(uint8_t page, uint8_t offset, uint8_t value);
 
-		void setBytePaged(const uint8_t page, const uint8_t offset, const uint8_t value) {
-			memoryWrite(register16_t(offset, page), value);
-		}
-
-		auto fetchByte() {
-			return memoryRead(PC()++);
-		}
+		uint8_t fetchByte();
 
 		[[nodiscard]] virtual register16_t getWord() = 0;
 		virtual void setWord(register16_t value) = 0;
@@ -74,20 +68,10 @@ namespace EightBit {
 		virtual void pushWord(register16_t value) = 0;
 		[[nodiscard]] virtual register16_t popWord() = 0;
 
-		[[nodiscard]] auto getWord(const register16_t address) {
-			BUS().ADDRESS() = address;
-			return getWord();
-		}
+		register16_t getWord(register16_t address);
+		void setWord(register16_t address, register16_t value);
 
-		void setWord(const register16_t address, const register16_t value) {
-			BUS().ADDRESS() = address;
-			setWord(value);
-		}
-
-		void jump(const register16_t destination) noexcept {
-			PC() = destination;
-		}
-
+		void jump(const register16_t destination) noexcept;
 		virtual void call(register16_t destination);
 		virtual void ret();
 
