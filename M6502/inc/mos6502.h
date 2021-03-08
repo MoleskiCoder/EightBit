@@ -138,7 +138,7 @@ namespace EightBit {
 			return data;
 		}
 
-		void busReadModifyWrite(const uint8_t data) {
+		void memoryReadModifyWrite(const uint8_t data) {
 			// The read will have already taken place...
 			memoryWrite();
 			memoryWrite(data);
