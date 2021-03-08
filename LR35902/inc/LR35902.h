@@ -43,54 +43,22 @@ namespace EightBit {
 			void tickMachine() { tick(4); MachineTicked.fire(EventArgs::empty()); }
 
 		protected:
-			virtual int execute() final;
-			virtual int step() final;
+			int execute() final;
+			int step() final;
 
 			void handleRESET() final;
 			void handleINT() final;
 
-			void memoryWrite() final {
-				tickMachine();
-				IntelProcessor::memoryWrite();
-			}
+			void memoryWrite() final;
+			uint8_t memoryRead() final;
 
-			uint8_t memoryRead() final {
-				tickMachine();
-				return IntelProcessor::memoryRead();
-			}
+			void pushWord(register16_t value) final;
 
-			void pushWord(register16_t value) final {
-				tickMachine();
-				IntelProcessor::pushWord(value);
-			}
-
-			void jr(int8_t offset) final {
-				IntelProcessor::jr(offset);
-				tickMachine();
-			}
-
-			int jumpConditional(const int condition) final {
-				if (IntelProcessor::jumpConditional(condition))
-					tickMachine();
-				return condition;
-			}
-
-			int returnConditional(const int condition) final {
-				IntelProcessor::returnConditional(condition);
-				tickMachine();
-				return condition;
-			}
-
-			int jrConditional(const int condition) final {
-				if (!IntelProcessor::jrConditional(condition))
-					tickMachine();
-				return condition;
-			}
-
-			void ret() final {
-				IntelProcessor::ret();
-				tickMachine();
-			}
+			void jr(int8_t offset) final;
+			int jumpConditional(int condition) final;
+			int returnConditional(int condition) final;
+			int jrConditional(int condition) final;
+			void ret() final;
 
 		private:
 			Bus& m_bus;
@@ -105,97 +73,11 @@ namespace EightBit {
 
 			bool m_prefixCB = false;
 
-			[[nodiscard]] auto R(const int r) {
-				ASSUME(r >= 0);
-				ASSUME(r <= 7);
-				switch (r) {
-				case 0:
-					return B();
-				case 1:
-					return C();
-				case 2:
-					return D();
-				case 3:
-					return E();
-				case 4:
-					return H();
-				case 5:
-					return L();
-				case 6:
-					return IntelProcessor::memoryRead(HL());
-				case 7:
-					return A();
-				default:
-					UNREACHABLE;
-				}
-			}
+			[[nodiscard]] uint8_t R(int r);
+			void R(int r, uint8_t value);
 
-			void R(const int r, const uint8_t value) {
-				ASSUME(r >= 0);
-				ASSUME(r <= 7);
-				switch (r) {
-				case 0:
-					B() = value;
-					break;
-				case 1:
-					C() = value;
-					break;
-				case 2:
-					D() = value;
-					break;
-				case 3:
-					E() = value;
-					break;
-				case 4:
-					H() = value;
-					break;
-				case 5:
-					L() = value;
-					break;
-				case 6:
-					IntelProcessor::memoryWrite(HL(), value);
-					break;
-				case 7:
-					A() = value;
-					break;
-				default:
-					UNREACHABLE;
-				}
-			}
-
-			[[nodiscard]] auto& RP(const int rp) {
-				ASSUME(rp >= 0);
-				ASSUME(rp <= 3);
-				switch (rp) {
-				case 0b00:
-					return BC();
-				case 0b01:
-					return DE();
-				case 0b10:
-					return HL();
-				case 0b11:
-					return SP();
-				default:
-					UNREACHABLE;
-				}
-			}
-
-			[[nodiscard]] auto& RP2(const int rp) {
-				ASSUME(rp >= 0);
-				ASSUME(rp <= 3);
-				switch (rp) {
-				case 0b00:
-					return BC();
-				case 0b01:
-					return DE();
-				case 0b10:
-					return HL();
-				case 0b11:
-					return AF();
-				default:
-					UNREACHABLE;
-				}
-			}
+			[[nodiscard]] register16_t& RP(int rp);
+			[[nodiscard]] register16_t& RP2(int rp);
 
 			[[nodiscard]] static auto adjustHalfCarryAdd(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
 				return setBit(f, HC, calculateHalfCarryAdd(before, value, calculation));
@@ -217,7 +99,7 @@ namespace EightBit {
 
 			void stop(bool value = true) noexcept { m_stopped = value; }
 			void start() noexcept { stop(false); }
-			bool stopped() const noexcept { return m_stopped; }
+			[[nodiscard]] bool stopped() const noexcept { return m_stopped; }
 
 			void di();
 			void ei();
@@ -255,9 +137,9 @@ namespace EightBit {
 
 			static void scf(uint8_t& f, uint8_t operand);
 			static void ccf(uint8_t& f, uint8_t operand);
-			static uint8_t cpl(uint8_t& f, uint8_t operand);
+			[[nodiscard]] static uint8_t cpl(uint8_t& f, uint8_t operand);
 
-			static uint8_t swap(uint8_t& f, uint8_t operand);
+			[[nodiscard]] static uint8_t swap(uint8_t& f, uint8_t operand);
 		};
 	}
 }

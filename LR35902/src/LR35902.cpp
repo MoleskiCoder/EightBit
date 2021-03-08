@@ -44,6 +44,49 @@ void EightBit::GameBoy::LR35902::handleINT() {
 	restart(BUS().DATA());
 }
 
+void EightBit::GameBoy::LR35902::memoryWrite() {
+	tickMachine();
+	IntelProcessor::memoryWrite();
+}
+
+uint8_t EightBit::GameBoy::LR35902::memoryRead() {
+	tickMachine();
+	return IntelProcessor::memoryRead();
+}
+
+void EightBit::GameBoy::LR35902::pushWord(register16_t value) {
+	tickMachine();
+	IntelProcessor::pushWord(value);
+}
+
+void EightBit::GameBoy::LR35902::jr(int8_t offset) {
+	IntelProcessor::jr(offset);
+	tickMachine();
+}
+
+int EightBit::GameBoy::LR35902::jumpConditional(const int condition) {
+	if (IntelProcessor::jumpConditional(condition))
+		tickMachine();
+	return condition;
+}
+
+int EightBit::GameBoy::LR35902::returnConditional(const int condition) {
+	IntelProcessor::returnConditional(condition);
+	tickMachine();
+	return condition;
+}
+
+int EightBit::GameBoy::LR35902::jrConditional(const int condition) {
+	if (!IntelProcessor::jrConditional(condition))
+		tickMachine();
+	return condition;
+}
+
+void EightBit::GameBoy::LR35902::ret() {
+	IntelProcessor::ret();
+	tickMachine();
+}
+
 void EightBit::GameBoy::LR35902::di() {
 	IME() = false;
 }
@@ -66,6 +109,90 @@ uint8_t EightBit::GameBoy::LR35902::decrement(uint8_t& f, const uint8_t operand)
 	const uint8_t result = operand - 1;
 	f = adjustZero<LR35902>(f, result);
 	return result;
+}
+
+uint8_t EightBit::GameBoy::LR35902::R(const int r) {
+	switch (r) {
+	case 0:
+		return B();
+	case 1:
+		return C();
+	case 2:
+		return D();
+	case 3:
+		return E();
+	case 4:
+		return H();
+	case 5:
+		return L();
+	case 6:
+		return IntelProcessor::memoryRead(HL());
+	case 7:
+		return A();
+	default:
+		UNREACHABLE;
+	}
+}
+
+void EightBit::GameBoy::LR35902::R(const int r, const uint8_t value) {
+	switch (r) {
+	case 0:
+		B() = value;
+		break;
+	case 1:
+		C() = value;
+		break;
+	case 2:
+		D() = value;
+		break;
+	case 3:
+		E() = value;
+		break;
+	case 4:
+		H() = value;
+		break;
+	case 5:
+		L() = value;
+		break;
+	case 6:
+		IntelProcessor::memoryWrite(HL(), value);
+		break;
+	case 7:
+		A() = value;
+		break;
+	default:
+		UNREACHABLE;
+	}
+}
+
+EightBit::register16_t& EightBit::GameBoy::LR35902::RP(const int rp) {
+	switch (rp) {
+	case 0b00:
+		return BC();
+	case 0b01:
+		return DE();
+	case 0b10:
+		return HL();
+	case 0b11:
+		return SP();
+	default:
+		UNREACHABLE;
+	}
+}
+
+EightBit::register16_t& EightBit::GameBoy::LR35902::RP2(const int rp) {
+	switch (rp) {
+	case 0b00:
+		return BC();
+	case 0b01:
+		return DE();
+	case 0b10:
+		return HL();
+	case 0b11:
+		return AF();
+	default:
+		UNREACHABLE;
+	}
 }
 
 bool EightBit::GameBoy::LR35902::convertCondition(const uint8_t f, int flag) {
