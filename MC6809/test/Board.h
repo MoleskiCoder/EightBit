@@ -11,6 +11,7 @@
 #include <Disassembly.h>
 #include <MC6850.h>
 #include <UnusedMemory.h>
+#include <Profiler.h>
 
 class Board : public EightBit::Bus {
 public:
@@ -38,6 +39,7 @@ private:
 
 	EightBit::mc6809 m_cpu = *this;
 	EightBit::Disassembly m_disassembler = { *this, m_cpu };
+	EightBit::Profiler m_profiler = { m_cpu, m_disassembler };
 
 	uint64_t m_totalCycleCount = 0UL;
 	int64_t m_frameCycleCount = 0L;

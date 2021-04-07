@@ -21,11 +21,14 @@
   <ItemGroup>
     <ClInclude Include="..\inc\Disassembly.h" />
     <ClInclude Include="..\inc\mc6809.h" />
+    <ClInclude Include="..\inc\ProfileLineEventArgs.h" />
+    <ClInclude Include="..\inc\Profiler.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Disassembly.cpp" />
     <ClCompile Include="mc6809.cpp" />
+    <ClCompile Include="Profiler.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
