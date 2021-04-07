@@ -17,15 +17,15 @@ EightBit::Profiler::Profiler(MOS6502& targetProcessor, Disassembly& disassembler
 }
 
 void EightBit::Profiler::Generate() {
-	StartingOutput.fire(EventArgs::empty());
+	StartingOutput.fire();
 	EmitProfileInformation();
-	StartingOutput.fire(EventArgs::empty());
+	StartingOutput.fire();
 }
 
 void EightBit::Profiler::EmitProfileInformation() {
 
 	{
-		StartingLineOutput.fire(EventArgs::empty());
+		StartingLineOutput.fire();
 		// For each memory address
 		for (int address = 0; address < 0x10000; ++address) {
 			// If there are any cycles associated
@@ -37,11 +37,11 @@ void EightBit::Profiler::EmitProfileInformation() {
 				EmitLine.fire(event);
 			}
 		}
-		FinishedLineOutput.fire(EventArgs::empty());
+		FinishedLineOutput.fire();
 	}
 
 	{
-		StartingScopeOutput.fire(EventArgs::empty());
+		StartingScopeOutput.fire();
 		for (auto& scopeCycle : scopeCycles) {
 			auto name = scopeCycle.first;
 			auto cycles = scopeCycle.second;
@@ -50,7 +50,7 @@ void EightBit::Profiler::EmitProfileInformation() {
 			ProfileScopeEventArgs event(name, cycles, count);
 			EmitScope.fire(event);
 		}
-		FinishedScopeOutput.fire(EventArgs::empty());
+		FinishedScopeOutput.fire();
 	}
 }
 

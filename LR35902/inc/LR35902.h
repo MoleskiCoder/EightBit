@@ -40,7 +40,7 @@ namespace EightBit {
 			Signal<EventArgs> MachineTicked;
 
 			void tickMachine(const int extra) { for (int i = 0; i < extra; ++i) tickMachine(); }
-			void tickMachine() { tick(4); MachineTicked.fire(EventArgs::empty()); }
+			void tickMachine() { tick(4); MachineTicked.fire(); }
 
 		protected:
 			int execute() final;
