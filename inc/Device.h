@@ -103,7 +103,7 @@ namespace EightBit {
 
 		virtual ~Device() = default;
 
-		[[nodiscard]] bool powered() noexcept { return raised(POWER()); }
+		[[nodiscard]] bool powered() const noexcept { return raised(POWER()); }
 
 		DECLARE_PIN_INPUT(POWER)
 

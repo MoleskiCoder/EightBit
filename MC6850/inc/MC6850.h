@@ -10,42 +10,42 @@ namespace EightBit {
 	public:
 		mc6850();
 
-		// +--------+----------------------------------------------------------------------------------+
-		// |		|								Buffer address									   |
-		// |		+------------------+------------------+--------------------+-----------------------+
-		// |        |			 _	   |			_	  |			   _	   |			   _	   |
-		// |  Data	|	  RS * R/W	   |	 RS * R/W	  |		RS * R/W	   |		RS * R/W	   |
-		// |  Bus	|   (high)(low)	   |   (high)(high)   |	   (low)(low)	   |	   (low)(low)	   |
-		// |  Line	|	 Transmit	   |	 Receive	  |					   |					   |
-		// | Number	|	   Data		   |	  Data		  |		 Control	   |		 Status		   |
-		// |		|	 Register	   |	 Register	  |		 register	   |		register	   |
-		// |		+------------------+------------------+--------------------+-----------------------+
-		// |		|  (Write only)    +   (Read only)	  +	   (Write only)	   |      (Read only)	   |
-		// +--------+------------------+------------------+--------------------+-----------------------+
-		// |	0	|	Data bit 0*	   |	Data bit 0	  |   Counter divide   | Receive data register |
-		// |		|				   |				  |	  select 1 (CR0)   |	  full (RDRF)	   |
-		// +--------+------------------+------------------+--------------------+-----------------------+
-		// |	1	|	Data bit 1	   |	Data bit 1	  |   Counter divide   | Transmit data register|
-		// |		|				   |				  |   select 2 (CR1)   |	 empty (TDRE)	   |
-		// +--------+------------------+------------------+--------------------+-----------------------+
-		// |	2	|	Data bit 2	   |	Data bit 2	  |   Word select 1	   |  Data carrier detect  |
-		// |		|				   |				  |		  (CR2)		   |	  (DCD active)	   |
-		// +--------+------------------+------------------+--------------------+-----------------------+
-		// |	3	|	Data bit 3	   |	Data bit 3	  |   Word select 1	   |	 Clear to send	   |
-		// |		|				   |				  |		  (CR3)		   |	  (CTS active)	   |
-		// +--------+------------------+------------------+--------------------+-----------------------+
-		// |	4	|	Data bit 4	   |	Data bit 4	  |	  Word select 1	   |	 Framing error	   |
-		// |		|				   |				  |		  (CR4)		   |		  (FE)		   |
-		// +--------+------------------+------------------+--------------------+-----------------------+
-		// |	5	|	Data bit 5	   |	Data bit 5	  | Transmit control 1 |	Receiver overrun   |
-		// |		|				   |				  |		  (CR5)		   |		(OVRN)		   |
-		// +--------+------------------+------------------+--------------------+-----------------------+
-		// |	6	|	Data bit 6	   |	Data bit 6	  | Transmit control 2 |	Parity error (PE)  |
-		// |		|				   |				  |		  (CR6)		   |					   |
-		// +--------+------------------+------------------+--------------------+-----------------------+
-		// |	7	|	Data bit 7***  |	Data bit 7**  | Receive interrupt  |	Interrupt request  |
-		// |		|				   |				  |   enable (CR7)	   |	  (IRQ active)	   |
-		// +--------+------------------+------------------+--------------------+-----------------------+
+        // +--------+----------------------------------------------------------------------------------+
+        // |        |                                Buffer address                                    |
+        // |        +------------------+------------------+--------------------+-----------------------+
+        // |        |            _     |            _     |              _     |               _       |
+        // |  Data  |     RS * R/W     |     RS * R/W     |       RS * R/W     |        RS * R/W       |
+        // |  Bus   |   (high)(low)    |   (high)(high)   |      (low)(low)    |       (low)(low)      |
+        // |  Line  |     Transmit     |      Receive     |                    |                       |
+        // | Number |       Data       |        Data      |        Control     |         Status        |
+        // |        |     Register     |      Register    |       Register     |        register       |
+        // |        +------------------+------------------+--------------------+-----------------------+
+        // |        |  (Write only)    |   (Read only)    |       (Write only) |      (Read only)      |
+        // +--------+------------------+------------------+--------------------+-----------------------+
+        // |    0   |    Data bit 0*   |    Data bit 0    |   Counter divide   | Receive data register |
+        // |        |                  |                  |   select 1 (CR0)   |      full (RDRF)      |
+        // +--------+------------------+------------------+--------------------+-----------------------+
+        // |    1   |    Data bit 1    |    Data bit 1    |   Counter divide   | Transmit data register|
+        // |        |                  |                  |   select 2 (CR1)   |     empty (TDRE)      |
+        // +--------+------------------+------------------+--------------------+-----------------------+
+        // |    2   |    Data bit 2    |    Data bit 2    |   Word select 1    |  Data carrier detect  |
+        // |        |                  |                  |          (CR2)     |      (DCD active)     |
+        // +--------+------------------+------------------+--------------------+-----------------------+
+        // |    3   |    Data bit 3    |    Data bit 3    |   Word select 1    |     Clear to send     |
+        // |        |                  |                  |          (CR3)     |      (CTS active)     |
+        // +--------+------------------+------------------+--------------------+-----------------------+
+        // |    4   |    Data bit 4    |    Data bit 4    |   Word select 1    |     Framing error     |
+        // |        |                  |                  |          (CR4)     |          (FE)         |
+        // +--------+------------------+------------------+--------------------+-----------------------+
+        // |    5   |    Data bit 5    |    Data bit 5    | Transmit control 1 |    Receiver overrun   |
+        // |        |                  |                  |          (CR5)     |        (OVRN)         |
+        // +--------+------------------+------------------+--------------------+-----------------------+
+        // |    6   |    Data bit 6    |    Data bit 6    | Transmit control 2 |    Parity error (PE)  |
+        // |        |                  |                  |          (CR6)     |                       |
+        // +--------+------------------+------------------+--------------------+-----------------------+
+        // |    7   |    Data bit 7*** |    Data bit 7**  | Receive interrupt  |    Interrupt request  |
+        // |        |                  |                  |   enable (CR7)     |      (IRQ active)     |
+        // +--------+------------------+------------------+--------------------+-----------------------+
 		//		* Leading bit = LSB = Bit 0
 		//	   ** Data bit will be zero in 7-bit plus parity modes
 		//	  *** Data bit is "don't care" in 7-bit plus parity modes
@@ -84,7 +84,7 @@ namespace EightBit {
 		// CR5 and CR6
 		enum TransmitterControl {
 			ReadyLowInterruptDisabled				= 0b00,
-			ReadyLowInterruptEnabled				= 0b01,
+			ReadyLowInterruptEnabled					= 0b01,
 			ReadyHighInterruptDisabled				= 0b10,
 			ReadyLowInterruptDisabledTransmitBreak	= 0b11,
 		};
@@ -284,10 +284,10 @@ namespace EightBit {
 		bool m_statusRead = false;
 
 		// Control registers
-		CounterDivideSelect m_counterDivide = One;
-		WordSelect m_wordSelect = SevenEvenTwo;
-		TransmitterControl m_transmitControl = ReadyLowInterruptDisabled;
-		ReceiveControl m_receiveControl = ReceiveInterruptDisable;
+		CounterDivideSelect m_counterDivide = CounterDivideSelect::One;
+		WordSelect m_wordSelect = WordSelect::SevenEvenTwo;
+		TransmitterControl m_transmitControl = TransmitterControl::ReadyLowInterruptDisabled;
+		ReceiveControl m_receiveControl = ReceiveControl::ReceiveInterruptDisable;
 
 		// Status registers
 		bool m_statusRDRF = false;
