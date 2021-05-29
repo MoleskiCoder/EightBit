@@ -27,6 +27,14 @@ void Board::raisePOWER() {
 }
 
 void Board::lowerPOWER() {
+
+	if (m_configuration.isProfileMode()) {
+		m_profiler.EmitLine.connect([this](EightBit::ProfileLineEventArgs line) {
+			std::cout << EightBit::Disassembly::dump_WordValue(line.address()) << " " << line.source() << std::endl;
+		});
+		m_profiler.Generate();
+	}
+
 	ACIA().lowerPOWER();
 	CPU().lowerPOWER();
 	EightBit::Bus::lowerPOWER();
@@ -70,6 +78,15 @@ void Board::initialise() {
 			m_frameCycleCount = Configuration::FrameCycleInterval;
 		}
 	});
+
+	if (m_configuration.isProfileMode()) {
+		m_cpu.ExecutingInstruction.connect([this](EightBit::mc6809& cpu) {
+			m_profiler.addInstruction(peek(cpu.PC()));
+		});
+		m_cpu.ExecutedInstruction.connect([this](EightBit::mc6809& cpu) {
+			m_profiler.addAddress(cpu.PC().word, cpu.cycles());
+		});
+	}
 
 	if (m_configuration.isDebugMode()) {
 		// MC6809 disassembly wiring

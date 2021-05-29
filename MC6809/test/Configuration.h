@@ -14,6 +14,9 @@ public:
 	bool isDebugMode() const { return m_debugMode; }
 	void setDebugMode(bool value) { m_debugMode = value; }
 
+	bool isProfileMode() const { return m_profileMode; }
+	void setProfileMode(bool value) { m_profileMode = value; }
+
 	bool terminatesEarly() const { return m_terminatesEarly; }
 	void setTerminatesEarly(bool value) { m_terminatesEarly = value; }
 
@@ -21,6 +24,7 @@ public:
 
 private:
 	bool m_debugMode = false;
+	bool m_profileMode = false;
 	bool m_terminatesEarly = false;
 	std::string m_romDirectory = "roms\\searle";
 };

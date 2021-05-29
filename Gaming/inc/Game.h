@@ -3,19 +3,20 @@
 #include <cstdint>
 #include <map>
 #include <memory>
-#include <stdexcept>
 #include <string>
 
 #include <SDL.h>
 
 #include <Device.h>
 
-#include "GameController.h"
 #include "SDLWrapper.h"
 
 class Configuration;
 
 namespace Gaming {
+
+	class GameController;
+
 	class Game : public EightBit::Device {
 	public:
 		Game();
@@ -28,10 +29,10 @@ namespace Gaming {
 		virtual float fps() const = 0;
 		virtual bool useVsync() const = 0;
 
-		virtual int windowWidth() const noexcept { return displayWidth() * displayScale(); }
-		virtual int windowHeight() const noexcept { return displayHeight() * displayScale(); }
-		virtual int displayWidth() const noexcept { return rasterWidth(); }
-		virtual int displayHeight() const noexcept { return rasterHeight(); }
+		virtual int windowWidth() const noexcept;
+		virtual int windowHeight() const noexcept;
+		virtual int displayWidth() const noexcept;
+		virtual int displayHeight() const noexcept;
 		virtual int displayScale() const noexcept = 0;
 		virtual int rasterWidth() const noexcept = 0;
 		virtual int rasterHeight() const noexcept = 0;
@@ -67,19 +68,8 @@ namespace Gaming {
 
 		void toggleFullscreen();
 
-		std::shared_ptr<GameController> gameController(const int which) const {
-			const auto i = m_gameControllers.find(which);
-			if (i == m_gameControllers.cend())
-				throw std::runtime_error("Unknown controller");
-			return i->second;
-		}
-
-		int mappedController(const SDL_JoystickID which) const {
-			const auto i = m_mappedControllers.find(which);
-			if (i == m_mappedControllers.cend())
-				throw std::runtime_error("Unknown joystick");
-			return i->second;
-		}
+		std::shared_ptr<GameController> gameController(int which) const;
+		int mappedController(const SDL_JoystickID which) const;
 
 		int chooseControllerIndex(int who) const;
 		std::shared_ptr<GameController> chooseController(int who) const;

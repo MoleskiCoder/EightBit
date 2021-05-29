@@ -15,7 +15,7 @@ namespace EightBit {
 		static std::string state(Z80& cpu);
 		std::string disassemble(Z80& cpu);
 
-		static std::string flag(uint8_t value, int flag, const std::string& represents);
+		static std::string flag(uint8_t value, int flag, std::string represents);
 		static std::string flags(uint8_t value);
 		static std::string hex(uint8_t value);
 		static std::string hex(uint16_t value);

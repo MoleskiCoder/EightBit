@@ -23,7 +23,7 @@ void EightBit::M6532::step() {
 	if (!activated())
 		return;
 
-	Accessing.fire(EventArgs::empty());
+	Accessing.fire();
 
 	if (lowered(RES())) {
 		reset();
@@ -120,7 +120,7 @@ void EightBit::M6532::step() {
 		}
 	}
 
-	Accessed.fire(EventArgs::empty());
+	Accessed.fire();
 }
 
 void EightBit::M6532::reset() {

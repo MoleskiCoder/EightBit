@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <stdexcept>
+
 namespace Gaming {
 	class SDLWrapper final {
 	public:

@@ -32,15 +32,15 @@ namespace EightBit {
 		Signal<MOS6502> ExecutedInstruction;
 
 		int execute() final;
-		int step() final;
+		[[nodiscard]] int step() final;
 
-		auto& X() { return x; }
-		auto& Y() { return y; }
-		auto& A() { return a; }
-		auto& S() { return s; }
+		[[nodiscard]] auto& X() { return x; }
+		[[nodiscard]] auto& Y() { return y; }
+		[[nodiscard]] auto& A() { return a; }
+		[[nodiscard]] auto& S() { return s; }
 
-		auto& P() { return p; }
-		const auto& P() const { return p; }
+		[[nodiscard]] auto& P() { return p; }
+		[[nodiscard]] const auto& P() const { return p; }
 
 		DECLARE_PIN_INPUT(NMI)
 		DECLARE_PIN_INPUT(SO)
@@ -49,21 +49,21 @@ namespace EightBit {
 		DECLARE_PIN_OUTPUT(RW)
 
 	protected:
-		virtual void handleRESET() final;
-		virtual void handleINT() final;
+		void handleRESET() final;
+		void handleINT() final;
 
-		virtual void busWrite() final;
-		virtual uint8_t busRead() final;
+		void busWrite() final;
+		[[nodiscard]] uint8_t busRead() final;
 
-		virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow = 0);
-		uint8_t sbc(uint8_t operand, uint8_t data);
-		uint8_t sub_b(uint8_t operand, uint8_t data, int borrow);
-		uint8_t sub_d(uint8_t operand, uint8_t data, int borrow);
+		[[nodiscard]] virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow = 0);
+		[[nodiscard]] uint8_t sbc(uint8_t operand, uint8_t data);
+		[[nodiscard]] uint8_t sub_b(uint8_t operand, uint8_t data, int borrow);
+		[[nodiscard]] uint8_t sub_d(uint8_t operand, uint8_t data, int borrow);
 
-		virtual uint8_t add(uint8_t operand, uint8_t data, int carry = 0);
-		uint8_t adc(uint8_t operand, uint8_t data);
-		uint8_t add_b(uint8_t operand, uint8_t data, int carry);
-		uint8_t add_d(uint8_t operand, uint8_t data, int carry);
+		[[nodiscard]] virtual uint8_t add(uint8_t operand, uint8_t data, int carry = 0);
+		[[nodiscard]] uint8_t adc(uint8_t operand, uint8_t data);
+		[[nodiscard]] uint8_t add_b(uint8_t operand, uint8_t data, int carry);
+		[[nodiscard]] uint8_t add_d(uint8_t operand, uint8_t data, int carry);
 
 	private:
 		const uint8_t IRQvector = 0xfe;		// IRQ vector
@@ -75,25 +75,25 @@ namespace EightBit {
 
 		void interrupt();
 
-		virtual void push(uint8_t value) final;
-		virtual uint8_t pop() final;
+		void push(uint8_t value) final;
+		[[nodiscard]] uint8_t pop() final;
 
 		// Dummy stack push, used during RESET
 		void dummyPush(uint8_t value);
 
 		// Addressing modes
 
-		register16_t Address_Absolute();
-		uint8_t Address_ZeroPage();
-		register16_t Address_ZeroPageIndirect();
-		register16_t Address_Indirect();
-		uint8_t Address_ZeroPageX();
-		uint8_t Address_ZeroPageY();
-		std::pair<register16_t, uint8_t> Address_AbsoluteX();
-		std::pair<register16_t, uint8_t> Address_AbsoluteY();
-		register16_t Address_IndexedIndirectX();
-		std::pair<register16_t, uint8_t> Address_IndirectIndexedY();
-		register16_t Address_relative_byte();
+		[[nodiscard]] register16_t Address_Absolute();
+		[[nodiscard]] uint8_t Address_ZeroPage();
+		[[nodiscard]] register16_t Address_ZeroPageIndirect();
+		[[nodiscard]] register16_t Address_Indirect();
+		[[nodiscard]] uint8_t Address_ZeroPageX();
+		[[nodiscard]] uint8_t Address_ZeroPageY();
+		[[nodiscard]] std::pair<register16_t, uint8_t> Address_AbsoluteX();
+		[[nodiscard]] std::pair<register16_t, uint8_t> Address_AbsoluteY();
+		[[nodiscard]] register16_t Address_IndexedIndirectX();
+		[[nodiscard]] std::pair<register16_t, uint8_t> Address_IndirectIndexedY();
+		[[nodiscard]] register16_t Address_relative_byte();
 
 		// Addressing modes, read
 
@@ -121,19 +121,19 @@ namespace EightBit {
 
 		// Flag checking
 
-		auto interruptMasked() const { return P() & IF; }
-		auto decimal() const  { return P() & DF; }
+		[[nodiscard]] auto interruptMasked() const { return P() & IF; }
+		[[nodiscard]] auto decimal() const  { return P() & DF; }
 
-		auto negative() const { return P() & NF; }
-		auto zero() const { return P() & ZF; }
-		auto overflow() const { return P() & VF; }
-		auto carry() const { return P() & CF; }
+		[[nodiscard]] auto negative() const { return P() & NF; }
+		[[nodiscard]] auto zero() const { return P() & ZF; }
+		[[nodiscard]] auto overflow() const { return P() & VF; }
+		[[nodiscard]] auto carry() const { return P() & CF; }
 
 		// Miscellaneous
 
 		void branch(int condition);
 
-		auto through(const uint8_t data) {
+		[[nodiscard]] auto through(const uint8_t data) {
 			adjustNZ(data);
 			return data;
 		}
@@ -146,20 +146,20 @@ namespace EightBit {
 
 		// Instruction implementations
 
-		uint8_t andr(uint8_t operand, uint8_t data);
-		uint8_t asl(uint8_t value);
+		[[nodiscard]] uint8_t andr(uint8_t operand, uint8_t data);
+		[[nodiscard]] uint8_t asl(uint8_t value);
 		void bit(uint8_t operand, uint8_t data);
 		void cmp(uint8_t first, uint8_t second);
-		uint8_t dec(uint8_t value);
-		uint8_t eorr(uint8_t operand, uint8_t data);
-		uint8_t inc(uint8_t value);
+		[[nodiscard]] uint8_t dec(uint8_t value);
+		[[nodiscard]] uint8_t eorr(uint8_t operand, uint8_t data);
+		[[nodiscard]] uint8_t inc(uint8_t value);
 		void jsr();
-		uint8_t lsr(uint8_t value);
-		uint8_t orr(uint8_t operand, uint8_t data);
+		[[nodiscard]] uint8_t lsr(uint8_t value);
+		[[nodiscard]] uint8_t orr(uint8_t operand, uint8_t data);
 		void php();
 		void plp();
-		uint8_t rol(uint8_t operand);
-		uint8_t ror(uint8_t operand);
+		[[nodiscard]] uint8_t rol(uint8_t operand);
+		[[nodiscard]] uint8_t ror(uint8_t operand);
 		void rti();
 		void rts();
 

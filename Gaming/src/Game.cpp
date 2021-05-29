@@ -1,11 +1,29 @@
 #include "stdafx.h"
 #include "Game.h"
 
+#include "GameController.h"
+
 namespace Gaming {
 
 Game::Game() {}
 
 Game::~Game() {}
+
+int Game::windowWidth() const noexcept {
+	return displayWidth() * displayScale();
+}
+
+int Game::windowHeight() const noexcept {
+	return displayHeight() * displayScale();
+}
+
+int Game::displayWidth() const noexcept {
+	return rasterWidth();
+}
+
+int Game::displayHeight() const noexcept {
+	return rasterHeight();
+}
 
 void Game::raisePOWER() {
 
@@ -166,6 +184,20 @@ void Game::addJoystick(SDL_Event& e) {
 	SDL_assert(m_mappedControllers.find(joystickId) == m_mappedControllers.end());
 	m_mappedControllers[joystickId] = which;
 	SDL_Log("Joystick device %d added (%zd controllers)", which, m_gameControllers.size());
+}
+
+std::shared_ptr<GameController> Game::gameController(const int which) const {
+	const auto i = m_gameControllers.find(which);
+	if (i == m_gameControllers.cend())
+		throw std::runtime_error("Unknown controller");
+	return i->second;
+}
+
+int Game::mappedController(const SDL_JoystickID which) const {
+	const auto i = m_mappedControllers.find(which);
+	if (i == m_mappedControllers.cend())
+		throw std::runtime_error("Unknown joystick");
+	return i->second;
 }
 
 // -1 if no controllers, otherwise index
