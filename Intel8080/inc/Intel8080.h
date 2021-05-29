@@ -2,6 +2,7 @@
 
 // Auxiliary carry logic from https://github.com/begoon/i8080-core
 
+#include <cassert>
 #include <cstdint>
 #include <stdexcept>
 

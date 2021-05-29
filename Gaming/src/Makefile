@@ -1,6 +1,7 @@
 LIB = libgaming.a
 
-CXXFLAGS = `sdl2-config --cflags` -I ../inc -I ../../inc
+CPPFLAGS = -I ../inc -I ../../inc
+CXXFLAGS = `sdl2-config --cflags`
 
 CXXFILES = GameController.cpp Game.cpp SDLWrapper.cpp
 

@@ -1,6 +1,6 @@
 LIB = libz80.a
 
-CXXFLAGS = -I ../inc -I ../../inc
+CPPFLAGS = -I ../../inc
 
 CXXFILES = Disassembler.cpp Profiler.cpp Z80.cpp
 

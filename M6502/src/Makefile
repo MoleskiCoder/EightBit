@@ -1,6 +1,6 @@
 LIB = libm6502.a
 
-CXXFLAGS = -I ../inc -I ../../inc
+CPPFLAGS = -I ../../inc
 
 CXXFILES = Disassembly.cpp Profiler.cpp Symbols.cpp mos6502.cpp
 

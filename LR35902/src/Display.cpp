@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "Display.h"
-#include "CharacterDefinition.h"
-#include "ObjectAttribute.h"
-#include "GameBoyBus.h"
-#include "AbstractColourPalette.h"
+#include "../inc/Display.h"
+#include "../inc/CharacterDefinition.h"
+#include "../inc/ObjectAttribute.h"
+#include "../inc/GameBoyBus.h"
+#include "../inc/AbstractColourPalette.h"
 
 #include <Processor.h>
 

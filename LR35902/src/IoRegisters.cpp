@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "IoRegisters.h"
-#include "GameBoyBus.h"
+#include "../inc/IoRegisters.h"
+#include "../inc/GameBoyBus.h"
 
 EightBit::GameBoy::IoRegisters::IoRegisters(Bus& bus)
 : Ram(0x80),

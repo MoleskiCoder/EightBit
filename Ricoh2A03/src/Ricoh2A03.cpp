@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Ricoh2A03.h"
+#include "../inc/Ricoh2A03.h"
 
 EightBit::Ricoh2A03::Ricoh2A03(Bus& bus)
 : MOS6502(bus) {

@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "Profiler.h"
-#include "Disassembler.h"
+#include "../inc/Profiler.h"
+#include "../inc/Disassembler.h"
 
 #include <iostream>
 

@@ -1,5 +1,5 @@
 ﻿#include "stdafx.h"
-#include "mos6502.h"
+#include "../inc/mos6502.h"
 
 EightBit::MOS6502::MOS6502(Bus& bus)
 : LittleEndianProcessor(bus) {

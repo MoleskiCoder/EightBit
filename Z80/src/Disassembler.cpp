@@ -1,12 +1,12 @@
 #include "stdafx.h"
-#include "Disassembler.h"
+#include "../inc/Disassembler.h"
 
 #include <sstream>
 #include <iomanip>
 #include <bitset>
 #include <iostream>
 
-#include "Z80.h"
+#include "../inc/Z80.h"
 
 EightBit::Disassembler::Disassembler(Bus& bus) noexcept
 : m_bus(bus) {

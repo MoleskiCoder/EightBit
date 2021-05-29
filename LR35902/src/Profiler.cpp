@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "Profiler.h"
-#include "LR35902.h"
+#include "../inc/Profiler.h"
+#include "../inc/LR35902.h"
 
 EightBit::GameBoy::Profiler::Profiler(Bus& bus, LR35902& cpu)
 : m_bus(bus),

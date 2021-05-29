@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Z80.h"
+#include "../inc/Z80.h"
 
 // based on http://www.z80.info/decoding.htm
 

@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "GameBoyBus.h"
-#include "Display.h"
+#include "../inc/GameBoyBus.h"
+#include "../inc/Display.h"
 
 EightBit::GameBoy::Bus::Bus() noexcept
 : m_cpu(*this),

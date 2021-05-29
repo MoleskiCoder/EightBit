@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "CharacterDefinition.h"
+#include "../inc/CharacterDefinition.h"
 
 #include <Ram.h>
 

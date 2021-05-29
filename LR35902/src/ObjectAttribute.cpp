@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ObjectAttribute.h"
+#include "../inc/ObjectAttribute.h"
 
 #include <Ram.h>
 

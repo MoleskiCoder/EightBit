@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "Profiler.h"
+#include "../inc/Profiler.h"
 
-#include "Disassembly.h"
-#include "Symbols.h"
+#include "../inc/Disassembly.h"
+#include "../inc/Symbols.h"
 
 EightBit::Profiler::Profiler(MOS6502& targetProcessor, Disassembly& disassemblerTarget, Symbols& symbolsTarget)
 : processor(targetProcessor),

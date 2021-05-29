@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "SDLWrapper.h"
+#include "../inc/SDLWrapper.h"
 
 using namespace Gaming;
 

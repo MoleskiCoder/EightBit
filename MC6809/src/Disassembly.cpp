@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Disassembly.h"
+#include "../inc/Disassembly.h"
 
 #include <vector>
 #include <sstream>

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Symbols.h"
+#include "../inc/Symbols.h"
 
 #include <fstream>
 #include <regex>

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "mc6809.h"
+#include "../inc/mc6809.h"
 
 #include <algorithm>
 #include <cassert>

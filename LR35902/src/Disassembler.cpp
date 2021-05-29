@@ -1,12 +1,12 @@
 #include "stdafx.h"
-#include "Disassembler.h"
+#include "../inc/Disassembler.h"
 
 #include <sstream>
 #include <iomanip>
 #include <bitset>
 
-#include "LR35902.h"
-#include "IoRegisters.h"
+#include "../inc/LR35902.h"
+#include "../inc/IoRegisters.h"
 
 EightBit::GameBoy::Disassembler::Disassembler(Bus& bus) noexcept
 : m_bus(bus) {

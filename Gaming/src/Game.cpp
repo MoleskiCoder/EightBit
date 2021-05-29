@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "Game.h"
+#include "../inc/Game.h"
 
-#include "GameController.h"
+#include "../inc/GameController.h"
 
 namespace Gaming {
 

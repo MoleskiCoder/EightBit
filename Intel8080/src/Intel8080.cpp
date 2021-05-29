@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Intel8080.h"
+#include "../inc/Intel8080.h"
 
 EightBit::Intel8080::Intel8080(Bus& bus)
 : IntelProcessor(bus) {

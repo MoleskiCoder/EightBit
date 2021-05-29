@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "Disassembly.h"
+#include "../inc/Disassembly.h"
 
-#include "mos6502.h"
-#include "Symbols.h"
+#include "../inc/mos6502.h"
+#include "../inc/Symbols.h"
 
 #include <sstream>
 #include <iomanip>

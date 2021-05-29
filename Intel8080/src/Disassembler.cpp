@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "Disassembler.h"
-#include "Intel8080.h"
+#include "../inc/Disassembler.h"
+#include "../inc/Intel8080.h"
 
 #include <sstream>
 #include <iomanip>

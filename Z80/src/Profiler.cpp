@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "Profiler.h"
-#include "Disassembler.h"
-#include "Z80.h"
+#include "../inc/Profiler.h"
+#include "../inc/Disassembler.h"
+#include "../inc/Z80.h"
 
 EightBit::Profiler::Profiler(Z80& cpu, Disassembler& disassembler)
 : m_cpu(cpu),

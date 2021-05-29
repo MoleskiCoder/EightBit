@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "M6532.h"
+#include "../inc/M6532.h"
 
 #include <cassert>
 

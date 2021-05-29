@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "LR35902.h"
-#include "GameBoyBus.h"
+#include "../inc/LR35902.h"
+#include "../inc/GameBoyBus.h"
 
 // based on http://www.z80.info/decoding.htm
 

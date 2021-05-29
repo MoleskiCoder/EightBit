@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "Profiler.h"
+#include "../inc/Profiler.h"
 
-#include "Disassembly.h"
+#include "../inc/Disassembly.h"
 
 EightBit::Profiler::Profiler(mc6809& targetProcessor, Disassembly& disassemblerTarget)
 : processor(targetProcessor),
