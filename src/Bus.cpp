@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "Bus.h"
-#include "Ram.h"
-#include "IntelHexFile.h"
-#include "EightBitCompilerDefinitions.h"
+#include "../inc/Bus.h"
+#include "../inc/Ram.h"
+#include "../inc/IntelHexFile.h"
+#include "../inc/EightBitCompilerDefinitions.h"
 
 void EightBit::Bus::raisePOWER() {}
 

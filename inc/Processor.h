@@ -11,9 +11,15 @@
 namespace EightBit {
 	class Processor : public ClockedChip {
 	public:
+		// http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
 		// b: number of bits representing the number in x
 		// x: sign extend this b-bit number to r
-		[[nodiscard]] static int8_t signExtend(int b, uint8_t x) noexcept;
+		[[nodiscard]] static constexpr int8_t signExtend(int b, uint8_t x) noexcept {
+			const uint8_t m = bit(b - 1); // mask can be pre-computed if b is fixed
+			x = x & (bit(b) - 1);  // (Skip this if bits in x above position b are already zero.)
+			const auto result = (x ^ m) - m;
+			return result;
+		}
 
 		~Processor() = default;
 

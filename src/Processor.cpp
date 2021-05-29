@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Processor.h"
+#include "../inc/Processor.h"
 
 EightBit::Processor::Processor(Bus& bus)
 : m_bus(bus) {
@@ -84,14 +84,6 @@ int EightBit::Processor::run(const int limit) {
 int EightBit::Processor::execute(const uint8_t value) {
 	opcode() = value;
 	return execute();
-}
-
-// http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
-int8_t EightBit::Processor::signExtend(const int b, uint8_t x) noexcept {
-	const uint8_t m = bit(b - 1); // mask can be pre-computed if b is fixed
-	x = x & (bit(b) - 1);  // (Skip this if bits in x above position b are already zero.)
-	const auto result = (x ^ m) - m;
-	return result;
 }
 
 void EightBit::Processor::jump(const register16_t destination) noexcept {

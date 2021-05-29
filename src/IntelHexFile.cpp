@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "IntelHexFile.h"
+#include "../inc/IntelHexFile.h"
 
 #include <sstream>
 

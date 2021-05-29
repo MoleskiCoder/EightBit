@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "LittleEndianProcessor.h"
+#include "../inc/LittleEndianProcessor.h"
 
 EightBit::LittleEndianProcessor::LittleEndianProcessor(Bus& memory)
 : Processor(memory) {}

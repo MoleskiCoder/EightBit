@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Rom.h"
+#include "../inc/Rom.h"
 
 #include <iostream>
 

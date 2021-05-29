@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "InputOutput.h"
+#include "../inc/InputOutput.h"
 
 #include <stdexcept>
 
-#include "Register.h"
+#include "../inc/Register.h"
 
 size_t EightBit::InputOutput::size() const noexcept {
 	return 0x100;

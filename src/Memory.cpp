@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Memory.h"
+#include "../inc/Memory.h"
 
 #include <stdexcept>
 

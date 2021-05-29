@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Ram.h"
+#include "../inc/Ram.h"
 
 EightBit::Ram::Ram(const size_t size) noexcept
 : Rom(size) {}

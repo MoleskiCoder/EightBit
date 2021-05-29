@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "BigEndianProcessor.h"
+#include "../inc/BigEndianProcessor.h"
 
 EightBit::BigEndianProcessor::BigEndianProcessor(Bus& memory)
 : Processor(memory) {}

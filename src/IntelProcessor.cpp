@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "IntelProcessor.h"
+#include "../inc/IntelProcessor.h"
 
 EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 : LittleEndianProcessor(bus) {

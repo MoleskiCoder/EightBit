@@ -1,14 +1,15 @@
 #pragma once
 
-#include <cassert>
-
 #ifdef _MSC_VER
 #	include <intrin.h>
 #endif
 
 #ifdef __GNUG__
 #	include <x86intrin.h>
-#else
+#endif
+
+#if !(defined(_MSC_VER) || defined(__GNUG__))
+#	include <cassert>
 #	include <bitset>
 #endif
 
@@ -16,12 +17,13 @@ namespace EightBit {
 	[[nodiscard]] int countBits(uint8_t value) noexcept;
 	[[nodiscard]] bool oddParity(uint8_t value) noexcept;
 	[[nodiscard]] int findFirstSet(unsigned long value) noexcept;
-	constexpr void assume(int expression);
 }
 
 inline int EightBit::countBits(uint8_t value) noexcept {
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 	return __popcnt(value);
+#elif defined(__GNUG__)
+	return __builtin_popcount(value);
 #else
 	/*
 	Published in 1988, the C Programming Language 2nd Ed.
@@ -40,12 +42,16 @@ inline int EightBit::countBits(uint8_t value) noexcept {
 }
 
 inline bool EightBit::oddParity(const uint8_t value) noexcept {
+#ifdef __GNUG__
+	return __builtin_parity(value)
+#else
 	return countBits(value) % 2;
+#endif
 }
 
 inline int EightBit::findFirstSet(const unsigned long value) noexcept {
-#ifdef _MSC_VER
-	unsigned long index;
+#if defined(_MSC_VER)
+	unsigned long index = 0;
 	if (_BitScanForward(&index, value))
 		return index + 1;
 	return 0;
@@ -60,43 +66,32 @@ inline int EightBit::findFirstSet(const unsigned long value) noexcept {
 #endif
 }
 
-inline constexpr void EightBit::assume(const int expression) {
-#ifdef _MSC_VER
-	__assume(expression);
-#elif defined(__GNUG__)
-	if (!expression)
-		__builtin_unreachable();
-#else
-	assert(expression);
-#endif
-}
-
-#define ASSUME(x)	EightBit::assume(x)
+#define PARITY(x)	EightBit::oddParity(x)
 
 #ifdef _MSC_VER
+
+#	define ASSUME(x)	__assume(x);
 
 #	define LIKELY(x)	(x)
 #	define UNLIKELY(x)	(x)
-
-#	define PARITY(x)	EightBit::oddParity(x)
 
 #	define UNREACHABLE	{ ASSUME(0); throw std::exception("unreachable"); }
 
 #elif defined(__GNUG__)
 
+#	define ASSUME(x)	{ if (!x) __builtin_unreachable(); }
+
 #	define LIKELY(x)	__builtin_expect(!!(x), 1)
 #	define UNLIKELY(x)	__builtin_expect(!!(x), 0)
-
-#	define PARITY(x)	__builtin_parity(x)
 
 #	define UNREACHABLE	__builtin_unreachable();
 
 #else
 
+#	define ASSUME(x)	assert(x);
+
 #	define LIKELY(x)	(x)
 #	define UNLIKELY(x)	(x)
-
-#	define PARITY(x)	EightBit::oddParity(x)
 
 #	define UNREACHABLE	ASSUME(0)
 

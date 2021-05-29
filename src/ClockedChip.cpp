@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ClockedChip.h"
+#include "../inc/ClockedChip.h"
 
 void EightBit::ClockedChip::tick(const int extra) {
 	for (int i = 0; i < extra; ++i)

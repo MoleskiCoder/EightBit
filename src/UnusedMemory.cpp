@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "UnusedMemory.h"
+#include "../inc/UnusedMemory.h"
 
 EightBit::UnusedMemory::UnusedMemory(const size_t size, const uint8_t value)
 : m_size(size), m_value(value) {}
