@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "../inc/Memory.h"
 
-#include <stdexcept>
+#include <cassert>
 
-uint8_t& EightBit::Memory::reference(uint16_t) {
-	throw std::logic_error("Reference operation not allowed.");
+uint8_t& EightBit::Memory::reference(uint16_t) noexcept {
+	assert(false && "Reference operation not allowed.");
+	return m_delivered;
 }

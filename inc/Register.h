@@ -70,20 +70,20 @@ namespace EightBit {
 		}
 	};
 
-	inline auto operator==(const register16_t lhs, const register16_t rhs) noexcept {
+	[[nodiscard]] inline auto operator==(const register16_t lhs, const register16_t rhs) noexcept {
 		return lhs.word == rhs.word;
 	}
 
-	inline auto operator!=(const register16_t lhs, const register16_t rhs) noexcept {
+	[[nodiscard]] inline auto operator!=(const register16_t lhs, const register16_t rhs) noexcept {
 		return !(lhs == rhs);
 	}
 
-	inline auto operator+(register16_t lhs, const register16_t rhs) noexcept {
+	[[nodiscard]] inline auto operator+(register16_t lhs, const register16_t rhs) noexcept {
 		lhs += rhs;
 		return lhs;
 	}
 
-	inline auto operator-(register16_t lhs, const register16_t rhs) noexcept {
+	[[nodiscard]] inline auto operator-(register16_t lhs, const register16_t rhs) noexcept {
 		lhs -= rhs;
 		return lhs;
 	}

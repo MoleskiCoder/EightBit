@@ -8,10 +8,10 @@ namespace EightBit {
 
 	class LittleEndianProcessor : public Processor {
 	public:
-		~LittleEndianProcessor() = default;
+		virtual ~LittleEndianProcessor() {};
 
-		[[nodiscard]] register16_t peekWord(register16_t address) final;
-		void pokeWord(register16_t address, register16_t value) final;
+		[[nodiscard]] register16_t peekWord(register16_t address) noexcept final;
+		void pokeWord(register16_t address, register16_t value) noexcept final;
 
 	protected:
 		LittleEndianProcessor(Bus& memory);

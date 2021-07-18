@@ -40,7 +40,7 @@ void EightBit::GameBoy::Bus::loadGameRom(const std::string path) {
 	validateCartridgeType();
 }
 
-void EightBit::GameBoy::Bus::Bus_WrittenByte(EightBit::EventArgs) {
+void EightBit::GameBoy::Bus::Bus_WrittenByte(EightBit::EventArgs) noexcept {
 
 	const auto address = ADDRESS().word;
 	const auto value = DATA();
@@ -161,7 +161,7 @@ void EightBit::GameBoy::Bus::validateCartridgeType() {
 	}
 }
 
-EightBit::MemoryMapping EightBit::GameBoy::Bus::mapping(uint16_t address) {
+EightBit::MemoryMapping EightBit::GameBoy::Bus::mapping(uint16_t address) noexcept {
 
 	if ((address < 0x100) && IO().bootRomEnabled())
 		return { m_bootRom, 0x0000, 0xffff, MemoryMapping::AccessLevel::ReadOnly };

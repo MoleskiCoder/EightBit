@@ -14,6 +14,14 @@
 namespace EightBit {
 	class mc6809 : public BigEndianProcessor {
 	public:
+		DECLARE_PIN_INPUT(NMI)
+		DECLARE_PIN_INPUT(FIRQ)
+		DECLARE_PIN_INPUT(HALT)
+		DECLARE_PIN_OUTPUT(BA)
+		DECLARE_PIN_OUTPUT(BS)
+		DECLARE_PIN_OUTPUT(RW)
+
+	public:
 		enum StatusBits {
 
 			// Entire flag: set if the complete machine state was saved in the stack.
@@ -88,13 +96,6 @@ namespace EightBit {
 		[[nodiscard]] auto halted() noexcept { return lowered(HALT()); }
 		void halt() noexcept { --PC();  lowerHALT(); }
 		void proceed() noexcept { ++PC(); raiseHALT(); }
-
-		DECLARE_PIN_INPUT(NMI)
-		DECLARE_PIN_INPUT(FIRQ)
-		DECLARE_PIN_INPUT(HALT)
-		DECLARE_PIN_OUTPUT(BA)
-		DECLARE_PIN_OUTPUT(BS)
-		DECLARE_PIN_OUTPUT(RW)
 
 	protected:
 		// Default push/pop handlers

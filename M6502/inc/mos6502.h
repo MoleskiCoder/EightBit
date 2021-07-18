@@ -34,13 +34,13 @@ namespace EightBit {
 		int execute() final;
 		[[nodiscard]] int step() final;
 
-		[[nodiscard]] auto& X() { return x; }
-		[[nodiscard]] auto& Y() { return y; }
-		[[nodiscard]] auto& A() { return a; }
-		[[nodiscard]] auto& S() { return s; }
+		[[nodiscard]] constexpr auto& X() noexcept { return x; }
+		[[nodiscard]] constexpr auto& Y() noexcept { return y; }
+		[[nodiscard]] constexpr auto& A() noexcept { return a; }
+		[[nodiscard]] constexpr auto& S() noexcept { return s; }
 
-		[[nodiscard]] auto& P() { return p; }
-		[[nodiscard]] const auto& P() const { return p; }
+		[[nodiscard]] constexpr auto& P() noexcept { return p; }
+		[[nodiscard]] constexpr const auto& P() const noexcept { return p; }
 
 		DECLARE_PIN_INPUT(NMI)
 		DECLARE_PIN_INPUT(SO)
@@ -55,15 +55,15 @@ namespace EightBit {
 		void busWrite() final;
 		[[nodiscard]] uint8_t busRead() final;
 
-		[[nodiscard]] virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow = 0);
-		[[nodiscard]] uint8_t sbc(uint8_t operand, uint8_t data);
-		[[nodiscard]] uint8_t sub_b(uint8_t operand, uint8_t data, int borrow);
-		[[nodiscard]] uint8_t sub_d(uint8_t operand, uint8_t data, int borrow);
+		[[nodiscard]] virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
+		[[nodiscard]] uint8_t sbc(uint8_t operand, uint8_t data) noexcept;
+		[[nodiscard]] uint8_t sub_b(uint8_t operand, uint8_t data, int borrow) noexcept;
+		[[nodiscard]] uint8_t sub_d(uint8_t operand, uint8_t data, int borrow) noexcept;
 
-		[[nodiscard]] virtual uint8_t add(uint8_t operand, uint8_t data, int carry = 0);
-		[[nodiscard]] uint8_t adc(uint8_t operand, uint8_t data);
-		[[nodiscard]] uint8_t add_b(uint8_t operand, uint8_t data, int carry);
-		[[nodiscard]] uint8_t add_d(uint8_t operand, uint8_t data, int carry);
+		[[nodiscard]] virtual uint8_t add(uint8_t operand, uint8_t data, int carry = 0) noexcept;
+		[[nodiscard]] uint8_t adc(uint8_t operand, uint8_t data) noexcept;
+		[[nodiscard]] uint8_t add_b(uint8_t operand, uint8_t data, int carry) noexcept;
+		[[nodiscard]] uint8_t add_d(uint8_t operand, uint8_t data, int carry) noexcept;
 
 	private:
 		const uint8_t IRQvector = 0xfe;		// IRQ vector
@@ -111,29 +111,29 @@ namespace EightBit {
 
 		// Flag adjustment
 
-		void adjustZero(const uint8_t datum) { P() = clearBit(P(), ZF, datum); }
-		void adjustNegative(const uint8_t datum) { P() = setBit(P(), NF, datum & NF); }
+		void adjustZero(const uint8_t datum) noexcept { P() = clearBit(P(), ZF, datum); }
+		void adjustNegative(const uint8_t datum) noexcept { P() = setBit(P(), NF, datum & NF); }
 		
-		void adjustNZ(const uint8_t datum) {
+		void adjustNZ(const uint8_t datum) noexcept {
 			adjustZero(datum);
 			adjustNegative(datum);
 		}
 
 		// Flag checking
 
-		[[nodiscard]] auto interruptMasked() const { return P() & IF; }
-		[[nodiscard]] auto decimal() const  { return P() & DF; }
+		[[nodiscard]] auto interruptMasked() const noexcept { return P() & IF; }
+		[[nodiscard]] auto decimal() const noexcept { return P() & DF; }
 
-		[[nodiscard]] auto negative() const { return P() & NF; }
-		[[nodiscard]] auto zero() const { return P() & ZF; }
-		[[nodiscard]] auto overflow() const { return P() & VF; }
-		[[nodiscard]] auto carry() const { return P() & CF; }
+		[[nodiscard]] auto negative() const noexcept { return P() & NF; }
+		[[nodiscard]] auto zero() const noexcept { return P() & ZF; }
+		[[nodiscard]] auto overflow() const noexcept { return P() & VF; }
+		[[nodiscard]] auto carry() const noexcept { return P() & CF; }
 
 		// Miscellaneous
 
 		void branch(int condition);
 
-		[[nodiscard]] auto through(const uint8_t data) {
+		[[nodiscard]] auto through(const uint8_t data) noexcept {
 			adjustNZ(data);
 			return data;
 		}
@@ -146,29 +146,29 @@ namespace EightBit {
 
 		// Instruction implementations
 
-		[[nodiscard]] uint8_t andr(uint8_t operand, uint8_t data);
-		[[nodiscard]] uint8_t asl(uint8_t value);
-		void bit(uint8_t operand, uint8_t data);
-		void cmp(uint8_t first, uint8_t second);
-		[[nodiscard]] uint8_t dec(uint8_t value);
-		[[nodiscard]] uint8_t eorr(uint8_t operand, uint8_t data);
-		[[nodiscard]] uint8_t inc(uint8_t value);
+		[[nodiscard]] uint8_t andr(uint8_t operand, uint8_t data) noexcept;
+		[[nodiscard]] uint8_t asl(uint8_t value) noexcept;
+		void bit(uint8_t operand, uint8_t data) noexcept;
+		void cmp(uint8_t first, uint8_t second) noexcept;
+		[[nodiscard]] uint8_t dec(uint8_t value) noexcept;
+		[[nodiscard]] uint8_t eorr(uint8_t operand, uint8_t data) noexcept;
+		[[nodiscard]] uint8_t inc(uint8_t value) noexcept;
 		void jsr();
-		[[nodiscard]] uint8_t lsr(uint8_t value);
-		[[nodiscard]] uint8_t orr(uint8_t operand, uint8_t data);
+		[[nodiscard]] uint8_t lsr(uint8_t value) noexcept;
+		[[nodiscard]] uint8_t orr(uint8_t operand, uint8_t data) noexcept;
 		void php();
 		void plp();
-		[[nodiscard]] uint8_t rol(uint8_t operand);
-		[[nodiscard]] uint8_t ror(uint8_t operand);
+		[[nodiscard]] uint8_t rol(uint8_t operand) noexcept;
+		[[nodiscard]] uint8_t ror(uint8_t operand) noexcept;
 		void rti();
 		void rts();
 
 		// Undocumented compound instructions
 
-		void anc(uint8_t value);
-		void arr(uint8_t value);
-		void asr(uint8_t value);
-		void axs(uint8_t value);
+		void anc(uint8_t value) noexcept;
+		void arr(uint8_t value) noexcept;
+		void asr(uint8_t value) noexcept;
+		void axs(uint8_t value) noexcept;
 		void dcp(uint8_t value);
 		void isb(uint8_t value);
 		void rla(uint8_t value);

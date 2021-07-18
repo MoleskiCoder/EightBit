@@ -26,8 +26,8 @@ namespace Gaming {
 		virtual void raisePOWER() override;
 
 	protected:
-		virtual float fps() const = 0;
-		virtual bool useVsync() const = 0;
+		virtual float fps() const noexcept = 0;
+		virtual bool useVsync() const noexcept = 0;
 
 		virtual int windowWidth() const noexcept;
 		virtual int windowHeight() const noexcept;
@@ -37,7 +37,7 @@ namespace Gaming {
 		virtual int rasterWidth() const noexcept = 0;
 		virtual int rasterHeight() const noexcept = 0;
 
-		virtual std::string title() const = 0;
+		virtual std::string title() const noexcept = 0;
 
 		virtual void handleEvents();
 		virtual void update();

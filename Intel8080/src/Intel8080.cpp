@@ -19,20 +19,20 @@ EightBit::Intel8080::Intel8080(Bus& bus)
 DEFINE_PIN_LEVEL_CHANGERS(DBIN, Intel8080);
 DEFINE_PIN_LEVEL_CHANGERS(WR, Intel8080);
 
-EightBit::register16_t& EightBit::Intel8080::AF() {
+EightBit::register16_t& EightBit::Intel8080::AF() noexcept {
 	af.low = (af.low | Bit1) & ~(Bit5 | Bit3);
 	return af;
 }
 
-EightBit::register16_t& EightBit::Intel8080::BC() {
+EightBit::register16_t& EightBit::Intel8080::BC() noexcept {
 	return bc;
 }
 
-EightBit::register16_t& EightBit::Intel8080::DE() {
+EightBit::register16_t& EightBit::Intel8080::DE() noexcept {
 	return de;
 }
 
-EightBit::register16_t& EightBit::Intel8080::HL() {
+EightBit::register16_t& EightBit::Intel8080::HL() noexcept {
 	return hl;
 }
 

@@ -26,7 +26,7 @@ public:
 	virtual void initialise() final;
 
 protected:
-	virtual EightBit::MemoryMapping mapping(uint16_t address) final;
+	virtual EightBit::MemoryMapping mapping(uint16_t address) noexcept final;
 
 private:
 	const Configuration& m_configuration;

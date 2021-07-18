@@ -7,8 +7,8 @@
 namespace EightBit {
 	class Mapper {
 	public:
-		virtual ~Mapper() = default;
+		virtual ~Mapper() {};
 
-		[[nodiscard]] virtual MemoryMapping mapping(uint16_t address) = 0;
+		[[nodiscard]] virtual MemoryMapping mapping(uint16_t address) noexcept = 0;
 	};
 }

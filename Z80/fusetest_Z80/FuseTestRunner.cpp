@@ -65,7 +65,7 @@ void Fuse::TestRunner::lowerPOWER() {
 	EightBit::Bus::lowerPOWER();
 }
 
-EightBit::MemoryMapping Fuse::TestRunner::mapping(uint16_t address) {
+EightBit::MemoryMapping Fuse::TestRunner::mapping(uint16_t address) noexcept {
 
 	const bool memory = m_cpu.requestingMemory();
 	if (memory)

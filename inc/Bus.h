@@ -12,7 +12,7 @@
 namespace EightBit {
 	class Bus : public Mapper {
 	public:
-		virtual ~Bus() = default;
+		virtual ~Bus() {};
 
 		Signal<EventArgs> WritingByte;
 		Signal<EventArgs> WrittenByte;
@@ -26,12 +26,12 @@ namespace EightBit {
 		[[nodiscard]] auto DATA() const noexcept { return m_data; }
 		[[nodiscard]] auto& DATA() noexcept { return m_data; }
 
-		[[nodiscard]] auto peek() { return reference(); }
-		[[nodiscard]] virtual uint8_t peek(const uint16_t address) { return reference(address); }
-		[[nodiscard]] auto peek(const register16_t address) { return peek(address.word); }
-		void poke(const uint8_t value) { reference() = value; }
-		virtual void poke(const uint16_t address, const uint8_t value) { reference(address) = value; }
-		void poke(const register16_t address, const uint8_t value) { poke(address.word, value); }
+		[[nodiscard]] auto peek() noexcept { return reference(); }
+		[[nodiscard]] virtual uint8_t peek(const uint16_t address) noexcept { return reference(address); }
+		[[nodiscard]] auto peek(const register16_t address) noexcept { return peek(address.word); }
+		void poke(const uint8_t value) noexcept { reference() = value; }
+		virtual void poke(const uint16_t address, const uint8_t value) noexcept { reference(address) = value; }
+		void poke(const register16_t address, const uint8_t value) noexcept { poke(address.word, value); }
 
 		[[nodiscard]] uint8_t read();
 		template<class T> [[nodiscard]] auto read(const T address) {
@@ -52,9 +52,9 @@ namespace EightBit {
 		virtual void initialise() = 0;
 
 	protected:
-		[[nodiscard]] uint8_t& reference(uint16_t address);
-		[[nodiscard]] auto& reference(const register16_t address) { return reference(address.word); }
-		[[nodiscard]] uint8_t& reference() { return reference(ADDRESS()); }
+		[[nodiscard]] uint8_t& reference(uint16_t address) noexcept;
+		[[nodiscard]] auto& reference(const register16_t address) noexcept { return reference(address.word); }
+		[[nodiscard]] uint8_t& reference() noexcept { return reference(ADDRESS()); }
 
 		void loadHexFile(std::string path);
 

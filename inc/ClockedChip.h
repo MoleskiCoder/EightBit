@@ -7,16 +7,18 @@
 namespace EightBit {
 	class ClockedChip : public Chip {
 	public:
-		~ClockedChip() = default;
+		virtual ~ClockedChip() noexcept {};
 
 		Signal<EventArgs> Ticked;
 
-		[[nodiscard]] auto cycles() const noexcept { return m_cycles; }
+		[[nodiscard]] constexpr auto cycles() const noexcept { return m_cycles; }
 
 		void tick(int extra);
 		void tick();
 
 	protected:
+		ClockedChip() noexcept = default;
+
 		void resetCycles() noexcept;
 
 	private:

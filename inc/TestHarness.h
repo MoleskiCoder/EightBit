@@ -15,7 +15,7 @@
 #endif
 
 namespace EightBit {
-	template<class ConfigurationT, class BoardT> class TestHarness {
+	template<class ConfigurationT, class BoardT> class TestHarness final {
 	public:
 		TestHarness(const ConfigurationT& configuration)
 		: m_board(configuration) {

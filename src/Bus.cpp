@@ -38,7 +38,7 @@ void EightBit::Bus::loadHexFile(const std::string path) {
 	}
 }
 
-uint8_t& EightBit::Bus::reference(const uint16_t address) {
+uint8_t& EightBit::Bus::reference(const uint16_t address) noexcept {
 	const auto mapped = mapping(address);
 	const uint16_t offset = (address - mapped.begin) & mapped.mask;
 	if (mapped.access == MemoryMapping::AccessLevel::ReadOnly) {

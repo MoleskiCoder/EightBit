@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "../inc/Processor.h"
 
-EightBit::Processor::Processor(Bus& bus)
+EightBit::Processor::Processor(Bus& bus) noexcept
 : m_bus(bus) {
 }
 

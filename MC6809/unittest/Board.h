@@ -17,7 +17,7 @@ public:
 protected:
 	void initialise() final;
 
-	EightBit::MemoryMapping mapping(uint16_t address) final;
+	EightBit::MemoryMapping mapping(uint16_t address) noexcept final;
 
 private:
 	EightBit::Ram m_ram = 0x10000;	// 0000 - FFFF, 64K RAM

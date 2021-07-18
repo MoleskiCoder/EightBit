@@ -26,16 +26,16 @@ namespace EightBit {
 			Signal<LR35902> ExecutingInstruction;
 			Signal<LR35902> ExecutedInstruction;
 
-			[[nodiscard]] register16_t& AF() final;
-			[[nodiscard]] register16_t& BC() final;
-			[[nodiscard]] register16_t& DE() final;
-			[[nodiscard]] register16_t& HL() final;
+			[[nodiscard]] register16_t& AF() noexcept final;
+			[[nodiscard]] register16_t& BC() noexcept final;
+			[[nodiscard]] register16_t& DE() noexcept final;
+			[[nodiscard]] register16_t& HL() noexcept final;
 
 			bool& IME() noexcept { return m_ime; }
 
-			[[nodiscard]] uint8_t enabledInterrupts();
-			[[nodiscard]] uint8_t flaggedInterrupts();
-			[[nodiscard]] uint8_t maskedInterrupts();
+			[[nodiscard]] uint8_t enabledInterrupts() noexcept;
+			[[nodiscard]] uint8_t flaggedInterrupts() noexcept;
+			[[nodiscard]] uint8_t maskedInterrupts() noexcept;
 
 			Signal<EventArgs> MachineTicked;
 
@@ -76,33 +76,33 @@ namespace EightBit {
 			[[nodiscard]] uint8_t R(int r);
 			void R(int r, uint8_t value);
 
-			[[nodiscard]] register16_t& RP(int rp);
-			[[nodiscard]] register16_t& RP2(int rp);
+			[[nodiscard]] register16_t& RP(int rp) noexcept;
+			[[nodiscard]] register16_t& RP2(int rp) noexcept;
 
-			[[nodiscard]] static auto adjustHalfCarryAdd(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
+			[[nodiscard]] static constexpr auto adjustHalfCarryAdd(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) noexcept {
 				return setBit(f, HC, calculateHalfCarryAdd(before, value, calculation));
 			}
 
-			[[nodiscard]] static auto adjustHalfCarrySub(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
+			[[nodiscard]] static constexpr auto adjustHalfCarrySub(uint8_t f, const uint8_t before, const uint8_t value, const int calculation) noexcept {
 				return setBit(f, HC, calculateHalfCarrySub(before, value, calculation));
 			}
 
-			[[nodiscard]] static bool convertCondition(uint8_t f, int flag);
+			[[nodiscard]] static bool convertCondition(uint8_t f, int flag) noexcept;
 
-			static uint8_t subtract(uint8_t& f, uint8_t operand, uint8_t value, int carry = 0);
+			static uint8_t subtract(uint8_t& f, uint8_t operand, uint8_t value, int carry = 0) noexcept;
 
 			void executeCB(int x, int y, int z, int p, int q);
 			void executeOther(int x, int y, int z, int p, int q);
 
-			[[nodiscard]] static uint8_t increment(uint8_t& f, uint8_t operand);
-			[[nodiscard]] static uint8_t decrement(uint8_t& f, uint8_t operand);
+			[[nodiscard]] static uint8_t increment(uint8_t& f, uint8_t operand) noexcept;
+			[[nodiscard]] static uint8_t decrement(uint8_t& f, uint8_t operand) noexcept;
 
 			void stop(bool value = true) noexcept { m_stopped = value; }
 			void start() noexcept { stop(false); }
 			[[nodiscard]] bool stopped() const noexcept { return m_stopped; }
 
-			void di();
-			void ei();
+			void di() noexcept;
+			void ei() noexcept;
 
 			void reti();
 
@@ -113,33 +113,33 @@ namespace EightBit {
 
 			[[nodiscard]] register16_t add(uint8_t& f, register16_t operand, register16_t value);
 
-			[[nodiscard]] static uint8_t add(uint8_t& f, uint8_t operand, uint8_t value, int carry = 0);
-			[[nodiscard]] static uint8_t adc(uint8_t& f, uint8_t operand, uint8_t value);
-			[[nodiscard]] static uint8_t sbc(uint8_t& f, uint8_t operand, uint8_t value);
-			static uint8_t andr(uint8_t& f, uint8_t operand, uint8_t value);
-			[[nodiscard]] static uint8_t xorr(uint8_t& f, uint8_t operand, uint8_t value);
-			[[nodiscard]] static uint8_t orr(uint8_t& f, uint8_t operand, uint8_t value);
-			[[nodiscard]] static void compare(uint8_t& f, uint8_t operand, uint8_t value);
+			[[nodiscard]] static uint8_t add(uint8_t& f, uint8_t operand, uint8_t value, int carry = 0) noexcept;
+			[[nodiscard]] static uint8_t adc(uint8_t& f, uint8_t operand, uint8_t value) noexcept;
+			[[nodiscard]] static uint8_t sbc(uint8_t& f, uint8_t operand, uint8_t value) noexcept;
+			static uint8_t andr(uint8_t& f, uint8_t operand, uint8_t value) noexcept;
+			[[nodiscard]] static uint8_t xorr(uint8_t& f, uint8_t operand, uint8_t value) noexcept;
+			[[nodiscard]] static uint8_t orr(uint8_t& f, uint8_t operand, uint8_t value) noexcept;
+			[[nodiscard]] static void compare(uint8_t& f, uint8_t operand, uint8_t value) noexcept;
 
-			[[nodiscard]] static uint8_t rlc(uint8_t& f, uint8_t operand);
-			[[nodiscard]] static uint8_t rrc(uint8_t& f, uint8_t operand);
-			[[nodiscard]] static uint8_t rl(uint8_t& f, uint8_t operand);
-			[[nodiscard]] static uint8_t rr(uint8_t& f, uint8_t operand);
-			[[nodiscard]] static uint8_t sla(uint8_t& f, uint8_t operand);
-			[[nodiscard]] static uint8_t sra(uint8_t& f, uint8_t operand);
-			[[nodiscard]] static uint8_t srl(uint8_t& f, uint8_t operand);
+			[[nodiscard]] static uint8_t rlc(uint8_t& f, uint8_t operand) noexcept;
+			[[nodiscard]] static uint8_t rrc(uint8_t& f, uint8_t operand) noexcept;
+			[[nodiscard]] static uint8_t rl(uint8_t& f, uint8_t operand) noexcept;
+			[[nodiscard]] static uint8_t rr(uint8_t& f, uint8_t operand) noexcept;
+			[[nodiscard]] static uint8_t sla(uint8_t& f, uint8_t operand) noexcept;
+			[[nodiscard]] static uint8_t sra(uint8_t& f, uint8_t operand) noexcept;
+			[[nodiscard]] static uint8_t srl(uint8_t& f, uint8_t operand) noexcept;
 
-			static void bit(uint8_t& f, int n, uint8_t operand);
-			[[nodiscard]] static uint8_t res(int n, uint8_t operand);
-			[[nodiscard]] static uint8_t set(int n, uint8_t operand);
+			static void bit(uint8_t& f, int n, uint8_t operand) noexcept;
+			[[nodiscard]] static uint8_t res(int n, uint8_t operand) noexcept;
+			[[nodiscard]] static uint8_t set(int n, uint8_t operand) noexcept;
 
-			[[nodiscard]] static uint8_t daa(uint8_t& f, uint8_t operand);
+			[[nodiscard]] static uint8_t daa(uint8_t& f, uint8_t operand) noexcept;
 
-			static void scf(uint8_t& f, uint8_t operand);
-			static void ccf(uint8_t& f, uint8_t operand);
-			[[nodiscard]] static uint8_t cpl(uint8_t& f, uint8_t operand);
+			static void scf(uint8_t& f, uint8_t operand) noexcept;
+			static void ccf(uint8_t& f, uint8_t operand) noexcept;
+			[[nodiscard]] static uint8_t cpl(uint8_t& f, uint8_t operand) noexcept;
 
-			[[nodiscard]] static uint8_t swap(uint8_t& f, uint8_t operand);
+			[[nodiscard]] static uint8_t swap(uint8_t& f, uint8_t operand) noexcept;
 		};
 	}
 }

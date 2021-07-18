@@ -111,7 +111,7 @@ void Board::initialise() {
 	}
 }
 
-EightBit::MemoryMapping Board::mapping(uint16_t address) {
+EightBit::MemoryMapping Board::mapping(uint16_t address) noexcept {
 
 	if (address < 0x8000)
 		return { m_ram, 0x0000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };

@@ -437,17 +437,15 @@ uint8_t EightBit::MOS6502::Address_ZeroPageY() {
 }
 
 std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteX() {
-	auto address = Address_Absolute();
+	const auto address = Address_Absolute();
 	const auto page = address.high;
-	address += X();
-	return { address, page };
+	return { address + X(), page };
 }
 
 std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteY() {
-	auto address = Address_Absolute();
+	const auto address = Address_Absolute();
 	const auto page = address.high;
-	address += Y();
-	return { address, page };
+	return { address + Y(), page };
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() {
@@ -455,10 +453,9 @@ EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() {
 }
 
 std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_IndirectIndexedY() {
-	auto address = Address_ZeroPageIndirect();
+	const auto address = Address_ZeroPageIndirect();
 	const auto page = address.high;
-	address += Y();
-	return { address, page };
+	return { address + Y(), page };
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_relative_byte() {
@@ -488,7 +485,7 @@ uint8_t EightBit::MOS6502::AM_AbsoluteX(const PageCrossingBehavior behaviour) {
 }
 
 uint8_t EightBit::MOS6502::AM_AbsoluteY() {
-	const auto[address, page] = Address_AbsoluteY();
+	const auto [address, page] = Address_AbsoluteY();
 	auto possible = getBytePaged(page, address.low);
 	if (UNLIKELY(page != address.high))
 		possible = memoryRead(address);
@@ -524,13 +521,13 @@ void EightBit::MOS6502::branch(const int condition) {
 		const auto page = PC().high;
 		jump(destination);
 		if (UNLIKELY(PC().high != page))
-			memoryRead(register16_t(PC().low, page));
+			getBytePaged(page, PC().low);
 	}
 }
 
 ////
 
-uint8_t EightBit::MOS6502::sbc(const uint8_t operand, const uint8_t data) {
+uint8_t EightBit::MOS6502::sbc(const uint8_t operand, const uint8_t data) noexcept {
 
 	const auto returned = sub(operand, data, ~P() & CF);
 
@@ -542,16 +539,16 @@ uint8_t EightBit::MOS6502::sbc(const uint8_t operand, const uint8_t data) {
 	return returned;
 }
 
-uint8_t EightBit::MOS6502::sub(const uint8_t operand, const uint8_t data, const int borrow) {
+uint8_t EightBit::MOS6502::sub(const uint8_t operand, const uint8_t data, const int borrow) noexcept {
 	return decimal() ? sub_d(operand, data, borrow) : sub_b(operand, data, borrow);
 }
 
-uint8_t EightBit::MOS6502::sub_b(const uint8_t operand, const uint8_t data, const int borrow) {
+uint8_t EightBit::MOS6502::sub_b(const uint8_t operand, const uint8_t data, const int borrow) noexcept {
 	m_intermediate.word = operand - data - borrow;
 	return m_intermediate.low;
 }
 
-uint8_t EightBit::MOS6502::sub_d(const uint8_t operand, const uint8_t data, const int borrow) {
+uint8_t EightBit::MOS6502::sub_d(const uint8_t operand, const uint8_t data, const int borrow) noexcept {
 	m_intermediate.word = operand - data - borrow;
 
 	uint8_t low = lowNibble(operand) - lowNibble(data) - borrow;
@@ -567,17 +564,17 @@ uint8_t EightBit::MOS6502::sub_d(const uint8_t operand, const uint8_t data, cons
 	return promoteNibble(high) | lowNibble(low);
 }
 
-uint8_t EightBit::MOS6502::adc(const uint8_t operand, const uint8_t data) {
+uint8_t EightBit::MOS6502::adc(const uint8_t operand, const uint8_t data) noexcept {
 	const auto returned = add(operand, data, carry());
 	adjustNZ(m_intermediate.low);
 	return returned;
 }
 
-uint8_t EightBit::MOS6502::add(uint8_t operand, uint8_t data, int carry) {
+uint8_t EightBit::MOS6502::add(uint8_t operand, uint8_t data, int carry) noexcept {
 	return decimal() ? add_d(operand, data, carry) : add_b(operand, data, carry);
 }
 
-uint8_t EightBit::MOS6502::add_b(uint8_t operand, uint8_t data, int carry) {
+uint8_t EightBit::MOS6502::add_b(uint8_t operand, uint8_t data, int carry) noexcept {
 	m_intermediate.word = operand + data + carry;
 
 	P() = setBit(P(), VF, ~(operand ^ data) & (operand ^ m_intermediate.low) & NF);
@@ -586,7 +583,7 @@ uint8_t EightBit::MOS6502::add_b(uint8_t operand, uint8_t data, int carry) {
 	return m_intermediate.low;
 }
 
-uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) {
+uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) noexcept {
 
 	m_intermediate.word = operand + data + carry;
 
@@ -605,36 +602,36 @@ uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) {
 	return promoteNibble(high) | lowNibble(low);
 }
 
-uint8_t EightBit::MOS6502::andr(const uint8_t operand, const uint8_t data) {
+uint8_t EightBit::MOS6502::andr(const uint8_t operand, const uint8_t data) noexcept {
 	return through(operand & data);
 }
 
-uint8_t EightBit::MOS6502::asl(const uint8_t value) {
+uint8_t EightBit::MOS6502::asl(const uint8_t value) noexcept {
 	P() = setBit(P(), CF, value & Bit7);
 	return through(value << 1);
 }
 
-void EightBit::MOS6502::bit(const uint8_t operand, const uint8_t data) {
+void EightBit::MOS6502::bit(const uint8_t operand, const uint8_t data) noexcept {
 	P() = setBit(P(), VF, data & VF);
 	adjustZero(operand & data);
 	adjustNegative(data);
 }
 
-void EightBit::MOS6502::cmp(const uint8_t first, const uint8_t second) {
+void EightBit::MOS6502::cmp(const uint8_t first, const uint8_t second) noexcept {
 	const register16_t result = first - second;
 	adjustNZ(result.low);
 	P() = clearBit(P(), CF, result.high);
 }
 
-uint8_t EightBit::MOS6502::dec(const uint8_t value) {
+uint8_t EightBit::MOS6502::dec(const uint8_t value) noexcept {
 	return through(value - 1);
 }
 
-uint8_t EightBit::MOS6502::eorr(const uint8_t operand, const uint8_t data) {
+uint8_t EightBit::MOS6502::eorr(const uint8_t operand, const uint8_t data) noexcept {
 	return through(operand ^ data);
 }
 
-uint8_t EightBit::MOS6502::inc(const uint8_t value) {
+uint8_t EightBit::MOS6502::inc(const uint8_t value) noexcept {
 	return through(value + 1);
 }
 
@@ -646,12 +643,12 @@ void EightBit::MOS6502::jsr() {
 	PC().low = low;
 }
 
-uint8_t EightBit::MOS6502::lsr(const uint8_t value) {
+uint8_t EightBit::MOS6502::lsr(const uint8_t value) noexcept {
 	P() = setBit(P(), CF, value & Bit0);
 	return through(value >> 1);
 }
 
-uint8_t EightBit::MOS6502::orr(const uint8_t operand, const uint8_t data) {
+uint8_t EightBit::MOS6502::orr(const uint8_t operand, const uint8_t data) noexcept {
 	return through(operand | data);
 }
 
@@ -663,14 +660,14 @@ void EightBit::MOS6502::plp() {
 	P() = (pop() | RF) & ~BF;
 }
 
-uint8_t EightBit::MOS6502::rol(const uint8_t operand) {
+uint8_t EightBit::MOS6502::rol(const uint8_t operand) noexcept {
 	const auto carryIn = carry();
 	P() = setBit(P(), CF, operand & Bit7);
 	const uint8_t result = (operand << 1) | carryIn;
 	return through(result);
 }
 
-uint8_t EightBit::MOS6502::ror(const uint8_t operand) {
+uint8_t EightBit::MOS6502::ror(const uint8_t operand) noexcept {
 	const auto carryIn = carry();
 	P() = setBit(P(), CF, operand & Bit0);
 	const uint8_t result = (operand >> 1) | (carryIn << 7);
@@ -691,24 +688,24 @@ void EightBit::MOS6502::rts() {
 
 // Undocumented compound instructions
 
-void EightBit::MOS6502::anc(const uint8_t value) {
+void EightBit::MOS6502::anc(const uint8_t value) noexcept {
 	A() = andr(A(), value);
 	P() = setBit(P(), CF, A() & Bit7);
 }
 
-void EightBit::MOS6502::arr(const uint8_t value) {
+void EightBit::MOS6502::arr(const uint8_t value) noexcept {
 	A() = andr(A(), value);
 	A() = ror(A());
 	P() = setBit(P(), CF, A() & Bit6);
 	P() = setBit(P(), VF, ((A() & Bit6) >> 6) ^((A() & Bit5) >> 5));
 }
 
-void EightBit::MOS6502::asr(const uint8_t value) {
+void EightBit::MOS6502::asr(const uint8_t value) noexcept {
 	A() = andr(A(), value);
 	A() = lsr(A());
 }
 
-void EightBit::MOS6502::axs(const uint8_t value) {
+void EightBit::MOS6502::axs(const uint8_t value) noexcept {
 	X() = through(sub(A() & X(), value));
 	P() = clearBit(P(), CF, m_intermediate.high);
 }

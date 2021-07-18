@@ -41,19 +41,19 @@ DEFINE_PIN_LEVEL_CHANGERS(IORQ, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(RD, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(WR, Z80);
 
-EightBit::register16_t& EightBit::Z80::AF() {
+EightBit::register16_t& EightBit::Z80::AF() noexcept {
 	return m_accumulatorFlags[m_accumulatorFlagsSet];
 }
 
-EightBit::register16_t& EightBit::Z80::BC() {
+EightBit::register16_t& EightBit::Z80::BC() noexcept {
 	return m_registers[m_registerSet][BC_IDX];
 }
 
-EightBit::register16_t& EightBit::Z80::DE() {
+EightBit::register16_t& EightBit::Z80::DE() noexcept {
 	return m_registers[m_registerSet][DE_IDX];
 }
 
-EightBit::register16_t& EightBit::Z80::HL() {
+EightBit::register16_t& EightBit::Z80::HL() noexcept {
 	return m_registers[m_registerSet][HL_IDX];
 }
 
@@ -160,15 +160,15 @@ void EightBit::Z80::handleINT() {
 	}
 }
 
-void EightBit::Z80::di() {
+void EightBit::Z80::di() noexcept {
 	IFF1() = IFF2() = false;
 }
 
-void EightBit::Z80::ei() {
+void EightBit::Z80::ei() noexcept {
 	IFF1() = IFF2() = true;
 }
 
-uint8_t EightBit::Z80::increment(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::increment(uint8_t& f, const uint8_t operand) noexcept {
 	f = clearBit(f, NF);
 	const uint8_t result = operand + 1;
 	f = adjustSZXY<Z80>(f, result);
@@ -177,7 +177,7 @@ uint8_t EightBit::Z80::increment(uint8_t& f, const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::Z80::decrement(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::decrement(uint8_t& f, const uint8_t operand) noexcept {
 	f = setBit(f, NF);
 	f = clearBit(f, HC, lowNibble(operand));
 	const uint8_t result = operand - 1;
@@ -186,33 +186,33 @@ uint8_t EightBit::Z80::decrement(uint8_t& f, const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::Z80::adjustHalfCarryAdd(const uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
+uint8_t EightBit::Z80::adjustHalfCarryAdd(const uint8_t f, const uint8_t before, const uint8_t value, const int calculation) noexcept {
 	return setBit(f, HC, calculateHalfCarryAdd(before, value, calculation));
 }
 
-uint8_t EightBit::Z80::adjustHalfCarrySub(const uint8_t f, const uint8_t before, const uint8_t value, const int calculation) {
+uint8_t EightBit::Z80::adjustHalfCarrySub(const uint8_t f, const uint8_t before, const uint8_t value, const int calculation) noexcept {
 	return setBit(f, HC, calculateHalfCarrySub(before, value, calculation));
 }
 
-uint8_t EightBit::Z80::adjustOverflowAdd(const uint8_t f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
+uint8_t EightBit::Z80::adjustOverflowAdd(const uint8_t f, const uint8_t before, const uint8_t value, const uint8_t calculation) noexcept {
 	return adjustOverflowAdd(f, before & SF, value & SF, calculation & SF);
 }
 
-uint8_t EightBit::Z80::adjustOverflowAdd(const uint8_t f, const int beforeNegative, const int valueNegative, const int afterNegative) {
+uint8_t EightBit::Z80::adjustOverflowAdd(const uint8_t f, const int beforeNegative, const int valueNegative, const int afterNegative) noexcept {
 	const auto overflow = (beforeNegative == valueNegative) && (beforeNegative != afterNegative);
 	return setBit(f, VF, overflow);
 }
 
-uint8_t EightBit::Z80::adjustOverflowSub(const uint8_t f, const uint8_t before, const uint8_t value, const uint8_t calculation) {
+uint8_t EightBit::Z80::adjustOverflowSub(const uint8_t f, const uint8_t before, const uint8_t value, const uint8_t calculation) noexcept {
 	return adjustOverflowSub(f, before & SF, value & SF, calculation & SF);
 }
 
-uint8_t EightBit::Z80::adjustOverflowSub(const uint8_t f, const int beforeNegative, const int valueNegative, const int afterNegative) {
+uint8_t EightBit::Z80::adjustOverflowSub(const uint8_t f, const int beforeNegative, const int valueNegative, const int afterNegative) noexcept {
 	const auto overflow = (beforeNegative != valueNegative) && (beforeNegative != afterNegative);
 	return setBit(f, VF, overflow);
 }
 
-bool EightBit::Z80::convertCondition(const uint8_t f, int flag) {
+bool EightBit::Z80::convertCondition(const uint8_t f, int flag) noexcept {
 	switch (flag) {
 	case 0:
 		return !(f & ZF);
@@ -328,7 +328,7 @@ EightBit::register16_t EightBit::Z80::add(uint8_t& f, const register16_t operand
 	return result;
 }
 
-uint8_t EightBit::Z80::add(uint8_t& f, const uint8_t operand, const uint8_t value, const int carry) {
+uint8_t EightBit::Z80::add(uint8_t& f, const uint8_t operand, const uint8_t value, const int carry) noexcept {
 
 	const register16_t addition = operand + value + carry;
 	const auto result = addition.low;
@@ -343,11 +343,11 @@ uint8_t EightBit::Z80::add(uint8_t& f, const uint8_t operand, const uint8_t valu
 	return result;
 }
 
-uint8_t EightBit::Z80::adc(uint8_t& f, const uint8_t operand, const uint8_t value) {
+uint8_t EightBit::Z80::adc(uint8_t& f, const uint8_t operand, const uint8_t value) noexcept {
 	return add(f, operand, value, f & CF);
 }
 
-uint8_t EightBit::Z80::subtract(uint8_t& f, const uint8_t operand, const uint8_t value, const int carry) {
+uint8_t EightBit::Z80::subtract(uint8_t& f, const uint8_t operand, const uint8_t value, const int carry) noexcept {
 
 	const register16_t subtraction = operand - value - carry;
 	const auto result = subtraction.low;
@@ -362,17 +362,17 @@ uint8_t EightBit::Z80::subtract(uint8_t& f, const uint8_t operand, const uint8_t
 	return result;
 }
 
-uint8_t EightBit::Z80::sub(uint8_t& f, const uint8_t operand, const uint8_t value, const int carry) {
+uint8_t EightBit::Z80::sub(uint8_t& f, const uint8_t operand, const uint8_t value, const int carry) noexcept {
 	const auto subtraction = subtract(f, operand, value, carry);
 	f = adjustXY<Z80>(f, subtraction);
 	return subtraction;
 }
 
-uint8_t EightBit::Z80::sbc(uint8_t& f, const uint8_t operand, const uint8_t value) {
+uint8_t EightBit::Z80::sbc(uint8_t& f, const uint8_t operand, const uint8_t value) noexcept {
 	return sub(f, operand, value, f & CF);
 }
 
-uint8_t EightBit::Z80::andr(uint8_t& f, const uint8_t operand, const uint8_t value) {
+uint8_t EightBit::Z80::andr(uint8_t& f, const uint8_t operand, const uint8_t value) noexcept {
 	f = setBit(f, HC);
 	f = clearBit(f, CF | NF);
 	const uint8_t result = operand & value;
@@ -380,26 +380,26 @@ uint8_t EightBit::Z80::andr(uint8_t& f, const uint8_t operand, const uint8_t val
 	return result;
 }
 
-uint8_t EightBit::Z80::xorr(uint8_t& f, const uint8_t operand, const uint8_t value) {
+uint8_t EightBit::Z80::xorr(uint8_t& f, const uint8_t operand, const uint8_t value) noexcept {
 	f = clearBit(f, HC | CF | NF);
 	const uint8_t result = operand ^ value;
 	f = adjustSZPXY<Z80>(f, result);
 	return result;
 }
 
-uint8_t EightBit::Z80::orr(uint8_t& f, const uint8_t operand, const uint8_t value) {
+uint8_t EightBit::Z80::orr(uint8_t& f, const uint8_t operand, const uint8_t value) noexcept {
 	f = clearBit(f, HC | CF | NF);
 	const uint8_t result = operand | value;
 	f = adjustSZPXY<Z80>(f, result);
 	return result;
 }
 
-void EightBit::Z80::compare(uint8_t& f, uint8_t operand, const uint8_t value) {
+void EightBit::Z80::compare(uint8_t& f, uint8_t operand, const uint8_t value) noexcept {
 	subtract(f, operand, value);
 	f = adjustXY<Z80>(f, value);
 }
 
-uint8_t EightBit::Z80::rlc(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::rlc(uint8_t& f, const uint8_t operand) noexcept {
 	f = clearBit(f, NF | HC);
 	const auto carry = operand & Bit7;
 	f = setBit(f, CF, carry);
@@ -408,7 +408,7 @@ uint8_t EightBit::Z80::rlc(uint8_t& f, const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::Z80::rrc(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::rrc(uint8_t& f, const uint8_t operand) noexcept {
 	f = clearBit(f, NF | HC);
 	const auto carry = operand & Bit0;
 	f = setBit(f, CF, carry);
@@ -417,7 +417,7 @@ uint8_t EightBit::Z80::rrc(uint8_t& f, const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::Z80::rl(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::rl(uint8_t& f, const uint8_t operand) noexcept {
 	f = clearBit(f, NF | HC);
 	const auto carry = f & CF;
 	f = setBit(f, CF, operand & Bit7);
@@ -426,7 +426,7 @@ uint8_t EightBit::Z80::rl(uint8_t& f, const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::Z80::rr(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::rr(uint8_t& f, const uint8_t operand) noexcept {
 	f = clearBit(f, NF | HC);
 	const auto carry = f & CF;
 	f = setBit(f, CF, operand & Bit0);
@@ -437,7 +437,7 @@ uint8_t EightBit::Z80::rr(uint8_t& f, const uint8_t operand) {
 
 //
 
-uint8_t EightBit::Z80::sla(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::sla(uint8_t& f, const uint8_t operand) noexcept {
 	f = clearBit(f, NF | HC);
 	f = setBit(f, CF, operand & Bit7);
 	const uint8_t result = operand << 1;
@@ -445,7 +445,7 @@ uint8_t EightBit::Z80::sla(uint8_t& f, const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::Z80::sra(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::sra(uint8_t& f, const uint8_t operand) noexcept {
 	f = clearBit(f, NF | HC);
 	f = setBit(f, CF, operand & Bit0);
 	const uint8_t result = (operand >> 1) | (operand & Bit7);
@@ -453,7 +453,7 @@ uint8_t EightBit::Z80::sra(uint8_t& f, const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::Z80::sll(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::sll(uint8_t& f, const uint8_t operand) noexcept {
 	f = clearBit(f, NF | HC);
 	f = setBit(f, CF, operand & Bit7);
 	const uint8_t result = (operand << 1) | Bit0;
@@ -461,7 +461,7 @@ uint8_t EightBit::Z80::sll(uint8_t& f, const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::Z80::srl(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::srl(uint8_t& f, const uint8_t operand) noexcept {
 	f = clearBit(f, NF | HC);
 	f = setBit(f, CF, operand & Bit0);
 	const uint8_t result = (operand >> 1) & ~Bit7;
@@ -470,7 +470,7 @@ uint8_t EightBit::Z80::srl(uint8_t& f, const uint8_t operand) {
 	return result;
 }
 
-void EightBit::Z80::bit(uint8_t& f, const int n, const uint8_t operand) {
+void EightBit::Z80::bit(uint8_t& f, const int n, const uint8_t operand) noexcept {
 	f = setBit(f, HC);
 	f = clearBit(f, NF);
 	const auto discarded = operand & Chip::bit(n);
@@ -478,15 +478,15 @@ void EightBit::Z80::bit(uint8_t& f, const int n, const uint8_t operand) {
 	f = clearBit(f, PF, discarded);
 }
 
-uint8_t EightBit::Z80::res(const int n, const uint8_t operand) {
+uint8_t EightBit::Z80::res(const int n, const uint8_t operand) noexcept {
 	return clearBit(operand, Chip::bit(n));
 }
 
-uint8_t EightBit::Z80::set(const int n, const uint8_t operand) {
+uint8_t EightBit::Z80::set(const int n, const uint8_t operand) noexcept {
 	return setBit(operand, Chip::bit(n));
 }
 
-uint8_t EightBit::Z80::neg(uint8_t& f, uint8_t operand) {
+uint8_t EightBit::Z80::neg(uint8_t& f, uint8_t operand) noexcept {
 
 	f = setBit(f, PF, operand == Bit7);
 	f = setBit(f, CF, operand);
@@ -502,7 +502,7 @@ uint8_t EightBit::Z80::neg(uint8_t& f, uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::Z80::daa(uint8_t& f, uint8_t operand) {
+uint8_t EightBit::Z80::daa(uint8_t& f, uint8_t operand) noexcept {
 
 	const auto lowAdjust = (f & HC) || (lowNibble(operand) > 9);
 	const auto highAdjust = (f & CF) || (operand > 0x99);
@@ -527,20 +527,20 @@ uint8_t EightBit::Z80::daa(uint8_t& f, uint8_t operand) {
 	return updated;
 }
 
-uint8_t EightBit::Z80::cpl(uint8_t& f, const uint8_t operand) {
+uint8_t EightBit::Z80::cpl(uint8_t& f, const uint8_t operand) noexcept {
 	f = setBit(f, HC | NF);
 	const uint8_t result = ~operand;
 	f = adjustXY<Z80>(f, result);
 	return result;
 }
 
-void EightBit::Z80::scf(uint8_t& f, const uint8_t operand) {
+void EightBit::Z80::scf(uint8_t& f, const uint8_t operand) noexcept {
 	f = setBit(f, CF);
 	f = clearBit(f, HC | NF);
 	f = adjustXY<Z80>(f, operand);
 }
 
-void EightBit::Z80::ccf(uint8_t& f, const uint8_t operand) {
+void EightBit::Z80::ccf(uint8_t& f, const uint8_t operand) noexcept {
 	f = clearBit(f, NF);
 	const auto carry = f & CF;
 	f = setBit(f, HC, carry);
@@ -766,13 +766,13 @@ uint8_t EightBit::Z80::portRead() {
 
 //
 
-void EightBit::Z80::resetPrefixes() {
+void EightBit::Z80::resetPrefixes() noexcept {
 	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 }
 
 //
 
-uint16_t EightBit::Z80::displacedAddress() {
+uint16_t EightBit::Z80::displacedAddress() noexcept {
 	return MEMPTR().word = (m_prefixDD ? IX() : IY()).word + m_displacement;
 }
 
@@ -851,7 +851,7 @@ void EightBit::Z80::readInternalRegister(reader_t reader) {
 	tick();
 }
 
-EightBit::register16_t& EightBit::Z80::HL2() {
+EightBit::register16_t& EightBit::Z80::HL2() noexcept {
 	if (UNLIKELY(m_prefixDD))
 		return IX();
 	if (UNLIKELY(m_prefixFD))
@@ -859,7 +859,7 @@ EightBit::register16_t& EightBit::Z80::HL2() {
 	return HL();
 }
 
-EightBit::register16_t& EightBit::Z80::RP(const int rp) {
+EightBit::register16_t& EightBit::Z80::RP(const int rp) noexcept {
 	switch (rp) {
 	case 0b00:
 		return BC();
@@ -874,7 +874,7 @@ EightBit::register16_t& EightBit::Z80::RP(const int rp) {
 	}
 }
 
-EightBit::register16_t& EightBit::Z80::RP2(const int rp) {
+EightBit::register16_t& EightBit::Z80::RP2(const int rp) noexcept {
 	switch (rp) {
 	case 0b00:
 		return BC();

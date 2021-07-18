@@ -48,7 +48,7 @@ namespace Fuse {
 		static void dumpEvent(const TestEvent& event);
 
 	protected:
-		virtual EightBit::MemoryMapping mapping(uint16_t address) final;
+		virtual EightBit::MemoryMapping mapping(uint16_t address) noexcept final;
 
 	public:
 		TestRunner(const Test& test, const ExpectedTestResult& expected);

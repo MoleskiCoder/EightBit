@@ -59,7 +59,7 @@ namespace EightBit {
 			void runVerticalBlankLines();
 
 		protected:
-			virtual MemoryMapping mapping(uint16_t address) override;
+			virtual MemoryMapping mapping(uint16_t address) noexcept override;
 
 		private:
 			LR35902 m_cpu;
@@ -94,7 +94,7 @@ namespace EightBit {
 
 			void validateCartridgeType();
 
-			void Bus_WrittenByte(EightBit::EventArgs);
+			void Bus_WrittenByte(EightBit::EventArgs) noexcept;
 
 			void runRasterLines(int lines);
 			void runVerticalBlankLines(int lines);

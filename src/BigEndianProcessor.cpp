@@ -47,13 +47,13 @@ EightBit::register16_t EightBit::BigEndianProcessor::popWord() {
 	return { low, high };
 }
 
-EightBit::register16_t EightBit::BigEndianProcessor::peekWord(const register16_t address) {
+EightBit::register16_t EightBit::BigEndianProcessor::peekWord(const register16_t address) noexcept {
 	const auto high = BUS().peek(address);
 	const auto low = BUS().peek(address + 1);
 	return { low, high };
 }
 
-void EightBit::BigEndianProcessor::pokeWord(const register16_t address, const register16_t value) {
+void EightBit::BigEndianProcessor::pokeWord(const register16_t address, const register16_t value) noexcept {
 	BUS().poke(address, value.high);
 	BUS().poke(address + 1, value.low);
 }

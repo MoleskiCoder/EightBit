@@ -21,26 +21,26 @@ namespace EightBit {
 			return result;
 		}
 
-		~Processor() = default;
+		virtual ~Processor() noexcept {}
 
-		[[nodiscard]] auto& PC() noexcept { return m_pc; }
+		[[nodiscard]] constexpr auto& PC() noexcept { return m_pc; }
 
 		int run(int limit);
 		virtual int step() = 0;
 		virtual int execute() = 0;
 		int execute(uint8_t value);
 
-		[[nodiscard]] virtual register16_t peekWord(register16_t address) = 0;
-		virtual void pokeWord(register16_t address, register16_t value) = 0;
+		[[nodiscard]] virtual register16_t peekWord(register16_t address) noexcept = 0;
+		virtual void pokeWord(register16_t address, register16_t value) noexcept = 0;
 
 		DECLARE_PIN_INPUT(RESET)
 		DECLARE_PIN_INPUT(INT)
 
 	protected:
-		Processor(Bus& memory);
+		Processor(Bus& memory) noexcept;
 
-		[[nodiscard]] auto& opcode() noexcept { return m_opcode; }
-		[[nodiscard]] auto& BUS() noexcept { return m_bus; }
+		[[nodiscard]] constexpr auto& opcode() noexcept { return m_opcode; }
+		[[nodiscard]] constexpr auto& BUS() noexcept { return m_bus; }
 
 		virtual void handleRESET();
 		virtual void handleINT();

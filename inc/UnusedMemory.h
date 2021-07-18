@@ -13,18 +13,18 @@ namespace EightBit {
 	// is being read.
 	class UnusedMemory final : public Memory {
 	public:
-		UnusedMemory(size_t size, uint8_t value);
+		UnusedMemory(size_t size, uint8_t value) noexcept;
 		~UnusedMemory() = default;
 
-		[[nodiscard]] size_t size() const final;
-		[[nodiscard]] uint8_t peek(uint16_t address) const final;
+		[[nodiscard]] size_t size() const noexcept final;
+		[[nodiscard]] uint8_t peek(uint16_t address) const noexcept final;
 
 		int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 		int load(std::string path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 		int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 
 	protected:
-		void poke(uint16_t address, uint8_t value) final;
+		void poke(uint16_t address, uint8_t value) noexcept final;
 
 	private:
 		size_t m_size;

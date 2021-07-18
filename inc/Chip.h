@@ -57,18 +57,18 @@ namespace EightBit {
 		[[nodiscard]] static constexpr uint8_t clearBit(uint8_t input, const int which, const uint32_t condition) noexcept { return clearBit(input, which, !!condition); }
 		[[nodiscard]] static constexpr uint8_t clearBit(uint8_t input, const int which, const bool condition) noexcept { return setBit(input, which, !condition); }
 
-		[[nodiscard]] static constexpr auto highNibble(const int value) { return value >> 4; }
-		[[nodiscard]] static constexpr auto lowNibble(const int value) { return value & Mask4; }
+		[[nodiscard]] static constexpr auto highNibble(const int value) noexcept { return value >> 4; }
+		[[nodiscard]] static constexpr auto lowNibble(const int value) noexcept { return value & Mask4; }
 
-		[[nodiscard]] static constexpr auto higherNibble(const int value) { return value & 0xf0; }
-		[[nodiscard]] static constexpr auto lowerNibble(const int value) { return lowNibble(value); }
+		[[nodiscard]] static constexpr auto higherNibble(const int value) noexcept { return value & 0xf0; }
+		[[nodiscard]] static constexpr auto lowerNibble(const int value) noexcept { return lowNibble(value); }
 
-		[[nodiscard]] static constexpr auto promoteNibble(const int value) { return value << 4; }
-		[[nodiscard]] static constexpr auto demoteNibble(const int value) { return highNibble(value); }
+		[[nodiscard]] static constexpr auto promoteNibble(const int value) noexcept { return value << 4; }
+		[[nodiscard]] static constexpr auto demoteNibble(const int value) noexcept { return highNibble(value); }
 
-		~Chip() = default;
+		virtual ~Chip() {}
 
 	protected:
-		Chip() = default;
+		Chip() noexcept = default;
 	};
 }

@@ -48,11 +48,11 @@
 	template <class T> class _Activate ## name final { \
 		T& m_parent; \
 	public: \
-		_Activate ## name(T& parent) \
+		_Activate ## name(T& parent) noexcept \
 		: m_parent(parent) { \
 			m_parent. on ## name(); \
 		 } \
-		~_Activate ## name() { \
+		~_Activate ## name() noexcept { \
 			m_parent. off ## name(); \
 		} \
 	};
@@ -66,10 +66,10 @@
 #define DECLARE_PIN(name, visibility) \
 	public: \
 		DECLARE_PIN_SIGNALS(name) \
-		[[nodiscard]] PinLevel& name () noexcept { \
+		[[nodiscard]] constexpr auto& name () noexcept { \
 			return m_## name ## _Line; \
 		} \
-		[[nodiscard]] const PinLevel& name () const noexcept { \
+		[[nodiscard]] constexpr const auto& name () const noexcept { \
 			return m_## name ## _Line; \
 		} \
 	visibility : \
@@ -92,22 +92,23 @@ namespace EightBit {
 			Low, High
 		};
 
-		[[nodiscard]] static constexpr auto raised(const PinLevel line) { return line == PinLevel::High; }
-		static void raise(PinLevel& line) noexcept { line = PinLevel::High; }
-		[[nodiscard]] static constexpr auto lowered(const PinLevel line) { return line == PinLevel::Low; }
-		static void lower(PinLevel& line) noexcept { line = PinLevel::Low; }
-
-		static void match(PinLevel& line, int condition) noexcept { match(line, condition != 0); }
-		static void match(PinLevel& line, bool condition) noexcept { condition ? raise(line) : lower(line); }
-		static void match(PinLevel& out, PinLevel in) noexcept { out = in; }
-
-		virtual ~Device() = default;
-
-		[[nodiscard]] bool powered() const noexcept { return raised(POWER()); }
-
 		DECLARE_PIN_INPUT(POWER)
 
+	public:
+		[[nodiscard]] static constexpr auto raised(const PinLevel line) noexcept { return line == PinLevel::High; }
+		static constexpr void raise(PinLevel& line) noexcept { line = PinLevel::High; }
+		[[nodiscard]] static constexpr auto lowered(const PinLevel line) noexcept { return line == PinLevel::Low; }
+		static constexpr void lower(PinLevel& line) noexcept { line = PinLevel::Low; }
+
+		static constexpr void match(PinLevel& line, int condition) noexcept { match(line, condition != 0); }
+		static constexpr void match(PinLevel& line, bool condition) noexcept { condition ? raise(line) : lower(line); }
+		static constexpr void match(PinLevel& out, PinLevel in) noexcept { out = in; }
+
+		virtual ~Device() noexcept {};
+
+		[[nodiscard]] constexpr bool powered() const noexcept { return raised(POWER()); }
+
 	protected:
-		Device() noexcept = default;
+		Device() noexcept {};
 	};
 }

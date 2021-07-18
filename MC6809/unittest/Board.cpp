@@ -36,6 +36,6 @@ void Board::initialise() {
 	});
 }
 
-EightBit::MemoryMapping Board::mapping(uint16_t) {
+EightBit::MemoryMapping Board::mapping(uint16_t) noexcept {
 	return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 }

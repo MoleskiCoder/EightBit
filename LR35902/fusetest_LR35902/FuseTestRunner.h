@@ -35,7 +35,7 @@ namespace Fuse {
 			EightBit::register16_t actual, EightBit::register16_t expected) const;
 
 	protected:
-		virtual EightBit::MemoryMapping mapping(uint16_t address) final {
+		virtual EightBit::MemoryMapping mapping(uint16_t address) noexcept final {
 			return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 		}
 

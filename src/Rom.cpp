@@ -37,14 +37,14 @@ int EightBit::Rom::load(const std::string path, std::vector<uint8_t>& output, co
 	return size;
 }
 
-void EightBit::Rom::poke(const uint16_t address, const uint8_t value) {
+void EightBit::Rom::poke(const uint16_t address, const uint8_t value) noexcept {
 	BYTES()[address] = value;
 }
 
-EightBit::Rom::Rom(const size_t size)
+EightBit::Rom::Rom(const size_t size) noexcept
 : m_bytes(size) {}
 
-size_t EightBit::Rom::size() const {
+size_t EightBit::Rom::size() const noexcept {
 	return m_bytes.size();
 }
 
@@ -72,6 +72,6 @@ int EightBit::Rom::load(const std::vector<uint8_t>& bytes, const int writeOffset
 	return limit;
 }
 
-uint8_t EightBit::Rom::peek(const uint16_t address) const {
+uint8_t EightBit::Rom::peek(const uint16_t address) const noexcept {
 	return BYTES()[address];
 }

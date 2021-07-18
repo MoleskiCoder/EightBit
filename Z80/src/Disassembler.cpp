@@ -127,15 +127,11 @@ std::string EightBit::Disassembler::R(int r) const {
 			return "IYL";
 		return "L";
 	case 6:
-		if (m_prefixDD || m_prefixFD) {
-			if (m_prefixDD)
-				return "IX+%4%";
-			if (m_prefixFD)
-				return "IY+%4%";
-		}
-		else {
-			return "(HL)";
-		}
+		if (m_prefixDD)
+			return "IX+%4%";
+		if (m_prefixFD)
+			return "IY+%4%";
+		return "(HL)";
 	case 7:
 		return "A";
 	}

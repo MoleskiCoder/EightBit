@@ -15,6 +15,10 @@
 namespace EightBit {
 	class Intel8080 final : public IntelProcessor {
 	public:
+		DECLARE_PIN_OUTPUT(DBIN)		// Active high
+		DECLARE_PIN_OUTPUT(WR)		// Active low
+
+	public:
 		enum StatusBits {
 			SF = Bit7,
 			ZF = Bit6,
@@ -31,19 +35,16 @@ namespace EightBit {
 		virtual int execute() final;
 		virtual int step() final;
 
-		virtual register16_t& AF() final;
-		virtual register16_t& BC() final;
-		virtual register16_t& DE() final;
-		virtual register16_t& HL() final;
+		[[nodiscard]] virtual register16_t& AF() noexcept final;
+		[[nodiscard]] virtual register16_t& BC() noexcept final;
+		[[nodiscard]] virtual register16_t& DE() noexcept final;
+		[[nodiscard]] virtual register16_t& HL() noexcept final;
 
-		bool requestingIO() noexcept { return m_requestIO; }
-		bool requestingMemory() noexcept { return m_requestMemory; }
+		[[nodiscard]] bool requestingIO() noexcept { return m_requestIO; }
+		[[nodiscard]] bool requestingMemory() noexcept { return m_requestMemory; }
 
-		bool requestingRead() { return raised(DBIN()); }
-		bool requestingWrite() { return lowered(WR()); }
-
-		DECLARE_PIN_OUTPUT(DBIN)	// Active high
-		DECLARE_PIN_OUTPUT(WR)		// Active low
+		[[nodiscard]] bool requestingRead() noexcept { return raised(DBIN()); }
+		[[nodiscard]] bool requestingWrite() noexcept { return lowered(WR()); }
 
 	protected:
 		void handleRESET() final;

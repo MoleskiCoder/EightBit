@@ -8,6 +8,49 @@
 namespace EightBit {
 	class mc6850 final : public ClockedChip {
 	public:
+		// Receive data, (I) Active high
+		DECLARE_PIN_INPUT(RXDATA)
+
+		// Transmit data, (O) Active high
+		DECLARE_PIN_OUTPUT(TXDATA)
+
+		// Request to send, (O) Active low
+		DECLARE_PIN_OUTPUT(RTS)
+
+		// Clear to send, (I) Active low
+		DECLARE_PIN_INPUT(CTS)
+
+		// Data carrier detect, (I) Active low
+		DECLARE_PIN_INPUT(DCD)
+
+		// Transmit clock, (I) Active high
+		DECLARE_PIN_INPUT(RXCLK)
+
+		// Receive clock, (I) Active high
+		DECLARE_PIN_INPUT(TXCLK)
+
+		// Chip select, bit 0, (I) Active high
+		DECLARE_PIN_INPUT(CS0)
+
+		// Chip select, bit 1, (I) Active high
+		DECLARE_PIN_INPUT(CS1)
+
+		// Chip select, bit 2, (I) Active low
+		DECLARE_PIN_INPUT(CS2)
+
+		// Register select, (I) Active high
+		DECLARE_PIN_INPUT(RS)
+
+		// Read/Write, (I) Read high, write low
+		DECLARE_PIN_INPUT(RW)
+
+		// ACIA Enable, (I) Active high
+		DECLARE_PIN_INPUT(E)
+
+		// Interrupt request, (O) Active low
+		DECLARE_PIN_OUTPUT(IRQ)
+
+	public:
 		mc6850();
 
         // +--------+----------------------------------------------------------------------------------+
@@ -58,7 +101,7 @@ namespace EightBit {
 			CR4 =    0b10000,	//		"
 			CR5 =   0b100000,	// Transmit control
 			CR6 =  0b1000000,	//		"
-			CR7 = 0b10000000	// Receive control
+			CR7 = 0b10000000		// Receive control
 		};
 
 		// CR0 and CR1
@@ -71,13 +114,13 @@ namespace EightBit {
 
 		// CR2, CR3 and CR4
 		enum WordSelect {
-			SevenEvenTwo	= 0b000,
+			SevenEvenTwo		= 0b000,
 			SevenOddTwo		= 0b001,
-			SevenEvenOne	= 0b010,
+			SevenEvenOne		= 0b010,
 			SevenOddOne		= 0b011,
-			EightTwo		= 0b100,
-			EightOne		= 0b101,
-			EightEvenOne	= 0b110,
+			EightTwo			= 0b100,
+			EightOne			= 0b101,
+			EightEvenOne		= 0b110,
 			EightOddOne		= 0b111,
 		};
 
@@ -218,48 +261,6 @@ namespace EightBit {
 
 		Signal<EventArgs> Receiving;
 		Signal<EventArgs> Received;
-
-		// Receive data, (I) Active high
-		DECLARE_PIN_INPUT(RXDATA)
-
-		// Transmit data, (O) Active high
-		DECLARE_PIN_OUTPUT(TXDATA)
-
-		// Request to send, (O) Active low
-		DECLARE_PIN_OUTPUT(RTS)
-
-		// Clear to send, (I) Active low
-		DECLARE_PIN_INPUT(CTS)
-
-		// Data carrier detect, (I) Active low
-		DECLARE_PIN_INPUT(DCD)
-
-		// Transmit clock, (I) Active high
-		DECLARE_PIN_INPUT(RXCLK)
-
-		// Receive clock, (I) Active high
-		DECLARE_PIN_INPUT(TXCLK)
-
-		// Chip select, bit 0, (I) Active high
-		DECLARE_PIN_INPUT(CS0)
-
-		// Chip select, bit 1, (I) Active high
-		DECLARE_PIN_INPUT(CS1)
-
-		// Chip select, bit 2, (I) Active low
-		DECLARE_PIN_INPUT(CS2)
-
-		// Register select, (I) Active high
-		DECLARE_PIN_INPUT(RS)
-
-		// Read/Write, (I) Read high, write low
-		DECLARE_PIN_INPUT(RW)
-
-		// ACIA Enable, (I) Active high
-		DECLARE_PIN_INPUT(E)
-
-		// Interrupt request, (O) Active low
-		DECLARE_PIN_OUTPUT(IRQ)
 
 	private:
 		void step();

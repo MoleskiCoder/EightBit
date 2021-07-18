@@ -27,12 +27,12 @@ namespace EightBit {
 				PixelCount = RasterWidth * RasterHeight,
 			};
 
-			Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram);
+			Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram) noexcept;
 
 			[[nodiscard]] const auto& pixels() const noexcept { return m_pixels; }
 
-			void renderCurrentScanline();
-			void loadObjectAttributes();
+			void renderCurrentScanline() noexcept;
+			void loadObjectAttributes() noexcept;
 
 		private:
 			enum class tile_offset_t  {
@@ -48,35 +48,35 @@ namespace EightBit {
 			uint8_t m_control = 0;
 			uint8_t m_scanLine = 0;
 
-			[[nodiscard]] std::array<int, 4> createPalette(int address);
+			[[nodiscard]] std::array<int, 4> createPalette(int address) noexcept;
 
-			void renderBackground();
+			void renderBackground() noexcept;
 			void renderBackground(
 				int bgArea, int bgCharacters,
 				tile_offset_t offsetType, 
 				int offsetX, int offsetY,
-				const std::array<int, 4>& palette);
+				const std::array<int, 4>& palette) noexcept;
 
-			void renderObjects();
+			void renderObjects() noexcept;
 
 			void renderSpriteTile(
 				int height,
 				int drawX, int drawY,
 				bool flipX, bool flipY,
 				const std::array<int, 4>& palette,
-				const CharacterDefinition& definition);
+				const CharacterDefinition& definition) noexcept;
 
 			void renderBackgroundTile(
 				int drawX, int drawY,
 				const std::array<int, 4>& palette,
-				const CharacterDefinition& definition);
+				const CharacterDefinition& definition) noexcept;
 
 			void renderTile(
 				int height,
 				int drawX, int drawY,
 				bool flipX, bool flipY, bool allowTransparencies,
 				const std::array<int, 4>& palette,
-				const CharacterDefinition& definition);
+				const CharacterDefinition& definition) noexcept;
 		};
 	}
 }
