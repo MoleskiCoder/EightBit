@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "../inc/IntelProcessor.h"
 
+std::array<int, 8> EightBit::IntelProcessor::m_halfCarryTableAdd = { { 0, 0, 1, 0, 1, 0, 1, 1 } };
+std::array<int, 8> EightBit::IntelProcessor::m_halfCarryTableSub = { { 0, 1, 1, 1, 0, 0, 0, 1 } };
+
 EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 : LittleEndianProcessor(bus) {
 	for (int i = 0; i < 0x100; ++i)

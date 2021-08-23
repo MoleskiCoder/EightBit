@@ -108,16 +108,17 @@ namespace EightBit {
 			return ((before & 0x88) >> 1) | ((value & 0x88) >> 2) | ((calculation & 0x88) >> 3);
 		}
 
-		[[nodiscard]] static auto calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) noexcept {
-			static std::array<int, 8> halfCarryTableAdd = { { 0, 0, 1, 0, 1, 0, 1, 1} };
+		[[nodiscard]] static constexpr auto calculateHalfCarry(const std::array<int, 8>& table, const uint8_t before, const uint8_t value, const int calculation) noexcept {
 			const auto index = buildHalfCarryIndex(before, value, calculation);
-			return halfCarryTableAdd[index & Mask3];
+			return table[index & Mask3];
+		}
+
+		[[nodiscard]] static constexpr auto calculateHalfCarryAdd(const uint8_t before, const uint8_t value, const int calculation) noexcept {
+			return calculateHalfCarry(m_halfCarryTableAdd, before, value, calculation);
 		}
 
 		[[nodiscard]] static constexpr auto calculateHalfCarrySub(const uint8_t before, const uint8_t value, const int calculation) noexcept {
-			std::array<int, 8> halfCarryTableSub = { { 0, 1, 1, 1, 0, 0, 0, 1 } };
-			const auto index = buildHalfCarryIndex(before, value, calculation);
-			return halfCarryTableSub[index & Mask3];
+			return calculateHalfCarry(m_halfCarryTableSub, before, value, calculation);
 		}
 
 		void handleRESET() override;
@@ -141,6 +142,9 @@ namespace EightBit {
 		void ret() override;
 
 	private:
+		static std::array<int, 8> m_halfCarryTableAdd;
+		static std::array<int, 8> m_halfCarryTableSub;
+
 		std::array<opcode_decoded_t, 0x100> m_decodedOpcodes;
 		register16_t m_sp = Mask16;
 		register16_t m_memptr;

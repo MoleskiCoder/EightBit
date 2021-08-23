@@ -16,8 +16,8 @@ namespace EightBit {
 		std::vector<uint8_t> m_bytes;
 
 	protected:
-		[[nodiscard]] const auto& BYTES() const noexcept { return m_bytes; }
-		[[nodiscard]] auto& BYTES() noexcept { return m_bytes; }
+		[[nodiscard]] constexpr const auto& BYTES() const noexcept { return m_bytes; }
+		[[nodiscard]] constexpr auto& BYTES() noexcept { return m_bytes; }
 
 		void poke(uint16_t address, uint8_t value) noexcept override;
 

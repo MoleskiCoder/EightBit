@@ -23,8 +23,8 @@ namespace EightBit {
 		[[nodiscard]] auto ADDRESS() const noexcept { return m_address; }
 		[[nodiscard]] auto& ADDRESS() noexcept { return m_address; }
 
-		[[nodiscard]] auto DATA() const noexcept { return m_data; }
-		[[nodiscard]] auto& DATA() noexcept { return m_data; }
+		[[nodiscard]] constexpr auto DATA() const noexcept { return m_data; }
+		[[nodiscard]] constexpr auto& DATA() noexcept { return m_data; }
 
 		[[nodiscard]] auto peek() noexcept { return reference(); }
 		[[nodiscard]] virtual uint8_t peek(const uint16_t address) noexcept { return reference(address); }
