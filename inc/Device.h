@@ -104,6 +104,8 @@ namespace EightBit {
 		static constexpr void match(PinLevel& line, bool condition) noexcept { condition ? raise(line) : lower(line); }
 		static constexpr void match(PinLevel& out, PinLevel in) noexcept { out = in; }
 
+		static constexpr void flip(PinLevel& out) noexcept { out = out == PinLevel::Low ? PinLevel::High : PinLevel::Low; }
+
 		virtual ~Device() noexcept {};
 
 		[[nodiscard]] constexpr bool powered() const noexcept { return raised(POWER()); }
