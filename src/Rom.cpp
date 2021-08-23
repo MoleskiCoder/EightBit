@@ -44,6 +44,15 @@ void EightBit::Rom::poke(const uint16_t address, const uint8_t value) noexcept {
 EightBit::Rom::Rom(const size_t size) noexcept
 : m_bytes(size) {}
 
+EightBit::Rom::Rom(const Rom& rhs)
+: m_bytes(rhs.m_bytes) {}
+
+EightBit::Rom& EightBit::Rom::operator=(const Rom& rhs) {
+	if (this != &rhs)
+		m_bytes = rhs.m_bytes;
+	return *this;
+}
+
 size_t EightBit::Rom::size() const noexcept {
 	return m_bytes.size();
 }

@@ -26,6 +26,8 @@ namespace EightBit {
 		static int load(std::string path, std::vector<uint8_t>& output, int writeOffset = 0, int readOffset = 0, int limit = -1, int maximumSize = -1);
 
 		Rom(size_t size = 0) noexcept;
+		Rom(const Rom& rhs);
+		Rom& operator=(const Rom& rhs);
 
 		[[nodiscard]] size_t size() const noexcept final;
 
