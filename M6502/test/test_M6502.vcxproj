@@ -71,7 +71,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>..\inc;..\..\inc;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Libraries\boost_1_65_1\lib64-msvc-14.1;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Libraries\boost_1_77_0\lib64-msvc-14.1;$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -82,7 +82,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\inc;..\..\inc;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Libraries\boost_1_65_1\lib64-msvc-14.1;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Libraries\boost_1_77_0\lib64-msvc-14.1;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
