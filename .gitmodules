@@ -1,3 +1,6 @@
 [submodule "modules/catch2"]
 	path = modules/catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "modules/ProcessorTests"]
+	path = modules/ProcessorTests
+	url = https://github.com/TomHarte/ProcessorTests.git
