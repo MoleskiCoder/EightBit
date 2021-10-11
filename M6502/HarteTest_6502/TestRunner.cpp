@@ -39,35 +39,49 @@ void TestRunner::initialise() {
     WrittenByte.connect([this](EightBit::EventArgs&) {
         addActualEvent(test_t::action::write, ADDRESS().word, DATA());
     });
+
+    os() << std::hex << std::uppercase << std::setfill('0');
 }
 
 void TestRunner::raise(std::string what, uint16_t expected, uint16_t actual) {
-    std::ostringstream os;
-    os
+    os()
+        << std::setw(4)
         << what
-        << ": expected: " << EightBit::Disassembly::dump_WordValue(expected)
-        << ", actual: " << EightBit::Disassembly::dump_WordValue(actual);
-    m_messages.push_back(os.str());
+        << ": expected: " << (int)expected
+        << ", actual: " << (int)actual;
+    m_messages.push_back(os().str());
+    os().str("");
 }
 
 void TestRunner::raise(std::string what, uint8_t expected, uint8_t actual) {
-    std::ostringstream os;
-    os
+    os()
+        << std::setw(2)
         << what
-        << ": expected: " << EightBit::Disassembly::dump_ByteValue(expected)
+        << ": expected: " << (int)expected
             << "(" << EightBit::Disassembly::dump_Flags(expected) << ")"
-        << ", actual: " << EightBit::Disassembly::dump_ByteValue(actual)
+        << ", actual: " << (int)actual
             << "(" << EightBit::Disassembly::dump_Flags(actual) << ")";
-    m_messages.push_back(os.str());
+    m_messages.push_back(os().str());
+    os().str("");
 }
 
 void TestRunner::raise(std::string what, test_t::action expected, test_t::action actual) {
-    std::ostringstream os;
-    os
+    os()
         << what
         << ": expected: " << test_t::to_string(expected)
         << ", actual: " << test_t::to_string(actual);
-    m_messages.push_back(os.str());
+    m_messages.push_back(os().str());
+    os().str("");
+}
+
+bool TestRunner::check(std::string what, uint16_t address, uint8_t expected, uint8_t actual) {
+    const auto success = actual == expected;
+    if (!success) {
+        os() << what << ": " << std::setw(4) << (int)address;
+        raise(os().str(), expected, actual);
+        os().str("");
+    }
+    return success;
 }
 
 void TestRunner::initialiseState() {
@@ -120,7 +134,7 @@ bool TestRunner::checkState() {
     bool ram_problem = false;
     for (const auto& entry : ram) {
         const auto [address, value] = entry;
-        const auto ram_good = check("RAM: " + EightBit::Disassembly::dump_WordValue(address), value, RAM().peek(address));
+        const auto ram_good = check("RAM",  address, value, RAM().peek(address));
         if (!ram_good && !ram_problem)
             ram_problem = true;
     }
