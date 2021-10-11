@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "TestRunner.h"
 
-#include <sstream>
 #include <Disassembly.h>
 
 TestRunner::TestRunner(const test_t& test)

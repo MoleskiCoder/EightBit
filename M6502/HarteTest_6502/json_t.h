@@ -1,11 +1,13 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
-
-#include <boost/json.hpp>
+#ifdef USE_BOOST_JSON
+#   include <cstdint>
+#   include <string>
+#   include <boost/json.hpp>
+#endif
 
 class json_t {
+#ifdef USE_BOOST_JSON
 protected:
     [[nodiscard]] static const boost::json::value& get_value(const boost::json::object& object, std::string key);
 
@@ -22,4 +24,5 @@ protected:
 
     [[nodiscard]] static const boost::json::string& get_string(const boost::json::value& value);
     [[nodiscard]] static const boost::json::string& get_string(const boost::json::object& object, std::string key);
+#endif
 };

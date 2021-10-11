@@ -4,7 +4,14 @@
 #include <string>
 #include <vector>
 #include <tuple>
-#include <boost/json.hpp>
+
+#ifdef USE_BOOST_JSON
+#	include <boost/json.hpp>
+#endif
+
+#ifdef USE_NLOHMANN_JSON
+#   include "nlohmann/json.hpp"
+#endif
 
 #include "state_t.h"
 #include "json_t.h"
@@ -25,11 +32,24 @@ private:
     state_t m_final_state;
     events_t m_cycles; 
 
+#ifdef USE_BOOST_JSON
     void initialise(const boost::json::object& serialised);
+#endif
+
+#ifdef USE_NLOHMANN_JSON
+    void initialise(const nlohmann::json& serialised);
+#endif
 
 public:
+
+#ifdef USE_BOOST_JSON
     test_t(const boost::json::object& serialised);
     test_t(const boost::json::value& serialised);
+#endif
+
+#ifdef USE_NLOHMANN_JSON
+    test_t(const nlohmann::json& serialised);
+#endif
 
     [[nodiscard]] constexpr const auto& name() const noexcept { return m_name; }
     [[nodiscard]] constexpr const auto& initial_state() const noexcept { return m_initial_state; }

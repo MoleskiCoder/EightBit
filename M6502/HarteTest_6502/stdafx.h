@@ -11,4 +11,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include <boost/json.hpp>
+//#define USE_BOOST_JSON
+#define USE_NLOHMANN_JSON
+
+#ifdef USE_BOOST_JSON
+#	include <boost/json.hpp>
+#endif
+
+#ifdef USE_NLOHMANN_JSON
+#	include "nlohmann/json.hpp"
+#endif

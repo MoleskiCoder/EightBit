@@ -169,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="json_t.h" />
+    <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="opcode_test_suite_t.h" />
     <ClInclude Include="state_t.h" />
     <ClInclude Include="stdafx.h" />

@@ -52,5 +52,8 @@
     <ClInclude Include="TestRunner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="nlohmann\json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

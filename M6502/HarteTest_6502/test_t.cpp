@@ -19,6 +19,17 @@ std::string test_t::to_string(action value) {
     throw new std::out_of_range("Unknown action");
 }
 
+#ifdef USE_BOOST_JSON
+
+test_t::test_t(const boost::json::object& serialised) {
+    initialise(serialised);
+}
+
+test_t::test_t(const boost::json::value& serialised) {
+    assert(serialised.is_object());
+    initialise(serialised.get_object());
+}
+
 void test_t::initialise(const boost::json::object& serialised) {
 
     m_name = get_string(serialised, "name");
@@ -34,15 +45,35 @@ void test_t::initialise(const boost::json::object& serialised) {
         const auto address = get_uint16(cycle_array[0]);
         const auto contents = get_uint8(cycle_array[1]);
         const auto action = to_action((std::string)get_string(cycle_array[2]));
-        m_cycles.push_back( { address, contents, action } );
+        m_cycles.push_back({ address, contents, action });
     }
 }
 
-test_t::test_t(const boost::json::object& serialised) {
+#endif
+
+#ifdef USE_NLOHMANN_JSON
+
+test_t::test_t(const nlohmann::json& serialised) {
+    assert(serialised.is_object());
     initialise(serialised);
 }
 
-test_t::test_t(const boost::json::value& serialised) {
-    assert(serialised.is_object());
-    initialise(serialised.get_object());
+void test_t::initialise(const nlohmann::json& serialised) {
+
+    m_name = serialised["name"].get<std::string>();
+    m_initial_state = state_t(serialised["initial"]);
+    m_final_state = state_t(serialised["final"]);
+
+    const auto& cycles_array = serialised["cycles"];
+    m_cycles.reserve(cycles_array.size());
+
+    for (const auto& cycles_entry : cycles_array) {
+        assert(cycles_entry.size() == 3);
+        const auto address = cycles_entry[0].get<uint16_t>();
+        const auto contents = cycles_entry[1].get<uint8_t>();
+        const auto action = to_action(cycles_entry[2].get<std::string>());
+        m_cycles.push_back({ address, contents, action });
+    }
 }
+
+#endif

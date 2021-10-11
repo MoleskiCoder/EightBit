@@ -16,6 +16,8 @@ std::string opcode_test_suite_t::read(std::string path) {
 opcode_test_suite_t::opcode_test_suite_t(std::string path)
 : m_path(path) {}
 
+#ifdef USE_BOOST_JSON
+
 const boost::json::array& opcode_test_suite_t::get_array() const noexcept {
     assert(raw().is_array());
     return raw().get_array();
@@ -25,3 +27,14 @@ void opcode_test_suite_t::load() {
     const auto contents = read(path());
     m_raw = boost::json::parse(contents);
 }
+
+#endif
+
+#ifdef USE_NLOHMANN_JSON
+
+void opcode_test_suite_t::load() {
+    const auto contents = read(path());
+    m_raw = nlohmann::json::parse(contents);
+}
+
+#endif

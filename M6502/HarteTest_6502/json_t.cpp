@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "json_t.h"
+
+#ifdef USE_BOOST_JSON
+
 #include <cassert>
 
 const boost::json::value& json_t::get_value(const boost::json::object& object, std::string key) {
@@ -51,3 +54,5 @@ const boost::json::string& json_t::get_string(const boost::json::value& value) {
 const boost::json::string& json_t::get_string(const boost::json::object& object, std::string key) {
     return get_string(get_value(object, key));
 }
+
+#endif

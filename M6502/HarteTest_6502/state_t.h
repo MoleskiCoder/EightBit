@@ -2,7 +2,14 @@
 
 #include <cstdint>
 #include <unordered_map>
-#include <boost/json.hpp>
+
+#ifdef USE_BOOST_JSON
+#	include <boost/json.hpp>
+#endif
+
+#ifdef USE_NLOHMANN_JSON
+#   include "nlohmann/json.hpp"
+#endif
 
 #include "json_t.h"
 
@@ -20,12 +27,25 @@ private:
 
     [[nodiscard]] constexpr auto initialised() const noexcept { return m_initialised; }
 
+#ifdef USE_BOOST_JSON
     void initialise(const boost::json::object& serialised);
+#endif
+
+#ifdef USE_NLOHMANN_JSON
+    void initialise(const nlohmann::json& serialised);
+#endif
 
 public:
     state_t();
+
+#ifdef USE_BOOST_JSON
     state_t(const boost::json::object& serialised);
     state_t(const boost::json::value& serialised);
+#endif
+
+#ifdef USE_NLOHMANN_JSON
+    state_t(const nlohmann::json& serialised);
+#endif
 
     [[nodiscard]] constexpr auto pc() const noexcept { return m_pc; }
     [[nodiscard]] constexpr auto s() const noexcept { return m_s; }
