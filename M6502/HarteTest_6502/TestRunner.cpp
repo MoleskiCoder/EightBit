@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "TestRunner.h"
 
-#include <iostream>
+#include <sstream>
 #include <Disassembly.h>
 
 TestRunner::TestRunner(const test_t& test)
@@ -43,29 +43,32 @@ void TestRunner::initialise() {
 }
 
 void TestRunner::raise(std::string what, uint16_t expected, uint16_t actual) {
-    std::cout
-        << "** Failure: " << what
+    std::ostringstream os;
+    os
+        << what
         << ": expected: " << EightBit::Disassembly::dump_WordValue(expected)
-        << ", actual: " << EightBit::Disassembly::dump_WordValue(actual)
-        << "\n";
+        << ", actual: " << EightBit::Disassembly::dump_WordValue(actual);
+    m_messages.push_back(os.str());
 }
 
 void TestRunner::raise(std::string what, uint8_t expected, uint8_t actual) {
-    std::cout
-        << "** Failure: " << what
+    std::ostringstream os;
+    os
+        << what
         << ": expected: " << EightBit::Disassembly::dump_ByteValue(expected)
             << "(" << EightBit::Disassembly::dump_Flags(expected) << ")"
         << ", actual: " << EightBit::Disassembly::dump_ByteValue(actual)
-            << "(" << EightBit::Disassembly::dump_Flags(actual) << ")"
-        << "\n";
+            << "(" << EightBit::Disassembly::dump_Flags(actual) << ")";
+    m_messages.push_back(os.str());
 }
 
 void TestRunner::raise(std::string what, test_t::action expected, test_t::action actual) {
-    std::cout
-        << "** Failure: " << what
+    std::ostringstream os;
+    os
+        << what
         << ": expected: " << test_t::to_string(expected)
-        << ", actual: " << test_t::to_string(actual)
-        << "\n";
+        << ", actual: " << test_t::to_string(actual);
+    m_messages.push_back(os.str());
 }
 
 void TestRunner::initialiseState() {
@@ -87,16 +90,15 @@ void TestRunner::initialiseState() {
     m_actualEvents.clear();
 }
 
-void TestRunner::verifyState() {
+bool TestRunner::checkState() {
 
     const auto& finished = test().final_state();
 
     const auto& expected_events = test().cycles();
     const auto& actual_events = m_actualEvents;
-    if (expected_events.size() != actual_events.size()) {
-        //std::cout << "** event count mismatch" << "\n";
-        return;
-    }
+    m_event_count_mismatch = expected_events.size() != actual_events.size();
+    if (m_event_count_mismatch)
+        return false;
 
     for (int i = 0; i < expected_events.size(); ++i) {
         const auto& expected = expected_events[i];
@@ -124,15 +126,23 @@ void TestRunner::verifyState() {
             ram_problem = true;
     }
 
-    const auto good = pc_good && s_good && a_good && x_good && y_good && p_good && !ram_problem;
-    std::cout << (good ? "+" : "-");
+    return pc_good && s_good && a_good && x_good && y_good && p_good && !ram_problem;
 }
 
-void TestRunner::run() {
+bool TestRunner::check() {
     initialise();
     raisePOWER();
     initialiseState();
     const int cycles = CPU().step();
-    verifyState();
+    const auto valid = checkState();
+    if (m_event_count_mismatch) {
+        std::ostringstream os;
+        os
+            << "Stepped cycles: " << cycles
+            << ", expected events: " << test().cycles().size()
+            << ", actual events: " << m_actualEvents.size();
+        m_messages.push_back(os.str());
+    }
     lowerPOWER();
+    return valid;
 }

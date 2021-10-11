@@ -1,5 +1,9 @@
 #pragma once
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include <Bus.h>
 #include <Ram.h>
 #include <mos6502.h>
@@ -11,11 +15,13 @@ private:
     EightBit::Ram m_ram = 0x10000;
     EightBit::MOS6502 m_cpu = { *this };
     const test_t& m_test;
+    std::vector<std::string> m_messages;
 
     test_t::events_t m_actualEvents;
+    bool m_event_count_mismatch = false;
 
     void initialiseState();
-    void verifyState();
+    bool checkState();
 
     void raise(std::string what, uint16_t expected, uint16_t actual);
     void raise(std::string what, uint8_t expected, uint8_t actual);
@@ -45,6 +51,7 @@ public:
     constexpr auto& RAM() noexcept { return m_ram; }
     constexpr auto& CPU() noexcept { return m_cpu; }
     constexpr const auto& test() const noexcept { return m_test; }
+    constexpr const auto& messages() const noexcept { return m_messages; }
 
-    void run();
+    bool check();
 };
