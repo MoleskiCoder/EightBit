@@ -30,9 +30,6 @@ private:
 #ifdef USE_NLOHMANN_JSON
     nlohmann::json m_raw;
 #endif
-#ifdef USE_RAPIDJSON_JSON
-    rapidjson::Document m_raw;
-#endif
 #ifdef USE_JSONCPP_JSON
     Json::Value m_raw;
 #endif
