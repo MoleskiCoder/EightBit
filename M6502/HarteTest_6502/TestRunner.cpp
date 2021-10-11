@@ -39,7 +39,6 @@ void TestRunner::initialise() {
     WrittenByte.connect([this](EightBit::EventArgs&) {
         addActualEvent(test_t::action::write, ADDRESS().word, DATA());
     });
-
 }
 
 void TestRunner::raise(std::string what, uint16_t expected, uint16_t actual) {

@@ -18,7 +18,7 @@ private:
     uint8_t m_p = 0xff;
     std::unordered_map<uint16_t, uint8_t> m_ram;
 
-    constexpr auto initialised() const noexcept { return m_initialised; }
+    [[nodiscard]] constexpr auto initialised() const noexcept { return m_initialised; }
 
     void initialise(const boost::json::object& serialised);
 
@@ -27,11 +27,11 @@ public:
     state_t(const boost::json::object& serialised);
     state_t(const boost::json::value& serialised);
 
-    constexpr auto pc() const noexcept { return m_pc; }
-    constexpr auto s() const noexcept { return m_s; }
-    constexpr auto a() const noexcept { return m_a; }
-    constexpr auto x() const noexcept { return m_x; }
-    constexpr auto y() const noexcept { return m_y; }
-    constexpr auto p() const noexcept { return m_p; }
-    constexpr const auto& ram() const noexcept { return m_ram; }
+    [[nodiscard]] constexpr auto pc() const noexcept { return m_pc; }
+    [[nodiscard]] constexpr auto s() const noexcept { return m_s; }
+    [[nodiscard]] constexpr auto a() const noexcept { return m_a; }
+    [[nodiscard]] constexpr auto x() const noexcept { return m_x; }
+    [[nodiscard]] constexpr auto y() const noexcept { return m_y; }
+    [[nodiscard]] constexpr auto p() const noexcept { return m_p; }
+    [[nodiscard]] constexpr const auto& ram() const noexcept { return m_ram; }
 };

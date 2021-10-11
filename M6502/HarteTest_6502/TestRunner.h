@@ -21,14 +21,14 @@ private:
     bool m_event_count_mismatch = false;
 
     void initialiseState();
-    bool checkState();
+    [[nodiscard]] bool checkState();
 
     void raise(std::string what, uint16_t expected, uint16_t actual);
     void raise(std::string what, uint8_t expected, uint8_t actual);
     void raise(std::string what, test_t::action expected, test_t::action actual);
 
     template<class T>
-    bool check(std::string what, T expected, T actual) {
+    [[nodiscard]] bool check(std::string what, T expected, T actual) {
         const auto success = actual == expected;
         if (!success)
             raise(what, expected, actual);
@@ -48,10 +48,10 @@ public:
 
     virtual void initialise() final;
 
-    constexpr auto& RAM() noexcept { return m_ram; }
-    constexpr auto& CPU() noexcept { return m_cpu; }
-    constexpr const auto& test() const noexcept { return m_test; }
-    constexpr const auto& messages() const noexcept { return m_messages; }
+    [[nodiscard]] constexpr auto& RAM() noexcept { return m_ram; }
+    [[nodiscard]] constexpr auto& CPU() noexcept { return m_cpu; }
+    [[nodiscard]] constexpr const auto& test() const noexcept { return m_test; }
+    [[nodiscard]] constexpr const auto& messages() const noexcept { return m_messages; }
 
-    bool check();
+    [[nodiscard]] bool check();
 };
