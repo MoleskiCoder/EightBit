@@ -43,6 +43,10 @@ private:
 
     void addActualEvent(test_t::action action, uint16_t address, uint8_t value);
 
+    void dumpEvents(std::string which, const test_t::events_t& events);
+    void dumpEvents(const test_t::events_t& events);
+    void dumpEvent(const test_t::event_t& event);
+
     [[nodiscard]] auto& os() { return m_os; }
 
 protected:

@@ -29,6 +29,27 @@ void TestRunner::addActualEvent(test_t::action action, uint16_t address, uint8_t
     m_actualEvents.push_back( { address, value, action } );
 }
 
+void TestRunner::dumpEvents(std::string which, const test_t::events_t& events) {
+    m_messages.push_back(which);
+    dumpEvents(events);
+}
+
+void TestRunner::dumpEvents(const test_t::events_t& events) {
+    os() << std::hex << std::uppercase << std::setfill('0');
+    for (const auto& event: events)
+        dumpEvent(event);
+}
+
+void TestRunner::dumpEvent(const test_t::event_t& event) {
+    const auto [address, contents, action] = event;
+    os()
+        << "Address: " << std::setw(4) << address
+        << ", contents: " << std::setw(2) << (int)contents
+        << ", action: " << test_t::to_string(action);
+    m_messages.push_back(os().str());
+    os().str("");
+}
+
 void TestRunner::initialise() {
 
     ReadByte.connect([this](EightBit::EventArgs&) {
@@ -148,12 +169,21 @@ bool TestRunner::check() {
     const int cycles = CPU().step();
     const auto valid = checkState();
     if (m_event_count_mismatch) {
-        std::ostringstream os;
-        os
-            << "Stepped cycles: " << cycles
-            << ", expected events: " << test().cycles().size()
-            << ", actual events: " << m_actualEvents.size();
-        m_messages.push_back(os.str());
+        if (cycles == 1) {
+            m_messages.push_back("Unimplemented");
+        } else {
+
+            os()
+                << std::dec << std::setfill(' ')
+                << "Stepped cycles: " << cycles
+                << ", expected events: " << test().cycles().size()
+                << ", actual events: " << m_actualEvents.size();
+            m_messages.push_back(os().str());
+            os().str("");
+
+            dumpEvents("-- Expected cycles", test().cycles());
+            dumpEvents("-- Actual cycles", m_actualEvents);
+        }
     }
     lowerPOWER();
     return valid;
