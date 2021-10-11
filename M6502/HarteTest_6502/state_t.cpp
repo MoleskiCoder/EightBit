@@ -76,3 +76,37 @@ void state_t::initialise(const nlohmann::json& serialised) {
 }
 
 #endif
+
+#ifdef USE_JSONCPP_JSON
+
+state_t::state_t(const Json::Value& serialised) {
+    assert(serialised.isObject());
+    initialise(serialised);
+    assert(initialised());
+}
+
+void state_t::initialise(const Json::Value& serialised) {
+
+    assert(!initialised());
+
+    m_pc = serialised["pc"].asUInt();
+    m_s = serialised["s"].asUInt();
+    m_a = serialised["a"].asUInt();
+    m_x = serialised["x"].asUInt();
+    m_y = serialised["y"].asUInt();
+    m_p = serialised["p"].asUInt();
+
+    const auto& ram_entries = serialised["ram"];
+    assert(ram_entries.isArray());
+    for (const auto& ram_entry : ram_entries) {
+        assert(ram_entry.isArray());
+        assert(ram_entry.size() == 2);
+        const auto address = ram_entry[0].asUInt();
+        const auto value = ram_entry[1].asUInt();
+        m_ram[address] = value;
+    }
+
+    m_initialised = true;
+}
+
+#endif

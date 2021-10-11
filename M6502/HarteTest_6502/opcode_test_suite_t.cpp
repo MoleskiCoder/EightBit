@@ -2,8 +2,13 @@
 #include "opcode_test_suite_t.h"
 
 #include <cassert>
+#include <exception>
 #include <fstream>
 #include <filesystem>
+
+#ifdef USE_JSONCPP_JSON
+std::unique_ptr<Json::CharReader> opcode_test_suite_t::m_reader;
+#endif
 
 std::string opcode_test_suite_t::read(std::string path) {
     std::ifstream file(path, std::ios::in | std::ios::binary);
@@ -35,6 +40,20 @@ void opcode_test_suite_t::load() {
 void opcode_test_suite_t::load() {
     const auto contents = read(path());
     m_raw = nlohmann::json::parse(contents);
+}
+
+#endif
+
+#ifdef USE_JSONCPP_JSON
+
+void opcode_test_suite_t::load() {
+    if (m_reader == nullptr) {
+        Json::CharReaderBuilder builder;
+        m_reader.reset(builder.newCharReader());
+    }
+    const auto contents = read(path());
+    if (!m_reader->parse(contents.data(), contents.data() + contents.size(), &m_raw, nullptr))
+        throw std::runtime_error("Unable to parse tests");
 }
 
 #endif

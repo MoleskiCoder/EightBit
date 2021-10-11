@@ -30,6 +30,9 @@ int main() {
 #ifdef USE_NLOHMANN_JSON
         const auto& opcode_test_array = opcode.raw();
 #endif
+#ifdef USE_JSONCPP_JSON
+        const auto& opcode_test_array = opcode.raw();
+#endif
 
         bool opcode_bad = false;
         for (const auto& opcode_test_element : opcode_test_array) {

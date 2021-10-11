@@ -13,6 +13,10 @@
 #   include "nlohmann/json.hpp"
 #endif
 
+#ifdef USE_JSONCPP_JSON
+#	include <json/json.h>
+#endif
+
 #include "state_t.h"
 #include "json_t.h"
 
@@ -40,6 +44,10 @@ private:
     void initialise(const nlohmann::json& serialised);
 #endif
 
+#ifdef USE_JSONCPP_JSON
+    void initialise(const Json::Value& serialised);
+#endif
+
 public:
 
 #ifdef USE_BOOST_JSON
@@ -49,6 +57,10 @@ public:
 
 #ifdef USE_NLOHMANN_JSON
     test_t(const nlohmann::json& serialised);
+#endif
+
+#ifdef USE_JSONCPP_JSON
+    test_t(const Json::Value& serialised);
 #endif
 
     [[nodiscard]] constexpr const auto& name() const noexcept { return m_name; }

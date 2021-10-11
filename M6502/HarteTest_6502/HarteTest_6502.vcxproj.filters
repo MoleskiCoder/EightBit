@@ -9,6 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="Header Files\nlohmann">
+      <UniqueIdentifier>{1b676a2e-dff7-46aa-b021-f4319b0419d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tests.cpp">
@@ -53,7 +56,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="nlohmann\json.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\nlohmann</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
