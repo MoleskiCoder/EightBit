@@ -40,6 +40,7 @@ int main() {
             const auto opcode_test = test_t(opcode_test_element);
 
             TestRunner runner(opcode_test);
+#ifndef TEST_JSON_PERFORMANCE
             const auto good = runner.check();
             if (!good) {
                 if (!opcode_bad) {
@@ -49,6 +50,7 @@ int main() {
                     opcode_bad = true;
                 }
             }
+#endif
         }
     }
 

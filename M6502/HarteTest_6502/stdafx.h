@@ -11,9 +11,11 @@
 #include <unordered_map>
 #include <vector>
 
-#define USE_BOOST_JSON
-//#define USE_NLOHMANN_JSON
-//#define USE_JSONCPP_JSON
+//#define TEST_JSON_PERFORMANCE
+
+#define USE_BOOST_JSON	// 32 seconds
+//#define USE_NLOHMANN_JSON	// 58 seconds
+//#define USE_JSONCPP_JSON	// 88 seconds
 
 #ifdef USE_BOOST_JSON
 #	include <boost/json.hpp>
