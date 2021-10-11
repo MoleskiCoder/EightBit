@@ -124,8 +124,8 @@ void test_t::initialise(const simdjson::dom::element serialised) {
     for (const auto cycles_entry : cycles_array) {
         const auto cycle_array = cycles_entry.get_array();
         assert(cycle_array.size() == 3);
-        const auto address = (uint64_t)cycle_array.at(0);
-        const auto contents = (uint64_t)cycle_array.at(1);
+        const auto address = (uint16_t)(uint64_t)cycle_array.at(0);
+        const auto contents = (uint8_t)(uint64_t)cycle_array.at(1);
         const auto action = to_action((std::string)cycle_array.at(2));
         m_cycles.push_back({ address, contents, action });
     }

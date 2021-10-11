@@ -123,12 +123,12 @@ void state_t::initialise(const simdjson::dom::element serialised) {
 
     assert(!initialised());
 
-    m_pc = (uint64_t)serialised["pc"];
-    m_s = (uint64_t)serialised["s"];
-    m_a = (uint64_t)serialised["a"];
-    m_x = (uint64_t)serialised["x"];
-    m_y = (uint64_t)serialised["y"];
-    m_p = (uint64_t)serialised["p"];
+    m_pc = (uint16_t)(uint64_t)serialised["pc"];
+    m_s = (uint8_t)(uint64_t)serialised["s"];
+    m_a = (uint8_t)(uint64_t)serialised["a"];
+    m_x = (uint8_t)(uint64_t)serialised["x"];
+    m_y = (uint8_t)(uint64_t)serialised["y"];
+    m_p = (uint8_t)(uint64_t)serialised["p"];
 
     const auto ram_entries = serialised["ram"];
     assert(ram_entries.is_array());
@@ -138,7 +138,7 @@ void state_t::initialise(const simdjson::dom::element serialised) {
         assert(ram_entry_array.size() == 2);
         const auto address = (uint64_t)ram_entry_array.at(0);
         const auto value = (uint64_t)ram_entry_array.at(1);
-        m_ram[address] = value;
+        m_ram[(uint16_t)address] = (uint8_t)value;
     }
 
     m_initialised = true;

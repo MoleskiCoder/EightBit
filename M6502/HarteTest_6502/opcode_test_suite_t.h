@@ -22,7 +22,7 @@
 class opcode_test_suite_t final {
 private:
 #ifdef USE_JSONCPP_JSON
-    static std::unique_ptr<Json::CharReader> m_reader;
+    static std::unique_ptr<Json::CharReader> m_parser;
 #endif
 #ifdef USE_SIMDJSON_JSON
     static std::unique_ptr<simdjson::dom::parser> m_parser;
