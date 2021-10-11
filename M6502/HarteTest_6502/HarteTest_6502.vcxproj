@@ -163,6 +163,12 @@
   <ItemGroup>
     <ClCompile Include="json_t.cpp" />
     <ClCompile Include="opcode_test_suite_t.cpp" />
+    <ClCompile Include="simdjson\simdjson.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="state_t.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -178,6 +184,7 @@
     <ClInclude Include="json_t.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="opcode_test_suite_t.h" />
+    <ClInclude Include="simdjson\simdjson.h" />
     <ClInclude Include="state_t.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TestRunner.h" />

@@ -33,6 +33,10 @@ int main() {
 #ifdef USE_JSONCPP_JSON
         const auto& opcode_test_array = opcode.raw();
 #endif
+#ifdef USE_SIMDJSON_JSON
+        assert(opcode.raw().is_array());
+        const auto& opcode_test_array = opcode.raw().get_array();
+#endif
 
         bool opcode_bad = false;
         for (const auto& opcode_test_element : opcode_test_array) {

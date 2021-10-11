@@ -15,10 +15,17 @@
 #	include <json/json.h>
 #endif
 
+#ifdef USE_SIMDJSON_JSON
+#	include "simdjson/simdjson.h"
+#endif
+
 class opcode_test_suite_t final {
 private:
 #ifdef USE_JSONCPP_JSON
     static std::unique_ptr<Json::CharReader> m_reader;
+#endif
+#ifdef USE_SIMDJSON_JSON
+    static std::unique_ptr<simdjson::dom::parser> m_parser;
 #endif
 
     [[nodiscard]] static std::string read(std::string path);
@@ -33,12 +40,20 @@ private:
 #ifdef USE_JSONCPP_JSON
     Json::Value m_raw;
 #endif
+#ifdef USE_SIMDJSON_JSON
+    simdjson::dom::element m_raw;
+#endif
 
 public:
     opcode_test_suite_t(std::string path);
 
     [[nodiscard]] constexpr const auto& path() const noexcept { return m_path; }
+
+#ifdef JSON_PREFER_PASS_BY_VALUE
+    [[nodiscard]] const auto raw() const noexcept { return m_raw; }
+#else
     [[nodiscard]] constexpr const auto& raw() const noexcept { return m_raw; }
+#endif
 
 #ifdef USE_BOOST_JSON
     [[nodiscard]] const boost::json::array& get_array() const noexcept;

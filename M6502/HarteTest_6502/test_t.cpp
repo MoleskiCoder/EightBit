@@ -104,3 +104,31 @@ void test_t::initialise(const Json::Value& serialised) {
 }
 
 #endif
+
+#ifdef USE_SIMDJSON_JSON
+
+test_t::test_t(const simdjson::dom::element serialised) {
+    assert(serialised.is_object());
+    initialise(serialised);
+}
+
+void test_t::initialise(const simdjson::dom::element serialised) {
+
+    m_name = serialised["name"];
+    m_initial_state = state_t(serialised["initial"]);
+    m_final_state = state_t(serialised["final"]);
+
+    const auto cycles_array = serialised["cycles"].get_array();
+    m_cycles.reserve(cycles_array.size());
+
+    for (const auto cycles_entry : cycles_array) {
+        const auto cycle_array = cycles_entry.get_array();
+        assert(cycle_array.size() == 3);
+        const auto address = (uint64_t)cycle_array.at(0);
+        const auto contents = (uint64_t)cycle_array.at(1);
+        const auto action = to_action((std::string)cycle_array.at(2));
+        m_cycles.push_back({ address, contents, action });
+    }
+}
+
+#endif

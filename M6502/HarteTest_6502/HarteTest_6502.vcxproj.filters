@@ -12,6 +12,9 @@
     <Filter Include="Header Files\nlohmann">
       <UniqueIdentifier>{1b676a2e-dff7-46aa-b021-f4319b0419d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\simdjson">
+      <UniqueIdentifier>{92d132eb-117f-4f61-bad7-de75aa3cb6cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tests.cpp">
@@ -35,6 +38,9 @@
     <ClCompile Include="TestRunner.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="simdjson\simdjson.cpp">
+      <Filter>Header Files\simdjson</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -57,6 +63,9 @@
     </ClInclude>
     <ClInclude Include="nlohmann\json.hpp">
       <Filter>Header Files\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="simdjson\simdjson.h">
+      <Filter>Header Files\simdjson</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

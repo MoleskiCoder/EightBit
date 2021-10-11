@@ -17,6 +17,10 @@
 #	include <json/json.h>
 #endif
 
+#ifdef USE_SIMDJSON_JSON
+#	include "simdjson/simdjson.h"
+#endif
+
 #include "state_t.h"
 #include "json_t.h"
 
@@ -48,6 +52,10 @@ private:
     void initialise(const Json::Value& serialised);
 #endif
 
+#ifdef USE_SIMDJSON_JSON
+    void initialise(simdjson::dom::element serialised);
+#endif
+
 public:
 
 #ifdef USE_BOOST_JSON
@@ -61,6 +69,10 @@ public:
 
 #ifdef USE_JSONCPP_JSON
     test_t(const Json::Value& serialised);
+#endif
+
+#ifdef USE_SIMDJSON_JSON
+    test_t(simdjson::dom::element serialised);
 #endif
 
     [[nodiscard]] constexpr const auto& name() const noexcept { return m_name; }
