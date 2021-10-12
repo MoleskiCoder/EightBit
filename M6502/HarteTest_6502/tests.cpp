@@ -35,7 +35,7 @@ int main() {
 #endif
 #ifdef USE_SIMDJSON_JSON
         assert(opcode.raw().is_array());
-        const auto& opcode_test_array = opcode.raw().get_array();
+        const auto opcode_test_array = opcode.raw().get_array();
 #endif
 
         bool opcode_bad = false;

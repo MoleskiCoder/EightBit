@@ -6,11 +6,13 @@
 #include <fstream>
 #include <filesystem>
 
+#ifdef JSON_PREFER_REUSE_OF_PARSER
 #ifdef USE_JSONCPP_JSON
 std::unique_ptr<Json::CharReader> opcode_test_suite_t::m_parser;
 #endif
 #ifdef USE_SIMDJSON_JSON
-std::unique_ptr<simdjson::dom::parser> opcode_test_suite_t::m_parser;
+simdjson::dom::parser opcode_test_suite_t::m_parser;
+#endif
 #endif
 
 std::string opcode_test_suite_t::read(std::string path) {
@@ -50,11 +52,18 @@ void opcode_test_suite_t::load() {
 #ifdef USE_JSONCPP_JSON
 
 void opcode_test_suite_t::load() {
+#ifdef JSON_PREFER_REUSE_OF_PARSER
     if (m_parser == nullptr)
         m_parser.reset(Json::CharReaderBuilder().newCharReader());
     const auto contents = read(path());
     if (!m_parser->parse(contents.data(), contents.data() + contents.size(), &m_raw, nullptr))
         throw std::runtime_error("Unable to parse tests");
+#else
+    const auto contents = read(path());
+    std::unique_ptr<Json::CharReader> parser(Json::CharReaderBuilder().newCharReader());
+    if (!parser->parse(contents.data(), contents.data() + contents.size(), &m_raw, nullptr))
+        throw std::runtime_error("Unable to parse tests");
+#endif
 }
 
 #endif
@@ -62,10 +71,8 @@ void opcode_test_suite_t::load() {
 #ifdef USE_SIMDJSON_JSON
 
 void opcode_test_suite_t::load() {
-    if (m_parser == nullptr)
-        m_parser = std::make_unique<simdjson::dom::parser>();
     const auto contents = read(path());
-    m_raw = m_parser->parse(contents);
+    m_raw = m_parser.parse(contents);
 }
 
 #endif

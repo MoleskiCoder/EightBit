@@ -27,10 +27,12 @@
 #endif
 
 #ifdef USE_JSONCPP_JSON
+#	define JSON_PREFER_REUSE_OF_PARSER
 #	include <json/json.h>
 #endif
 
 #ifdef USE_SIMDJSON_JSON
 #	define JSON_PREFER_PASS_BY_VALUE
+#	define JSON_PREFER_REUSE_OF_PARSER
 #	include "simdjson/simdjson.h"
 #endif

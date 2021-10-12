@@ -21,11 +21,16 @@
 
 class opcode_test_suite_t final {
 private:
+#ifdef JSON_PREFER_REUSE_OF_PARSER
 #ifdef USE_JSONCPP_JSON
     static std::unique_ptr<Json::CharReader> m_parser;
 #endif
 #ifdef USE_SIMDJSON_JSON
-    static std::unique_ptr<simdjson::dom::parser> m_parser;
+    // N.B.
+    // The parser must be kept for the lifetime of any parsed data.
+    // Therefore, it can only be used for one document at a time.
+    static simdjson::dom::parser m_parser;
+#endif
 #endif
 
     [[nodiscard]] static std::string read(std::string path);
@@ -42,6 +47,10 @@ private:
 #endif
 #ifdef USE_SIMDJSON_JSON
     simdjson::dom::element m_raw;
+#ifndef JSON_PREFER_REUSE_OF_PARSER
+    // N.B. The parser must be kept for the lifetime of any parsed data.
+    simdjson::dom::parser m_parser;
+#endif
 #endif
 
 public:
