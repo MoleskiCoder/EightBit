@@ -26,6 +26,10 @@ std::string opcode_test_suite_t::read(std::string path) {
 opcode_test_suite_t::opcode_test_suite_t(std::string path)
 : m_path(path) {}
 
+void opcode_test_suite_t::load() {
+    m_contents = read(path());
+}
+
 #ifdef USE_BOOST_JSON
 
 const boost::json::array& opcode_test_suite_t::get_array() const noexcept {
@@ -33,46 +37,47 @@ const boost::json::array& opcode_test_suite_t::get_array() const noexcept {
     return raw().get_array();
 }
 
-void opcode_test_suite_t::load() {
-    const auto contents = read(path());
-    m_raw = boost::json::parse(contents);
-}
+void opcode_test_suite_t::parse() {
+    m_raw = boost::json::parse(m_contents);
+    m_contents.clear();
+    m_contents.shrink_to_fit();}
 
 #endif
 
 #ifdef USE_NLOHMANN_JSON
 
-void opcode_test_suite_t::load() {
-    const auto contents = read(path());
-    m_raw = nlohmann::json::parse(contents);
-}
+void opcode_test_suite_t::parse() {
+    m_raw = nlohmann::json::parse(m_contents);
+    m_contents.clear();
+    m_contents.shrink_to_fit();}
 
 #endif
 
 #ifdef USE_JSONCPP_JSON
 
-void opcode_test_suite_t::load() {
+void opcode_test_suite_t::parse() {
 #ifdef JSON_PREFER_REUSE_OF_PARSER
     if (m_parser == nullptr)
         m_parser.reset(Json::CharReaderBuilder().newCharReader());
-    const auto contents = read(path());
-    if (!m_parser->parse(contents.data(), contents.data() + contents.size(), &m_raw, nullptr))
+    if (!m_parser->parse(m_contents.data(), m_contents.data() + m_contents.size(), &m_raw, nullptr))
         throw std::runtime_error("Unable to parse tests");
 #else
-    const auto contents = read(path());
     std::unique_ptr<Json::CharReader> parser(Json::CharReaderBuilder().newCharReader());
-    if (!parser->parse(contents.data(), contents.data() + contents.size(), &m_raw, nullptr))
+    if (!parser->parse(m_contents.data(), m_contents.data() + m_contents.size(), &m_raw, nullptr))
         throw std::runtime_error("Unable to parse tests");
 #endif
+    m_contents.clear();
+    m_contents.shrink_to_fit();
 }
 
 #endif
 
 #ifdef USE_SIMDJSON_JSON
 
-void opcode_test_suite_t::load() {
-    const auto contents = read(path());
-    m_raw = m_parser.parse(contents);
+void opcode_test_suite_t::parse() {
+    m_raw = m_parser.parse(m_contents);
+    m_contents.clear();
+    m_contents.shrink_to_fit();
 }
 
 #endif

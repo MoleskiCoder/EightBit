@@ -18,11 +18,10 @@ int main() {
 
         const auto path = entry.path();
 
-        const auto filename = path.filename();
-        std::cout << "Processing: " << filename << "\n";
-
+        std::cout << "Processing: " << path.filename() << "\n";
         opcode_test_suite_t opcode(path.string());
         opcode.load();
+        opcode.parse();
 
 #ifdef USE_BOOST_JSON
         const auto& opcode_test_array = opcode.get_array();
@@ -59,10 +58,7 @@ int main() {
     }
 
     const auto finish_time = std::chrono::steady_clock::now();
-
     const auto elapsed_time = finish_time - start_time;
-
     const auto seconds = std::chrono::duration_cast<std::chrono::duration<double>>(elapsed_time).count();
-
     std::cout << "Elapsed time: " << seconds << " seconds" << std::endl;
 }

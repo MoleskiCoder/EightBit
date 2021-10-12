@@ -36,6 +36,7 @@ private:
     [[nodiscard]] static std::string read(std::string path);
 
     std::string m_path;
+    std::string m_contents;
 #ifdef USE_BOOST_JSON
     boost::json::value m_raw;
 #endif
@@ -68,5 +69,6 @@ public:
     [[nodiscard]] const boost::json::array& get_array() const noexcept;
 #endif
 
-    void load();
+    void load();    // Reads into contents
+    void parse();   // Parse the contents
 };
