@@ -26,25 +26,24 @@ test_t::test_t(const boost::json::object& serialised) {
 }
 
 test_t::test_t(const boost::json::value& serialised) {
-    assert(serialised.is_object());
-    initialise(serialised.get_object());
+    initialise(serialised.as_object());
 }
 
 void test_t::initialise(const boost::json::object& serialised) {
 
-    m_name = get_string(serialised, "name");
-    m_initial_state = state_t(get_value(serialised, "initial"));
-    m_final_state = state_t(get_value(serialised, "final"));
+    m_name = serialised.at("name").as_string();
+    m_initial_state = state_t(serialised.at("initial"));
+    m_final_state = state_t(serialised.at("final"));
 
-    const auto& cycles_array = get_array(serialised, "cycles");
+    const auto& cycles_array = serialised.at("cycles").as_array();
     m_cycles.reserve(cycles_array.size());
 
     for (const auto& cycles_entry : cycles_array) {
-        const auto& cycle_array = get_array(cycles_entry);
+        const auto& cycle_array = cycles_entry.as_array();
         assert(cycle_array.size() == 3);
-        const auto address = get_uint16(cycle_array[0]);
-        const auto contents = get_uint8(cycle_array[1]);
-        const auto action = to_action((std::string)get_string(cycle_array[2]));
+        const auto address = (uint16_t)cycle_array[0].as_int64();
+        const auto contents = (uint8_t)cycle_array[1].as_int64();
+        const auto action = to_action((std::string)cycle_array[2].as_string());
         m_cycles.push_back({ address, contents, action });
     }
 }

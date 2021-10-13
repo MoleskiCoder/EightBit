@@ -40,7 +40,6 @@ private:
 
     bool check(std::string what, uint16_t address, uint8_t expected, uint8_t actual);
 
-
     void addActualEvent(test_t::action action, uint16_t address, uint8_t value);
 
     void dumpEvents(std::string which, const test_t::events_t& events);

@@ -12,8 +12,7 @@ state_t::state_t(const boost::json::object& serialised) {
 }
 
 state_t::state_t(const boost::json::value& serialised) {
-    assert(serialised.is_object());
-    initialise(serialised.get_object());
+    initialise(serialised.as_object());
     assert(initialised());
 }
 
@@ -21,20 +20,19 @@ void state_t::initialise(const boost::json::object& serialised) {
 
     assert(!initialised());
 
-    m_pc = get_uint16(serialised, "pc");
-    m_s = get_uint8(serialised, "s");
-    m_a = get_uint8(serialised, "a");
-    m_x = get_uint8(serialised, "x");
-    m_y = get_uint8(serialised, "y");
-    m_p = get_uint8(serialised, "p");
+    m_pc = (uint16_t)serialised.at("pc").as_int64();
+    m_s = (uint8_t)serialised.at("s").as_int64();
+    m_a = (uint8_t)serialised.at("a").as_int64();
+    m_x = (uint8_t)serialised.at("x").as_int64();
+    m_y = (uint8_t)serialised.at("y").as_int64();
+    m_p = (uint8_t)serialised.at("p").as_int64();
 
-    const auto& ram_entries = get_array(serialised, "ram");
+    const auto& ram_entries = serialised.at("ram").as_array();
     for (const auto& ram_entry : ram_entries) {
-        assert(ram_entry.is_array());
         const auto& ram_entry_array = ram_entry.as_array();
         assert(ram_entry_array.size() == 2);
-        const auto address = get_uint16(ram_entry_array[0]);
-        const auto value = get_uint8(ram_entry_array[1]);
+        const auto address = (uint16_t)ram_entry_array[0].as_int64();
+        const auto value = (uint8_t)ram_entry_array[1].as_int64();
         m_ram[address] = value;
     }
 

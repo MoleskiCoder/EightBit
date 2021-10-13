@@ -24,12 +24,15 @@ int main() {
         opcode.parse();
 
 #ifdef USE_BOOST_JSON
-        const auto& opcode_test_array = opcode.get_array();
+        assert(opcode.raw().is_array());
+        const auto& opcode_test_array = opcode.raw().as_array();
 #endif
 #ifdef USE_NLOHMANN_JSON
+        assert(opcode.raw().is_array());
         const auto& opcode_test_array = opcode.raw();
 #endif
 #ifdef USE_JSONCPP_JSON
+        assert(opcode.raw().is_array());
         const auto& opcode_test_array = opcode.raw();
 #endif
 #ifdef USE_SIMDJSON_JSON

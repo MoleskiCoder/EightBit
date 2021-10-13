@@ -8,15 +8,15 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 //#define TEST_JSON_PERFORMANCE
 
-#define USE_SIMDJSON_JSON	// 15 seconds
-//#define USE_BOOST_JSON	// 32 seconds
-//#define USE_NLOHMANN_JSON	// 58 seconds
-//#define USE_JSONCPP_JSON	// 88 seconds
+#define USE_SIMDJSON_JSON	// 16 seconds
+//#define USE_BOOST_JSON	// 31 seconds
+//#define USE_NLOHMANN_JSON	// 73 seconds
+//#define USE_JSONCPP_JSON	// 105 seconds
 
 #ifdef USE_BOOST_JSON
 #	include <boost/json.hpp>

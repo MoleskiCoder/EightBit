@@ -65,10 +65,6 @@ public:
     [[nodiscard]] constexpr const auto& raw() const noexcept { return m_raw; }
 #endif
 
-#ifdef USE_BOOST_JSON
-    [[nodiscard]] const boost::json::array& get_array() const noexcept;
-#endif
-
     void load();    // Reads into contents
     void parse();   // Parse the contents
 };

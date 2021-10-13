@@ -22,9 +22,8 @@
 #endif
 
 #include "state_t.h"
-#include "json_t.h"
 
-class test_t final : public json_t {
+class test_t final {
 public:
     enum class action { read, write };
     

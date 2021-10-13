@@ -32,11 +32,6 @@ void opcode_test_suite_t::load() {
 
 #ifdef USE_BOOST_JSON
 
-const boost::json::array& opcode_test_suite_t::get_array() const noexcept {
-    assert(raw().is_array());
-    return raw().get_array();
-}
-
 void opcode_test_suite_t::parse() {
     m_raw = boost::json::parse(m_contents);
     m_contents.clear();

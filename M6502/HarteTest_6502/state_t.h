@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <unordered_map>
+#include <map>
 
 #ifdef USE_BOOST_JSON
 #	include <boost/json.hpp>
@@ -19,9 +19,7 @@
 #	include "simdjson/simdjson.h"
 #endif
 
-#include "json_t.h"
-
-class state_t final : public json_t {
+class state_t final {
 private:
     bool m_initialised = false;
 
@@ -31,7 +29,7 @@ private:
     uint8_t m_x = 0xff;
     uint8_t m_y = 0xff;
     uint8_t m_p = 0xff;
-    std::unordered_map<uint16_t, uint8_t> m_ram;
+    std::map<uint16_t, uint8_t> m_ram;
 
     [[nodiscard]] constexpr auto initialised() const noexcept { return m_initialised; }
 
