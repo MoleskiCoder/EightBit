@@ -14,7 +14,7 @@
 //#define TEST_JSON_PERFORMANCE
 
 #define USE_SIMDJSON_JSON	// 16 seconds
-//#define USE_BOOST_JSON	// 31 seconds
+//#define USE_BOOST_JSON	// 28 seconds
 //#define USE_NLOHMANN_JSON	// 73 seconds
 //#define USE_JSONCPP_JSON	// 105 seconds
 

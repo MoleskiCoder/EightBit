@@ -41,9 +41,9 @@ void test_t::initialise(const boost::json::object& serialised) {
     for (const auto& cycles_entry : cycles_array) {
         const auto& cycle_array = cycles_entry.as_array();
         assert(cycle_array.size() == 3);
-        const auto address = (uint16_t)cycle_array[0].as_int64();
-        const auto contents = (uint8_t)cycle_array[1].as_int64();
-        const auto action = to_action((std::string)cycle_array[2].as_string());
+        const auto address = (uint16_t)cycle_array.at(0).as_int64();
+        const auto contents = (uint8_t)cycle_array.at(1).as_int64();
+        const auto action = to_action((std::string)cycle_array.at(2).as_string());
         m_cycles.push_back({ address, contents, action });
     }
 }

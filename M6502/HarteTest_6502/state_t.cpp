@@ -31,8 +31,8 @@ void state_t::initialise(const boost::json::object& serialised) {
     for (const auto& ram_entry : ram_entries) {
         const auto& ram_entry_array = ram_entry.as_array();
         assert(ram_entry_array.size() == 2);
-        const auto address = (uint16_t)ram_entry_array[0].as_int64();
-        const auto value = (uint8_t)ram_entry_array[1].as_int64();
+        const auto address = (uint16_t)ram_entry_array.at(0).as_int64();
+        const auto value = (uint8_t)ram_entry_array.at(0).as_int64();
         m_ram[address] = value;
     }
 
