@@ -52,4 +52,3 @@ public:
     [[nodiscard]] auto& at(size_t idx) { return m_bytes.at(idx); }
     [[nodiscard]] const auto& at(size_t idx) const { return m_bytes.at(idx); }
 };
-

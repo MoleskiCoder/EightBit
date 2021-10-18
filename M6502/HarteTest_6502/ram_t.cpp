@@ -53,7 +53,6 @@ ram_t::ram_t(const nlohmann::json& input) {
 #ifdef USE_JSONCPP_JSON
 
 ram_t::ram_t(const Json::Value& input) {
-
     assert(input.isArray());
     for (const auto& byte : input) {
         assert(byte.isArray());
