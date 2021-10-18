@@ -1,7 +1,12 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
+#include <tuple>
+#include <vector>
+
+#ifdef USE_SIMDJSON_JSON
+#	include "simdjson/simdjson.h"
+#endif
 
 #ifdef USE_BOOST_JSON
 #	include <boost/json.hpp>
@@ -15,42 +20,26 @@
 #	include <json/json.h>
 #endif
 
-#ifdef USE_SIMDJSON_JSON
-#	include "simdjson/simdjson.h"
-#endif
-
 class state_t final {
 private:
-    bool m_initialised = false;
-
     uint16_t m_pc = 0xffff;
     uint8_t m_s = 0xff;
     uint8_t m_a = 0xff;
     uint8_t m_x = 0xff;
     uint8_t m_y = 0xff;
     uint8_t m_p = 0xff;
-    std::map<uint16_t, uint8_t> m_ram;
-
-    [[nodiscard]] constexpr auto initialised() const noexcept { return m_initialised; }
-
-#ifdef USE_BOOST_JSON
-    void initialise(const boost::json::object& serialised);
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-    void initialise(const nlohmann::json& serialised);
-#endif
+    std::vector<std::pair<uint16_t, uint8_t>> m_ram;
 
 #ifdef USE_JSONCPP_JSON
     void initialise(const Json::Value& serialised);
 #endif
 
-#ifdef USE_SIMDJSON_JSON
-    void initialise(simdjson::dom::element serialised);
-#endif
-
 public:
     state_t();
+
+#ifdef USE_SIMDJSON_JSON
+    state_t(simdjson::dom::element serialised);
+#endif
 
 #ifdef USE_BOOST_JSON
     state_t(const boost::json::object& serialised);
@@ -63,10 +52,6 @@ public:
 
 #ifdef USE_JSONCPP_JSON
     state_t(const Json::Value& serialised);
-#endif
-
-#ifdef USE_SIMDJSON_JSON
-    state_t(simdjson::dom::element serialised);
 #endif
 
     [[nodiscard]] constexpr auto pc() const noexcept { return m_pc; }

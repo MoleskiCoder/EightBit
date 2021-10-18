@@ -20,15 +20,15 @@ private:
     std::ostringstream m_os;
     std::vector<std::string> m_messages;
 
-    test_t::events_t m_actualEvents;
-    bool m_event_count_mismatch = false;
+    cycles_t m_actualCycles;
+    bool m_cycle_count_mismatch = false;
 
     void initialiseState();
     [[nodiscard]] bool checkState();
 
     void raise(std::string what, uint16_t expected, uint16_t actual);
     void raise(std::string what, uint8_t expected, uint8_t actual);
-    void raise(std::string what, test_t::action expected, test_t::action actual);
+    void raise(std::string what, cycle_t::action_t expected, cycle_t::action_t actual);
 
     template<class T>
     bool check(std::string what, T expected, T actual) {
@@ -40,11 +40,16 @@ private:
 
     bool check(std::string what, uint16_t address, uint8_t expected, uint8_t actual);
 
-    void addActualEvent(test_t::action action, uint16_t address, uint8_t value);
+    void addActualCycle(const cycle_t& value);
+    void addActualCycle(uint16_t address, uint8_t value, cycle_t::action_t action);
+    void addActualCycle(EightBit::register16_t address, uint8_t value, cycle_t::action_t action);
 
-    void dumpEvents(std::string which, const test_t::events_t& events);
-    void dumpEvents(const test_t::events_t& events);
-    void dumpEvent(const test_t::event_t& event);
+    void addActualReadCycle(EightBit::register16_t address, uint8_t value);
+    void addActualWriteCycle(EightBit::register16_t address, uint8_t value);
+
+    void dumpCycles(std::string which, const cycles_t& cycles);
+    void dumpCycles(const cycles_t& cycles);
+    void dumpCycle(const cycle_t& cycle);
 
     [[nodiscard]] auto& os() { return m_os; }
 

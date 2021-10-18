@@ -161,6 +161,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cycles_t.cpp" />
+    <ClCompile Include="cycle_t.cpp" />
     <ClCompile Include="opcode_test_suite_t.cpp" />
     <ClCompile Include="simdjson\simdjson.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -180,6 +182,8 @@
     <ClCompile Include="test_t.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cycles_t.h" />
+    <ClInclude Include="cycle_t.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="opcode_test_suite_t.h" />
     <ClInclude Include="simdjson\simdjson.h" />

@@ -25,27 +25,42 @@ void TestRunner::lowerPOWER() {
     EightBit::Bus::lowerPOWER();
 }
 
-void TestRunner::addActualEvent(test_t::action action, uint16_t address, uint8_t value) {
-    m_actualEvents.push_back( { address, value, action } );
+void TestRunner::addActualCycle(const cycle_t& value) {
+    m_actualCycles.add(value);
 }
 
-void TestRunner::dumpEvents(std::string which, const test_t::events_t& events) {
+void TestRunner::addActualCycle(uint16_t address, uint8_t value, cycle_t::action_t action) {
+    addActualCycle({ address, value, action });
+}
+
+void TestRunner::addActualCycle(EightBit::register16_t address, uint8_t value, cycle_t::action_t action) {
+    addActualCycle(address.word, value, action);
+}
+
+void TestRunner::addActualReadCycle(EightBit::register16_t address, uint8_t value) {
+    addActualCycle(address, value, cycle_t::action_t::read);
+}
+
+void TestRunner::addActualWriteCycle(EightBit::register16_t address, uint8_t value) {
+    addActualCycle(address, value, cycle_t::action_t::write);
+}
+
+void TestRunner::dumpCycles(std::string which, const cycles_t& events) {
     m_messages.push_back(which);
-    dumpEvents(events);
+    dumpCycles(events);
 }
 
-void TestRunner::dumpEvents(const test_t::events_t& events) {
+void TestRunner::dumpCycles(const cycles_t& cycles) {
     os() << std::hex << std::uppercase << std::setfill('0');
-    for (const auto& event: events)
-        dumpEvent(event);
+    for (const auto& cycle: cycles)
+        dumpCycle(cycle);
 }
 
-void TestRunner::dumpEvent(const test_t::event_t& event) {
-    const auto [address, contents, action] = event;
+void TestRunner::dumpCycle(const cycle_t& cycle) {
     os()
-        << "Address: " << std::setw(4) << address
-        << ", contents: " << std::setw(2) << (int)contents
-        << ", action: " << test_t::to_string(action);
+        << "Address: " << std::setw(4) << cycle.address()
+        << ", value: " << std::setw(2) << (int)cycle.value()
+        << ", action: " << cycle_t::to_string(cycle.action());
     m_messages.push_back(os().str());
     os().str("");
 }
@@ -53,11 +68,11 @@ void TestRunner::dumpEvent(const test_t::event_t& event) {
 void TestRunner::initialise() {
 
     ReadByte.connect([this](EightBit::EventArgs&) {
-        addActualEvent(test_t::action::read, ADDRESS().word, DATA());
+        addActualReadCycle(ADDRESS(), DATA());
     });
 
     WrittenByte.connect([this](EightBit::EventArgs&) {
-        addActualEvent(test_t::action::write, ADDRESS().word, DATA());
+        addActualWriteCycle(ADDRESS(), DATA());
     });
 
     os() << std::hex << std::uppercase << std::setfill('0');
@@ -85,11 +100,11 @@ void TestRunner::raise(std::string what, uint8_t expected, uint8_t actual) {
     os().str("");
 }
 
-void TestRunner::raise(std::string what, test_t::action expected, test_t::action actual) {
+void TestRunner::raise(std::string what, cycle_t::action_t expected, cycle_t::action_t actual) {
     os()
         << what
-        << ": expected: " << test_t::to_string(expected)
-        << ", actual: " << test_t::to_string(actual);
+        << ": expected: " << cycle_t::to_string(expected)
+        << ", actual: " << cycle_t::to_string(actual);
     m_messages.push_back(os().str());
     os().str("");
 }
@@ -120,27 +135,25 @@ void TestRunner::initialiseState() {
         RAM().poke(address, value);
     }
 
-    m_actualEvents.clear();
+    m_actualCycles.clear();
 }
 
 bool TestRunner::checkState() {
 
     const auto& finished = test().final_state();
 
-    const auto& expected_events = test().cycles();
-    const auto& actual_events = m_actualEvents;
-    m_event_count_mismatch = expected_events.size() != actual_events.size();
-    if (m_event_count_mismatch)
+    const auto& expected_cycles = test().cycles();
+    const auto& actual_cycles = m_actualCycles;
+    m_cycle_count_mismatch = expected_cycles.size() != actual_cycles.size();
+    if (m_cycle_count_mismatch)
         return false;
 
-    for (int i = 0; i < expected_events.size(); ++i) {
-        const auto& expected = expected_events[i];
-        const auto [expectedAddress, expectedContents, expectedAction] = expected;
-        const auto& actual = actual_events.at(i);   // actual could be less than expected
-        const auto [actualAddress, actualContents, actualAction] = actual;
-        check("Event action", expectedAction, actualAction);
-        check("Event address", expectedAddress, actualAddress);
-        check("Event contents", expectedContents, actualContents);
+    for (int i = 0; i < expected_cycles.size(); ++i) {
+        const auto& expected = expected_cycles.at(i);
+        const auto& actual = actual_cycles.at(i);   // actual could be less than expected
+        check("Cycle address", expected.address(), actual.address());
+        check("Cycle value", expected.value(), actual.value());
+        check("Cycle action", expected.action(), actual.action());
     }
 
     const auto pc_good = check("PC", finished.pc(), CPU().PC().word);
@@ -168,7 +181,7 @@ bool TestRunner::check() {
     initialiseState();
     const int cycles = CPU().step();
     const auto valid = checkState();
-    if (m_event_count_mismatch) {
+    if (m_cycle_count_mismatch) {
         if (cycles == 1) {
             m_messages.push_back("Unimplemented");
         } else {
@@ -177,12 +190,12 @@ bool TestRunner::check() {
                 << std::dec << std::setfill(' ')
                 << "Stepped cycles: " << cycles
                 << ", expected events: " << test().cycles().size()
-                << ", actual events: " << m_actualEvents.size();
+                << ", actual events: " << m_actualCycles.size();
             m_messages.push_back(os().str());
             os().str("");
 
-            dumpEvents("-- Expected cycles", test().cycles());
-            dumpEvents("-- Actual cycles", m_actualEvents);
+            dumpCycles("-- Expected cycles", test().cycles());
+            dumpCycles("-- Actual cycles", m_actualCycles);
         }
     }
     lowerPOWER();

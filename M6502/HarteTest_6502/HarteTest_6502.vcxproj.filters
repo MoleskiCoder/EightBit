@@ -38,6 +38,12 @@
     <ClCompile Include="simdjson\simdjson.cpp">
       <Filter>Header Files\simdjson</Filter>
     </ClCompile>
+    <ClCompile Include="cycle_t.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cycles_t.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -60,6 +66,12 @@
     </ClInclude>
     <ClInclude Include="simdjson\simdjson.h">
       <Filter>Header Files\simdjson</Filter>
+    </ClInclude>
+    <ClInclude Include="cycle_t.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cycles_t.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

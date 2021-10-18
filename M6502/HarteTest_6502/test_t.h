@@ -5,6 +5,10 @@
 #include <vector>
 #include <tuple>
 
+#ifdef USE_SIMDJSON_JSON
+#	include "simdjson/simdjson.h"
+#endif
+
 #ifdef USE_BOOST_JSON
 #	include <boost/json.hpp>
 #endif
@@ -17,45 +21,25 @@
 #	include <json/json.h>
 #endif
 
-#ifdef USE_SIMDJSON_JSON
-#	include "simdjson/simdjson.h"
-#endif
-
+#include "cycles_t.h"
 #include "state_t.h"
 
 class test_t final {
-public:
-    enum class action { read, write };
-    
-    typedef std::tuple<uint16_t, uint8_t, action> event_t;  // address, contents, action
-    typedef std::vector<event_t> events_t;
-
-    [[nodiscard]] static action to_action(std::string value);
-    [[nodiscard]] static std::string to_string(action value);
-
 private:
     std::string m_name;
     state_t m_initial_state;
     state_t m_final_state;
-    events_t m_cycles; 
+    cycles_t m_cycles;
 
-#ifdef USE_BOOST_JSON
-    void initialise(const boost::json::object& serialised);
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-    void initialise(const nlohmann::json& serialised);
-#endif
-
-#ifdef USE_JSONCPP_JSON
-    void initialise(const Json::Value& serialised);
-#endif
-
-#ifdef USE_SIMDJSON_JSON
-    void initialise(simdjson::dom::element serialised);
-#endif
+//#ifdef USE_JSONCPP_JSON
+//    void initialise(const Json::Value& serialised);
+//#endif
 
 public:
+
+#ifdef USE_SIMDJSON_JSON
+    test_t(simdjson::dom::element serialised);
+#endif
 
 #ifdef USE_BOOST_JSON
     test_t(const boost::json::object& serialised);
@@ -68,10 +52,6 @@ public:
 
 #ifdef USE_JSONCPP_JSON
     test_t(const Json::Value& serialised);
-#endif
-
-#ifdef USE_SIMDJSON_JSON
-    test_t(simdjson::dom::element serialised);
 #endif
 
     [[nodiscard]] constexpr const auto& name() const noexcept { return m_name; }

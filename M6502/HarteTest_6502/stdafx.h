@@ -11,12 +11,18 @@
 #include <map>
 #include <vector>
 
-//#define TEST_JSON_PERFORMANCE
+#define TEST_JSON_PERFORMANCE
 
-#define USE_SIMDJSON_JSON	// 16 seconds
+//#define USE_SIMDJSON_JSON	// 14 seconds
 //#define USE_BOOST_JSON	// 28 seconds
-//#define USE_NLOHMANN_JSON	// 73 seconds
-//#define USE_JSONCPP_JSON	// 105 seconds
+//#define USE_NLOHMANN_JSON	// 56 seconds
+#define USE_JSONCPP_JSON	// 105 seconds
+
+#ifdef USE_SIMDJSON_JSON
+#	define JSON_PREFER_PASS_BY_VALUE
+#	define JSON_PREFER_REUSE_OF_PARSER
+#	include "simdjson/simdjson.h"
+#endif
 
 #ifdef USE_BOOST_JSON
 #	include <boost/json.hpp>
@@ -29,10 +35,4 @@
 #ifdef USE_JSONCPP_JSON
 #	define JSON_PREFER_REUSE_OF_PARSER
 #	include <json/json.h>
-#endif
-
-#ifdef USE_SIMDJSON_JSON
-#	define JSON_PREFER_PASS_BY_VALUE
-#	define JSON_PREFER_REUSE_OF_PARSER
-#	include "simdjson/simdjson.h"
 #endif
