@@ -54,7 +54,6 @@ public:
 	cycle_t(const Json::Value& input);
 #endif
 
-
 	[[nodiscard]] constexpr auto address() const noexcept { return m_address; }
 	[[nodiscard]] constexpr auto value() const noexcept { return m_value; }
 	[[nodiscard]] constexpr auto action() const noexcept { return m_action; }

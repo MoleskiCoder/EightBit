@@ -11,12 +11,12 @@
 #include <map>
 #include <vector>
 
-#define TEST_JSON_PERFORMANCE
+//#define TEST_JSON_PERFORMANCE
 
-//#define USE_SIMDJSON_JSON	// 14 seconds
+#define USE_SIMDJSON_JSON	// 14 seconds
 //#define USE_BOOST_JSON	// 28 seconds
 //#define USE_NLOHMANN_JSON	// 56 seconds
-#define USE_JSONCPP_JSON	// 105 seconds
+//#define USE_JSONCPP_JSON	// 97 seconds
 
 #ifdef USE_SIMDJSON_JSON
 #	define JSON_PREFER_PASS_BY_VALUE

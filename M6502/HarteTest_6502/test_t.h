@@ -31,10 +31,6 @@ private:
     state_t m_final_state;
     cycles_t m_cycles;
 
-//#ifdef USE_JSONCPP_JSON
-//    void initialise(const Json::Value& serialised);
-//#endif
-
 public:
 
 #ifdef USE_SIMDJSON_JSON

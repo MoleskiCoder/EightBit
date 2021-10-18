@@ -70,22 +70,12 @@ cycle_t::cycle_t(const nlohmann::json& input)
 #endif
 
 #ifdef USE_JSONCPP_JSON
-//cycle_t(const Json::Value& input);
 
 cycle_t::cycle_t(const Json::Value& input)
-    : m_address(input[0].asUInt()),
-    m_value(input[1].asUInt()),
-    m_action(to_action(input[2].asString())) {
+: m_address(input[0].asUInt()),
+  m_value(input[1].asUInt()),
+  m_action(to_action(input[2].asString())) {
     assert(input.size() == 3);
 }
-
-
-//for (const auto& cycles_entry : cycles_array) {
-//    assert(cycles_entry.size() == 3);
-//    const auto address = cycles_entry[0].asUInt();
-//    const auto contents = cycles_entry[1].asUInt();
-//    const auto action = to_action(cycles_entry[2].asString());
-//    m_cycles.push_back({ address, contents, action });
-//}
 
 #endif
