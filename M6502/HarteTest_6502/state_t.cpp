@@ -24,7 +24,7 @@ state_t::state_t(const rapidjson::Value& serialised)
   m_x((uint8_t)serialised["x"].GetInt64()),
   m_y((uint8_t)serialised["y"].GetInt64()),
   m_p((uint8_t)serialised["p"].GetInt64()),
-  m_ram(serialised["ram"].GetArray()) {}
+  m_ram(serialised["ram"]) {}
 
 #endif
 

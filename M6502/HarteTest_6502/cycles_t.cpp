@@ -25,9 +25,8 @@ cycles_t::cycles_t(simdjson::dom::array input) {
 
 cycles_t::cycles_t(const rapidjson::Value& input) {
     assert(m_cycles.empty());
-    auto array = input.GetArray();
-    m_cycles.reserve(array.Size());
-    for (const auto& entry : array)
+    m_cycles.reserve(input.Size());
+    for (const auto& entry : input.GetArray())
         add(entry);
 }
 

@@ -36,7 +36,7 @@ public:
 #endif
 
 #ifdef USE_RAPIDJSON_JSON
-	cycles_t(const rapidjson::Value& serialised);
+	cycles_t(const rapidjson::Value& input);
 #endif
 
 #ifdef USE_BOOST_JSON

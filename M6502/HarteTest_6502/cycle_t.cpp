@@ -46,7 +46,7 @@ cycle_t::cycle_t(const rapidjson::Value& input)
 : m_address((uint8_t)input[0].GetInt64()),
   m_value((uint8_t)input[1].GetInt64()),
   m_action(to_action(input[2].GetString())) {
-    assert(input.size() == 3);
+    assert(input.Size() == 3);
 }
 
 #endif
