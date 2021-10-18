@@ -32,7 +32,6 @@ public:
 	[[nodiscard]] static action_t to_action(std::string value);
 	[[nodiscard]] static std::string to_string(action_t value);
 
-	cycle_t() {}
 	cycle_t(uint16_t address, uint8_t value, action_t action);
 	cycle_t(uint16_t address, uint8_t value, std::string action);
 

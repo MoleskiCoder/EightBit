@@ -31,8 +31,6 @@ private:
     ram_t m_ram;
 
 public:
-    state_t();
-
 #ifdef USE_SIMDJSON_JSON
     state_t(simdjson::dom::element serialised);
 #endif
