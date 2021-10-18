@@ -164,6 +164,7 @@
     <ClCompile Include="cycles_t.cpp" />
     <ClCompile Include="cycle_t.cpp" />
     <ClCompile Include="opcode_test_suite_t.cpp" />
+    <ClCompile Include="ram_t.cpp" />
     <ClCompile Include="simdjson\simdjson.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -186,6 +187,7 @@
     <ClInclude Include="cycle_t.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="opcode_test_suite_t.h" />
+    <ClInclude Include="ram_t.h" />
     <ClInclude Include="simdjson\simdjson.h" />
     <ClInclude Include="state_t.h" />
     <ClInclude Include="stdafx.h" />

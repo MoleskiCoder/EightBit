@@ -44,6 +44,9 @@
     <ClCompile Include="cycles_t.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ram_t.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -71,6 +74,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cycles_t.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ram_t.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

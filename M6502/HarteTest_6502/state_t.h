@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <tuple>
-#include <vector>
 
 #ifdef USE_SIMDJSON_JSON
 #	include "simdjson/simdjson.h"
@@ -20,6 +18,8 @@
 #	include <json/json.h>
 #endif
 
+#include "ram_t.h"
+
 class state_t final {
 private:
     uint16_t m_pc = 0xffff;
@@ -28,11 +28,7 @@ private:
     uint8_t m_x = 0xff;
     uint8_t m_y = 0xff;
     uint8_t m_p = 0xff;
-    std::vector<std::pair<uint16_t, uint8_t>> m_ram;
-
-#ifdef USE_JSONCPP_JSON
-    void initialise(const Json::Value& serialised);
-#endif
+    ram_t m_ram;
 
 public:
     state_t();
