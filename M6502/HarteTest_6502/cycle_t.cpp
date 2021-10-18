@@ -4,38 +4,33 @@
 #include <cassert>
 #include <stdexcept>
 
-cycle_t::action_t cycle_t::to_action(std::string value) {
+cycle_t::action_t cycle_t::to_action(std::string value) noexcept {
     if (value == "read")
         return action_t::read;
     if (value == "write")
         return action_t::write;
-    throw new std::out_of_range("Unknown action");
+    return action_t::unknown;
 }
 
-std::string cycle_t::to_string(action_t value) {
+std::string cycle_t::to_string(action_t value) noexcept {
     if (value == action_t::read)
         return "read";
     if (value == action_t::write)
         return "write";
-    throw new std::out_of_range("Unknown action");
+    return "unknown";
 }
 
-cycle_t::cycle_t(uint16_t address, uint8_t value, action_t action)
+cycle_t::cycle_t(uint16_t address, uint8_t value, action_t action) noexcept
 : m_address(address),
   m_value(value),
   m_action(action) {}
 
-cycle_t::cycle_t(uint16_t address, uint8_t value, std::string action)
-: m_address(address),
-  m_value(value),
-  m_action(to_action(action)) {}
-
 #ifdef USE_SIMDJSON_JSON
 
-cycle_t::cycle_t(simdjson::dom::element input)
+cycle_t::cycle_t(simdjson::dom::element input) noexcept
 : cycle_t(input.get_array()) {}
 
-cycle_t::cycle_t(simdjson::dom::array input)
+cycle_t::cycle_t(simdjson::dom::array input) noexcept
 : m_address((uint16_t)(uint64_t)input.at(0)),
   m_value((uint8_t)(uint64_t)input.at(1)),
   m_action(to_action((std::string)input.at(2))) {

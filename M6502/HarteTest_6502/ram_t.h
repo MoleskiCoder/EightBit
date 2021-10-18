@@ -42,13 +42,13 @@ public:
     ram_t(const Json::Value& input);
 #endif
 
-    [[nodiscard]] auto begin() const { return m_bytes.begin(); }
-    [[nodiscard]] auto end() const { return m_bytes.end(); }
+    [[nodiscard]] auto begin() const noexcept { return m_bytes.begin(); }
+    [[nodiscard]] auto end() const noexcept { return m_bytes.end(); }
 
     [[nodiscard]] auto size() const noexcept { return m_bytes.size(); }
 
-    void clear() { m_bytes.clear(); }
+    void clear() noexcept { m_bytes.clear(); }
 
-    [[nodiscard]] auto& at(size_t idx) { return m_bytes.at(idx); }
-    [[nodiscard]] const auto& at(size_t idx) const { return m_bytes.at(idx); }
+    [[nodiscard]] auto& operator[](size_t idx) noexcept { return m_bytes[idx]; }
+    [[nodiscard]] const auto& operator[](size_t idx) const noexcept { return m_bytes[idx]; }
 };

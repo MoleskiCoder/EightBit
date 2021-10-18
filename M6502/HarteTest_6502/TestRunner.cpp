@@ -149,8 +149,8 @@ bool TestRunner::checkState() {
         return false;
 
     for (int i = 0; i < expected_cycles.size(); ++i) {
-        const auto& expected = expected_cycles.at(i);
-        const auto& actual = actual_cycles.at(i);   // actual could be less than expected
+        const auto& expected = expected_cycles[i];
+        const auto& actual = actual_cycles[i];   // actual could be less than expected
         check("Cycle address", expected.address(), actual.address());
         check("Cycle value", expected.value(), actual.value());
         check("Cycle action", expected.action(), actual.action());
