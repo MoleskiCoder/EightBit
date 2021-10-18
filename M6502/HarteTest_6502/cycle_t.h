@@ -24,6 +24,9 @@ public:
 	enum class action_t { read, write, unknown };
 
 private:
+#ifdef USE_SIMDJSON_JSON
+	simdjson::dom::array::iterator m_iterator;
+#endif
 	uint16_t m_address = 0xffff;
 	uint8_t m_value = 0xff;
 	action_t m_action = action_t::unknown;
@@ -40,12 +43,12 @@ public:
 #endif
 
 #ifdef USE_BOOST_JSON
-	cycle_t(const boost::json::value& input);
-	cycle_t(const boost::json::array& input);
+	cycle_t(const boost::json::value& input) noexcept;
+	cycle_t(const boost::json::array& input) noexcept;
 #endif
 
 #ifdef USE_NLOHMANN_JSON
-	cycle_t(const nlohmann::json& input);
+	cycle_t(const nlohmann::json& input) noexcept;
 #endif
 
 #ifdef USE_JSONCPP_JSON

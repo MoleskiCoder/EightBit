@@ -24,7 +24,7 @@ cycles_t::cycles_t(simdjson::dom::array input) {
 #ifdef USE_BOOST_JSON
 
 cycles_t::cycles_t(const boost::json::value& input)
-: cycles_t(input.as_array()) {}
+: cycles_t(input.get_array()) {}
 
 cycles_t::cycles_t(const boost::json::array& input) {
     assert(m_cycles.empty());

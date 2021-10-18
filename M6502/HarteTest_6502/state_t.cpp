@@ -18,12 +18,12 @@ state_t::state_t(const simdjson::dom::element serialised)
 #ifdef USE_BOOST_JSON
 
 state_t::state_t(const boost::json::object& serialised)
-: m_pc((uint16_t)serialised.at("pc").as_int64()),
-  m_s((uint8_t)serialised.at("s").as_int64()),
-  m_a((uint8_t)serialised.at("a").as_int64()),
-  m_x((uint8_t)serialised.at("x").as_int64()),
-  m_y((uint8_t)serialised.at("y").as_int64()),
-  m_p((uint8_t)serialised.at("p").as_int64()),
+: m_pc((uint16_t)serialised.at("pc").get_int64()),
+  m_s((uint8_t)serialised.at("s").get_int64()),
+  m_a((uint8_t)serialised.at("a").get_int64()),
+  m_x((uint8_t)serialised.at("x").get_int64()),
+  m_y((uint8_t)serialised.at("y").get_int64()),
+  m_p((uint8_t)serialised.at("p").get_int64()),
   m_ram(serialised.at("ram")) {}
 
 state_t::state_t(const boost::json::value& serialised)

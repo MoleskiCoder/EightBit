@@ -27,7 +27,7 @@ int main() {
         const auto opcode_test_array = opcode.raw().get_array();
 #endif
 #ifdef USE_BOOST_JSON
-        const auto& opcode_test_array = opcode.raw().as_array();
+        const auto& opcode_test_array = opcode.raw().get_array();
 #endif
 #ifdef USE_NLOHMANN_JSON
         const auto& opcode_test_array = opcode.raw();
