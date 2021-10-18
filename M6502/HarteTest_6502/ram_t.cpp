@@ -18,6 +18,21 @@ ram_t::ram_t(simdjson::dom::array input) {
 
 #endif
 
+#ifdef USE_RAPIDJSON_JSON
+
+ram_t::ram_t(const rapidjson::Value& input) {
+    auto array = input.GetArray();
+    m_bytes.reserve(input.Size());
+    for (const auto& byte : array) {
+        const auto& ram_entry_array = byte.GetArray();
+        assert(ram_entry_array.Size() == 2);
+        const auto address = (uint16_t)ram_entry_array[0].GetInt64();
+        const auto value = (uint8_t)ram_entry_array[1].GetInt64();
+        m_bytes.push_back({ address, value });
+    }
+}
+#endif
+
 #ifdef USE_BOOST_JSON
 
 ram_t::ram_t(const boost::json::array& input) {

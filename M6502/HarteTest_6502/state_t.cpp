@@ -15,6 +15,19 @@ state_t::state_t(const simdjson::dom::element serialised)
 
 #endif
 
+#ifdef USE_RAPIDJSON_JSON
+
+state_t::state_t(const rapidjson::Value& serialised)
+: m_pc((uint16_t)serialised["pc"].GetInt64()),
+  m_s((uint8_t)serialised["s"].GetInt64()),
+  m_a((uint8_t)serialised["a"].GetInt64()),
+  m_x((uint8_t)serialised["x"].GetInt64()),
+  m_y((uint8_t)serialised["y"].GetInt64()),
+  m_p((uint8_t)serialised["p"].GetInt64()),
+  m_ram(serialised["ram"].GetArray()) {}
+
+#endif
+
 #ifdef USE_BOOST_JSON
 
 state_t::state_t(const boost::json::object& serialised)

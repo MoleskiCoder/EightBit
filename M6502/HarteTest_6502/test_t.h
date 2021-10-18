@@ -9,6 +9,11 @@
 #	include "simdjson/simdjson.h"
 #endif
 
+#ifdef USE_RAPIDJSON_JSON
+#	include "rapidjson/rapidjson.h"
+#   include "rapidjson/document.h"
+#endif
+
 #ifdef USE_BOOST_JSON
 #	include <boost/json.hpp>
 #endif
@@ -35,6 +40,10 @@ public:
 
 #ifdef USE_SIMDJSON_JSON
     test_t(simdjson::dom::element serialised);
+#endif
+
+#ifdef USE_RAPIDJSON_JSON
+    test_t(const rapidjson::Value& serialised);
 #endif
 
 #ifdef USE_BOOST_JSON

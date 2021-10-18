@@ -12,6 +12,16 @@ test_t::test_t(const simdjson::dom::element serialised)
 
 #endif
 
+#ifdef USE_RAPIDJSON_JSON
+
+test_t::test_t(const rapidjson::Value& serialised)
+: m_name(serialised["name"].GetString()),
+  m_initial_state(serialised["initial"]),
+  m_final_state(serialised["final"]),
+  m_cycles(serialised["cycles"]) {}
+
+#endif
+
 #ifdef USE_BOOST_JSON
 
 test_t::test_t(const boost::json::object& serialised)

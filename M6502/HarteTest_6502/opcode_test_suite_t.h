@@ -6,6 +6,11 @@
 #	include <boost/json.hpp>
 #endif
 
+#ifdef USE_RAPIDJSON_JSON
+#	include "rapidjson/rapidjson.h"
+#   include "rapidjson/document.h"
+#endif
+
 #ifdef USE_NLOHMANN_JSON
 #   include "nlohmann/json.hpp"
 #endif
@@ -39,6 +44,9 @@ private:
     std::string m_contents;
 #ifdef USE_BOOST_JSON
     boost::json::value m_raw;
+#endif
+#ifdef USE_RAPIDJSON_JSON
+    rapidjson::Document m_raw;
 #endif
 #ifdef USE_NLOHMANN_JSON
     nlohmann::json m_raw;

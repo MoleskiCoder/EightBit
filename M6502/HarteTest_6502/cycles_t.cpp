@@ -21,6 +21,18 @@ cycles_t::cycles_t(simdjson::dom::array input) {
 
 #endif
 
+#ifdef USE_RAPIDJSON_JSON
+
+cycles_t::cycles_t(const rapidjson::Value& input) {
+    assert(m_cycles.empty());
+    auto array = input.GetArray();
+    m_cycles.reserve(array.Size());
+    for (const auto& entry : array)
+        add(entry);
+}
+
+#endif
+
 #ifdef USE_BOOST_JSON
 
 cycles_t::cycles_t(const boost::json::value& input)

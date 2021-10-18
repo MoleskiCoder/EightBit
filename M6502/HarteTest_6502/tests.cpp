@@ -26,6 +26,9 @@ int main() {
 #ifdef USE_SIMDJSON_JSON
         const auto opcode_test_array = opcode.raw().get_array();
 #endif
+#ifdef USE_RAPIDJSON_JSON
+        const auto& opcode_test_array = opcode.raw().GetArray();
+#endif
 #ifdef USE_BOOST_JSON
         const auto& opcode_test_array = opcode.raw().get_array();
 #endif

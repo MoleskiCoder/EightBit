@@ -8,6 +8,10 @@
 #	include "simdjson/simdjson.h"
 #endif
 
+#ifdef USE_RAPIDJSON_JSON
+#	include "rapidjson/rapidjson.h"
+#endif
+
 #ifdef USE_BOOST_JSON
 #	include <boost/json.hpp>
 #endif
@@ -27,6 +31,10 @@ private:
 public:
 #ifdef USE_SIMDJSON_JSON
     ram_t(simdjson::dom::array input);
+#endif
+
+#ifdef USE_RAPIDJSON_JSON
+    ram_t(const rapidjson::Value& input);
 #endif
 
 #ifdef USE_BOOST_JSON

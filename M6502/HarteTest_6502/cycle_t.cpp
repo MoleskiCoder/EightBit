@@ -40,6 +40,17 @@ cycle_t::cycle_t(simdjson::dom::array input) noexcept
 
 #endif
 
+#ifdef USE_RAPIDJSON_JSON
+
+cycle_t::cycle_t(const rapidjson::Value& input)
+: m_address((uint8_t)input[0].GetInt64()),
+  m_value((uint8_t)input[1].GetInt64()),
+  m_action(to_action(input[2].GetString())) {
+    assert(input.size() == 3);
+}
+
+#endif
+
 #ifdef USE_BOOST_JSON
 
 cycle_t::cycle_t(const boost::json::value& input) noexcept

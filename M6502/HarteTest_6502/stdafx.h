@@ -13,15 +13,21 @@
 
 //#define TEST_JSON_PERFORMANCE
 
-#define USE_SIMDJSON_JSON	// 13 seconds
-//#define USE_BOOST_JSON	// 26 seconds
-//#define USE_NLOHMANN_JSON	// 56 seconds
-//#define USE_JSONCPP_JSON	// 89 seconds
+#define USE_SIMDJSON_JSON	// 13 seconds (24)
+//#define USE_RAPIDJSON_JSON	// 19 seconds (32)
+//#define USE_BOOST_JSON	// 26 seconds (32)
+//#define USE_NLOHMANN_JSON	// 56 seconds (79)
+//#define USE_JSONCPP_JSON	// 80 seconds (91)
 
 #ifdef USE_SIMDJSON_JSON
 #	define JSON_PREFER_PASS_BY_VALUE
 #	define JSON_PREFER_REUSE_OF_PARSER
 #	include "simdjson/simdjson.h"
+#endif
+
+#ifdef USE_RAPIDJSON_JSON
+#	include "rapidjson/rapidjson.h"
+#   include "rapidjson/document.h"
 #endif
 
 #ifdef USE_BOOST_JSON
