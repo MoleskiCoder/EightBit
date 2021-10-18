@@ -6,12 +6,14 @@ cycles_t::cycles_t(size_t reserved) {
 }
 
 void cycles_t::add(const cycle_t& cycle) {
+    assert(m_cycles.capacity() >= (m_cycles.size() + 1));
     m_cycles.push_back(cycle);
 }
 
 #ifdef USE_SIMDJSON_JSON
 
 cycles_t::cycles_t(simdjson::dom::array input) {
+    assert(m_cycles.empty());
     m_cycles.reserve(input.size());
     for (const auto& entry : input)
         add(entry);
@@ -25,6 +27,7 @@ cycles_t::cycles_t(const boost::json::value& input)
 : cycles_t(input.as_array()) {}
 
 cycles_t::cycles_t(const boost::json::array& input) {
+    assert(m_cycles.empty());
     m_cycles.reserve(input.size());
     for (const auto& entry : input)
         add(entry);
@@ -35,6 +38,7 @@ cycles_t::cycles_t(const boost::json::array& input) {
 #ifdef USE_NLOHMANN_JSON
 
 cycles_t::cycles_t(const nlohmann::json& input) {
+    assert(m_cycles.empty());
     m_cycles.reserve(input.size());
     for (const auto& entry : input)
         add(entry);
@@ -45,6 +49,7 @@ cycles_t::cycles_t(const nlohmann::json& input) {
 #ifdef USE_JSONCPP_JSON
 
 cycles_t::cycles_t(const Json::Value& input) {
+    assert(m_cycles.empty());
     m_cycles.reserve(input.size());
     for (const auto& entry : input)
         add(entry);
