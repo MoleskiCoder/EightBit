@@ -14,6 +14,7 @@ int main() {
 
     const auto start_time = std::chrono::steady_clock::now();
 
+    int bad_opcode_count = 0;
     for (const auto& entry : std::filesystem::directory_iterator{ location }) {
 
         const auto path = entry.path();
@@ -59,10 +60,15 @@ int main() {
             }
 #endif
         }
+        if (opcode_bad)
+            ++bad_opcode_count;
     }
 
     const auto finish_time = std::chrono::steady_clock::now();
     const auto elapsed_time = finish_time - start_time;
     const auto seconds = std::chrono::duration_cast<std::chrono::duration<double>>(elapsed_time).count();
-    std::cout << "Elapsed time: " << seconds << " seconds" << std::endl;
+    std::cout
+        << "Elapsed time: " << seconds << " seconds"
+        << ", bad opcode count: " << bad_opcode_count
+        << std::endl;
 }

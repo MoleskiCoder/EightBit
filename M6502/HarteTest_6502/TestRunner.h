@@ -8,6 +8,8 @@
 #include <Bus.h>
 #include <Ram.h>
 #include <mos6502.h>
+#include <Disassembly.h>
+#include <Symbols.h>
 
 #include "test_t.h"
 
@@ -15,6 +17,9 @@ class TestRunner final : public EightBit::Bus {
 private:
     EightBit::Ram m_ram = 0x10000;
     EightBit::MOS6502 m_cpu = { *this };
+    EightBit::Symbols m_symbols;
+    EightBit::Disassembly m_disassembler = { *this, m_cpu, m_symbols };
+
     const test_t& m_test;
 
     std::ostringstream m_os;

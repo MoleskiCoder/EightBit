@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "TestRunner.h"
 
-#include <Disassembly.h>
-
 TestRunner::TestRunner(const test_t& test)
 : m_test(test) {}
 
@@ -176,12 +174,21 @@ bool TestRunner::check() {
     initialise();
     raisePOWER();
     initialiseState();
+    const auto pc = CPU().PC();
     const int cycles = CPU().step();
     const auto valid = checkState();
     if (m_cycle_count_mismatch) {
         if (cycles == 1) {
             m_messages.push_back("Unimplemented");
         } else {
+
+            try {
+                os() << m_disassembler.disassemble(pc.word);
+            } catch (const std::domain_error& error) {
+                os() << "Disassembly problem: " << error.what();
+            }
+            m_messages.push_back(os().str());
+            os().str("");
 
             os()
                 << std::dec << std::setfill(' ')
