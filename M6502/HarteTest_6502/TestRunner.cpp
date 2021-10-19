@@ -130,7 +130,7 @@ void TestRunner::initialiseState() {
     CPU().Y() = starting.y();
     CPU().P() = starting.p();
     const auto& ram = starting.ram();
-    for (const auto& entry : ram)
+    for (auto entry : ram)
         RAM().poke(entry.address(), entry.value());
 
     m_actualCycles.clear();
@@ -163,7 +163,7 @@ bool TestRunner::checkState() {
 
     const auto& ram = finished.ram();
     bool ram_problem = false;
-    for (const auto& entry : ram) {
+    for (auto entry : ram) {
         const auto ram_good = check("RAM",  entry.address(), entry.value(), RAM().peek(entry.address()));
         if (!ram_good && !ram_problem)
             ram_problem = true;

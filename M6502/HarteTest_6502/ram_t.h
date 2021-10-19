@@ -52,7 +52,7 @@ public:
     ram_t(const Json::Value& input);
 #endif
 
-    void add(const byte_t& byte);
+    void add(byte_t byte);
 
     [[nodiscard]] auto begin() const noexcept { return m_bytes.begin(); }
     [[nodiscard]] auto end() const noexcept { return m_bytes.end(); }
@@ -62,5 +62,5 @@ public:
     void clear() noexcept { m_bytes.clear(); }
 
     [[nodiscard]] auto& operator[](size_t idx) noexcept { return m_bytes[idx]; }
-    [[nodiscard]] const auto& operator[](size_t idx) const noexcept { return m_bytes[idx]; }
+    [[nodiscard]] auto operator[](size_t idx) const noexcept { return m_bytes[idx]; }
 };
