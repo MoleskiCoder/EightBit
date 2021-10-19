@@ -25,7 +25,7 @@ byte_t::byte_t(simdjson::dom::array input) noexcept
 #ifdef USE_RAPIDJSON_JSON
 
 byte_t::byte_t(const rapidjson::Value& input)
-: m_address((uint8_t)input[0].GetInt64()),
+: m_address((uint16_t)input[0].GetInt64()),
   m_value((uint8_t)input[1].GetInt64()) {
     assert(input.Size() == 2);
 }
