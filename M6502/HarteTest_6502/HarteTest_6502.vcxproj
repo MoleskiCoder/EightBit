@@ -161,6 +161,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="byte_t.cpp" />
     <ClCompile Include="cycles_t.cpp" />
     <ClCompile Include="cycle_t.cpp" />
     <ClCompile Include="opcode_test_suite_t.cpp" />
@@ -183,6 +184,7 @@
     <ClCompile Include="test_t.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="byte_t.h" />
     <ClInclude Include="cycles_t.h" />
     <ClInclude Include="cycle_t.h" />
     <ClInclude Include="nlohmann\json.hpp" />
@@ -225,7 +227,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="rapidjson\rapidjson-master.zip" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

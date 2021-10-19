@@ -26,7 +26,8 @@
 #endif
 
 #ifdef USE_RAPIDJSON_JSON
-#	include "rapidjson/rapidjson.h"
+#	define RAPIDJSON_HAS_STDSTRING	1
+#	define RAPIDJSON_SSE42
 #   include "rapidjson/document.h"
 #endif
 

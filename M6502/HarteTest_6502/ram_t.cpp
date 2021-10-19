@@ -1,19 +1,18 @@
 #include "stdafx.h"
 #include "ram_t.h"
 
+void ram_t::add(const byte_t& byte) {
+    assert(m_bytes.capacity() >= (m_bytes.size() + 1));
+    m_bytes.push_back(byte);
+}
+
 #ifdef USE_SIMDJSON_JSON
 
 ram_t::ram_t(simdjson::dom::array input) {
+    assert(m_bytes.empty());
     m_bytes.reserve(input.size());
-    for (const auto byte : input) {
-        assert(byte.is_array());
-        const auto ram_entry_array = byte.get_array();
-        assert(byte.size() == 2);
-        auto iterator = byte.begin();
-        const auto address = (uint16_t)(uint64_t)*iterator;
-        const auto value = (uint8_t)(uint64_t)*++iterator;
-        m_bytes.push_back({ address, value });
-    }
+    for (const auto& entry : input)
+        add(entry);
 }
 
 #endif
@@ -21,27 +20,21 @@ ram_t::ram_t(simdjson::dom::array input) {
 #ifdef USE_RAPIDJSON_JSON
 
 ram_t::ram_t(const rapidjson::Value& input) {
+    assert(m_bytes.empty());
     m_bytes.reserve(input.Size());
-    for (const auto& byte : input.GetArray()) {
-        assert(byte.Size() == 2);
-        const auto address = (uint16_t)byte[0].GetInt64();
-        const auto value = (uint8_t)byte[1].GetInt64();
-        m_bytes.push_back({ address, value });
-    }
+    for (const auto& entry : input.GetArray())
+        add(entry);
 }
+
 #endif
 
 #ifdef USE_BOOST_JSON
 
 ram_t::ram_t(const boost::json::array& input) {
+    assert(m_bytes.empty());
     m_bytes.reserve(input.size());
-    for (const auto& byte : input) {
-        const auto& ram_entry_array = byte.get_array();
-        assert(ram_entry_array.size() == 2);
-        const auto address = (uint16_t)ram_entry_array[0].get_int64();
-        const auto value = (uint8_t)ram_entry_array[1].get_int64();
-        m_bytes.push_back({ address, value });
-    }
+    for (const auto& entry : input)
+        add(entry);
 }
 
 ram_t::ram_t(const boost::json::value& input)
@@ -52,15 +45,10 @@ ram_t::ram_t(const boost::json::value& input)
 #ifdef USE_NLOHMANN_JSON
 
 ram_t::ram_t(const nlohmann::json& input) {
-    assert(input.is_array());
+    assert(m_bytes.empty());
     m_bytes.reserve(input.size());
-    for (const auto& byte : input) {
-        assert(byte.is_array());
-        assert(byte.size() == 2);
-        const auto address = byte[0].get<uint16_t>();
-        const auto value = byte[1].get<uint8_t>();
-        m_bytes.push_back({ address, value });
-    }
+    for (const auto& entry : input)
+        add(entry);
 }
 
 #endif
@@ -68,15 +56,10 @@ ram_t::ram_t(const nlohmann::json& input) {
 #ifdef USE_JSONCPP_JSON
 
 ram_t::ram_t(const Json::Value& input) {
-    assert(input.isArray());
+    assert(m_bytes.empty());
     m_bytes.reserve(input.size());
-    for (const auto& byte : input) {
-        assert(byte.isArray());
-        assert(byte.size() == 2);
-        const auto address = byte[0].asUInt();
-        const auto value = byte[1].asUInt();
-        m_bytes.push_back({ address, value });
-    }
+    for (const auto& entry : input)
+        add(entry);
 }
 
 #endif

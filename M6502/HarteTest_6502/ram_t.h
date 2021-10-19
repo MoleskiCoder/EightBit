@@ -9,7 +9,7 @@
 #endif
 
 #ifdef USE_RAPIDJSON_JSON
-#	include "rapidjson/rapidjson.h"
+#   include "rapidjson/document.h"
 #endif
 
 #ifdef USE_BOOST_JSON
@@ -24,9 +24,11 @@
 #	include <json/json.h>
 #endif
 
-class ram_t {
+#include "byte_t.h"
+
+class ram_t final {
 private:
-    std::vector<std::pair<uint16_t, uint8_t>> m_bytes;
+    std::vector<byte_t> m_bytes;
 
 public:
 #ifdef USE_SIMDJSON_JSON
@@ -49,6 +51,8 @@ public:
 #ifdef USE_JSONCPP_JSON
     ram_t(const Json::Value& input);
 #endif
+
+    void add(const byte_t& byte);
 
     [[nodiscard]] auto begin() const noexcept { return m_bytes.begin(); }
     [[nodiscard]] auto end() const noexcept { return m_bytes.end(); }

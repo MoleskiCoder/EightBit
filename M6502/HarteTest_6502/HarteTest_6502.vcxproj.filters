@@ -50,6 +50,9 @@
     <ClCompile Include="ram_t.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="byte_t.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -145,11 +148,11 @@
     <ClInclude Include="rapidjson\writer.h">
       <Filter>Header Files\rapidjson</Filter>
     </ClInclude>
+    <ClInclude Include="byte_t.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="rapidjson\rapidjson-master.zip">
-      <Filter>Header Files\rapidjson</Filter>
-    </None>
   </ItemGroup>
 </Project>

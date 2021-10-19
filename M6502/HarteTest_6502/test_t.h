@@ -10,7 +10,6 @@
 #endif
 
 #ifdef USE_RAPIDJSON_JSON
-#	include "rapidjson/rapidjson.h"
 #   include "rapidjson/document.h"
 #endif
 
