@@ -16,7 +16,7 @@ byte_t::byte_t(simdjson::dom::element input) noexcept
 byte_t::byte_t(simdjson::dom::array input) noexcept
 : m_iterator(input.begin()),
   m_address((uint16_t)(uint64_t)*m_iterator),
-  m_value((uint8_t)(uint64_t)* ++m_iterator) {
+  m_value((uint8_t)(uint64_t)*++m_iterator) {
     assert(input.size() == 2);
 }
 
