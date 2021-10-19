@@ -24,9 +24,6 @@
 
 class byte_t final {
 private:
-#ifdef USE_SIMDJSON_JSON
-	simdjson::dom::array::iterator m_iterator;
-#endif
 	uint16_t m_address = 0xffff;
 	uint8_t m_value = 0xff;
 

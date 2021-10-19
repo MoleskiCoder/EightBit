@@ -28,9 +28,6 @@ public:
 	enum class action_t { read, write, unknown };
 
 private:
-#ifdef USE_SIMDJSON_JSON
-	simdjson::dom::array::iterator m_iterator;
-#endif
 	uint16_t m_address = 0xffff;
 	uint8_t m_value = 0xff;
 	action_t m_action = action_t::unknown;

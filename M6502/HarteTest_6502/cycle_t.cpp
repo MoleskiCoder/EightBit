@@ -31,10 +31,9 @@ cycle_t::cycle_t(simdjson::dom::element input) noexcept
 : cycle_t(input.get_array()) {}
 
 cycle_t::cycle_t(simdjson::dom::array input) noexcept
-: m_iterator(input.begin()),
-  m_address((uint16_t)(uint64_t)*m_iterator),
-  m_value((uint8_t)(uint64_t)*++m_iterator),
-  m_action(to_action((std::string)*++m_iterator)) {
+: m_address((uint16_t)(uint64_t)input.at(0)),
+  m_value((uint8_t)(uint64_t)input.at(1)),
+  m_action(to_action((std::string)input.at(2))) {
     assert(input.size() == 3);
 }
 
