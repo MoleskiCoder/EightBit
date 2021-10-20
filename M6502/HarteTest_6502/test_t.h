@@ -9,16 +9,13 @@
 
 class test_t final {
 private:
-    std::string m_name;
-    state_t m_initial_state;
-    state_t m_final_state;
-    cycles_t m_cycles;
+    simdjson::dom::element m_raw;
 
 public:
-    test_t(simdjson::dom::element serialised);
+    test_t(simdjson::dom::element input);
 
-    [[nodiscard]] constexpr const auto& name() const noexcept { return m_name; }
-    [[nodiscard]] constexpr const auto& initial_state() const noexcept { return m_initial_state; }
-    [[nodiscard]] constexpr const auto& final_state() const noexcept { return m_final_state; }
-    [[nodiscard]] constexpr const auto& cycles() const noexcept { return m_cycles; }
+    [[nodiscard]] const auto name() const noexcept { return m_raw["name"]; }
+    [[nodiscard]] const auto initial_state() const noexcept { return state_t(m_raw["initial"]); }
+    [[nodiscard]] const auto final_state() const noexcept { return state_t(m_raw["final"]); }
+    [[nodiscard]] const auto cycles() const noexcept { return cycles_t(m_raw["cycles"].get_array()); }
 };

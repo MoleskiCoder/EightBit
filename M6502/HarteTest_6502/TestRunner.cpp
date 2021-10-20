@@ -27,20 +27,20 @@ void TestRunner::addActualCycle(const cycle_t& value) {
     m_actualCycles.add(value);
 }
 
-void TestRunner::addActualCycle(uint16_t address, uint8_t value, cycle_t::action_t action) {
+void TestRunner::addActualCycle(uint16_t address, uint8_t value, std::string action) {
     addActualCycle({ address, value, action });
 }
 
-void TestRunner::addActualCycle(EightBit::register16_t address, uint8_t value, cycle_t::action_t action) {
+void TestRunner::addActualCycle(EightBit::register16_t address, uint8_t value, std::string action) {
     addActualCycle(address.word, value, action);
 }
 
 void TestRunner::addActualReadCycle(EightBit::register16_t address, uint8_t value) {
-    addActualCycle(address, value, cycle_t::action_t::read);
+    addActualCycle(address, value, "read");
 }
 
 void TestRunner::addActualWriteCycle(EightBit::register16_t address, uint8_t value) {
-    addActualCycle(address, value, cycle_t::action_t::write);
+    addActualCycle(address, value, "write");
 }
 
 void TestRunner::dumpCycles(std::string which, const cycles_t& events) {
@@ -58,7 +58,7 @@ void TestRunner::dumpCycle(const cycle_t& cycle) {
     os()
         << "Address: " << std::setw(4) << cycle.address()
         << ", value: " << std::setw(2) << (int)cycle.value()
-        << ", action: " << cycle_t::to_string(cycle.action());
+        << ", action: " << cycle.action();
     m_messages.push_back(os().str());
     os().str("");
 }
@@ -98,11 +98,11 @@ void TestRunner::raise(std::string what, uint8_t expected, uint8_t actual) {
     os().str("");
 }
 
-void TestRunner::raise(std::string what, cycle_t::action_t expected, cycle_t::action_t actual) {
+void TestRunner::raise(std::string what, std::string expected, std::string actual) {
     os()
         << what
-        << ": expected: " << cycle_t::to_string(expected)
-        << ", actual: " << cycle_t::to_string(actual);
+        << ": expected: " << expected
+        << ", actual: " << actual;
     m_messages.push_back(os().str());
     os().str("");
 }

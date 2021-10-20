@@ -33,7 +33,7 @@ private:
 
     void raise(std::string what, uint16_t expected, uint16_t actual);
     void raise(std::string what, uint8_t expected, uint8_t actual);
-    void raise(std::string what, cycle_t::action_t expected, cycle_t::action_t actual);
+    void raise(std::string what, std::string expected, std::string actual);
 
     template<class T>
     bool check(std::string what, T expected, T actual) {
@@ -46,8 +46,8 @@ private:
     bool check(std::string what, uint16_t address, uint8_t expected, uint8_t actual);
 
     void addActualCycle(const cycle_t& value);
-    void addActualCycle(uint16_t address, uint8_t value, cycle_t::action_t action);
-    void addActualCycle(EightBit::register16_t address, uint8_t value, cycle_t::action_t action);
+    void addActualCycle(uint16_t address, uint8_t value, std::string action);
+    void addActualCycle(EightBit::register16_t address, uint8_t value, std::string action);
 
     void addActualReadCycle(EightBit::register16_t address, uint8_t value);
     void addActualWriteCycle(EightBit::register16_t address, uint8_t value);

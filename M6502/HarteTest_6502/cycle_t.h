@@ -6,24 +6,18 @@
 #include "simdjson/simdjson.h"
 
 class cycle_t final {
-public:
-	enum class action_t { read, write, unknown };
-
 private:
-	uint16_t m_address = 0xffff;
-	uint8_t m_value = 0xff;
-	action_t m_action = action_t::unknown;
+	const uint16_t m_address = 0xffff;
+	const uint8_t m_value = 0xff;
+	const std::string m_action;
 
 public:
-	[[nodiscard]] static std::string to_string(action_t value) noexcept;
-	[[nodiscard]] static action_t to_action(std::string value) noexcept;
-
-	cycle_t(uint16_t address, uint8_t value, action_t action) noexcept;
+	cycle_t(uint16_t address, uint8_t value, std::string action) noexcept;
 
 	cycle_t(simdjson::dom::element input) noexcept;
 	cycle_t(simdjson::dom::array input) noexcept;
 
 	[[nodiscard]] constexpr auto address() const noexcept { return m_address; }
 	[[nodiscard]] constexpr auto value() const noexcept { return m_value; }
-	[[nodiscard]] constexpr auto action() const noexcept { return m_action; }
+	[[nodiscard]] auto action() const noexcept { return m_action; }
 };

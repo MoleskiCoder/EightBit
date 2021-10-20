@@ -23,6 +23,5 @@ public:
 
 	void clear() { m_cycles.clear(); }
 
-	[[nodiscard]] auto& operator[](size_t idx) noexcept { return m_cycles[idx]; }
 	[[nodiscard]] const auto& operator[](size_t idx) const noexcept { return m_cycles[idx]; }
 };
