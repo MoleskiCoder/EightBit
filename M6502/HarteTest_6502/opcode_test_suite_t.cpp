@@ -6,14 +6,7 @@
 #include <fstream>
 #include <filesystem>
 
-#ifdef JSON_PREFER_REUSE_OF_PARSER
-#ifdef USE_JSONCPP_JSON
-std::unique_ptr<Json::CharReader> opcode_test_suite_t::m_parser;
-#endif
-#ifdef USE_SIMDJSON_JSON
 simdjson::dom::parser opcode_test_suite_t::m_parser;
-#endif
-#endif
 
 std::string opcode_test_suite_t::read(std::string path) {
     std::ifstream file(path, std::ios::in | std::ios::binary);
@@ -30,63 +23,8 @@ void opcode_test_suite_t::load() {
     m_contents = read(path());
 }
 
-#ifdef USE_BOOST_JSON
-
-void opcode_test_suite_t::parse() {
-    m_raw = boost::json::parse(m_contents);
-    m_contents.clear();
-    m_contents.shrink_to_fit();}
-
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-
-void opcode_test_suite_t::parse() {
-    m_raw = nlohmann::json::parse(m_contents);
-    m_contents.clear();
-    m_contents.shrink_to_fit();}
-
-#endif
-
-#ifdef USE_JSONCPP_JSON
-
-void opcode_test_suite_t::parse() {
-#ifdef JSON_PREFER_REUSE_OF_PARSER
-    if (m_parser == nullptr)
-        m_parser.reset(Json::CharReaderBuilder().newCharReader());
-    if (!m_parser->parse(m_contents.data(), m_contents.data() + m_contents.size(), &m_raw, nullptr))
-        throw std::runtime_error("Unable to parse tests");
-#else
-    std::unique_ptr<Json::CharReader> parser(Json::CharReaderBuilder().newCharReader());
-    if (!parser->parse(m_contents.data(), m_contents.data() + m_contents.size(), &m_raw, nullptr))
-        throw std::runtime_error("Unable to parse tests");
-#endif
-    m_contents.clear();
-    m_contents.shrink_to_fit();
-}
-
-#endif
-
-#ifdef USE_SIMDJSON_JSON
-
 void opcode_test_suite_t::parse() {
     m_raw = m_parser.parse(m_contents);
     m_contents.clear();
     m_contents.shrink_to_fit();
 }
-
-#endif
-
-#ifdef USE_RAPIDJSON_JSON
-
-void opcode_test_suite_t::parse() {
-#ifdef JSON_INSITU_PARSE
-    m_raw.ParseInsitu((char*)m_contents.c_str());
-#else
-    m_raw.Parse(m_contents);
-    m_contents.clear();
-    m_contents.shrink_to_fit();
-#endif
-}
-
-#endif

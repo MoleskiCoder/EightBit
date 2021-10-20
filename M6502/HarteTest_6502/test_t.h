@@ -2,25 +2,7 @@
 
 #include <string>
 
-#ifdef USE_SIMDJSON_JSON
-#	include "simdjson/simdjson.h"
-#endif
-
-#ifdef USE_RAPIDJSON_JSON
-#   include "rapidjson/document.h"
-#endif
-
-#ifdef USE_BOOST_JSON
-#	include <boost/json.hpp>
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-#   include "nlohmann/json.hpp"
-#endif
-
-#ifdef USE_JSONCPP_JSON
-#	include <json/json.h>
-#endif
+#include "simdjson/simdjson.h"
 
 #include "cycles_t.h"
 #include "state_t.h"
@@ -33,27 +15,7 @@ private:
     cycles_t m_cycles;
 
 public:
-
-#ifdef USE_SIMDJSON_JSON
     test_t(simdjson::dom::element serialised);
-#endif
-
-#ifdef USE_RAPIDJSON_JSON
-    test_t(const rapidjson::Value& serialised);
-#endif
-
-#ifdef USE_BOOST_JSON
-    test_t(const boost::json::object& serialised);
-    test_t(const boost::json::value& serialised);
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-    test_t(const nlohmann::json& serialised);
-#endif
-
-#ifdef USE_JSONCPP_JSON
-    test_t(const Json::Value& serialised);
-#endif
 
     [[nodiscard]] constexpr const auto& name() const noexcept { return m_name; }
     [[nodiscard]] constexpr const auto& initial_state() const noexcept { return m_initial_state; }

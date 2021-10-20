@@ -3,25 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-#ifdef USE_SIMDJSON_JSON
-#	include "simdjson/simdjson.h"
-#endif
-
-#ifdef USE_RAPIDJSON_JSON
-#   include "rapidjson/document.h"
-#endif
-
-#ifdef USE_BOOST_JSON
-#	include <boost/json.hpp>
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-#   include "nlohmann/json.hpp"
-#endif
-
-#ifdef USE_JSONCPP_JSON
-#	include <json/json.h>
-#endif
+#include "simdjson/simdjson.h"
 
 #include "byte_t.h"
 
@@ -30,26 +12,7 @@ private:
     std::vector<byte_t> m_bytes;
 
 public:
-#ifdef USE_SIMDJSON_JSON
     ram_t(simdjson::dom::array input);
-#endif
-
-#ifdef USE_RAPIDJSON_JSON
-    ram_t(const rapidjson::Value& input);
-#endif
-
-#ifdef USE_BOOST_JSON
-    ram_t(const boost::json::value& input);
-    ram_t(const boost::json::array& input);
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-    ram_t(const nlohmann::json& input);
-#endif
-
-#ifdef USE_JSONCPP_JSON
-    ram_t(const Json::Value& input);
-#endif
 
     void add(byte_t byte);
 

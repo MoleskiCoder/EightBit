@@ -2,25 +2,7 @@
 
 #include <vector>
 
-#ifdef USE_SIMDJSON_JSON
-#	include "simdjson/simdjson.h"
-#endif
-
-#ifdef USE_RAPIDJSON_JSON
-#   include "rapidjson/document.h"
-#endif
-
-#ifdef USE_BOOST_JSON
-#	include <boost/json.hpp>
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-#   include "nlohmann/json.hpp"
-#endif
-
-#ifdef USE_JSONCPP_JSON
-#	include <json/json.h>
-#endif
+#include "simdjson/simdjson.h"
 
 #include "cycle_t.h"
 
@@ -30,27 +12,7 @@ private:
 
 public:
 	cycles_t(size_t reserved = 10);
-
-#ifdef USE_SIMDJSON_JSON
 	cycles_t(simdjson::dom::array input);
-#endif
-
-#ifdef USE_RAPIDJSON_JSON
-	cycles_t(const rapidjson::Value& input);
-#endif
-
-#ifdef USE_BOOST_JSON
-	cycles_t(const boost::json::value& input);
-	cycles_t(const boost::json::array& input);
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-	cycles_t(const nlohmann::json& input);
-#endif
-
-#ifdef USE_JSONCPP_JSON
-	cycles_t(const Json::Value& input);
-#endif
 
 	void add(const cycle_t& cycle);
 

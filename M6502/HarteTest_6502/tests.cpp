@@ -24,23 +24,7 @@ int main() {
         opcode.load();
         opcode.parse();
 
-#ifdef USE_SIMDJSON_JSON
         const auto opcode_test_array = opcode.raw().get_array();
-#endif
-#ifdef USE_RAPIDJSON_JSON
-        const auto& opcode_test_array = opcode.raw().GetArray();
-#endif
-#ifdef USE_BOOST_JSON
-        const auto& opcode_test_array = opcode.raw().get_array();
-#endif
-#ifdef USE_NLOHMANN_JSON
-        const auto& opcode_test_array = opcode.raw();
-        assert(opcode_test_array.is_array());
-#endif
-#ifdef USE_JSONCPP_JSON
-        const auto& opcode_test_array = opcode.raw();
-        assert(opcode_test_array.is_array());
-#endif
 
         bool opcode_bad = false;
         for (const auto& opcode_test_element : opcode_test_array) {
@@ -48,7 +32,6 @@ int main() {
             const auto opcode_test = test_t(opcode_test_element);
 
             TestRunner runner(opcode_test);
-#ifndef TEST_JSON_PERFORMANCE
             const auto good = runner.check();
             if (!good) {
                 if (!opcode_bad) {
@@ -58,7 +41,6 @@ int main() {
                     opcode_bad = true;
                 }
             }
-#endif
         }
         if (opcode_bad)
             ++bad_opcode_count;

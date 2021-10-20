@@ -2,25 +2,7 @@
 
 #include <cstdint>
 
-#ifdef USE_SIMDJSON_JSON
-#	include "simdjson/simdjson.h"
-#endif
-
-#ifdef USE_RAPIDJSON_JSON
-#   include "rapidjson/document.h"
-#endif
-
-#ifdef USE_BOOST_JSON
-#	include <boost/json.hpp>
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-#   include "nlohmann/json.hpp"
-#endif
-
-#ifdef USE_JSONCPP_JSON
-#	include <json/json.h>
-#endif
+#include "simdjson/simdjson.h"
 
 #include "ram_t.h"
 
@@ -35,26 +17,7 @@ private:
     ram_t m_ram;
 
 public:
-#ifdef USE_SIMDJSON_JSON
     state_t(simdjson::dom::element serialised);
-#endif
-
-#ifdef USE_RAPIDJSON_JSON
-    state_t(const rapidjson::Value& serialised);
-#endif
-
-#ifdef USE_BOOST_JSON
-    state_t(const boost::json::object& serialised);
-    state_t(const boost::json::value& serialised);
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-    state_t(const nlohmann::json& serialised);
-#endif
-
-#ifdef USE_JSONCPP_JSON
-    state_t(const Json::Value& serialised);
-#endif
 
     [[nodiscard]] constexpr auto pc() const noexcept { return m_pc; }
     [[nodiscard]] constexpr auto s() const noexcept { return m_s; }

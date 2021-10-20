@@ -24,12 +24,8 @@ cycle_t::cycle_t(uint16_t address, uint8_t value, action_t action) noexcept
   m_value(value),
   m_action(action) {}
 
-#ifdef USE_SIMDJSON_JSON
-
 cycle_t::cycle_t(simdjson::dom::element input) noexcept
 : cycle_t(input.get_array()) {}
-
-#ifdef JSON_PREFER_ITERATOR_TO_INDEX
 
 cycle_t::cycle_t(simdjson::dom::array input) noexcept {
     assert(input.size() == 3);
@@ -38,61 +34,3 @@ cycle_t::cycle_t(simdjson::dom::array input) noexcept {
     m_value = (uint8_t)(int64_t)*++iterator;
     m_action = to_action((std::string)*++iterator);
 }
-
-#else
-
-cycle_t::cycle_t(simdjson::dom::array input) noexcept
-: m_address((uint16_t)(int64_t)input.at(0)),
-  m_value((uint8_t)(int64_t)input.at(1)),
-  m_action(to_action((std::string)input.at(2))) {
-    assert(input.size() == 3);
-}
-
-#endif
-
-#endif
-
-#ifdef USE_RAPIDJSON_JSON
-
-cycle_t::cycle_t(const rapidjson::Value& input)
-: m_address((uint16_t)input[0].GetInt64()),
-  m_value((uint8_t)input[1].GetInt64()),
-  m_action(to_action(input[2].GetString())) {}
-
-#endif
-
-#ifdef USE_BOOST_JSON
-
-cycle_t::cycle_t(const boost::json::value& input) noexcept
-: cycle_t(input.get_array()) {}
-
-cycle_t::cycle_t(const boost::json::array& input) noexcept
-: m_address((uint16_t)input[0].get_int64()),
-  m_value((uint8_t)input[1].get_int64()),
-  m_action(to_action((std::string)input[2].get_string())) {
-    assert(input.size() == 3);
-};
-
-#endif
-
-#ifdef USE_NLOHMANN_JSON
-
-cycle_t::cycle_t(const nlohmann::json& input) noexcept
-: m_address(input[0].get<uint16_t>()),
-  m_value(input[1].get<uint8_t>()),
-  m_action(to_action(input[2].get<std::string>())) {
-    assert(input.size() == 3);
-}
-
-#endif
-
-#ifdef USE_JSONCPP_JSON
-
-cycle_t::cycle_t(const Json::Value& input)
-: m_address((uint16_t)input[0].asInt64()),
-  m_value((uint8_t)input[1].asInt64()),
-  m_action(to_action(input[2].asString())) {
-    assert(input.size() == 3);
-}
-
-#endif
