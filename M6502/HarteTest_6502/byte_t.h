@@ -28,7 +28,6 @@ private:
 	uint8_t m_value = 0xff;
 
 public:
-	byte_t(uint16_t address, uint8_t value) noexcept;
 
 #ifdef USE_SIMDJSON_JSON
 	byte_t(simdjson::dom::element input) noexcept;

@@ -2,7 +2,6 @@
 #include "cycle_t.h"
 
 #include <cassert>
-#include <stdexcept>
 
 cycle_t::action_t cycle_t::to_action(std::string value) noexcept {
     if (value == "read")
@@ -31,8 +30,8 @@ cycle_t::cycle_t(simdjson::dom::element input) noexcept
 : cycle_t(input.get_array()) {}
 
 cycle_t::cycle_t(simdjson::dom::array input) noexcept
-: m_address((uint16_t)(uint64_t)input.at(0)),
-  m_value((uint8_t)(uint64_t)input.at(1)),
+: m_address((uint16_t)(int64_t)input.at(0)),
+  m_value((uint8_t)(int64_t)input.at(1)),
   m_action(to_action((std::string)input.at(2))) {
     assert(input.size() == 3);
 }
@@ -78,8 +77,8 @@ cycle_t::cycle_t(const nlohmann::json& input) noexcept
 #ifdef USE_JSONCPP_JSON
 
 cycle_t::cycle_t(const Json::Value& input)
-: m_address(input[0].asUInt()),
-  m_value(input[1].asUInt()),
+: m_address((uint16_t)input[0].asInt64()),
+  m_value((uint8_t)input[1].asInt64()),
   m_action(to_action(input[2].asString())) {
     assert(input.size() == 3);
 }

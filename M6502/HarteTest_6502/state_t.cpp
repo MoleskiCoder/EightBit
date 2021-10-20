@@ -5,12 +5,12 @@
 #ifdef USE_SIMDJSON_JSON
 
 state_t::state_t(const simdjson::dom::element serialised)
-: m_pc((uint16_t)(uint64_t)serialised["pc"]),
-  m_s((uint8_t)(uint64_t)serialised["s"]),
-  m_a((uint8_t)(uint64_t)serialised["a"]),
-  m_x((uint8_t)(uint64_t)serialised["x"]),
-  m_y((uint8_t)(uint64_t)serialised["y"]),
-  m_p((uint8_t)(uint64_t)serialised["p"]),
+: m_pc((uint16_t)(int64_t)serialised["pc"]),
+  m_s((uint8_t)(int64_t)serialised["s"]),
+  m_a((uint8_t)(int64_t)serialised["a"]),
+  m_x((uint8_t)(int64_t)serialised["x"]),
+  m_y((uint8_t)(int64_t)serialised["y"]),
+  m_p((uint8_t)(int64_t)serialised["p"]),
   m_ram(serialised["ram"].get_array()) {}
 
 #endif
@@ -60,12 +60,12 @@ state_t::state_t(const nlohmann::json& serialised)
 #ifdef USE_JSONCPP_JSON
 
 state_t::state_t(const Json::Value& serialised)
-: m_pc(serialised["pc"].asUInt()),
-  m_s(serialised["s"].asUInt()),
-  m_a(serialised["a"].asUInt()),
-  m_x(serialised["x"].asUInt()),
-  m_y(serialised["y"].asUInt()),
-  m_p(serialised["p"].asUInt()),
+: m_pc(serialised["pc"].asInt64()),
+  m_s(serialised["s"].asInt64()),
+  m_a(serialised["a"].asInt64()),
+  m_x(serialised["x"].asInt64()),
+  m_y(serialised["y"].asInt64()),
+  m_p(serialised["p"].asInt64()),
   m_ram(serialised["ram"]) {}
 
 #endif

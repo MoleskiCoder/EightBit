@@ -2,11 +2,6 @@
 #include "byte_t.h"
 
 #include <cassert>
-#include <stdexcept>
-
-byte_t::byte_t(uint16_t address, uint8_t value) noexcept
-: m_address(address),
-  m_value(value) {}
 
 #ifdef USE_SIMDJSON_JSON
 
@@ -14,8 +9,8 @@ byte_t::byte_t(simdjson::dom::element input) noexcept
 : byte_t(input.get_array()) {}
 
 byte_t::byte_t(simdjson::dom::array input) noexcept
-: m_address((uint16_t)(uint64_t)input.at(0)),
-  m_value((uint8_t)(uint64_t)input.at(1)) {
+: m_address((uint16_t)(int64_t)input.at(0)),
+  m_value((uint8_t)(int64_t)input.at(1)) {
     assert(input.size() == 2);
 }
 
@@ -57,8 +52,8 @@ byte_t::byte_t(const nlohmann::json& input) noexcept
 #ifdef USE_JSONCPP_JSON
 
 byte_t::byte_t(const Json::Value& input)
-: m_address(input[0].asUInt()),
-  m_value(input[1].asUInt()) {
+: m_address((uint16_t)input[0].asInt64()),
+  m_value((uint8_t)input[1].asInt64()) {
     assert(input.size() == 2);
 }
 

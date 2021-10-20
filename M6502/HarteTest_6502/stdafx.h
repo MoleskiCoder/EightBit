@@ -1,15 +1,25 @@
 #pragma once
 
 #include <cassert>
+#include <chrono>
 #include <cstdint>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
-#include <map>
 #include <vector>
+
+#include <Bus.h>
+#include <Ram.h>
+#include <mos6502.h>
+#include <Disassembly.h>
+#include <Symbols.h>
 
 //#define TEST_JSON_PERFORMANCE
 
@@ -28,6 +38,7 @@
 #ifdef USE_RAPIDJSON_JSON
 #	define RAPIDJSON_HAS_STDSTRING	1
 #	define RAPIDJSON_SSE42
+#	define JSON_INSITU_PARSE
 #   include "rapidjson/document.h"
 #endif
 
@@ -36,6 +47,7 @@
 #endif
 
 #ifdef USE_NLOHMANN_JSON
+#	define JSON_USE_IMPLICIT_CONVERSIONS 0
 #	include "nlohmann/json.hpp"
 #endif
 

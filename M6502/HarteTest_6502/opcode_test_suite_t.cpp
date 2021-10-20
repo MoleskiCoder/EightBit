@@ -80,9 +80,13 @@ void opcode_test_suite_t::parse() {
 #ifdef USE_RAPIDJSON_JSON
 
 void opcode_test_suite_t::parse() {
+#ifdef JSON_INSITU_PARSE
+    m_raw.ParseInsitu((char*)m_contents.c_str());
+#else
     m_raw.Parse(m_contents);
     m_contents.clear();
     m_contents.shrink_to_fit();
+#endif
 }
 
 #endif
