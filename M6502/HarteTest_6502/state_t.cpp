@@ -60,12 +60,12 @@ state_t::state_t(const nlohmann::json& serialised)
 #ifdef USE_JSONCPP_JSON
 
 state_t::state_t(const Json::Value& serialised)
-: m_pc(serialised["pc"].asInt64()),
-  m_s(serialised["s"].asInt64()),
-  m_a(serialised["a"].asInt64()),
-  m_x(serialised["x"].asInt64()),
-  m_y(serialised["y"].asInt64()),
-  m_p(serialised["p"].asInt64()),
+: m_pc((uint16_t)serialised["pc"].asInt64()),
+  m_s((uint8_t)serialised["s"].asInt64()),
+  m_a((uint8_t)serialised["a"].asInt64()),
+  m_x((uint8_t)serialised["x"].asInt64()),
+  m_y((uint8_t)serialised["y"].asInt64()),
+  m_p((uint8_t)serialised["p"].asInt64()),
   m_ram(serialised["ram"]) {}
 
 #endif

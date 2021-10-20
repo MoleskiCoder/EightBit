@@ -29,6 +29,18 @@ cycle_t::cycle_t(uint16_t address, uint8_t value, action_t action) noexcept
 cycle_t::cycle_t(simdjson::dom::element input) noexcept
 : cycle_t(input.get_array()) {}
 
+#ifdef JSON_PREFER_ITERATOR_TO_INDEX
+
+cycle_t::cycle_t(simdjson::dom::array input) noexcept {
+    assert(input.size() == 3);
+    auto iterator = input.begin();
+    m_address = (uint16_t)(int64_t)*iterator;
+    m_value = (uint8_t)(int64_t)*++iterator;
+    m_action = to_action((std::string)*++iterator);
+}
+
+#else
+
 cycle_t::cycle_t(simdjson::dom::array input) noexcept
 : m_address((uint16_t)(int64_t)input.at(0)),
   m_value((uint8_t)(int64_t)input.at(1)),
@@ -38,14 +50,14 @@ cycle_t::cycle_t(simdjson::dom::array input) noexcept
 
 #endif
 
+#endif
+
 #ifdef USE_RAPIDJSON_JSON
 
 cycle_t::cycle_t(const rapidjson::Value& input)
 : m_address((uint16_t)input[0].GetInt64()),
   m_value((uint8_t)input[1].GetInt64()),
-  m_action(to_action(input[2].GetString())) {
-    assert(input.Size() == 3);
-}
+  m_action(to_action(input[2].GetString())) {}
 
 #endif
 
