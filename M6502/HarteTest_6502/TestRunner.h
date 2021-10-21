@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -28,8 +29,17 @@ private:
     cycles_t m_actualCycles;
     bool m_cycle_count_mismatch = false;
 
+    int m_cycles = 0;
+    bool m_valid = true;
+    bool m_undocumented = false;
+
+    std::set<uint8_t> m_undocumented_opcodes;
+
+    void seedUndocumentedOpcodes();
     void initialiseState();
     [[nodiscard]] bool checkState();
+
+    void pushCurrentMessage();
 
     void raise(std::string what, uint16_t expected, uint16_t actual);
     void raise(std::string what, uint8_t expected, uint8_t actual);
@@ -51,6 +61,8 @@ private:
 
     void addActualReadCycle(EightBit::register16_t address, uint8_t value);
     void addActualWriteCycle(EightBit::register16_t address, uint8_t value);
+
+    void disassemble(uint16_t address);
 
     void dumpCycles(std::string which, const cycles_t& cycles);
     void dumpCycles(const cycles_t& cycles);
@@ -74,5 +86,13 @@ public:
     [[nodiscard]] constexpr const auto& test() const noexcept { return m_test; }
     [[nodiscard]] constexpr const auto& messages() const noexcept { return m_messages; }
 
-    [[nodiscard]] bool check();
+    [[nodiscard]] constexpr auto cycles() const noexcept { return m_cycles; }
+    [[nodiscard]] constexpr auto valid() const noexcept { return m_valid; }
+    [[nodiscard]] constexpr auto invalid() const noexcept { return !valid(); }
+    [[nodiscard]] constexpr auto unimplemented() const noexcept { return invalid() && m_cycle_count_mismatch && (cycles() == 1); }
+    [[nodiscard]] constexpr auto implemented() const noexcept { return !unimplemented(); }
+    [[nodiscard]] constexpr auto undocumented() const noexcept { return m_undocumented; }
+    [[nodiscard]] constexpr auto documented() const noexcept { return !undocumented(); }
+
+    void check();
 };

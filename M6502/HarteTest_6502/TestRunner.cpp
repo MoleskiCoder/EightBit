@@ -49,21 +49,22 @@ void TestRunner::dumpCycles(std::string which, const cycles_t& events) {
 }
 
 void TestRunner::dumpCycles(const cycles_t& cycles) {
-    os() << std::hex << std::uppercase << std::setfill('0');
     for (const auto& cycle: cycles)
         dumpCycle(cycle);
 }
 
 void TestRunner::dumpCycle(const cycle_t& cycle) {
     os()
+        << std::setfill('0') << std::hex
         << "Address: " << std::setw(4) << cycle.address()
         << ", value: " << std::setw(2) << (int)cycle.value()
         << ", action: " << cycle.action();
-    m_messages.push_back(os().str());
-    os().str("");
+    pushCurrentMessage();
 }
 
 void TestRunner::initialise() {
+
+    seedUndocumentedOpcodes();
 
     ReadByte.connect([this](EightBit::EventArgs&) {
         addActualReadCycle(ADDRESS(), DATA());
@@ -73,46 +74,45 @@ void TestRunner::initialise() {
         addActualWriteCycle(ADDRESS(), DATA());
     });
 
-    os() << std::hex << std::uppercase << std::setfill('0');
+    os() << std::hex << std::uppercase;
 }
 
 void TestRunner::raise(std::string what, uint16_t expected, uint16_t actual) {
     os()
-        << std::setw(4)
+        << std::setw(2) << std::setfill(' ')
         << what
+        << std::setw(4) << std::setfill('0')
         << ": expected: " << (int)expected
         << ", actual: " << (int)actual;
-    m_messages.push_back(os().str());
-    os().str("");
+    pushCurrentMessage();
 }
 
 void TestRunner::raise(std::string what, uint8_t expected, uint8_t actual) {
     os()
-        << std::setw(2)
+        << std::setw(2) << std::setfill(' ')
         << what
+        << std::setfill('0')
         << ": expected: " << (int)expected
-            << "(" << EightBit::Disassembly::dump_Flags(expected) << ")"
+            << " (" << EightBit::Disassembly::dump_Flags(expected) << ")"
         << ", actual: " << (int)actual
-            << "(" << EightBit::Disassembly::dump_Flags(actual) << ")";
-    m_messages.push_back(os().str());
-    os().str("");
+            << " (" << EightBit::Disassembly::dump_Flags(actual) << ")";
+    pushCurrentMessage();
 }
 
 void TestRunner::raise(std::string what, std::string expected, std::string actual) {
     os()
+        << std::setw(0) << std::setfill(' ')
         << what
         << ": expected: " << expected
         << ", actual: " << actual;
-    m_messages.push_back(os().str());
-    os().str("");
+    pushCurrentMessage();
 }
 
 bool TestRunner::check(std::string what, uint16_t address, uint8_t expected, uint8_t actual) {
     const auto success = actual == expected;
     if (!success) {
-        os() << what << ": " << std::setw(4) << (int)address;
+        os() << what << ": " << std::setw(4) << std::setfill('0') << (int)address;
         raise(os().str(), expected, actual);
-        os().str("");
     }
     return success;
 }
@@ -170,38 +170,83 @@ bool TestRunner::checkState() {
     return pc_good && s_good && a_good && x_good && y_good && p_good && !ram_problem;
 }
 
-bool TestRunner::check() {
+void TestRunner::pushCurrentMessage() {
+    m_messages.push_back(os().str());
+    os().str("");
+}
+
+void TestRunner::disassemble(uint16_t address) {
+    try {
+        os() << m_disassembler.disassemble(address);
+    }
+    catch (const std::domain_error& error) {
+        os() << "Disassembly problem: " << error.what();
+    }
+    pushCurrentMessage();
+}
+
+void TestRunner::check() {
     initialise();
     raisePOWER();
     initialiseState();
     const auto pc = CPU().PC();
-    const int cycles = CPU().step();
-    const auto valid = checkState();
-    if (m_cycle_count_mismatch) {
-        if (cycles == 1) {
-            m_messages.push_back("Unimplemented");
-        } else {
-
-            try {
-                os() << m_disassembler.disassemble(pc.word);
-            } catch (const std::domain_error& error) {
-                os() << "Disassembly problem: " << error.what();
-            }
-            m_messages.push_back(os().str());
-            os().str("");
-
-            os()
-                << std::dec << std::setfill(' ')
-                << "Stepped cycles: " << cycles
-                << ", expected events: " << test().cycles().size()
-                << ", actual events: " << m_actualCycles.size();
-            m_messages.push_back(os().str());
-            os().str("");
-
-            dumpCycles("-- Expected cycles", test().cycles());
-            dumpCycles("-- Actual cycles", m_actualCycles);
-        }
-    }
+    const auto start_opcode = peek(pc);
+    m_cycles = CPU().step();
     lowerPOWER();
-    return valid;
+
+    m_valid = checkState();
+
+    m_undocumented = m_undocumented_opcodes.find(start_opcode) != m_undocumented_opcodes.end();
+    if (undocumented()) {
+        m_messages.push_back("Undocumented");
+        return;
+    }
+
+    if (unimplemented()) {
+        m_messages.push_back("Unimplemented");
+        return;
+    }
+
+    if (invalid() && implemented()) {
+
+        disassemble(pc.word);
+
+        raise("PC", test().final_state().pc(), CPU().PC().word);
+        raise("S", test().final_state().s(), CPU().S());
+        raise("A", test().final_state().a(), CPU().A());
+        raise("X", test().final_state().x(), CPU().X());
+        raise("Y", test().final_state().y(), CPU().Y());
+        raise("P", test().final_state().p(), CPU().P());
+
+        os()
+            << std::dec << std::setfill(' ')
+            << "Stepped cycles: " << cycles()
+            << ", expected events: " << test().cycles().size()
+            << ", actual events: " << m_actualCycles.size();
+        pushCurrentMessage();
+
+        dumpCycles("-- Expected cycles", test().cycles());
+        dumpCycles("-- Actual cycles", m_actualCycles);
+    }
+}
+
+void TestRunner::seedUndocumentedOpcodes() {
+    m_undocumented_opcodes = {
+        0x02, 0x03, 0x04, 0x07, 0x0b, 0x0c, 0x0f,
+        0x12, 0x13, 0x14, 0x17, 0x1a, 0x1b, 0x1c, 0x1f,
+        0x22, 0x23, 0x27, 0x2b, 0x2f,
+        0x32, 0x33, 0x34, 0x37, 0x3a, 0x3b, 0x3c, 0x3f,
+        0x42, 0x43, 0x44, 0x47, 0x4b, 0x4f,
+        0x52, 0x53, 0x54, 0x57, 0x5a, 0x5b, 0x5c, 0x5f,
+        0x62, 0x63, 0x64, 0x67, 0x6b, 0x6f,
+        0x72, 0x73, 0x74, 0x77, 0x7a, 0x7b, 0x7c, 0x7f,
+        0x80, 0x82, 0x83, 0x87, 0x89, 0x8b, 0x8f,
+        0x92, 0x93, 0x97, 0x9b, 0x9c, 0x9e, 0x9f,
+        0xa3, 0xa7, 0xab, 0xaf,
+        0xb2, 0xb3, 0xb7, 0xbb, 0xbf,
+        0xc2, 0xc3, 0xc7, 0xcb, 0xcf,
+        0xd2, 0xd3, 0xd4, 0xd7, 0xda, 0xdb, 0xdc, 0xdf,
+        0xe2, 0xe3, 0xe7, 0xeb, 0xef,
+        0xf1, 0xf2, 0xf3, 0xf4, 0xf7, 0xfa, 0xfb, 0xfc, 0xff,
+    };
 }

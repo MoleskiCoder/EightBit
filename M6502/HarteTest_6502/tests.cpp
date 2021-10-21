@@ -14,7 +14,10 @@ int main() {
 
     const auto start_time = std::chrono::steady_clock::now();
 
-    int bad_opcode_count = 0;
+    int undocumented_opcode_count = 0;
+    int unimplemented_opcode_count = 0;
+    int invalid_opcode_count = 0;
+
     for (const auto& entry : std::filesystem::directory_iterator{ location }) {
 
         const auto path = entry.path();
@@ -26,24 +29,41 @@ int main() {
 
         const auto opcode_test_array = opcode.raw().get_array();
 
-        bool opcode_bad = false;
+        bool opcode_undocumented = false;
+        bool opcode_unimplemented = false;
+        bool opcode_invalid = false;
+
         for (const auto& opcode_test_element : opcode_test_array) {
 
             const auto opcode_test = test_t(opcode_test_element);
 
             TestRunner runner(opcode_test);
-            const auto good = runner.check();
-            if (!good) {
-                if (!opcode_bad) {
-                    std::cout << "** Failed: " << opcode_test.name() << "\n";
-                    for (const auto& message : runner.messages())
-                        std::cout << "**** " << message << "\n";
-                    opcode_bad = true;
-                }
+            runner.check();
+
+            auto undocumented = runner.undocumented();
+            auto unimplemented = runner.unimplemented();
+            auto implemented = runner.implemented();
+            auto invalid = runner.invalid();
+
+            if (invalid) {
+                opcode_invalid = true;
+                if (unimplemented)
+                    opcode_unimplemented = true;
+                if (undocumented)
+                    opcode_undocumented = true;
+                std::cout << "** Failed: " << opcode_test.name() << "\n";
+                for (const auto& message : runner.messages())
+                    std::cout << "**** " << message << "\n";
+                break;
             }
         }
-        if (opcode_bad)
-            ++bad_opcode_count;
+
+        if (opcode_undocumented)
+            ++undocumented_opcode_count;
+        if (opcode_unimplemented)
+            ++unimplemented_opcode_count;
+        if (opcode_invalid)
+            ++invalid_opcode_count;
     }
 
     const auto finish_time = std::chrono::steady_clock::now();
@@ -51,6 +71,8 @@ int main() {
     const auto seconds = std::chrono::duration_cast<std::chrono::duration<double>>(elapsed_time).count();
     std::cout
         << "Elapsed time: " << seconds << " seconds"
-        << ", bad opcode count: " << bad_opcode_count
+        << ", undocumented opcode count: " << undocumented_opcode_count
+        << ", unimplemented opcode count: " << unimplemented_opcode_count
+        << ", invalid opcode count: " << (invalid_opcode_count - unimplemented_opcode_count)
         << std::endl;
 }
