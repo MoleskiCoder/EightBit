@@ -17,7 +17,7 @@ private:
     [[nodiscard]] auto array_at(std::string key) const noexcept { return at(key).get_array(); }
 
 public:
-    state_t(simdjson::dom::element input);
+    state_t(simdjson::dom::element input) noexcept;
 
     [[nodiscard]] auto pc() const noexcept { return address_at("pc"); }
     [[nodiscard]] auto s() const noexcept { return byte_at("s"); }

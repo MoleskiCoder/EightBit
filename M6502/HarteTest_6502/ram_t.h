@@ -9,7 +9,7 @@ private:
     simdjson::dom::array m_raw;;
 
 public:
-    ram_t(simdjson::dom::array input);
+    ram_t(simdjson::dom::array input) noexcept;
 
     [[nodiscard]] auto begin() const noexcept { return m_raw.begin(); }
     [[nodiscard]] auto end() const noexcept { return m_raw.end(); }

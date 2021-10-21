@@ -4,7 +4,7 @@
 std::set<uint8_t> TestRunner::m_undocumented_opcodes;
 bool TestRunner::m_undocumented_opcodes_initialised = false;
 
-TestRunner::TestRunner(const test_t& test)
+TestRunner::TestRunner(const test_t test)
 : m_test(test) {}
 
 EightBit::MemoryMapping TestRunner::mapping(uint16_t address) noexcept {
@@ -122,7 +122,7 @@ bool TestRunner::check(std::string what, uint16_t address, uint8_t expected, uin
 
 void TestRunner::initialiseState() {
 
-    const auto& starting = test().initial_state();
+    const auto starting = test().initial_state();
 
     CPU().PC().word = starting.pc();
     CPU().S() = starting.s();
@@ -130,8 +130,7 @@ void TestRunner::initialiseState() {
     CPU().X() = starting.x();
     CPU().Y() = starting.y();
     CPU().P() = starting.p();
-    const auto& ram = starting.ram();
-    for (auto entry : ram) {
+    for (auto entry : starting.ram()) {
         const byte_t byte(entry);
         RAM().poke(byte.address(), byte.value());
     }
@@ -139,7 +138,7 @@ void TestRunner::initialiseState() {
 
 bool TestRunner::checkState() {
 
-    const auto& finished = test().final_state();
+    const auto finished = test().final_state();
 
     const auto& expected_cycles = test().cycles();
     const auto& actual_cycles = m_actualCycles;
@@ -162,9 +161,8 @@ bool TestRunner::checkState() {
     const auto y_good = check("Y", finished.y(), CPU().Y());
     const auto p_good = check("P", finished.p(), CPU().P());
 
-    const auto& ram = finished.ram();
     bool ram_problem = false;
-    for (auto entry : ram) {
+    for (const auto entry : finished.ram()) {
         const byte_t byte(entry);
         const auto ram_good = check("RAM", byte.address(), byte.value(), RAM().peek(byte.address()));
         if (!ram_good && !ram_problem)
@@ -193,7 +191,7 @@ void TestRunner::check() {
     initialise();
     raisePOWER();
     initialiseState();
-    const auto pc = CPU().PC();
+    const auto pc = CPU().PC().word;
     const auto start_opcode = peek(pc);
     m_cycles = CPU().step();
     lowerPOWER();
@@ -213,7 +211,7 @@ void TestRunner::check() {
 
     if (invalid() && implemented()) {
 
-        disassemble(pc.word);
+        disassemble(pc);
 
         raise("PC", test().final_state().pc(), CPU().PC().word);
         raise("S", test().final_state().s(), CPU().S());
