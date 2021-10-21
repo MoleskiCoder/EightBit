@@ -21,6 +21,5 @@ public:
 
     [[nodiscard]] auto size() const noexcept { return m_bytes.size(); }
 
-    [[nodiscard]] auto& operator[](size_t idx) noexcept { return m_bytes[idx]; }
     [[nodiscard]] auto operator[](size_t idx) const noexcept { return m_bytes[idx]; }
 };
