@@ -44,7 +44,7 @@ inline int EightBit::countBits(uint8_t value) noexcept {
 
 inline bool EightBit::oddParity(const uint8_t value) noexcept {
 #ifdef __GNUG__
-	return __builtin_parity(value)
+	return __builtin_parity(value);
 #else
 	return countBits(value) % 2;
 #endif
