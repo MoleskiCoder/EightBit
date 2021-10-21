@@ -11,11 +11,14 @@ class test_t final {
 private:
     simdjson::dom::element m_raw;
 
+    [[nodiscard]] auto at(std::string key) const noexcept { return m_raw[key]; }
+    [[nodiscard]] auto array_at(std::string key) const noexcept { return at(key).get_array(); }
+
 public:
     test_t(simdjson::dom::element input);
 
-    [[nodiscard]] const auto name() const noexcept { return m_raw["name"]; }
-    [[nodiscard]] const auto initial_state() const noexcept { return state_t(m_raw["initial"]); }
-    [[nodiscard]] const auto final_state() const noexcept { return state_t(m_raw["final"]); }
-    [[nodiscard]] const auto cycles() const noexcept { return cycles_t(m_raw["cycles"].get_array()); }
+    [[nodiscard]] auto name() const noexcept { return at("name"); }
+    [[nodiscard]] auto initial_state() const noexcept { return state_t(at("initial")); }
+    [[nodiscard]] auto final_state() const noexcept { return state_t(at("final")); }
+    [[nodiscard]] auto cycles() const noexcept { return cycles_t(array_at("cycles")); }
 };

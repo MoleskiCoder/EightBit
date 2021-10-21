@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "TestRunner.h"
 
+std::set<uint8_t> TestRunner::m_undocumented_opcodes;
+bool TestRunner::m_undocumented_opcodes_initialised = false;
+
 TestRunner::TestRunner(const test_t& test)
 : m_test(test) {}
 
@@ -128,10 +131,10 @@ void TestRunner::initialiseState() {
     CPU().Y() = starting.y();
     CPU().P() = starting.p();
     const auto& ram = starting.ram();
-    for (auto entry : ram)
-        RAM().poke(entry.address(), entry.value());
-
-    m_actualCycles.clear();
+    for (auto entry : ram) {
+        const byte_t byte(entry);
+        RAM().poke(byte.address(), byte.value());
+    }
 }
 
 bool TestRunner::checkState() {
@@ -162,7 +165,8 @@ bool TestRunner::checkState() {
     const auto& ram = finished.ram();
     bool ram_problem = false;
     for (auto entry : ram) {
-        const auto ram_good = check("RAM",  entry.address(), entry.value(), RAM().peek(entry.address()));
+        const byte_t byte(entry);
+        const auto ram_good = check("RAM", byte.address(), byte.value(), RAM().peek(byte.address()));
         if (!ram_good && !ram_problem)
             ram_problem = true;
     }
@@ -231,6 +235,7 @@ void TestRunner::check() {
 }
 
 void TestRunner::seedUndocumentedOpcodes() {
+    if (m_undocumented_opcodes_initialised) return;
     m_undocumented_opcodes = {
         0x02, 0x03, 0x04, 0x07, 0x0b, 0x0c, 0x0f,
         0x12, 0x13, 0x14, 0x17, 0x1a, 0x1b, 0x1c, 0x1f,
@@ -249,4 +254,5 @@ void TestRunner::seedUndocumentedOpcodes() {
         0xe2, 0xe3, 0xe7, 0xeb, 0xef,
         0xf1, 0xf2, 0xf3, 0xf4, 0xf7, 0xfa, 0xfb, 0xfc, 0xff,
     };
+    m_undocumented_opcodes_initialised = true;
 }

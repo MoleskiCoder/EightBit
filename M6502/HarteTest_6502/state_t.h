@@ -10,14 +10,20 @@ class state_t final {
 private:
     const simdjson::dom::element m_raw;
 
+    [[nodiscard]] auto at(std::string key) const noexcept { return m_raw[key]; }
+    [[nodiscard]] auto integer_at(std::string key) const noexcept { return (int64_t)at(key); }
+    [[nodiscard]] auto address_at(std::string key) const noexcept { return (uint16_t)integer_at(key); }
+    [[nodiscard]] auto byte_at(std::string key) const noexcept { return (uint8_t)integer_at(key); }
+    [[nodiscard]] auto array_at(std::string key) const noexcept { return at(key).get_array(); }
+
 public:
     state_t(simdjson::dom::element input);
 
-    [[nodiscard]] auto pc() const noexcept { return (uint16_t)(int64_t)m_raw["pc"]; }
-    [[nodiscard]] auto s() const noexcept { return (uint8_t)(int64_t)m_raw["s"]; }
-    [[nodiscard]] auto a() const noexcept { return (uint8_t)(int64_t)m_raw["a"]; }
-    [[nodiscard]] auto x() const noexcept { return (uint8_t)(int64_t)m_raw["x"]; }
-    [[nodiscard]] auto y() const noexcept { return (uint8_t)(int64_t)m_raw["y"]; }
-    [[nodiscard]] auto p() const noexcept { return (uint8_t)(int64_t)m_raw["p"]; }
-    [[nodiscard]] const auto ram() const noexcept { return ram_t(m_raw["ram"].get_array()); }
+    [[nodiscard]] auto pc() const noexcept { return address_at("pc"); }
+    [[nodiscard]] auto s() const noexcept { return byte_at("s"); }
+    [[nodiscard]] auto a() const noexcept { return byte_at("a"); }
+    [[nodiscard]] auto x() const noexcept { return byte_at("x"); }
+    [[nodiscard]] auto y() const noexcept { return byte_at("y"); }
+    [[nodiscard]] auto p() const noexcept { return byte_at("p"); }
+    [[nodiscard]] auto ram() const noexcept { return ram_t(array_at("ram")); }
 };

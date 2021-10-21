@@ -21,7 +21,5 @@ public:
 
 	[[nodiscard]] auto size() const noexcept { return m_cycles.size(); }
 
-	void clear() { m_cycles.clear(); }
-
 	[[nodiscard]] const auto& operator[](size_t idx) const noexcept { return m_cycles[idx]; }
 };
