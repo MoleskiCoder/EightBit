@@ -25,15 +25,12 @@ int main() {
         std::cout << "Processing: " << path.filename() << "\n";
         opcode_test_suite_t opcode(path.string());
         opcode.load();
-        opcode.parse();
-
-        const auto opcode_test_array = opcode.raw().get_array();
 
         bool opcode_undocumented = false;
         bool opcode_unimplemented = false;
         bool opcode_invalid = false;
 
-        for (const auto& opcode_test_element : opcode_test_array) {
+        for (auto opcode_test_element : opcode) {
 
             const auto opcode_test = test_t(opcode_test_element);
 

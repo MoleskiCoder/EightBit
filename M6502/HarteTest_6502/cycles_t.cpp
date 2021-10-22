@@ -13,6 +13,6 @@ void cycles_t::add(const cycle_t& cycle) {
 cycles_t::cycles_t(simdjson::dom::array input) {
     assert(m_cycles.empty());
     m_cycles.reserve(input.size());
-    for (const auto& entry : input)
+    for (auto entry : input)
         add(entry);
 }

@@ -16,8 +16,8 @@ public:
 
 	void add(const cycle_t& cycle);
 
-	[[nodiscard]] auto begin() const { return m_cycles.begin(); }
-	[[nodiscard]] auto end() const { return m_cycles.end(); }
+	[[nodiscard]] auto begin() const noexcept { return m_cycles.begin(); }
+	[[nodiscard]] auto end() const noexcept { return m_cycles.end(); }
 
 	[[nodiscard]] auto size() const noexcept { return m_cycles.size(); }
 
