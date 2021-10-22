@@ -1,19 +1,12 @@
 #pragma once
 
-#include <string>
-
 #include "simdjson/simdjson.h"
 
+#include "element_t.h"
 #include "cycles_t.h"
 #include "state_t.h"
 
-class test_t final {
-private:
-    simdjson::dom::element m_raw;
-
-    [[nodiscard]] auto at(std::string key) const noexcept { return m_raw[key]; }
-    [[nodiscard]] auto array_at(std::string key) const noexcept { return at(key).get_array(); }
-
+class test_t final : public element_t {
 public:
     test_t(simdjson::dom::element input) noexcept;
 

@@ -26,12 +26,8 @@ void TestRunner::lowerPOWER() {
     EightBit::Bus::lowerPOWER();
 }
 
-void TestRunner::addActualCycle(const cycle_t& value) {
-    m_actualCycles.add(value);
-}
-
 void TestRunner::addActualCycle(uint16_t address, uint8_t value, std::string action) {
-    addActualCycle({ address, value, action });
+    m_actualCycles.push_back({ address, value, action });
 }
 
 void TestRunner::addActualCycle(EightBit::register16_t address, uint8_t value, std::string action) {
@@ -46,23 +42,41 @@ void TestRunner::addActualWriteCycle(EightBit::register16_t address, uint8_t val
     addActualCycle(address, value, "write");
 }
 
-void TestRunner::dumpCycles(std::string which, const cycles_t& events) {
+void TestRunner::dumpCycle(uint16_t address, uint8_t value, std::string action) {
+    os()
+        << std::setfill('0') << std::hex
+        << "Address: " << std::setw(4) << (int)address
+        << ", value: " << std::setw(2) << (int)value
+        << ", action: " << action;
+    pushCurrentMessage();
+}
+
+void TestRunner::dumpCycles(std::string which, const actual_cycles_t& events) {
     m_messages.push_back(which);
     dumpCycles(events);
 }
 
-void TestRunner::dumpCycles(const cycles_t& cycles) {
+void TestRunner::dumpCycles(const actual_cycles_t& cycles) {
     for (const auto& cycle: cycles)
         dumpCycle(cycle);
 }
 
-void TestRunner::dumpCycle(const cycle_t& cycle) {
-    os()
-        << std::setfill('0') << std::hex
-        << "Address: " << std::setw(4) << cycle.address()
-        << ", value: " << std::setw(2) << (int)cycle.value()
-        << ", action: " << cycle.action();
-    pushCurrentMessage();
+void TestRunner::dumpCycle(const actual_cycle_t& cycle) {
+    dumpCycle(std::get<0>(cycle), std::get<1>(cycle), std::get<2>(cycle));
+}
+
+void TestRunner::dumpCycles(std::string which, cycles_t events) {
+    m_messages.push_back(which);
+    dumpCycles(events);
+}
+
+void TestRunner::dumpCycles(cycles_t cycles) {
+    for (auto cycle: cycles)
+        dumpCycle(cycle_t(cycle));
+}
+
+void TestRunner::dumpCycle(cycle_t cycle) {
+    dumpCycle(cycle.address(), cycle.value(), cycle.action());
 }
 
 void TestRunner::initialise() {
@@ -144,12 +158,13 @@ bool TestRunner::checkState() {
     if (m_cycle_count_mismatch)
         return false;
 
-    for (int i = 0; i < expected_cycles.size(); ++i) {
-        const auto& expected = expected_cycles[i];
-        const auto& actual = actual_cycles[i];   // actual could be less than expected
-        check("Cycle address", expected.address(), actual.address());
-        check("Cycle value", expected.value(), actual.value());
-        check("Cycle action", expected.action(), actual.action());
+    size_t actual_idx = 0;
+    for (auto expected_cycle : expected_cycles) {
+        const auto expected = cycle_t(expected_cycle);
+        const auto actual = actual_cycles.at(actual_idx++);   // actual could be less than expected
+        check("Cycle address", expected.address(), std::get<0>(actual));
+        check("Cycle value", expected.value(), std::get<1>(actual));
+        check("Cycle action", expected.action(), std::get<2>(actual));
     }
 
     const auto final = test().final();

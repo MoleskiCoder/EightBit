@@ -26,41 +26,25 @@ int main() {
         opcode_test_suite_t opcode(path.string());
         opcode.load();
 
-        bool opcode_undocumented = false;
-        bool opcode_unimplemented = false;
-        bool opcode_invalid = false;
-
         for (auto opcode_test_element : opcode) {
 
             const auto opcode_test = test_t(opcode_test_element);
-
             TestRunner runner(opcode_test);
             runner.check();
 
-            auto undocumented = runner.undocumented();
-            auto unimplemented = runner.unimplemented();
-            auto implemented = runner.implemented();
             auto invalid = runner.invalid();
-
             if (invalid) {
-                opcode_invalid = true;
-                if (unimplemented)
-                    opcode_unimplemented = true;
-                if (undocumented)
-                    opcode_undocumented = true;
+                ++invalid_opcode_count;
+                if (runner.unimplemented())
+                    ++unimplemented_opcode_count;
+                if (runner.undocumented())
+                    ++undocumented_opcode_count;
                 std::cout << "** Failed: " << opcode_test.name() << "\n";
                 for (const auto& message : runner.messages())
                     std::cout << "**** " << message << "\n";
                 break;
             }
         }
-
-        if (opcode_undocumented)
-            ++undocumented_opcode_count;
-        if (opcode_unimplemented)
-            ++unimplemented_opcode_count;
-        if (opcode_invalid)
-            ++invalid_opcode_count;
     }
 
     const auto finish_time = std::chrono::steady_clock::now();

@@ -1,20 +1,16 @@
 #pragma once
 
-#include <cstdint>
+#include <string>
 
 #include "simdjson/simdjson.h"
 
+#include "element_t.h"
 #include "ram_t.h"
 
-class state_t final {
+class state_t final : public element_t {
 private:
-    const simdjson::dom::element m_raw;
-
-    [[nodiscard]] auto at(std::string key) const noexcept { return m_raw[key]; }
-    [[nodiscard]] auto integer_at(std::string key) const noexcept { return (int64_t)at(key); }
     [[nodiscard]] auto address_at(std::string key) const noexcept { return (uint16_t)integer_at(key); }
     [[nodiscard]] auto byte_at(std::string key) const noexcept { return (uint8_t)integer_at(key); }
-    [[nodiscard]] auto array_at(std::string key) const noexcept { return at(key).get_array(); }
 
 public:
     state_t(simdjson::dom::element input) noexcept;

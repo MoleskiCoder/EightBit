@@ -161,9 +161,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="array_t.cpp" />
     <ClCompile Include="byte_t.cpp" />
     <ClCompile Include="cycles_t.cpp" />
     <ClCompile Include="cycle_t.cpp" />
+    <ClCompile Include="element_t.cpp" />
     <ClCompile Include="opcode_test_suite_t.cpp" />
     <ClCompile Include="ram_t.cpp" />
     <ClCompile Include="simdjson\simdjson.cpp">
@@ -184,9 +186,11 @@
     <ClCompile Include="test_t.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="array_t.h" />
     <ClInclude Include="byte_t.h" />
     <ClInclude Include="cycles_t.h" />
     <ClInclude Include="cycle_t.h" />
+    <ClInclude Include="element_t.h" />
     <ClInclude Include="opcode_test_suite_t.h" />
     <ClInclude Include="ram_t.h" />
     <ClInclude Include="simdjson\simdjson.h" />

@@ -13,6 +13,7 @@
 #include <Symbols.h>
 
 #include "test_t.h"
+#include "cycle_t.h"
 
 class TestRunner final : public EightBit::Bus {
 private:
@@ -29,7 +30,9 @@ private:
     std::ostringstream m_os;
     std::vector<std::string> m_messages;
 
-    cycles_t m_actualCycles;
+    typedef std::tuple<uint16_t, uint8_t, std::string> actual_cycle_t;
+    typedef std::vector<actual_cycle_t> actual_cycles_t;
+    actual_cycles_t m_actualCycles;
     bool m_cycle_count_mismatch = false;
 
     int m_cycles = 0;
@@ -56,7 +59,7 @@ private:
 
     bool check(std::string what, uint16_t address, uint8_t expected, uint8_t actual);
 
-    void addActualCycle(const cycle_t& value);
+    void addActualCycle(const actual_cycle_t& value);
     void addActualCycle(uint16_t address, uint8_t value, std::string action);
     void addActualCycle(EightBit::register16_t address, uint8_t value, std::string action);
 
@@ -65,9 +68,15 @@ private:
 
     void disassemble(uint16_t address);
 
-    void dumpCycles(std::string which, const cycles_t& cycles);
-    void dumpCycles(const cycles_t& cycles);
-    void dumpCycle(const cycle_t& cycle);
+    void dumpCycle(uint16_t address, uint8_t value, std::string action);
+
+    void dumpCycles(std::string which, cycles_t cycles);
+    void dumpCycles(cycles_t cycles);
+    void dumpCycle(cycle_t cycle);
+
+    void dumpCycles(std::string which, const actual_cycles_t& cycles);
+    void dumpCycles(const actual_cycles_t& cycles);
+    void dumpCycle(const actual_cycle_t& cycle);
 
     [[nodiscard]] auto& os() { return m_os; }
 
