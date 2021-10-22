@@ -18,7 +18,7 @@ public:
     test_t(simdjson::dom::element input) noexcept;
 
     [[nodiscard]] auto name() const noexcept { return at("name"); }
-    [[nodiscard]] auto initial_state() const noexcept { return state_t(at("initial")); }
-    [[nodiscard]] auto final_state() const noexcept { return state_t(at("final")); }
+    [[nodiscard]] auto initial() const noexcept { return state_t(at("initial")); }
+    [[nodiscard]] auto final() const noexcept { return state_t(at("final")); }
     [[nodiscard]] auto cycles() const noexcept { return cycles_t(array_at("cycles")); }
 };

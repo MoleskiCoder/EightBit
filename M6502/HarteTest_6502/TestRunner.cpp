@@ -122,23 +122,21 @@ bool TestRunner::check(std::string what, uint16_t address, uint8_t expected, uin
 
 void TestRunner::initialiseState() {
 
-    const auto starting = test().initial_state();
+    const auto initial = test().initial();
 
-    CPU().PC().word = starting.pc();
-    CPU().S() = starting.s();
-    CPU().A() = starting.a();
-    CPU().X() = starting.x();
-    CPU().Y() = starting.y();
-    CPU().P() = starting.p();
-    for (auto entry : starting.ram()) {
+    CPU().PC().word = initial.pc();
+    CPU().S() = initial.s();
+    CPU().A() = initial.a();
+    CPU().X() = initial.x();
+    CPU().Y() = initial.y();
+    CPU().P() = initial.p();
+    for (auto entry : initial.ram()) {
         const byte_t byte(entry);
         RAM().poke(byte.address(), byte.value());
     }
 }
 
 bool TestRunner::checkState() {
-
-    const auto finished = test().final_state();
 
     const auto& expected_cycles = test().cycles();
     const auto& actual_cycles = m_actualCycles;
@@ -154,15 +152,16 @@ bool TestRunner::checkState() {
         check("Cycle action", expected.action(), actual.action());
     }
 
-    const auto pc_good = check("PC", finished.pc(), CPU().PC().word);
-    const auto s_good = check("S", finished.s(), CPU().S());
-    const auto a_good = check("A", finished.a(), CPU().A());
-    const auto x_good = check("X", finished.x(), CPU().X());
-    const auto y_good = check("Y", finished.y(), CPU().Y());
-    const auto p_good = check("P", finished.p(), CPU().P());
+    const auto final = test().final();
+    const auto pc_good = check("PC", final.pc(), CPU().PC().word);
+    const auto s_good = check("S", final.s(), CPU().S());
+    const auto a_good = check("A", final.a(), CPU().A());
+    const auto x_good = check("X", final.x(), CPU().X());
+    const auto y_good = check("Y", final.y(), CPU().Y());
+    const auto p_good = check("P", final.p(), CPU().P());
 
     bool ram_problem = false;
-    for (const auto entry : finished.ram()) {
+    for (const auto entry : final.ram()) {
         const byte_t byte(entry);
         const auto ram_good = check("RAM", byte.address(), byte.value(), RAM().peek(byte.address()));
         if (!ram_good && !ram_problem)
@@ -213,12 +212,13 @@ void TestRunner::check() {
 
         disassemble(pc);
 
-        raise("PC", test().final_state().pc(), CPU().PC().word);
-        raise("S", test().final_state().s(), CPU().S());
-        raise("A", test().final_state().a(), CPU().A());
-        raise("X", test().final_state().x(), CPU().X());
-        raise("Y", test().final_state().y(), CPU().Y());
-        raise("P", test().final_state().p(), CPU().P());
+        const auto final = test().final();
+        raise("PC", final.pc(), CPU().PC().word);
+        raise("S", final.s(), CPU().S());
+        raise("A", final.a(), CPU().A());
+        raise("X", final.x(), CPU().X());
+        raise("Y", final.y(), CPU().Y());
+        raise("P", final.p(), CPU().P());
 
         os()
             << std::dec << std::setfill(' ')
