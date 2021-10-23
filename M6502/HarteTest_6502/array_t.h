@@ -11,7 +11,7 @@ private:
 protected:
 	array_t(simdjson::dom::array input) noexcept;
 
-	auto raw() const noexcept { return m_raw; }
+	[[nodiscard]] auto raw() const noexcept { return m_raw; }
 
 	[[nodiscard]] auto at(size_t idx) const noexcept { return raw().at(idx); }
 	[[nodiscard]] auto integer_at(size_t idx) const noexcept { return (int64_t)at(idx); }
@@ -22,5 +22,5 @@ public:
 	[[nodiscard]] auto begin() const noexcept { return m_raw.begin(); }
 	[[nodiscard]] auto end() const noexcept { return m_raw.end(); }
 	[[nodiscard]] auto size() const noexcept { return m_raw.size(); }
-	[[nodiscard]] auto operator[](size_t idx) const noexcept { return m_raw.at(idx); }
+	[[nodiscard]] auto operator[](size_t idx) const noexcept { return at(idx); }
 };

@@ -8,7 +8,7 @@
 
 simdjson::dom::parser opcode_test_suite_t::m_parser;
 
-opcode_test_suite_t::opcode_test_suite_t(std::string path)
+opcode_test_suite_t::opcode_test_suite_t(const std::string path)
 : m_path(path) {}
 
 void opcode_test_suite_t::load() {
