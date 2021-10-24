@@ -53,6 +53,9 @@
     <ClCompile Include="element_t.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="parser_t.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -89,6 +92,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="element_t.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser_t.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

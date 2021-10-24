@@ -1,11 +1,5 @@
 #include "stdafx.h"
 #include "opcode_test_suite_t.h"
 
-simdjson::dom::parser opcode_test_suite_t::m_parser;
-
-opcode_test_suite_t::opcode_test_suite_t(const std::string path)
-: m_path(path) {}
-
-void opcode_test_suite_t::load() {
-    m_raw = m_parser.load(path());
-}
+opcode_test_suite_t::opcode_test_suite_t(const std::string path) noexcept
+: parser_t(path) {}
