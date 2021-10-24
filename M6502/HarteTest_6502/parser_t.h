@@ -11,7 +11,7 @@ private:
     // Therefore, it can only be used for one document at a time.
     static simdjson::dom::parser m_parser;
 
-    std::string m_path;
+    const std::string m_path;
     simdjson::dom::element m_raw;
 
 public:

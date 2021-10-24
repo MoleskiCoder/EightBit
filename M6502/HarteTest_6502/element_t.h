@@ -6,7 +6,7 @@
 
 class element_t {
 private:
-    simdjson::dom::element m_raw;
+    const simdjson::dom::element m_raw;
 
 protected:
     element_t(simdjson::dom::element input) noexcept;
