@@ -22,27 +22,27 @@ int main() {
 
         const auto path = entry.path();
 
-        //std::cout << "Processing: " << path.filename() << "\n";
+        std::cout << "Processing: " << path.filename() << "\n";
         opcode_test_suite_t opcode(path.string());
         opcode.load();
 
         for (const auto opcode_test_element : opcode) {
 
             const auto opcode_test = test_t(opcode_test_element);
-            //TestRunner runner(opcode_test);
-            //runner.check();
+            TestRunner runner(opcode_test);
+            runner.check();
 
-            //if (runner.invalid()) {
-            //    ++invalid_opcode_count;
-            //    if (runner.unimplemented())
-            //        ++unimplemented_opcode_count;
-            //    if (runner.undocumented())
-            //        ++undocumented_opcode_count;
-            //    std::cout << "** Failed: " << opcode_test.name() << "\n";
-            //    for (const auto& message : runner.messages())
-            //        std::cout << "**** " << message << "\n";
-            //    break;
-            //}
+            if (runner.invalid()) {
+                ++invalid_opcode_count;
+                if (runner.unimplemented())
+                    ++unimplemented_opcode_count;
+                if (runner.undocumented())
+                    ++undocumented_opcode_count;
+                std::cout << "** Failed: " << opcode_test.name() << "\n";
+                for (const auto& message : runner.messages())
+                    std::cout << "**** " << message << "\n";
+                break;
+            }
         }
     }
 
