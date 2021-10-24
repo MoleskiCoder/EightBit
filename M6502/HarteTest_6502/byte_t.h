@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include "simdjson/simdjson.h"
 
 #include "array_t.h"

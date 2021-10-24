@@ -70,7 +70,7 @@ private:
 
     template<class T>
     void dumpCycle(const uint16_t address, const uint8_t value, const T action) {
-        os()
+        m_os
             << std::setfill('0') << std::hex
             << "Address: " << std::setw(4) << (int)address
             << ", value: " << std::setw(2) << (int)value
