@@ -10,5 +10,5 @@ class cycle_t final : public byte_t {
 public:
 	cycle_t(simdjson::dom::array input) noexcept;
 
-	[[nodiscard]] auto action() const noexcept { return (std::string)at(2); }
+	[[nodiscard]] std::string_view action() const noexcept { return at(2).get_string(); }
 };

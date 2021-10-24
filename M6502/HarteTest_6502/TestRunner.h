@@ -47,7 +47,7 @@ private:
 
     void raise(std::string what, uint16_t expected, uint16_t actual);
     void raise(std::string what, uint8_t expected, uint8_t actual);
-    void raise(std::string what, std::string expected, std::string actual);
+    void raise(std::string what, std::string_view expected, std::string_view actual);
 
     template<class T>
     bool check(std::string what, T expected, T actual) {
@@ -68,7 +68,15 @@ private:
 
     void disassemble(uint16_t address);
 
-    void dumpCycle(uint16_t address, uint8_t value, std::string action);
+    template<class T>
+    void dumpCycle(const uint16_t address, const uint8_t value, const T action) {
+        os()
+            << std::setfill('0') << std::hex
+            << "Address: " << std::setw(4) << (int)address
+            << ", value: " << std::setw(2) << (int)value
+            << ", action: " << action;
+        pushCurrentMessage();
+    }
 
     void dumpCycles(std::string which, cycles_t cycles);
     void dumpCycles(cycles_t cycles);

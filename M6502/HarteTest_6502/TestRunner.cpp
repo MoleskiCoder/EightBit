@@ -42,15 +42,6 @@ void TestRunner::addActualWriteCycle(const EightBit::register16_t address, const
     addActualCycle(address, value, "write");
 }
 
-void TestRunner::dumpCycle(const uint16_t address, const uint8_t value, const std::string action) {
-    os()
-        << std::setfill('0') << std::hex
-        << "Address: " << std::setw(4) << (int)address
-        << ", value: " << std::setw(2) << (int)value
-        << ", action: " << action;
-    pushCurrentMessage();
-}
-
 void TestRunner::dumpCycles(const std::string which, const actual_cycles_t& events) {
     m_messages.push_back(which);
     dumpCycles(events);
@@ -116,7 +107,7 @@ void TestRunner::raise(const std::string what, const uint8_t expected, const uin
     pushCurrentMessage();
 }
 
-void TestRunner::raise(const std::string what, const std::string expected, const std::string actual) {
+void TestRunner::raise(const std::string what, const std::string_view expected, const std::string_view actual) {
     os()
         << std::setw(0) << std::setfill(' ')
         << what
@@ -164,7 +155,7 @@ bool TestRunner::checkState() {
         const auto actual = actual_cycles.at(actual_idx++);   // actual could be less than expected
         check("Cycle address", expected.address(), std::get<0>(actual));
         check("Cycle value", expected.value(), std::get<1>(actual));
-        check("Cycle action", expected.action(), std::get<2>(actual));
+        check("Cycle action", expected.action(), std::string_view(std::get<2>(actual)));
     }
 
     const auto final = test().final();
