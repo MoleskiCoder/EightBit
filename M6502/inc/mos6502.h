@@ -26,7 +26,7 @@ namespace EightBit {
 			CF = Bit0,	// Carry
 		};
 
-		MOS6502(Bus& bus);
+		MOS6502(Bus& bus) noexcept;
 
 		Signal<MOS6502> ExecutingInstruction;
 		Signal<MOS6502> ExecutedInstruction;
@@ -111,29 +111,29 @@ namespace EightBit {
 
 		// Flag adjustment
 
-		void adjustZero(const uint8_t datum) noexcept { P() = clearBit(P(), ZF, datum); }
-		void adjustNegative(const uint8_t datum) noexcept { P() = setBit(P(), NF, datum & NF); }
+		constexpr void adjustZero(const uint8_t datum) noexcept { P() = clearBit(P(), ZF, datum); }
+		constexpr void adjustNegative(const uint8_t datum) noexcept { P() = setBit(P(), NF, datum & NF); }
 		
-		void adjustNZ(const uint8_t datum) noexcept {
+		constexpr void adjustNZ(const uint8_t datum) noexcept {
 			adjustZero(datum);
 			adjustNegative(datum);
 		}
 
 		// Flag checking
 
-		[[nodiscard]] auto interruptMasked() const noexcept { return P() & IF; }
-		[[nodiscard]] auto decimal() const noexcept { return P() & DF; }
+		[[nodiscard]] constexpr auto interruptMasked() const noexcept { return P() & IF; }
+		[[nodiscard]] constexpr auto decimal() const noexcept { return P() & DF; }
 
-		[[nodiscard]] auto negative() const noexcept { return P() & NF; }
-		[[nodiscard]] auto zero() const noexcept { return P() & ZF; }
-		[[nodiscard]] auto overflow() const noexcept { return P() & VF; }
-		[[nodiscard]] auto carry() const noexcept { return P() & CF; }
+		[[nodiscard]] constexpr auto negative() const noexcept { return P() & NF; }
+		[[nodiscard]] constexpr auto zero() const noexcept { return P() & ZF; }
+		[[nodiscard]] constexpr auto overflow() const noexcept { return P() & VF; }
+		[[nodiscard]] constexpr auto carry() const noexcept { return P() & CF; }
 
 		// Miscellaneous
 
 		void branch(int condition);
 
-		[[nodiscard]] auto through(const uint8_t data) noexcept {
+		[[nodiscard]] constexpr auto through(const uint8_t data) noexcept {
 			adjustNZ(data);
 			return data;
 		}

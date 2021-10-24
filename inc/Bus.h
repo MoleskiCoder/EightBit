@@ -20,8 +20,8 @@ namespace EightBit {
 		Signal<EventArgs> ReadingByte;
 		Signal<EventArgs> ReadByte;
 
-		[[nodiscard]] auto ADDRESS() const noexcept { return m_address; }
-		[[nodiscard]] auto& ADDRESS() noexcept { return m_address; }
+		[[nodiscard]] constexpr auto ADDRESS() const noexcept { return m_address; }
+		[[nodiscard]] constexpr auto& ADDRESS() noexcept { return m_address; }
 
 		[[nodiscard]] constexpr auto DATA() const noexcept { return m_data; }
 		[[nodiscard]] constexpr auto& DATA() noexcept { return m_data; }

@@ -42,7 +42,7 @@ namespace EightBit {
 			bool high : 1;
 			uint8_t variable : 7;
 
-			refresh_t(const uint8_t value) noexcept
+			constexpr refresh_t(const uint8_t value) noexcept
 			: high(!!(value & Bit7)),
 			  variable(value & Mask7)
 			{ }

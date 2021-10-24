@@ -33,57 +33,57 @@ namespace EightBit {
 		};
 		uint16_t word;
 
-		register16_t() noexcept : word(0) {}
-		register16_t(const uint16_t w) noexcept : word(w) {}
-		register16_t(const uint8_t l, const uint8_t h) noexcept : low(l), high(h) {}
+		constexpr register16_t() noexcept : word(0) {}
+		constexpr register16_t(const uint16_t w) noexcept : word(w) {}
+		constexpr register16_t(const uint8_t l, const uint8_t h) noexcept : low(l), high(h) {}
 
-		auto& operator++() noexcept {
+		constexpr auto& operator++() noexcept {
 			++word;
 			return *this;
 		}
 
-		auto& operator--() noexcept {
+		constexpr auto& operator--() noexcept {
 			--word;
 			return *this;
 		}
 
-		auto operator++(int) noexcept {
+		constexpr auto operator++(int) noexcept {
 			register16_t temporary(*this);
 			operator++();
 			return temporary;
 		}
 
-		auto operator--(int) noexcept {
+		constexpr auto operator--(int) noexcept {
 			register16_t temporary(*this);
 			operator--();
 			return temporary;
 		}
 
-		auto& operator+=(const register16_t rhs) noexcept {
+		constexpr auto& operator+=(const register16_t rhs) noexcept {
 			this->word += rhs.word;
 			return *this;
 		}
 
-		auto& operator-=(const register16_t rhs) noexcept {
+		constexpr auto& operator-=(const register16_t rhs) noexcept {
 			this->word -= rhs.word;
 			return *this;
 		}
 	};
 
-	[[nodiscard]] inline auto operator==(const register16_t lhs, const register16_t rhs) noexcept {
+	[[nodiscard]] constexpr inline auto operator==(const register16_t lhs, const register16_t rhs) noexcept {
 		return lhs.word == rhs.word;
 	}
 
-	[[nodiscard]] inline auto operator!=(const register16_t lhs, const register16_t rhs) noexcept {
+	[[nodiscard]] constexpr inline auto operator!=(const register16_t lhs, const register16_t rhs) noexcept {
 		return !(lhs == rhs);
 	}
 
-	[[nodiscard]] inline auto operator+(register16_t lhs, const register16_t rhs) noexcept {
+	[[nodiscard]] constexpr inline auto operator+(register16_t lhs, const register16_t rhs) noexcept {
 		lhs += rhs;
 		return lhs;
 	}
 
-	[[nodiscard]] inline auto operator-(register16_t lhs, const register16_t rhs) noexcept {
+	[[nodiscard]] constexpr inline auto operator-(register16_t lhs, const register16_t rhs) noexcept {
 		lhs -= rhs;
 		return lhs;
 	}

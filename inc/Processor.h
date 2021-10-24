@@ -74,7 +74,7 @@ namespace EightBit {
 		virtual void pushWord(register16_t value) = 0;
 		[[nodiscard]] virtual register16_t popWord() = 0;
 
-		register16_t getWord(register16_t address);
+		[[nodiscard]] register16_t getWord(register16_t address);
 		void setWord(register16_t address, register16_t value);
 
 		void jump(const register16_t destination) noexcept;

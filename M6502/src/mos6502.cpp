@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
 #include "../inc/mos6502.h"
 
-EightBit::MOS6502::MOS6502(Bus& bus)
+EightBit::MOS6502::MOS6502(Bus& bus) noexcept
 : LittleEndianProcessor(bus) {
 	RaisedPOWER.connect([this](EventArgs) {
 		X() = Bit7;
