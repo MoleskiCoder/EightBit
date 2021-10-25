@@ -8,6 +8,7 @@
 
 class test_t final : public element_t {
 public:
+    test_t() noexcept;
     test_t(simdjson::dom::element input) noexcept;
 
     [[nodiscard]] auto name() const noexcept { return at("name"); }

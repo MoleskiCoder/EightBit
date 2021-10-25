@@ -6,9 +6,10 @@
 
 class element_t {
 private:
-    const simdjson::dom::element m_raw;
+    simdjson::dom::element m_raw;
 
 protected:
+    element_t() noexcept;
     element_t(simdjson::dom::element input) noexcept;
 
     [[nodiscard]] auto raw() const noexcept { return m_raw; }
@@ -17,4 +18,6 @@ protected:
     [[nodiscard]] auto operator[](std::string key) const noexcept { return at(key); }
     [[nodiscard]] auto array_at(std::string key) const noexcept { return at(key).get_array(); }
     [[nodiscard]] auto integer_at(std::string key) const noexcept { return at(key).get_int64(); }
+
+
 };

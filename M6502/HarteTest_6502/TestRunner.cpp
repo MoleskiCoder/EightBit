@@ -4,8 +4,7 @@
 std::set<uint8_t> TestRunner::m_undocumented_opcodes;
 bool TestRunner::m_undocumented_opcodes_initialised = false;
 
-TestRunner::TestRunner(const test_t test)
-: m_test(test) {}
+TestRunner::TestRunner() {}
 
 EightBit::MemoryMapping TestRunner::mapping(const uint16_t address) noexcept {
     return { RAM(), 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
@@ -191,8 +190,16 @@ void TestRunner::disassemble(uint16_t address) {
     pushCurrentMessage();
 }
 
-void TestRunner::check() {
-    initialise();
+void TestRunner::check(const test_t updated) {
+
+    m_test = updated;
+
+    m_messages.clear();
+    m_actualCycles.clear();
+    m_cycles = 0;
+    m_valid = true;
+    m_undocumented = false;
+
     raisePOWER();
     initialiseState();
     const auto pc = CPU().PC().word;

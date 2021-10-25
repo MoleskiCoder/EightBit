@@ -25,7 +25,7 @@ private:
     EightBit::Symbols m_symbols;
     EightBit::Disassembly m_disassembler = { *this, m_cpu, m_symbols };
 
-    const test_t m_test;
+    test_t m_test;
 
     std::ostringstream m_os;
     std::vector<std::string> m_messages;
@@ -92,7 +92,7 @@ protected:
     virtual EightBit::MemoryMapping mapping(uint16_t address) noexcept final;
 
 public:
-    TestRunner(test_t test);
+    TestRunner();
 
     virtual void raisePOWER() final;
     virtual void lowerPOWER() final;
@@ -112,5 +112,5 @@ public:
     [[nodiscard]] constexpr auto undocumented() const noexcept { return m_undocumented; }
     [[nodiscard]] constexpr auto documented() const noexcept { return !undocumented(); }
 
-    void check();
+    void check(test_t updated);
 };
