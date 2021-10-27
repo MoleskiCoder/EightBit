@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
+#include <string_view>
 
 #include "simdjson/simdjson.h"
 
@@ -10,8 +10,8 @@
 
 class state_t final : public element_t {
 private:
-    [[nodiscard]] auto address_at(std::string key) const noexcept { return (uint16_t)integer_at(key); }
-    [[nodiscard]] auto byte_at(std::string key) const noexcept { return (uint8_t)integer_at(key); }
+    [[nodiscard]] auto address_at(std::string_view key) const noexcept { return (uint16_t)integer_at(key); }
+    [[nodiscard]] auto byte_at(std::string_view key) const noexcept { return (uint8_t)integer_at(key); }
 
 public:
     state_t(simdjson::dom::element input) noexcept;

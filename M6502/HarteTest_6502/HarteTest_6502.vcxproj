@@ -24,6 +24,7 @@
     <ProjectGuid>{894eb6ef-4c8d-4401-bbaa-aba05a021abb}</ProjectGuid>
     <RootNamespace>HarteTest_6502</RootNamespace>
     <ProjectName>HarteTest_6502</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -94,7 +95,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -107,7 +108,7 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ControlFlowGuard>false</ControlFlowGuard>
@@ -127,7 +128,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -140,7 +141,7 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ControlFlowGuard>false</ControlFlowGuard>
@@ -162,6 +163,7 @@
     <ClCompile Include="element_t.cpp" />
     <ClCompile Include="opcode_test_suite_t.cpp" />
     <ClCompile Include="parser_t.cpp" />
+    <ClCompile Include="processor_test_suite_t.cpp" />
     <ClCompile Include="ram_t.cpp" />
     <ClCompile Include="simdjson\simdjson.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -183,11 +185,13 @@
   <ItemGroup>
     <ClInclude Include="array_t.h" />
     <ClInclude Include="byte_t.h" />
+    <ClInclude Include="co_generator_t.h" />
     <ClInclude Include="cycles_t.h" />
     <ClInclude Include="cycle_t.h" />
     <ClInclude Include="element_t.h" />
     <ClInclude Include="opcode_test_suite_t.h" />
     <ClInclude Include="parser_t.h" />
+    <ClInclude Include="processor_test_suite_t.h" />
     <ClInclude Include="ram_t.h" />
     <ClInclude Include="simdjson\simdjson.h" />
     <ClInclude Include="state_t.h" />

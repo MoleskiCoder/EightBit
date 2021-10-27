@@ -7,5 +7,5 @@ parser_t::parser_t(const std::string path) noexcept
 : m_path(path) {}
 
 void parser_t::load() {
-    m_raw = m_parser.load(path());
+    m_raw = m_parser.load(m_path);
 }

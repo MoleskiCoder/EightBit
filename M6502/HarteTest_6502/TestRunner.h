@@ -45,23 +45,30 @@ private:
 
     void pushCurrentMessage();
 
-    void raise(std::string what, uint16_t expected, uint16_t actual);
-    void raise(std::string what, uint8_t expected, uint8_t actual);
-    void raise(std::string what, std::string_view expected, std::string_view actual);
+    void raise(std::string_view what, uint16_t expected, uint16_t actual);
+    void raise(std::string_view what, uint8_t expected, uint8_t actual);
+    void raise(std::string_view what, std::string_view expected, std::string_view actual);
 
     template<class T>
-    bool check(std::string what, T expected, T actual) {
+    bool check(std::string_view what, T expected, T actual) {
         const auto success = actual == expected;
         if (!success)
             raise(what, expected, actual);
         return success;
     }
 
-    bool check(std::string what, uint16_t address, uint8_t expected, uint8_t actual);
+    bool check(std::string_view what, std::string_view expected, std::string_view actual) {
+        const auto success = actual == expected;
+        if (!success)
+            raise(what, expected, actual);
+        return success;
+    }
+
+    bool check(std::string_view what, uint16_t address, uint8_t expected, uint8_t actual);
 
     void addActualCycle(const actual_cycle_t& value);
-    void addActualCycle(uint16_t address, uint8_t value, std::string action);
-    void addActualCycle(EightBit::register16_t address, uint8_t value, std::string action);
+    void addActualCycle(uint16_t address, uint8_t value, std::string_view action);
+    void addActualCycle(EightBit::register16_t address, uint8_t value, std::string_view action);
 
     void addActualReadCycle(EightBit::register16_t address, uint8_t value);
     void addActualWriteCycle(EightBit::register16_t address, uint8_t value);
@@ -78,11 +85,11 @@ private:
         pushCurrentMessage();
     }
 
-    void dumpCycles(std::string which, cycles_t cycles);
+    void dumpCycles(std::string_view which, cycles_t cycles);
     void dumpCycles(cycles_t cycles);
     void dumpCycle(cycle_t cycle);
 
-    void dumpCycles(std::string which, const actual_cycles_t& cycles);
+    void dumpCycles(std::string_view which, const actual_cycles_t& cycles);
     void dumpCycles(const actual_cycles_t& cycles);
     void dumpCycle(const actual_cycle_t& cycle);
 

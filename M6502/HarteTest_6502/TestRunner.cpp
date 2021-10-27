@@ -25,11 +25,11 @@ void TestRunner::lowerPOWER() {
     EightBit::Bus::lowerPOWER();
 }
 
-void TestRunner::addActualCycle(const uint16_t address, const uint8_t value, const std::string action) {
-    m_actualCycles.push_back({ address, value, action });
+void TestRunner::addActualCycle(const uint16_t address, const uint8_t value, std::string_view action) {
+    m_actualCycles.push_back({ address, value, std::string(action) });
 }
 
-void TestRunner::addActualCycle(const EightBit::register16_t address, const uint8_t value, const std::string action) {
+void TestRunner::addActualCycle(const EightBit::register16_t address, const uint8_t value, std::string_view action) {
     addActualCycle(address.word, value, action);
 }
 
@@ -41,8 +41,8 @@ void TestRunner::addActualWriteCycle(const EightBit::register16_t address, const
     addActualCycle(address, value, "write");
 }
 
-void TestRunner::dumpCycles(const std::string which, const actual_cycles_t& events) {
-    m_messages.push_back(which);
+void TestRunner::dumpCycles(std::string_view which, const actual_cycles_t& events) {
+    m_messages.push_back(std::string(which));
     dumpCycles(events);
 }
 
@@ -55,8 +55,8 @@ void TestRunner::dumpCycle(const actual_cycle_t& cycle) {
     dumpCycle(std::get<0>(cycle), std::get<1>(cycle), std::get<2>(cycle));
 }
 
-void TestRunner::dumpCycles(const std::string which, const cycles_t events) {
-    m_messages.push_back(which);
+void TestRunner::dumpCycles(std::string_view which, const cycles_t events) {
+    m_messages.push_back(std::string(which));
     dumpCycles(events);
 }
 
@@ -84,7 +84,7 @@ void TestRunner::initialise() {
     os() << std::hex << std::uppercase;
 }
 
-void TestRunner::raise(const std::string what, const uint16_t expected, const uint16_t actual) {
+void TestRunner::raise(std::string_view what, const uint16_t expected, const uint16_t actual) {
     os()
         << std::setw(2) << std::setfill(' ')
         << what
@@ -94,7 +94,7 @@ void TestRunner::raise(const std::string what, const uint16_t expected, const ui
     pushCurrentMessage();
 }
 
-void TestRunner::raise(const std::string what, const uint8_t expected, const uint8_t actual) {
+void TestRunner::raise(std::string_view what, const uint8_t expected, const uint8_t actual) {
     os()
         << std::setw(2) << std::setfill(' ')
         << what
@@ -106,7 +106,7 @@ void TestRunner::raise(const std::string what, const uint8_t expected, const uin
     pushCurrentMessage();
 }
 
-void TestRunner::raise(const std::string what, const std::string_view expected, const std::string_view actual) {
+void TestRunner::raise(std::string_view what, std::string_view expected, std::string_view actual) {
     os()
         << std::setw(0) << std::setfill(' ')
         << what
@@ -115,7 +115,7 @@ void TestRunner::raise(const std::string what, const std::string_view expected, 
     pushCurrentMessage();
 }
 
-bool TestRunner::check(const std::string what, const uint16_t address, const uint8_t expected, const uint8_t actual) {
+bool TestRunner::check(std::string_view what, const uint16_t address, const uint8_t expected, const uint8_t actual) {
     const auto success = actual == expected;
     if (!success) {
         os() << what << ": " << std::setw(4) << std::setfill('0') << (int)address;

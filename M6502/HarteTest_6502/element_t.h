@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include <string_view>
 
 #include "simdjson/simdjson.h"
 
@@ -14,10 +14,8 @@ protected:
 
     [[nodiscard]] auto raw() const noexcept { return m_raw; }
 
-    [[nodiscard]] auto at(std::string key) const noexcept { return raw()[key]; }
-    [[nodiscard]] auto operator[](std::string key) const noexcept { return at(key); }
-    [[nodiscard]] auto array_at(std::string key) const noexcept { return at(key).get_array(); }
-    [[nodiscard]] auto integer_at(std::string key) const noexcept { return at(key).get_int64(); }
-
-
+    [[nodiscard]] auto at(std::string_view key) const noexcept { return raw()[key]; }
+    [[nodiscard]] auto operator[](std::string_view key) const noexcept { return at(key); }
+    [[nodiscard]] auto array_at(std::string_view key) const noexcept { return at(key).get_array(); }
+    [[nodiscard]] auto integer_at(std::string_view key) const noexcept { return at(key).get_int64(); }
 };
