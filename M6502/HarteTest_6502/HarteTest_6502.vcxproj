@@ -164,7 +164,6 @@
     <ClCompile Include="opcode_test_suite_t.cpp" />
     <ClCompile Include="parser_t.cpp" />
     <ClCompile Include="processor_test_suite_t.cpp" />
-    <ClCompile Include="ram_t.cpp" />
     <ClCompile Include="simdjson\simdjson.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>

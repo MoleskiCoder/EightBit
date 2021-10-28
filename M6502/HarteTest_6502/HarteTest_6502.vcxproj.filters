@@ -41,9 +41,6 @@
     <ClCompile Include="cycles_t.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ram_t.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="byte_t.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

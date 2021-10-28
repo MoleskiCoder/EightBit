@@ -17,4 +17,3 @@ public:
 
 	co_generator_t<opcode_test_suite_t> generator();
 };
-
