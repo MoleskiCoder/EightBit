@@ -266,7 +266,7 @@ int EightBit::MOS6502::execute() {
 	case 0x8f:	memoryWrite(Address_Absolute(), A() & X());					break;	// *SAX (absolute)
 
 	case 0x90:	branch(!carry());											break;	// BCC (relative)
-	case 0x91:	AM_IndirectIndexedY(); memoryWrite(A());					break;	// STA (indirect indexed Y)
+	case 0x91:	memoryRead(Address_IndirectIndexedY().first); memoryWrite(A()); break;	// STA (indirect indexed Y)
 	case 0x92:																break;
 	case 0x93:																break;
 	case 0x94:	memoryWrite(Address_ZeroPageX(), Y());						break;	// STY (zero page, X)
