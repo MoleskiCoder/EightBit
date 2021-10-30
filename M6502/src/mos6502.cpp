@@ -565,9 +565,7 @@ uint8_t EightBit::MOS6502::sub_d(const uint8_t operand, const uint8_t data, cons
 }
 
 uint8_t EightBit::MOS6502::adc(const uint8_t operand, const uint8_t data) noexcept {
-	const auto returned = add(operand, data, carry());
-	adjustNZ(m_intermediate.low);
-	return returned;
+	return add(operand, data, carry());
 }
 
 uint8_t EightBit::MOS6502::add(uint8_t operand, uint8_t data, int carry) noexcept {
@@ -580,26 +578,32 @@ uint8_t EightBit::MOS6502::add_b(uint8_t operand, uint8_t data, int carry) noexc
 	P() = setBit(P(), VF, ~(operand ^ data) & (operand ^ m_intermediate.low) & NF);
 	P() = setBit(P(), CF, m_intermediate.high & CF);
 
+	adjustNZ(m_intermediate.low);
+
 	return m_intermediate.low;
 }
 
 uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) noexcept {
 
-	m_intermediate.word = operand + data + carry;
+	register16_t low = lowerNibble(operand) + lowerNibble(data) + carry;
+	register16_t high = higherNibble(operand) + higherNibble(data);
 
-	uint8_t low = lowNibble(operand) + lowNibble(data) + carry;
-	if (low > 9)
-		low += 6;
+	P() = clearBit(P(), ZF, (low + high).low);
 
-	uint8_t high = highNibble(operand) + highNibble(data) + (low > 0xf ? 1 : 0);
-	P() = setBit(P(), VF, ~(operand ^ data) & (operand ^ promoteNibble(high)) & NF);
+	if (low.word > 0x09) {
+		high += 0x10;
+		low += 0x06;
+	}
 
-	if (high > 9)
-		high += 6;
+	P() = setBit(P(), NF, high.low & NF);
+	P() = setBit(P(), VF, ~(operand ^ data) & (operand ^ high.low) & NF);
 
-	P() = setBit(P(), CF, high > 0xf);
+	if (high.word > 0x90)
+		high += 0x60;
 
-	return promoteNibble(high) | lowNibble(low);
+	P() = setBit(P(), CF, high.high);
+
+	return lowerNibble(low.low) | higherNibble(high.low);
 }
 
 uint8_t EightBit::MOS6502::andr(const uint8_t operand, const uint8_t data) noexcept {
