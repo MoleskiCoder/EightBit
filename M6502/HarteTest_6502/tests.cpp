@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "TestRunner.h"
+#include "checker_t.h"
 #include "test_t.h"
 #include "opcode_test_suite_t.h"
 #include "processor_test_suite_t.h"
@@ -24,6 +25,9 @@ int main() {
     TestRunner runner;
     runner.initialise();
 
+    checker_t checker(runner);
+    checker.initialise();
+
 #ifdef USE_COROUTINES
 
     processor_test_suite_t m6502_tests(directory);
@@ -40,16 +44,16 @@ int main() {
         while (test_generator) {
 
             const auto test = test_generator();
+            checker.check(test);
 
-            runner.check(test);
-            if (runner.invalid()) {
+            if (checker.invalid()) {
                 ++invalid_opcode_count;
-                if (runner.unimplemented())
+                if (checker.unimplemented())
                     ++unimplemented_opcode_count;
-                if (runner.undocumented())
+                if (checker.undocumented())
                     ++undocumented_opcode_count;
                 std::cout << "** Failed: " << test.name() << "\n";
-                for (const auto& message : runner.messages())
+                for (const auto& message : checker.messages())
                     std::cout << "**** " << message << "\n";
                 break;
             }
@@ -70,17 +74,17 @@ int main() {
 
         for (const auto opcode_test_element : opcode) {
 
-            const auto opcode_test = test_t(opcode_test_element);
-            runner.check(opcode_test);
+            const auto test = test_t(opcode_test_element);
+            checker.check(test);
 
-            if (runner.invalid()) {
+            if (checker.invalid()) {
                 ++invalid_opcode_count;
-                if (runner.unimplemented())
+                if (checker.unimplemented())
                     ++unimplemented_opcode_count;
-                if (runner.undocumented())
+                if (checker.undocumented())
                     ++undocumented_opcode_count;
-                std::cout << "** Failed: " << opcode_test.name() << "\n";
-                for (const auto& message : runner.messages())
+                std::cout << "** Failed: " << test.name() << "\n";
+                for (const auto& message : checker.messages())
                     std::cout << "**** " << message << "\n";
                 break;
             }

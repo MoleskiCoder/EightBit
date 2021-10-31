@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClCompile Include="array_t.cpp" />
     <ClCompile Include="byte_t.cpp" />
+    <ClCompile Include="checker_t.cpp" />
     <ClCompile Include="cycles_t.cpp" />
     <ClCompile Include="cycle_t.cpp" />
     <ClCompile Include="element_t.cpp" />
@@ -184,6 +185,7 @@
   <ItemGroup>
     <ClInclude Include="array_t.h" />
     <ClInclude Include="byte_t.h" />
+    <ClInclude Include="checker_t.h" />
     <ClInclude Include="co_generator_t.h" />
     <ClInclude Include="cycles_t.h" />
     <ClInclude Include="cycle_t.h" />

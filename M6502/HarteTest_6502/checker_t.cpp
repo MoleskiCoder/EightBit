@@ -78,21 +78,23 @@ void checker_t::raise(const std::string what, const std::string_view expected, c
         << ", actual: " << actual;
     pushCurrentMessage();
 }
-//
-//bool TestRunner::check(const std::string what, const uint16_t address, const uint8_t expected, const uint8_t actual) {
-//    const auto success = actual == expected;
-//    if (!success) {
-//        os() << what << ": " << std::setw(4) << std::setfill('0') << (int)address;
-//        raise(os().str(), expected, actual);
-//    }
-//    return success;
-//}
-//
 
-checker_t::checker_t(const test_t test)
-: m_test(test) {}
+bool checker_t::check(const std::string what, const uint16_t address, const uint8_t expected, const uint8_t actual) {
+    const auto success = actual == expected;
+    if (!success) {
+        os() << what << ": " << std::setw(4) << std::setfill('0') << (int)address;
+        raise(os().str(), expected, actual);
+    }
+    return success;
+}
 
-void checker_t::initialiseState(EightBit::MOS6502& cpu, EightBit::Ram& ram) {
+checker_t::checker_t(TestRunner& runner)
+: m_runner(runner) {}
+
+void checker_t::initialiseState() {
+
+    auto& cpu = runner().CPU();
+    auto& ram = runner().RAM();
 
     const auto initial = test().initial();
 
@@ -108,9 +110,11 @@ void checker_t::initialiseState(EightBit::MOS6502& cpu, EightBit::Ram& ram) {
     }
 }
 
-void checker_t::initialise(EightBit::Bus& bus) {
+void checker_t::initialise() {
 
     seedUndocumentedOpcodes();
+
+    auto& bus = runner();
 
     bus.ReadByte.connect([this, &bus](EightBit::EventArgs&) {
         addActualReadCycle(bus.ADDRESS(), bus.DATA());
@@ -124,7 +128,10 @@ void checker_t::initialise(EightBit::Bus& bus) {
 }
 
 //
-bool checker_t::checkState(EightBit::MOS6502& cpu, EightBit::Ram& ram) {
+bool checker_t::checkState() {
+
+    auto& cpu = runner().CPU();
+    auto& ram = runner().RAM();
 
     const auto expected_cycles = test().cycles();
     const auto actual_cycles = m_actualCycles;
@@ -165,62 +172,69 @@ void checker_t::pushCurrentMessage() {
     os().str("");
 }
 
-//void TestRunner::disassemble(uint16_t address) {
-//    try {
-//        os() << m_disassembler.disassemble(address);
-//    }
-//    catch (const std::domain_error& error) {
-//        os() << "Disassembly problem: " << error.what();
-//    }
-//    pushCurrentMessage();
-//}
-//
-//void TestRunner::check() {
-//    initialise();
-//    raisePOWER();
-//    initialiseState();
-//    const auto pc = CPU().PC().word;
-//    const auto start_opcode = peek(pc);
-//    m_cycles = CPU().step();
-//    lowerPOWER();
-//
-//    m_valid = checkState();
-//
-//    m_undocumented = m_undocumented_opcodes.find(start_opcode) != m_undocumented_opcodes.end();
-//    if (undocumented()) {
-//        m_messages.push_back("Undocumented");
-//        return;
-//    }
-//
-//    if (unimplemented()) {
-//        m_messages.push_back("Unimplemented");
-//        return;
-//    }
-//
-//    if (invalid() && implemented()) {
-//
-//        disassemble(pc);
-//
-//        const auto final = test().final();
-//        raise("PC", final.pc(), CPU().PC().word);
-//        raise("S", final.s(), CPU().S());
-//        raise("A", final.a(), CPU().A());
-//        raise("X", final.x(), CPU().X());
-//        raise("Y", final.y(), CPU().Y());
-//        raise("P", final.p(), CPU().P());
-//
-//        os()
-//            << std::dec << std::setfill(' ')
-//            << "Stepped cycles: " << cycles()
-//            << ", expected events: " << test().cycles().size()
-//            << ", actual events: " << m_actualCycles.size();
-//        pushCurrentMessage();
-//
-//        dumpCycles("-- Expected cycles", test().cycles());
-//        dumpCycles("-- Actual cycles", m_actualCycles);
-//    }
-//}
-//
+void checker_t::disassemble(uint16_t address) {
+    try {
+        os() << m_disassembler.disassemble(address);
+    }
+    catch (const std::domain_error& error) {
+        os() << "Disassembly problem: " << error.what();
+    }
+    pushCurrentMessage();
+}
+
+void checker_t::check(test_t current) {
+
+    m_test = current;
+
+    auto& cpu = runner().CPU();
+
+    m_messages.clear();
+    m_actualCycles.clear();
+
+    runner().raisePOWER();
+    initialiseState();
+    const auto pc = cpu.PC().word;
+    const auto start_opcode = runner().peek(pc);
+    m_cycles = cpu.step();
+    runner().lowerPOWER();
+
+    m_valid = checkState();
+
+    m_undocumented = m_undocumented_opcodes.find(start_opcode) != m_undocumented_opcodes.end();
+    if (undocumented()) {
+        m_messages.push_back("Undocumented");
+        return;
+    }
+
+    if (unimplemented()) {
+        m_messages.push_back("Unimplemented");
+        return;
+    }
+
+    if (invalid() && implemented()) {
+
+        disassemble(pc);
+
+        const auto final = test().final();
+        raise("PC", final.pc(), cpu.PC().word);
+        raise("S", final.s(), cpu.S());
+        raise("A", final.a(), cpu.A());
+        raise("X", final.x(), cpu.X());
+        raise("Y", final.y(), cpu.Y());
+        raise("P", final.p(), cpu.P());
+
+        os()
+            << std::dec << std::setfill(' ')
+            << "Stepped cycles: " << cycles()
+            << ", expected events: " << test().cycles().size()
+            << ", actual events: " << m_actualCycles.size();
+        pushCurrentMessage();
+
+        dumpCycles("-- Expected cycles", test().cycles());
+        dumpCycles("-- Actual cycles", m_actualCycles);
+    }
+}
+
 void checker_t::seedUndocumentedOpcodes() {
     if (m_undocumented_opcodes_initialised) return;
     m_undocumented_opcodes = {
