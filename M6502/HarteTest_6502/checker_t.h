@@ -13,7 +13,6 @@
 #include "TestRunner.h"
 
 class checker_t {
-public:
 private:
     static std::set<uint8_t> m_undocumented_opcodes;
     static bool m_undocumented_opcodes_initialised;

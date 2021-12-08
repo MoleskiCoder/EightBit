@@ -10,8 +10,6 @@
 #include "opcode_test_suite_t.h"
 #include "processor_test_suite_t.h"
 
-#define USE_COROUTINES
-
 int main() {
 
     auto directory = std::string("C:\\github\\spectrum\\libraries\\EightBit\\modules\\ProcessorTests\\6502\\v1");
@@ -66,7 +64,7 @@ int main() {
 
     for (const auto& entry : std::filesystem::directory_iterator{ location }) {
 
-        const auto path = entry.path();
+        const auto& path = entry.path();
 
         std::cout << "Processing: " << path.filename() << "\n";
         opcode_test_suite_t opcode(path.string());

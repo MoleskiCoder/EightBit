@@ -23,3 +23,5 @@
 #include <Symbols.h>
 
 #include "simdjson/simdjson.h"
+
+#define USE_COROUTINES

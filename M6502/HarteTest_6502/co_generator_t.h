@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef USE_COROUTINES
+
 #include <coroutine>
 #include <utility>
 
@@ -55,3 +57,5 @@ private:
         }
     }
 };
+
+#endif // USE_COROUTINES

@@ -106,7 +106,9 @@ void checker_t::initialiseState() {
     cpu.P() = initial.p();
     for (const auto entry : initial.ram()) {
         const byte_t byte(entry);
-        ram.poke(byte.address(), byte.value());
+        const auto address = byte.address();
+        const auto value = byte.value();
+        ram.poke(address, value);
     }
 }
 
@@ -134,18 +136,28 @@ bool checker_t::checkState() {
     auto& ram = runner().RAM();
 
     const auto expected_cycles = test().cycles();
-    const auto actual_cycles = m_actualCycles;
+    const auto& actual_cycles = m_actualCycles;
     m_cycle_count_mismatch = expected_cycles.size() != actual_cycles.size();
     if (m_cycle_count_mismatch)
         return false;
 
     size_t actual_idx = 0;
     for (const auto expected_cycle : expected_cycles) {
+
         const auto expected = cycle_t(expected_cycle);
-        const auto actual = actual_cycles.at(actual_idx++);   // actual could be less than expected
-        check("Cycle address", expected.address(), std::get<0>(actual));
-        check("Cycle value", expected.value(), std::get<1>(actual));
-        check("Cycle action", expected.action(), std::string_view(std::get<2>(actual)));
+        const auto& actual = actual_cycles.at(actual_idx++);   // actual could be less than expected
+
+        const auto expected_address = expected.address();
+        const auto actual_address = std::get<0>(actual);
+        check("Cycle address", expected_address, actual_address);
+
+        const auto expected_value = expected.value();
+        const auto actual_value = std::get<1>(actual);
+        check("Cycle value", expected_value, actual_value);
+
+        const auto expected_action = expected.action();
+        const auto& actual_action = std::get<2>(actual);
+        check("Cycle action", expected_action, std::string_view(actual_action));
     }
 
     const auto final = test().final();
@@ -159,7 +171,9 @@ bool checker_t::checkState() {
     bool ram_problem = false;
     for (const auto entry : final.ram()) {
         const byte_t byte(entry);
-        const auto ram_good = check("RAM", byte.address(), byte.value(), ram.peek(byte.address()));
+        const auto address = byte.address();
+        const auto value = byte.value();
+        const auto ram_good = check("RAM", address, value, ram.peek(address));
         if (!ram_good && !ram_problem)
             ram_problem = true;
     }
@@ -195,16 +209,18 @@ void checker_t::check(test_t current) {
     initialiseState();
     const auto pc = cpu.PC().word;
     const auto start_opcode = runner().peek(pc);
+
+    m_undocumented = m_undocumented_opcodes.contains(start_opcode);
+    if (undocumented()) {
+        m_valid = false;
+        m_messages.push_back("Undocumented");
+        return;
+    }
+
     m_cycles = cpu.step();
     runner().lowerPOWER();
 
     m_valid = checkState();
-
-    m_undocumented = m_undocumented_opcodes.find(start_opcode) != m_undocumented_opcodes.end();
-    if (undocumented()) {
-        m_messages.push_back("Undocumented");
-        return;
-    }
 
     if (unimplemented()) {
         m_messages.push_back("Unimplemented");
