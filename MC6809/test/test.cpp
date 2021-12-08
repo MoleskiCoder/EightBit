@@ -14,8 +14,8 @@ int main(int argc, char* argv[]) {
 	configuration.setDebugMode(true);
 #endif
 
-	EightBit::TestHarness<Configuration, Board> harness(configuration);
-	harness.run();
+	auto harness = std::make_shared<EightBit::TestHarness<Configuration, Board>>(configuration);
+	harness->run();
 
 	return 0;
 }
