@@ -529,7 +529,7 @@ void EightBit::MOS6502::branch(const int condition) {
 
 uint8_t EightBit::MOS6502::sbc(const uint8_t operand, const uint8_t data) noexcept {
 
-	const auto returned = sub(operand, data, ~P() & CF);
+	const auto returned = sub(operand, data, carry(~P()));
 
 	const auto difference = m_intermediate;
 	adjustNZ(difference.low);
@@ -552,12 +552,12 @@ uint8_t EightBit::MOS6502::sub_d(const uint8_t operand, const uint8_t data, cons
 	m_intermediate.word = operand - data - borrow;
 
 	uint8_t low = lowNibble(operand) - lowNibble(data) - borrow;
-	const auto lowNegative = low & NF;
+	const auto lowNegative = negative(low);
 	if (lowNegative)
 		low -= 6;
 
 	uint8_t high = highNibble(operand) - highNibble(data) - (lowNegative >> 7);
-	const auto highNegative = high & NF;
+	const auto highNegative = negative(high);
 	if (highNegative)
 		high -= 6;
 
@@ -568,15 +568,15 @@ uint8_t EightBit::MOS6502::adc(const uint8_t operand, const uint8_t data) noexce
 	return add(operand, data, carry());
 }
 
-uint8_t EightBit::MOS6502::add(uint8_t operand, uint8_t data, int carry) noexcept {
-	return decimal() ? add_d(operand, data, carry) : add_b(operand, data, carry);
+uint8_t EightBit::MOS6502::add(uint8_t operand, uint8_t data, int carrying) noexcept {
+	return decimal() ? add_d(operand, data, carrying) : add_b(operand, data, carrying);
 }
 
-uint8_t EightBit::MOS6502::add_b(uint8_t operand, uint8_t data, int carry) noexcept {
-	m_intermediate.word = operand + data + carry;
+uint8_t EightBit::MOS6502::add_b(uint8_t operand, uint8_t data, int carrying) noexcept {
+	m_intermediate.word = operand + data + carrying;
 
 	P() = setBit(P(), VF, ~(operand ^ data) & (operand ^ m_intermediate.low) & NF);
-	P() = setBit(P(), CF, m_intermediate.high & CF);
+	P() = setBit(P(), CF, carry(m_intermediate.high));
 
 	adjustNZ(m_intermediate.low);
 
@@ -595,7 +595,7 @@ uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) noexc
 		low += 0x06;
 	}
 
-	P() = setBit(P(), NF, high.low & NF);
+	adjustNegative(high.low);
 	P() = setBit(P(), VF, ~(operand ^ data) & (operand ^ high.low) & NF);
 
 	if (high.word > 0x90)
@@ -616,7 +616,7 @@ uint8_t EightBit::MOS6502::asl(const uint8_t value) noexcept {
 }
 
 void EightBit::MOS6502::bit(const uint8_t operand, const uint8_t data) noexcept {
-	P() = setBit(P(), VF, data & VF);
+	P() = setBit(P(), VF, overflow(data));
 	adjustZero(operand & data);
 	adjustNegative(data);
 }

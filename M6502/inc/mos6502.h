@@ -15,6 +15,13 @@ namespace EightBit {
 
 	class MOS6502 : public LittleEndianProcessor {
 	public:
+		DECLARE_PIN_INPUT(NMI)
+		DECLARE_PIN_INPUT(SO)
+		DECLARE_PIN_OUTPUT(SYNC)
+		DECLARE_PIN_INPUT(RDY)
+		DECLARE_PIN_OUTPUT(RW)
+
+	public:
 		enum StatusBits {
 			NF = Bit7,	// Negative
 			VF = Bit6,  // Overflow
@@ -41,12 +48,6 @@ namespace EightBit {
 
 		[[nodiscard]] constexpr auto& P() noexcept { return p; }
 		[[nodiscard]] constexpr const auto& P() const noexcept { return p; }
-
-		DECLARE_PIN_INPUT(NMI)
-		DECLARE_PIN_INPUT(SO)
-		DECLARE_PIN_OUTPUT(SYNC)
-		DECLARE_PIN_INPUT(RDY)
-		DECLARE_PIN_OUTPUT(RW)
 
 	protected:
 		void handleRESET() final;
@@ -109,25 +110,32 @@ namespace EightBit {
 		uint8_t AM_IndexedIndirectX();
 		uint8_t AM_IndirectIndexedY();
 
-		// Flag adjustment
-
-		constexpr void adjustZero(const uint8_t datum) noexcept { P() = clearBit(P(), ZF, datum); }
-		constexpr void adjustNegative(const uint8_t datum) noexcept { P() = setBit(P(), NF, datum & NF); }
-		
-		constexpr void adjustNZ(const uint8_t datum) noexcept {
-			adjustZero(datum);
-			adjustNegative(datum);
-		}
-
 		// Flag checking
 
 		[[nodiscard]] constexpr auto interruptMasked() const noexcept { return P() & IF; }
 		[[nodiscard]] constexpr auto decimal() const noexcept { return P() & DF; }
 
-		[[nodiscard]] constexpr auto negative() const noexcept { return P() & NF; }
-		[[nodiscard]] constexpr auto zero() const noexcept { return P() & ZF; }
-		[[nodiscard]] constexpr auto overflow() const noexcept { return P() & VF; }
-		[[nodiscard]] constexpr auto carry() const noexcept { return P() & CF; }
+		[[nodiscard]] static constexpr auto negative(uint8_t data) noexcept { return data & NF; }
+		[[nodiscard]] constexpr auto negative() const noexcept { return negative(P()); }
+
+		[[nodiscard]] static constexpr auto zero(uint8_t data) noexcept { return data & ZF; }
+		[[nodiscard]] constexpr auto zero() const noexcept { return zero(P()); }
+
+		[[nodiscard]] static constexpr auto overflow(uint8_t data) noexcept { return data & VF; }
+		[[nodiscard]] constexpr auto overflow() const noexcept { return overflow(P()); }
+
+		[[nodiscard]] static constexpr auto carry(uint8_t data) noexcept { return data & CF; }
+		[[nodiscard]] constexpr auto carry() const noexcept { return carry(P()); }
+
+		// Flag adjustment
+
+		constexpr void adjustZero(const uint8_t datum) noexcept { P() = clearBit(P(), ZF, datum); }
+		constexpr void adjustNegative(const uint8_t datum) noexcept { P() = setBit(P(), NF, negative(datum)); }
+
+		constexpr void adjustNZ(const uint8_t datum) noexcept {
+			adjustZero(datum);
+			adjustNegative(datum);
+		}
 
 		// Miscellaneous
 
