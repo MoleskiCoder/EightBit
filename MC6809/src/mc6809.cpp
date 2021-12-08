@@ -318,34 +318,34 @@ void EightBit::mc6809::executeUnprefixed() {
 	// LD
 
 	// LDA
-	case 0x86:	A() = ld(AM_immediate_byte());							break;		// LD (LDA immediate)
-	case 0x96:	A() = ld(AM_direct_byte());								break;		// LD (LDA direct)
-	case 0xa6:	A() = ld(AM_indexed_byte());							break;		// LD (LDA indexed)
-	case 0xb6:	A() = ld(AM_extended_byte());							break;		// LD (LDA extended)
+	case 0x86:	A() = through(AM_immediate_byte());						break;		// LD (LDA immediate)
+	case 0x96:	A() = through(AM_direct_byte());						break;		// LD (LDA direct)
+	case 0xa6:	A() = through(AM_indexed_byte());						break;		// LD (LDA indexed)
+	case 0xb6:	A() = through(AM_extended_byte());						break;		// LD (LDA extended)
 
 	// LDB
-	case 0xc6:	B() = ld(AM_immediate_byte());							break;		// LD (LDB immediate)
-	case 0xd6:	B() = ld(AM_direct_byte());								break;		// LD (LDB direct)
-	case 0xe6:	B() = ld(AM_indexed_byte());							break;		// LD (LDB indexed)
-	case 0xf6:	B() = ld(AM_extended_byte());							break;		// LD (LDB extended)
+	case 0xc6:	B() = through(AM_immediate_byte());						break;		// LD (LDB immediate)
+	case 0xd6:	B() = through(AM_direct_byte());						break;		// LD (LDB direct)
+	case 0xe6:	B() = through(AM_indexed_byte());						break;		// LD (LDB indexed)
+	case 0xf6:	B() = through(AM_extended_byte());						break;		// LD (LDB extended)
 
 	// LDD
-	case 0xcc:	D() = ld(AM_immediate_word());							break;		// LD (LDD immediate)
-	case 0xdc:	D() = ld(AM_direct_word());								break;		// LD (LDD direct)
-	case 0xec:	D() = ld(AM_indexed_word());							break;		// LD (LDD indexed)
-	case 0xfc:	D() = ld(AM_extended_word());							break;		// LD (LDD extended)
+	case 0xcc:	D() = through(AM_immediate_word());						break;		// LD (LDD immediate)
+	case 0xdc:	D() = through(AM_direct_word());						break;		// LD (LDD direct)
+	case 0xec:	D() = through(AM_indexed_word());						break;		// LD (LDD indexed)
+	case 0xfc:	D() = through(AM_extended_word());						break;		// LD (LDD extended)
 
 	// LDU
-	case 0xce:	U() = ld(AM_immediate_word());							break;		// LD (LDU immediate)
-	case 0xde:	U() = ld(AM_direct_word());								break;		// LD (LDU direct)
-	case 0xee:	U() = ld(AM_indexed_word());							break;		// LD (LDU indexed)
-	case 0xfe:	U() = ld(AM_extended_word());							break;		// LD (LDU extended)
+	case 0xce:	U() = through(AM_immediate_word());						break;		// LD (LDU immediate)
+	case 0xde:	U() = through(AM_direct_word());						break;		// LD (LDU direct)
+	case 0xee:	U() = through(AM_indexed_word());						break;		// LD (LDU indexed)
+	case 0xfe:	U() = through(AM_extended_word());						break;		// LD (LDU extended)
 
 	// LDX
-	case 0x8e:	X() = ld(AM_immediate_word());							break;		// LD (LDX immediate)
-	case 0x9e:	X() = ld(AM_direct_word());								break;		// LD (LDX direct)
-	case 0xae:	X() = ld(AM_indexed_word());							break;		// LD (LDX indexed)
-	case 0xbe:	X() = ld(AM_extended_word());							break;		// LD (LDX extended)
+	case 0x8e:	X() = through(AM_immediate_word());						break;		// LD (LDX immediate)
+	case 0x9e:	X() = through(AM_direct_word());						break;		// LD (LDX direct)
+	case 0xae:	X() = through(AM_indexed_word());						break;		// LD (LDX indexed)
+	case 0xbe:	X() = through(AM_extended_word());						break;		// LD (LDX extended)
 
 	// LEA
 	case 0x30:	adjustZero(X() = Address_indexed());					break;		// LEA (LEAX indexed)
@@ -438,29 +438,29 @@ void EightBit::mc6809::executeUnprefixed() {
 	// ST
 
 	// STA
-	case 0x97:	memoryWrite(Address_direct(), st(A()));					break;		// ST (STA direct)
-	case 0xa7:	memoryWrite(Address_indexed(), st(A()));				break;		// ST (STA indexed)
-	case 0xb7:	memoryWrite(Address_extended(), st(A()));				break;		// ST (STA extended)
+	case 0x97:	memoryWrite(Address_direct(), through(A()));			break;		// ST (STA direct)
+	case 0xa7:	memoryWrite(Address_indexed(), through(A()));			break;		// ST (STA indexed)
+	case 0xb7:	memoryWrite(Address_extended(), through(A()));			break;		// ST (STA extended)
 
 	// STB
-	case 0xd7:	memoryWrite(Address_direct(), st(B()));					break;		// ST (STB direct)
-	case 0xe7:	memoryWrite(Address_indexed(), st(B()));				break;		// ST (STB indexed)
-	case 0xf7:	memoryWrite(Address_extended(), st(B()));				break;		// ST (STB extended)
+	case 0xd7:	memoryWrite(Address_direct(), through(B()));			break;		// ST (STB direct)
+	case 0xe7:	memoryWrite(Address_indexed(), through(B()));			break;		// ST (STB indexed)
+	case 0xf7:	memoryWrite(Address_extended(), through(B()));			break;		// ST (STB extended)
 
 	// STD
-	case 0xdd:	Processor::setWord(Address_direct(), st(D()));			break;		// ST (STD direct)
-	case 0xed:	Processor::setWord(Address_indexed(), st(D()));			break;		// ST (STD indexed)
-	case 0xfd:	Processor::setWord(Address_extended(), st(D()));		break;		// ST (STD extended)
+	case 0xdd:	Processor::setWord(Address_direct(), through(D()));		break;		// ST (STD direct)
+	case 0xed:	Processor::setWord(Address_indexed(), through(D()));	break;		// ST (STD indexed)
+	case 0xfd:	Processor::setWord(Address_extended(), through(D()));	break;		// ST (STD extended)
 
 	// STU
-	case 0xdf:	Processor::setWord(Address_direct(), st(U()));			break;		// ST (STU direct)
-	case 0xef:	Processor::setWord(Address_indexed(), st(U()));			break;		// ST (STU indexed)
-	case 0xff:	Processor::setWord(Address_extended(), st(U()));		break;		// ST (STU extended)
+	case 0xdf:	Processor::setWord(Address_direct(), through(U()));		break;		// ST (STU direct)
+	case 0xef:	Processor::setWord(Address_indexed(), through(U()));	break;		// ST (STU indexed)
+	case 0xff:	Processor::setWord(Address_extended(), through(U()));	break;		// ST (STU extended)
 
 	// STX
-	case 0x9f:	Processor::setWord(Address_direct(), st(X()));			break;		// ST (STX direct)
-	case 0xaf:	Processor::setWord(Address_indexed(), st(X()));			break;		// ST (STX indexed)
-	case 0xbf:	Processor::setWord(Address_extended(), st(X()));		break;		// ST (STX extended)
+	case 0x9f:	Processor::setWord(Address_direct(), through(X()));		break;		// ST (STX direct)
+	case 0xaf:	Processor::setWord(Address_indexed(), through(X()));	break;		// ST (STX indexed)
+	case 0xbf:	Processor::setWord(Address_extended(), through(X()));	break;		// ST (STX extended)
 
 	// SUB
 
@@ -550,16 +550,16 @@ void EightBit::mc6809::execute10() {
 	// LD
 
 	// LDS
-	case 0xce:	S() = ld(AM_immediate_word());							break;		// LD (LDS immediate)
-	case 0xde:	S() = ld(AM_direct_word());								break;		// LD (LDS direct)
-	case 0xee:	S() = ld(AM_indexed_word());							break;		// LD (LDS indexed)
-	case 0xfe:	S() = ld(AM_extended_word());							break;		// LD (LDS extended)
+	case 0xce:	S() = through(AM_immediate_word());						break;		// LD (LDS immediate)
+	case 0xde:	S() = through(AM_direct_word());						break;		// LD (LDS direct)
+	case 0xee:	S() = through(AM_indexed_word());						break;		// LD (LDS indexed)
+	case 0xfe:	S() = through(AM_extended_word());						break;		// LD (LDS extended)
 
 	// LDY
-	case 0x8e:	Y() = ld(AM_immediate_word());							break;		// LD (LDY immediate)
-	case 0x9e:	Y() = ld(AM_direct_word());								break;		// LD (LDY direct)
-	case 0xae:	Y() = ld(AM_indexed_word());							break;		// LD (LDY indexed)
-	case 0xbe:	Y() = ld(AM_extended_word());							break;		// LD (LDY extended)
+	case 0x8e:	Y() = through(AM_immediate_word());						break;		// LD (LDY immediate)
+	case 0x9e:	Y() = through(AM_direct_word());						break;		// LD (LDY direct)
+	case 0xae:	Y() = through(AM_indexed_word());						break;		// LD (LDY indexed)
+	case 0xbe:	Y() = through(AM_extended_word());						break;		// LD (LDY extended)
 
 	// Branching
 
@@ -580,14 +580,14 @@ void EightBit::mc6809::execute10() {
 	case 0x2f:	branchLong(LE());										break;		// BLE (LBLE relative)
 
 	// STS
-	case 0xdf:	Processor::setWord(Address_direct(), st(S()));			break;		// ST (STS direct)
-	case 0xef:	Processor::setWord(Address_indexed(), st(S()));			break;		// ST (STS indexed)
-	case 0xff:	Processor::setWord(Address_extended(), st(S()));		break;		// ST (STS extended)
+	case 0xdf:	Processor::setWord(Address_direct(), through(S()));		break;		// ST (STS direct)
+	case 0xef:	Processor::setWord(Address_indexed(), through(S()));	break;		// ST (STS indexed)
+	case 0xff:	Processor::setWord(Address_extended(), through(S()));	break;		// ST (STS extended)
 
 	// STY
-	case 0x9f:	Processor::setWord(Address_direct(), st(Y()));			break;		// ST (STY direct)
-	case 0xaf:	Processor::setWord(Address_indexed(), st(Y()));			break;		// ST (STY indexed)
-	case 0xbf:	Processor::setWord(Address_extended(), st(Y()));		break;		// ST (STY extended)
+	case 0x9f:	Processor::setWord(Address_direct(), through(Y()));		break;		// ST (STY direct)
+	case 0xaf:	Processor::setWord(Address_indexed(), through(Y()));	break;		// ST (STY indexed)
+	case 0xbf:	Processor::setWord(Address_extended(), through(Y()));	break;		// ST (STY extended)
 
 	// SWI
 	case 0x3f:	memoryRead(); swi2();									break;		// SWI (SWI2 inherent)
@@ -923,11 +923,11 @@ uint8_t EightBit::mc6809::dec(const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::mc6809::eorr(const uint8_t operand, const uint8_t data) {
+uint8_t EightBit::mc6809::eorr(const uint8_t operand, const uint8_t data) noexcept {
 	return through((uint8_t)(operand ^ data));
 }
 
-uint8_t& EightBit::mc6809::referenceTransfer8(const int specifier) {
+uint8_t& EightBit::mc6809::referenceTransfer8(const int specifier) noexcept {
 	switch (specifier) {
 	case 0b1000:
 		return A();

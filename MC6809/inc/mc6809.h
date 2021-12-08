@@ -66,21 +66,32 @@ namespace EightBit {
 		Signal<mc6809> ExecutingInstruction;
 		Signal<mc6809> ExecutedInstruction;
 
-		virtual int execute() final;
-		virtual int step() final;
+		int execute() final;
+		[[nodiscard]] int step() final;
 
-		auto& D() { return m_d; }
-		auto& A() { return D().high; }
-		auto& B() { return D().low; }
+		[[nodiscard]] constexpr auto& D() noexcept { return m_d; }
+		[[nodiscard]] constexpr auto& A() noexcept { return D().high; }
+		[[nodiscard]] constexpr auto& B() noexcept { return D().low; }
 
-		auto& X() { return m_x; }
-		auto& Y() { return m_y; }
-		auto& U() { return m_u; }
-		auto& S() { return m_s; }
+		[[nodiscard]] constexpr auto& X() noexcept { return m_x; }
+		[[nodiscard]] constexpr auto& Y() noexcept { return m_y; }
+		[[nodiscard]] constexpr auto& U() noexcept { return m_u; }
+		[[nodiscard]] constexpr auto& S() noexcept { return m_s; }
 
-		auto& DP() { return m_dp; }
-		auto& CC() { return m_cc; }
-		const auto& CC() const { return m_cc; }
+		[[nodiscard]] constexpr auto& DP() noexcept { return m_dp; }
+		[[nodiscard]] constexpr auto& CC() noexcept { return m_cc; }
+		[[nodiscard]] constexpr const auto& CC() const noexcept { return m_cc; }
+
+		// Flag checking
+
+		[[nodiscard]] constexpr auto fastInterruptMasked() const noexcept { return CC() & FF; }
+		[[nodiscard]] constexpr auto interruptMasked() const noexcept { return CC() & IF; }
+
+		[[nodiscard]] constexpr auto negative() const noexcept { return CC() & NF; }
+		[[nodiscard]] constexpr auto zero() const noexcept { return CC() & ZF; }
+		[[nodiscard]] constexpr auto overflow() const noexcept { return CC() & VF; }
+		[[nodiscard]] constexpr auto carry() const noexcept { return CC() & CF; }
+		[[nodiscard]] constexpr auto halfCarry() const noexcept { return CC() & HF; }
 
 		//	|---------------|-----------------------------------|
 		//	|	MPU State	|									|
@@ -100,21 +111,21 @@ namespace EightBit {
 	protected:
 		// Default push/pop handlers
 
-		virtual void push(uint8_t value) final;
-		virtual uint8_t pop() final;
+		void push(uint8_t value) final;
+		[[nodiscard]] uint8_t pop() final;
 
 		// Interrupt (etc.) handlers
 
-		virtual void handleRESET() final;
-		virtual void handleINT() final;
+		void handleRESET() final;
+		void handleINT() final;
 
 		// Bus reader/writers
 
-		virtual void busWrite() final;
-		virtual uint8_t busRead() final;
+		void busWrite() final;
+		uint8_t busRead() final;
 
-		virtual void call(register16_t destination) final;
-		virtual void ret() final;
+		void call(register16_t destination) final;
+		void ret() final;
 
 	private:
 		const uint8_t RESETvector = 0xfe;		// RESET vector
@@ -164,18 +175,18 @@ namespace EightBit {
 		void pushWordS(const register16_t value) { pushWord(S(), value); }
 		void pushWordU(const register16_t value) { pushWord(U(), value); }
 
-		uint8_t pop(register16_t& stack);
-		uint8_t popS() { return pop(S()); }
-		uint8_t popU() { return pop(U()); }
+		[[nodiscard]] uint8_t pop(register16_t& stack);
+		[[nodiscard]] uint8_t popS() { return pop(S()); }
+		[[nodiscard]] uint8_t popU() { return pop(U()); }
 
-		register16_t popWord(register16_t& stack) {
+		[[nodiscard]] register16_t popWord(register16_t& stack) {
 			const auto high = pop(stack);
 			const auto low = pop(stack);
 			return register16_t(low, high);
 		}
 
-		auto popWordS() { return popWord(S()); }
-		auto popWordU() { return popWord(U()); }
+		[[nodiscard]] auto popWordS() { return popWord(S()); }
+		[[nodiscard]] auto popWordU() { return popWord(U()); }
 
 		// Interrupt (etc.) handlers
 
@@ -190,80 +201,80 @@ namespace EightBit {
 		void execute11();
 
 		// Register selection for "indexed"
-		register16_t& RR(int which);
+		[[nodiscard]] register16_t& RR(int which);
 
 		// Register selection for 8-bit transfer/exchange
-		uint8_t& referenceTransfer8(int specifier);
+		[[nodiscard]] uint8_t& referenceTransfer8(int specifier) noexcept;
 
 		// Register selection for 16-bit transfer/exchange
-		register16_t& referenceTransfer16(int specifier);
+		[[nodiscard]] register16_t& referenceTransfer16(int specifier);
 
 		// Addressing modes
 
-		register16_t Address_direct();			// DP + fetched offset
-		register16_t Address_indexed();			// Indexed address, complicated!
-		register16_t Address_extended();		// Fetched address
-		register16_t Address_relative_byte();	// PC + fetched byte offset
-		register16_t Address_relative_word();	// PC + fetched word offset
+		[[nodiscard]] register16_t Address_direct();	// DP + fetched offset
+		[[nodiscard]] register16_t Address_indexed();	// Indexed address, complicated!
+		[[nodiscard]] register16_t Address_extended();	// Fetched address
+		register16_t Address_relative_byte();			// PC + fetched byte offset
+		register16_t Address_relative_word();			// PC + fetched word offset
 
 		// Addressing mode readers
 
 		// Single byte readers
 
-		uint8_t AM_immediate_byte();
-		uint8_t AM_direct_byte();
-		uint8_t AM_indexed_byte();
-		uint8_t AM_extended_byte();
+		[[nodiscard]] uint8_t AM_immediate_byte();
+		[[nodiscard]] uint8_t AM_direct_byte();
+		[[nodiscard]] uint8_t AM_indexed_byte();
+		[[nodiscard]] uint8_t AM_extended_byte();
 
 		// Word readers
 
-		register16_t AM_immediate_word();
-		register16_t AM_direct_word();
-		register16_t AM_indexed_word();
-		register16_t AM_extended_word();
+		[[nodiscard]] register16_t AM_immediate_word();
+		[[nodiscard]] register16_t AM_direct_word();
+		[[nodiscard]] register16_t AM_indexed_word();
+		[[nodiscard]] register16_t AM_extended_word();
 
 		// Flag adjustment
 
-		template<class T> void adjustZero(const T datum) { CC() = clearBit(CC(), ZF, datum); }
-		void adjustZero(const register16_t datum) { CC() = clearBit(CC(), ZF, datum.word); }
-		void adjustNegative(const uint8_t datum) { CC() = setBit(CC(), NF, datum & Bit7); }
-		void adjustNegative(const uint16_t datum) { CC() = setBit(CC(), NF, datum & Bit15); }
-		void adjustNegative(const register16_t datum) { adjustNegative(datum.word); }
+		template<class T> constexpr void adjustZero(const T datum) noexcept { CC() = clearBit(CC(), ZF, datum); }
+		constexpr void adjustZero(const register16_t datum) noexcept { CC() = clearBit(CC(), ZF, datum.word); }
+		constexpr void adjustNegative(const uint8_t datum) noexcept { CC() = setBit(CC(), NF, datum & Bit7); }
+		constexpr void adjustNegative(const register16_t datum) noexcept { adjustNegative(datum.high); }
+		constexpr void adjustNegative(const uint16_t datum) noexcept { adjustNegative(register16_t(datum)); }
 
-		template<class T> void adjustNZ(const T datum) {
+		template<class T> constexpr void adjustNZ(const T datum) noexcept {
 			adjustZero(datum);
 			adjustNegative(datum);
 		}
 
-		void adjustCarry(const uint16_t datum) { CC() = setBit(CC(), CF, datum & Bit8); }		// 8-bit addition
-		void adjustCarry(const uint32_t datum) { CC() = setBit(CC(), CF, datum & Bit16); }		// 16-bit addition
-		void adjustCarry(const register16_t datum) { adjustCarry(datum.word); }
+		constexpr void adjustCarry(const uint16_t datum) noexcept { CC() = setBit(CC(), CF, datum & Bit8); }		// 8-bit addition
+		constexpr void adjustCarry(const uint32_t datum) noexcept { CC() = setBit(CC(), CF, datum & Bit16); }		// 16-bit addition
+		constexpr void adjustCarry(const register16_t datum) noexcept { adjustCarry(datum.word); }
 
-		void adjustBorrow(const uint16_t datum) { CC() = clearBit(CC(), CF, datum & Bit8); }	// 8-bit subtraction
-		void adjustBorrow(const uint32_t datum) { CC() = clearBit(CC(), CF, datum & Bit16); }	// 16-bit subtraction
-		void adjustBorrow(const register16_t datum) { adjustBorrow(datum.word); }
+		constexpr void adjustBorrow(const uint16_t datum) noexcept { CC() = clearBit(CC(), CF, datum & Bit8); }		// 8-bit subtraction
+		constexpr void adjustBorrow(const uint32_t datum) noexcept { CC() = clearBit(CC(), CF, datum & Bit16); }	// 16-bit subtraction
+		constexpr void adjustBorrow(const register16_t datum) noexcept { adjustBorrow(datum.word); }
 
-		void adjustOverflow(const uint8_t before, const uint8_t data, const register16_t after) {
+		constexpr void adjustOverflow(const uint8_t before, const uint8_t data, const register16_t after) noexcept {
 			const uint8_t lowAfter = after.low;
 			const uint8_t highAfter = after.high;
 			CC() = setBit(CC(), VF, (before ^ data ^ lowAfter ^ (highAfter << 7)) & Bit7);
 		}
 
-		void adjustOverflow(const uint16_t before, const uint16_t data, const uint32_t after) {
+		constexpr void adjustOverflow(const uint16_t before, const uint16_t data, const uint32_t after) noexcept {
 			const uint16_t lowAfter = after & Mask16;
 			const uint16_t highAfter = after >> 16;
 			CC() = setBit(CC(), VF, (before ^ data ^ lowAfter ^ (highAfter << 15)) & Bit15);
 		}
 
-		void adjustOverflow(const register16_t before, const register16_t data, const register16_t after) {
+		constexpr void adjustOverflow(const register16_t before, const register16_t data, const register16_t after) noexcept {
 			adjustOverflow(before.word, data.word, after.word);
 		}
 
-		void adjustHalfCarry(const uint8_t before, const uint8_t data, const uint8_t after) {
+		constexpr void adjustHalfCarry(const uint8_t before, const uint8_t data, const uint8_t after) noexcept {
 			CC() = setBit(CC(), HF, (before ^ data ^ after) & Bit4);
 		}
 
-		void adjustAddition(const uint8_t before, const uint8_t data, const register16_t after) {
+		constexpr void adjustAddition(const uint8_t before, const uint8_t data, const register16_t after) noexcept {
 			const auto result = after.low;
 			adjustNZ(result);
 			adjustCarry(after);
@@ -271,62 +282,52 @@ namespace EightBit {
 			adjustHalfCarry(before, data, result);
 		}
 
-		void adjustAddition(const uint16_t before, const uint16_t data, const uint32_t after) {
+		constexpr void adjustAddition(const uint16_t before, const uint16_t data, const uint32_t after) noexcept {
 			const register16_t result = after & Mask16;
 			adjustNZ(result);
 			adjustCarry(after);
 			adjustOverflow(before, data, after);
 		}
 
-		void adjustAddition(const register16_t before, const register16_t data, const uint32_t after) {
+		constexpr void adjustAddition(const register16_t before, const register16_t data, const uint32_t after) noexcept {
 			adjustAddition(before.word, data.word, after);
 		}
 
-		void adjustSubtraction(const uint8_t before, const uint8_t data, const register16_t after) {
+		constexpr void adjustSubtraction(const uint8_t before, const uint8_t data, const register16_t after) noexcept {
 			const auto result = after.low;
 			adjustNZ(result);
 			adjustCarry(after);
 			adjustOverflow(before, data, after);
 		}
 
-		void adjustSubtraction(const uint16_t before, const uint16_t data, const uint32_t after) {
+		constexpr void adjustSubtraction(const uint16_t before, const uint16_t data, const uint32_t after) noexcept {
 			const register16_t result = after & Mask16;
 			adjustNZ(result);
 			adjustCarry(after);
 			adjustOverflow(before, data, after);
 		}
 
-		void adjustSubtraction(const register16_t before, const register16_t data, const uint32_t after) {
+		constexpr void adjustSubtraction(const register16_t before, const register16_t data, const uint32_t after) noexcept {
 			adjustSubtraction(before.word, data.word, after);
 		}
 
-		// Flag checking
 
-		auto fastInterruptMasked() const { return CC() & FF; }
-		auto interruptMasked() const { return CC() & IF; }
-
-		auto negative() const { return CC() & NF; }
-		auto zero() const { return CC() & ZF; }
-		auto overflow() const { return CC() & VF; }
-		auto carry() const { return CC() & CF; }
-		auto halfCarry() const { return CC() & HF; }
-
-		auto LS() const { return carry() || zero(); }										// (C OR Z)
-		auto HI() const { return !LS(); }													// !(C OR Z)
-		auto LT() const { return (negative() >> 3) ^ (overflow() >> 1); }					// (N XOR V)
-		auto GE() const { return !LT(); }													// !(N XOR V)
-		auto LE() const { return zero() || LT(); }											// (Z OR (N XOR V))
-		auto GT() const { return !LE(); }													// !(Z OR (N XOR V))
+		[[nodiscard]] constexpr auto LS() const noexcept { return carry() || zero(); }						// (C OR Z)
+		[[nodiscard]] constexpr auto HI() const noexcept { return !LS(); }									// !(C OR Z)
+		[[nodiscard]] constexpr auto LT() const noexcept { return (negative() >> 3) ^ (overflow() >> 1); }	// (N XOR V)
+		[[nodiscard]] constexpr auto GE() const noexcept { return !LT(); }									// !(N XOR V)
+		[[nodiscard]] constexpr auto LE() const noexcept { return zero() || LT(); }							// (Z OR (N XOR V))
+		[[nodiscard]] constexpr auto GT() const noexcept { return !LE(); }									// !(Z OR (N XOR V))
 
 		// Branching
 
-		auto branch(const register16_t destination, const bool condition) {
+		auto branch(const register16_t destination, const bool condition) noexcept {
 			if (condition)
 				jump(destination);
 			return condition;
 		}
 
-		void branchShort(const bool condition) {
+		void branchShort(const bool condition) noexcept {
 			branch(Address_relative_byte(), condition);
 		}
 
@@ -342,21 +343,13 @@ namespace EightBit {
 		void saveRegisterState();
 		void restoreRegisterState();
 
-		template <class T> T through(const T data) {
+		template <class T> constexpr T through(const T data) noexcept {
 			CC() = clearBit(CC(), VF);
 			adjustNZ(data);
 			return data;
 		}
 
 		// Instruction implementations
-
-		template <class T> T ld(const T data) {
-			return through(data);
-		}
-
-		template <class T> T st(const T data) {
-			return through(data);
-		}
 
 		uint8_t adc(uint8_t operand, uint8_t data);
 		uint8_t add(uint8_t operand, uint8_t data, uint8_t carry = 0);
@@ -372,7 +365,7 @@ namespace EightBit {
 		void cwai(uint8_t data);
 		uint8_t da(uint8_t operand);
 		uint8_t dec(uint8_t operand);
-		uint8_t eorr(uint8_t operand, uint8_t data);
+		[[nodiscard]] uint8_t eorr(uint8_t operand, uint8_t data) noexcept;
 		void exg(uint8_t data);
 		uint8_t inc(uint8_t operand);
 		void jsr(register16_t address);
