@@ -1,10 +1,7 @@
 #include "pch.h"
 #include "Board.h"
 
-Board::Board()
-: m_cpu(EightBit::mc6809(*this)),
-  m_disassembler(*this, m_cpu) {
-}
+Board::Board() {}
 
 void Board::raisePOWER() {
 	EightBit::Bus::raisePOWER();
