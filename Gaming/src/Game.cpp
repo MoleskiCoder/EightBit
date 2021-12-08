@@ -181,7 +181,7 @@ void Game::addJoystick(SDL_Event& e) {
 	auto controller = std::make_shared<GameController>(which);
 	const auto joystickId = controller->getJoystickId();
 	m_gameControllers[which] = controller;
-	SDL_assert(m_mappedControllers.find(joystickId) == m_mappedControllers.end());
+	SDL_assert(m_mappedControllers.contains(joystickId));
 	m_mappedControllers[joystickId] = which;
 	SDL_Log("Joystick device %d added (%zd controllers)", which, m_gameControllers.size());
 }
