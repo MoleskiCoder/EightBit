@@ -11,15 +11,15 @@ TEST_CASE("Add Accumulator B to Index Register X Unsigned", "[ABX]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Inherent") {
 		board.poke(0, 0x3a);
 		cpu.B() = 0x84;
 		cpu.X() = 0x1097;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.X() == 0x111b);
-		REQUIRE(cpu.cycles() == 3);
+		REQUIRE(cycles == 3);
     }
 
     SECTION("Inherent test (ABX1)") {
@@ -30,18 +30,18 @@ TEST_CASE("Add Accumulator B to Index Register X Unsigned", "[ABX]") {
 		cpu.U() = 0;
 		cpu.CC() = 0;
 		board.poke(0, 0x3a);
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0);
 		REQUIRE(cpu.B() == 0xce);
 		REQUIRE(cpu.X() == 0x80d4);
 		REQUIRE(cpu.Y() == 0);
 		REQUIRE(cpu.U() == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::HF) == 0);
-		REQUIRE(cpu.cycles() == 3);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.halfCarry() == 0);
+		REQUIRE(cycles == 3);
     }
 
     SECTION("Inherent test (ABX2)") {
@@ -52,18 +52,18 @@ TEST_CASE("Add Accumulator B to Index Register X Unsigned", "[ABX]") {
 		cpu.U() = 0;
 		cpu.CC() = EightBit::mc6809::CF | EightBit::mc6809::VF | EightBit::mc6809::ZF;
 		board.poke(0, 0x3a);
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0);
 		REQUIRE(cpu.B() == 0xd6);
 		REQUIRE(cpu.X() == 0x80d4);
 		REQUIRE(cpu.Y() == 0);
 		REQUIRE(cpu.U() == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::HF) == 0);
-		REQUIRE(cpu.cycles() == 3);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.zero() != 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.halfCarry() == 0);
+		REQUIRE(cycles == 3);
     }
 }
 
@@ -72,21 +72,21 @@ TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Immediate (byte)") {
 		board.poke(0, 0x89);
 		board.poke(1, 0x7c);
 		cpu.CC() = EightBit::Chip::setBit(cpu.CC(), EightBit::mc6809::CF);
 		cpu.A() = 0x3a;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xb7);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::HF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.halfCarry() != 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	SECTION("Immediate (byte) ADCANoC1") {
@@ -94,14 +94,14 @@ TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
 		cpu.CC() = 0;
 		board.poke(0, 0x89);
 		board.poke(1, 0x02);
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 7);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::HF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.halfCarry() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	/* Test half-carry $E + $2 = $10 */
@@ -110,14 +110,14 @@ TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
 		cpu.CC() = 0;
 		board.poke(0, 0x89);
 		board.poke(1, 0x02);
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x10);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::HF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.halfCarry() != 0);
+		REQUIRE(cycles == 2);
     }
 
 	/* Add $22 and carry to register A ($14) */
@@ -126,14 +126,14 @@ TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
 		cpu.CC() = EightBit::mc6809::CF | EightBit::mc6809::HF;
 		board.poke(0, 0x89);
 		board.poke(1, 0x22);
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x37);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::HF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.halfCarry() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	/* Test that half-carry is set when adding with a carry */
@@ -142,11 +142,11 @@ TEST_CASE("Add Memory Plus Carry to Accumulator", "[ADC][ADCA]") {
 		cpu.CC() = EightBit::mc6809::CF;
 		board.poke(0, 0x89);
 		board.poke(1, 0x2B);
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x40);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::HF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.halfCarry() != 0);
+		REQUIRE(cycles == 2);
     }
 }
 
@@ -155,20 +155,20 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Immediate (byte)") {
 		board.poke(0, 0x8b);
 		board.poke(1, 0x8b);
 		cpu.A() = 0x24;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xaf);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::HF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.halfCarry() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Add 0x02 to A=0x04.
@@ -178,15 +178,15 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		cpu.CC() = 0;
 		cpu.A() = 4;
 		cpu.B() = 5;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 6);
 		REQUIRE(cpu.B() == 5);
-		REQUIRE((cpu.CC() & EightBit::mc6809::HF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.halfCarry() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	// The overflow (V) bit indicates signed two’s complement overflow, which occurs when the
@@ -197,12 +197,12 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		board.poke(1, 0xff);
 		cpu.CC() = 0;
 		cpu.A() = 3;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 2);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cycles == 2);
     }
 
 	// positive + positive with overflow.
@@ -212,14 +212,14 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		board.poke(1, 0x41);
 		cpu.B() = 0x40;
 		cpu.CC() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.B() == 0x81);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::HF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.halfCarry() == 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	// negative + negative.
@@ -229,13 +229,13 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		board.poke(1, 0xff);
 		cpu.B() = 0xff;
 		cpu.CC() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.B() == 0xfe);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cycles == 2);
     }
 
 	// negative + negative with overflow.
@@ -245,13 +245,13 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		board.poke(1, 0xbf);
 		cpu.B() = 0xc0;
 		cpu.CC() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.B() == 0x7f);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cycles == 2);
     }
 
 	// positive + negative with negative result.
@@ -261,13 +261,13 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		board.poke(1, 0xfc);
 		cpu.B() = 0x02;
 		cpu.CC() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.B() == 0xfe);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Add 0x02B0 to D=0x0405 becomes 0x6B5.
@@ -279,14 +279,14 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		cpu.CC() = 0;
 		cpu.A() = 4;
 		cpu.B() = 5;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x06);
 		REQUIRE(cpu.B() == 0xb5);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 4);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 4);
     }
 
 	// Add 0xE2B0 to D=0x8405 becomes 0x66B5.
@@ -298,14 +298,14 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		cpu.CC() = 0;
 		cpu.A() = 0x84;
 		cpu.B() = 5;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x66);
 		REQUIRE(cpu.B() == 0xb5);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 4);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cycles == 4);
     }
 
 	// negative + negative = negative.
@@ -317,13 +317,13 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		cpu.CC() = 0;
 		cpu.A() = 0xd0;
 		cpu.B() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xb0);
 		REQUIRE(cpu.B() == 0x00);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.carry() != 0);
 		REQUIRE(cpu.cycles() == 4);
     }
 
@@ -336,13 +336,13 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		cpu.CC() = 0;
 		cpu.A() = 0x70;
 		cpu.B() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xe0);
 		REQUIRE(cpu.B() == 0x00);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.zero()) == 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.carry()) == 0);
 		REQUIRE(cpu.cycles() == 4);
     }
 }
@@ -352,18 +352,18 @@ TEST_CASE("Logical AND Accumulator", "[AND][ANDA]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Immediate (byte)") {
 		board.poke(0, 0x84);
 		board.poke(1, 0x13);
 		cpu.A() = 0xfc;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x10);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cycles == 2);
     }
 }
 
@@ -372,17 +372,17 @@ TEST_CASE("Shift Accumulator or Memory Byte Left", "[ASL][ASLA]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Inherent") {
 		board.poke(0, 0x48);
 		cpu.A() = 0x7a;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xf4);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cycles == 2);
     }
 }
 
@@ -391,17 +391,17 @@ TEST_CASE("Shift Accumulator or Memory Byte Right", "[ASR][ASRA]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Inherent") {
 		board.poke(0, 0x47);
 		cpu.A() = 0xcb;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xe5);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cycles == 2);
     }
 }
 
@@ -410,17 +410,17 @@ TEST_CASE("Bit Test", "[BIT][BITA]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Immediate (byte)") {
 		board.poke(0, 0x85);
 		board.poke(1, 0xe0);
 		cpu.A() = 0xa6;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xa6);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cycles == 2);
     }
 }
 
@@ -429,18 +429,18 @@ TEST_CASE("Clear Accumulator or Memory", "[CLR][CLRA]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Implied") {
 		board.poke(0, 0x4f);
 		cpu.A() = 0x43;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x00);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.zero() != 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cycles == 2);
     }
 }
 
@@ -449,19 +449,19 @@ TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
 	SECTION("Immediate (byte)") {
 		board.poke(0, 0x81);
 		board.poke(1, 0x18);
 		cpu.A() = 0xf6;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xf6);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 2);
 	}
 
 	SECTION("Indirect mode: CMPA ,Y+ (CMP1)") {
@@ -474,14 +474,14 @@ TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 		cpu.X() = 0;
 		cpu.Y() = 0x205;
 		cpu.U() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xff);
 		REQUIRE(cpu.B() == 0x00);
 		REQUIRE(cpu.X() == 0x00);
 		REQUIRE(cpu.Y() == 0x206);
 		REQUIRE(cpu.U() == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) != 0);
-		REQUIRE(cpu.cycles() == 6);
+		REQUIRE(cpu.zero() != 0);
+		REQUIRE(cycles == 6);
 	}
 
 	// B = 0xA0, CMPB with 0xA0
@@ -490,12 +490,12 @@ TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 		board.poke(1, 0xa0);
 		cpu.CC() = EightBit::mc6809::NF;
 		cpu.B() = 0xa0;
-		cpu.step();
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		cycles = cpu.step();
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.zero() != 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	// B = 0x70, CMPB with 0xA0
@@ -504,12 +504,12 @@ TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 		board.poke(1, 0xa0);
 		cpu.CC() = EightBit::mc6809::NF;
 		cpu.B() = 0x70;
-		cpu.step();
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		cycles = cpu.step();
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Compare 0x5410 with 0x5410
@@ -518,12 +518,12 @@ TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 		board.poke(1, 0xa0);
 		cpu.CC() = EightBit::mc6809::NF;
 		cpu.B() = 0x70;
-		cpu.step();
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		cycles = cpu.step();
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cycles == 2);
     }
 
     SECTION("Immediate (word)") {
@@ -531,13 +531,13 @@ TEST_CASE("Compare Memory with a Register", "[CMP][CMPA][CMPB][CMPX]") {
 		board.poke(1, 0x1b);
 		board.poke(2, 0xb0);
 		cpu.X() = 0x1ab0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.X() == 0x1ab0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 4);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cycles == 4);
     }
 }
 
@@ -546,19 +546,19 @@ TEST_CASE("Decrement Accumulator or Memory", "[DEC][DECA]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Inherent (DECA0x32)") {
 		board.poke(0, 0x4a);
 		cpu.CC() = 0;
 		cpu.A() = 0x32;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x31);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Test 0x80 - special case
@@ -566,13 +566,13 @@ TEST_CASE("Decrement Accumulator or Memory", "[DEC][DECA]") {
 		board.poke(0, 0x4a);
 		cpu.CC() = 0;
 		cpu.A() = 0x80;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x7f);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Test 0x00 - special case
@@ -580,13 +580,13 @@ TEST_CASE("Decrement Accumulator or Memory", "[DEC][DECA]") {
 		board.poke(0, 0x4a);
 		cpu.CC() = 0;
 		cpu.A() = 0x00;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xff);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cycles == 2);
     }
 }
 
@@ -595,45 +595,45 @@ TEST_CASE("Increment Accumulator or Memory Location by 1", "[INC][INCA]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Inherent (INCA1)") {
 		board.poke(0, 0x4c);
 		cpu.CC() = 0;
 		cpu.A() = 0x32;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x33);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 2);
     }
 
     SECTION("Inherent (INCA2)") {
 		board.poke(0, 0x4c);
 		cpu.CC() = 0;
 		cpu.A() = 0x7f;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0x80);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 2);
     }
 
     SECTION("Inherent (INCA3)") {
 		board.poke(0, 0x4c);
 		cpu.CC() = 0;
 		cpu.A() = 0xff;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.zero() != 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cycles == 2);
     }
 }
 
@@ -642,20 +642,20 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
     SECTION("Immediate (byte)") {
 		board.poke(0, 0x82);
 		board.poke(1, 0x34);
 		cpu.A() = 0x14;
 		cpu.CC() = cpu.setBit(cpu.CC(), EightBit::mc6809::CF);
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xdf);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Test the subtraction with carry instruction.
@@ -668,13 +668,13 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 		cpu.DP() = 5;
 		cpu.B() = 0x35;
 		cpu.CC() = EightBit::mc6809::CF;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.B() == 0x31);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE(cpu.cycles() == 4);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cycles == 4);
     }
 
 	// Test the SBCA instruction.
@@ -685,13 +685,13 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 		board.poke(0x503, 0x03);
 		cpu.CC() = EightBit::mc6809::CF | EightBit::mc6809::NF;
 		cpu.A() = 0xff;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() != 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Test the SBCA instruction.
@@ -701,13 +701,13 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 		board.poke(1, 0xff);
 		cpu.CC() = EightBit::mc6809::NF | EightBit::mc6809::VF;
 		cpu.A() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 1);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Test the SBCA instruction.
@@ -717,12 +717,12 @@ TEST_CASE("Subtract Memory from Accumulator with Borrow (8-bit)", "[SBC][SBCA][S
 		board.poke(1, 0x01);
 		cpu.CC() = EightBit::mc6809::NF | EightBit::mc6809::VF;
 		cpu.A() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xff);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cycles == 2);
     }
 }
 
@@ -731,7 +731,7 @@ TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
 	// Test the SUBA instruction.
 	// The overflow (V) bit indicates signed two’s complement overflow, which
@@ -744,13 +744,13 @@ TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 		board.poke(1, 0xff);
 		cpu.CC() = EightBit::mc6809::CF | EightBit::mc6809::NF | EightBit::mc6809::VF;
 		cpu.A() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 1);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cycles == 2);
     }
 
 	// A=0x00 - 0x01 becomes 0xFF
@@ -760,13 +760,13 @@ TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 		board.poke(1, 1);
 		cpu.CC() = EightBit::mc6809::CF | EightBit::mc6809::NF | EightBit::mc6809::VF;
 		cpu.A() = 0;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 0xff);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Test the subtraction instruction.
@@ -777,13 +777,13 @@ TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 		board.poke(1, 0xb3);
 		cpu.CC() = 0;
 		cpu.B() = 2;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.B() == 0x4f);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.negative() == 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Test the subtraction instruction.
@@ -794,13 +794,13 @@ TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 		board.poke(1, 0x81);
 		cpu.CC() = 0;
 		cpu.B() = 2;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.B() == 0x81);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 2);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() != 0);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cycles == 2);
     }
 
 	// Example from Programming the 6809.
@@ -813,13 +813,13 @@ TEST_CASE("Subtract Memory from Register", "[SUB][SUBA]") {
 		cpu.CC() = EightBit::mc6809::ZF;
 		cpu.B() = 3;
 		cpu.Y() = 0x21;
-		cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.B() == 0xe2);
-		REQUIRE((cpu.CC() & EightBit::mc6809::NF) != 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::ZF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::VF) == 0);
-		REQUIRE((cpu.CC() & EightBit::mc6809::CF) != 0);
-		REQUIRE(cpu.cycles() == 4);
+		REQUIRE(cpu.negative() != 0);
+		REQUIRE(cpu.zero() == 0);
+		REQUIRE(cpu.overflow() == 0);
+		REQUIRE(cpu.carry() != 0);
+		REQUIRE(cycles == 4);
     }
 }
 
@@ -828,7 +828,7 @@ TEST_CASE(" Branch if Greater Than Zero", "[BGT]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
 	board.poke(0, 0x2e);	// BGT
 	board.poke(1, 0x03);
@@ -842,52 +842,52 @@ TEST_CASE(" Branch if Greater Than Zero", "[BGT]") {
 	SECTION("BGT1") {
 		cpu.A() = 0;
  		cpu.CC() = EightBit::mc6809::ZF;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 1);
 	}
 
 	cpu.lowerRESET();
-	cpu.step();
+	cycles = cpu.step();
 
 	SECTION("BGT2") {
 		REQUIRE(cpu.PC() == 0);
  		cpu.CC() = 0;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 2);
 	}
 
 	cpu.lowerRESET();
-	cpu.step();
+	cycles = cpu.step();
 
 	SECTION("BGT3") {
 		REQUIRE(cpu.PC() == 0);
  		cpu.CC() = EightBit::mc6809::NF;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 1);
 	}
 
 	cpu.lowerRESET();
-	cpu.step();
+	cycles = cpu.step();
 
 	SECTION("BGT4") {
 		REQUIRE(cpu.PC() == 0);
  		cpu.CC() = EightBit::mc6809::NF | EightBit::mc6809::VF;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 2);
 	}
 
 	cpu.lowerRESET();
-	cpu.step();
+	cycles = cpu.step();
 
 	SECTION("BGT5") {
 		REQUIRE(cpu.PC() == 0);
  		cpu.CC() = EightBit::mc6809::ZF | EightBit::mc6809::NF;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 1);
 	}
 }
@@ -897,7 +897,7 @@ TEST_CASE(" Branch if Higher", "[BHI]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
 	board.poke(0, 0x22);	// BHI
 	board.poke(1, 0x03);
@@ -911,8 +911,8 @@ TEST_CASE(" Branch if Higher", "[BHI]") {
 	SECTION("BHI1") {
 		cpu.A() = 0;
  		cpu.CC() = EightBit::mc6809::ZF;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 1);
 	}
 }
@@ -922,7 +922,7 @@ TEST_CASE("Branch on Less than or Equal to Zero", "[BLE]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
 	board.poke(0, 0x2f);	// BLE
 	board.poke(1, 0x03);
@@ -936,52 +936,52 @@ TEST_CASE("Branch on Less than or Equal to Zero", "[BLE]") {
 	SECTION("BLE1") {
 		cpu.A() = 0;
 		cpu.CC() = EightBit::mc6809::ZF;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 2);
 	}
 
 	cpu.lowerRESET();
-	cpu.step();
+	cycles = cpu.step();
 
 	SECTION("BLE2") {
 		cpu.A() = 0;
 		cpu.CC() = 0;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 1);
 	}
 
 	cpu.lowerRESET();
-	cpu.step();
+	cycles = cpu.step();
 
 	SECTION("BLE3") {
 		cpu.A() = 0;
 		cpu.CC() = EightBit::mc6809::NF;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 2);
 	}
 
 	cpu.lowerRESET();
-	cpu.step();
+	cycles = cpu.step();
 
 	SECTION("BLE4") {
 		cpu.A() = 0;
 		cpu.CC() = EightBit::mc6809::NF | EightBit::mc6809::VF;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 1);
 	}
 
 	cpu.lowerRESET();
-	cpu.step();
+	cycles = cpu.step();
 
 	SECTION("BLE5") {
 		cpu.A() = 0;
 		cpu.CC() = EightBit::mc6809::ZF | EightBit::mc6809::NF;
-		cpu.step();
-		cpu.step();
+		cycles = cpu.step();
+		cycles = cpu.step();
 		REQUIRE(cpu.A() == 2);
 	}
 }
@@ -991,7 +991,7 @@ TEST_CASE("Subroutines", "[JSR][RTS]") {
 	Board board;
 	board.raisePOWER();
 	auto& cpu = board.CPU();
-	cpu.step();	// Step over the reset
+	auto cycles = cpu.step();	// Step over the reset
 
 	// Test the JSR - Jump to Subroutine - instruction.
 	// INDEXED mode:   JSR   D,Y
@@ -1018,7 +1018,7 @@ TEST_CASE("Subroutines", "[JSR][RTS]") {
 		cpu.PC() = 0xB00;
 		cpu.CC() = 0;
 
-		cpu.step();
+		cycles = cpu.step();
 
 		REQUIRE(cpu.CC() == 0);
 		REQUIRE(cpu.A() == 1);
@@ -1034,11 +1034,11 @@ TEST_CASE("Subroutines", "[JSR][RTS]") {
 		REQUIRE(board.peek(0x914) == 2);
 		REQUIRE(board.peek(0x913) == 0xb);
 
-		REQUIRE(cpu.cycles() == 11);
+		REQUIRE(cycles == 11);
 	}
 
 	cpu.lowerRESET();
-	cpu.step();
+	cycles = cpu.step();
 
 	SECTION("RTS") {
 
@@ -1049,10 +1049,10 @@ TEST_CASE("Subroutines", "[JSR][RTS]") {
 
 		cpu.PC().word = 0xB00;
 
-		cpu.step();
+		cycles = cpu.step();
 
 		REQUIRE(cpu.PC().word == 0x102C);
 		REQUIRE(cpu.S().word == 0x302);
-		REQUIRE(cpu.cycles() == 5);
+		REQUIRE(cycles == 5);
 	}
 }
