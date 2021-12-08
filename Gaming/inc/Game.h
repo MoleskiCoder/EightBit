@@ -26,18 +26,18 @@ namespace Gaming {
 		void raisePOWER() override;
 
 	protected:
-		virtual float fps() const noexcept = 0;
-		virtual bool useVsync() const noexcept = 0;
+		[[nodiscard]] virtual float fps() const noexcept = 0;
+		[[nodiscard]] virtual bool useVsync() const noexcept = 0;
 
-		virtual int windowWidth() const noexcept;
-		virtual int windowHeight() const noexcept;
-		virtual int displayWidth() const noexcept;
-		virtual int displayHeight() const noexcept;
-		virtual int displayScale() const noexcept = 0;
-		virtual int rasterWidth() const noexcept = 0;
-		virtual int rasterHeight() const noexcept = 0;
+		[[nodiscard]] virtual int windowWidth() const noexcept;
+		[[nodiscard]] virtual int windowHeight() const noexcept;
+		[[nodiscard]] virtual int displayWidth() const noexcept;
+		[[nodiscard]] virtual int displayHeight() const noexcept;
+		[[nodiscard]] virtual int displayScale() const noexcept = 0;
+		[[nodiscard]] virtual int rasterWidth() const noexcept = 0;
+		[[nodiscard]] virtual int rasterHeight() const noexcept = 0;
 
-		virtual std::string title() const noexcept = 0;
+		[[nodiscard]] virtual std::string title() const noexcept = 0;
 
 		virtual void handleEvents();
 		virtual void update();
@@ -55,7 +55,7 @@ namespace Gaming {
 		virtual void copyTexture();
 		virtual void displayTexture();
 
-		virtual const uint32_t* pixels() const = 0;
+		[[nodiscard]] virtual const uint32_t* pixels() const = 0;
 
 		virtual bool handleKeyDown(SDL_Keycode key);
 		virtual bool handleKeyUp(SDL_Keycode key);
@@ -68,15 +68,15 @@ namespace Gaming {
 
 		void toggleFullscreen();
 
-		std::shared_ptr<GameController> gameController(int which) const;
-		int mappedController(const SDL_JoystickID which) const;
+		[[nodiscard]] std::shared_ptr<GameController> gameController(int which) const;
+		[[nodiscard]] int mappedController(const SDL_JoystickID which) const;
 
-		int chooseControllerIndex(int who) const;
-		std::shared_ptr<GameController> chooseController(int who) const;
+		[[nodiscard]] int chooseControllerIndex(int who) const;
+		[[nodiscard]] std::shared_ptr<GameController> chooseController(int who) const;
 
-		std::shared_ptr<SDL_Renderer> renderer() const noexcept { return m_renderer; }
-		std::shared_ptr<SDL_Texture> bitmapTexture() const noexcept { return m_bitmapTexture; }
-		std::shared_ptr<SDL_PixelFormat> pixelFormat() const noexcept { return m_pixelFormat; }
+		[[nodiscard]] std::shared_ptr<SDL_Renderer> renderer() const noexcept { return m_renderer; }
+		[[nodiscard]] std::shared_ptr<SDL_Texture> bitmapTexture() const noexcept { return m_bitmapTexture; }
+		[[nodiscard]] std::shared_ptr<SDL_PixelFormat> pixelFormat() const noexcept { return m_pixelFormat; }
 
 	private:
 		SDLWrapper m_wrapper;

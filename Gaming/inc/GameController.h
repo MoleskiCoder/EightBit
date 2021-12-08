@@ -13,12 +13,12 @@ namespace Gaming {
 		void startRumble() noexcept;
 		void stopRumble() noexcept;
 
-		static auto buildJoystickId(SDL_GameController* controller) noexcept {
+		[[nodiscard]] static auto buildJoystickId(SDL_GameController* controller) noexcept {
 			auto joystick = ::SDL_GameControllerGetJoystick(controller);
 			return ::SDL_JoystickInstanceID(joystick);
 		}
 
-		auto getJoystickId() const noexcept {
+		[[nodiscard]] auto getJoystickId() const noexcept {
 			return buildJoystickId(m_gameController.get());
 		}
 
