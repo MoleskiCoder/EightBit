@@ -1,10 +1,5 @@
 #pragma once
 
-#include "simdjson/simdjson.h"
-
 #include "array_t.h"
 
-class cycles_t final : public array_t {
-public:
-	cycles_t(simdjson::dom::array input) noexcept;
-};
+typedef array_t cycles_t;	// Intended to indicate that cycles_t is meant to hold cycle_t objects
