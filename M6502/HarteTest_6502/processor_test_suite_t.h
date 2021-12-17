@@ -16,5 +16,5 @@ public:
 
 	std::string_view location() const noexcept { return m_location; }
 
-	EightBit::co_generator_t<opcode_test_suite_t> generator();
+	[[nodiscard]] EightBit::co_generator_t<opcode_test_suite_t> generator();
 };

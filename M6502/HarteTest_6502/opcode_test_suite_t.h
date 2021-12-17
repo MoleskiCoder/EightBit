@@ -18,5 +18,5 @@ public:
     [[nodiscard]] auto begin() const noexcept { return array().begin(); }
     [[nodiscard]] auto end() const noexcept { return array().end(); }
 
-    EightBit::co_generator_t<test_t> generator();
+    [[nodiscard]] EightBit::co_generator_t<test_t> generator();
 };
