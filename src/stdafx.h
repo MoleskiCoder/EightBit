@@ -3,6 +3,7 @@
 #endif
 
 #include <cassert>
+#include <coroutine>
 #include <cstdint>
 #include <functional>
 #include <stdexcept>

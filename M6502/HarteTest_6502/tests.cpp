@@ -26,8 +26,6 @@ int main() {
     checker_t checker(runner);
     checker.initialise();
 
-#ifdef USE_COROUTINES
-
     processor_test_suite_t m6502_tests(directory);
     auto opcode_generator = m6502_tests.generator();
     while (opcode_generator) {
@@ -57,39 +55,6 @@ int main() {
             }
         }
     }
-
-#else
-
-    std::filesystem::path location = directory;
-
-    for (const auto& entry : std::filesystem::directory_iterator{ location }) {
-
-        const auto& path = entry.path();
-
-        std::cout << "Processing: " << path.filename() << "\n";
-        opcode_test_suite_t opcode(path.string());
-        opcode.load();
-
-        for (const auto opcode_test_element : opcode) {
-
-            const auto test = test_t(opcode_test_element);
-            checker.check(test);
-
-            if (checker.invalid()) {
-                ++invalid_opcode_count;
-                if (checker.unimplemented())
-                    ++unimplemented_opcode_count;
-                if (checker.undocumented())
-                    ++undocumented_opcode_count;
-                std::cout << "** Failed: " << test.name() << "\n";
-                for (const auto& message : checker.messages())
-                    std::cout << "**** " << message << "\n";
-                break;
-            }
-        }
-    }
-
-#endif
 
    const auto finish_time = std::chrono::steady_clock::now();
    const auto elapsed_time = finish_time - start_time;

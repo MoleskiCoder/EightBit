@@ -100,9 +100,6 @@
     <ClInclude Include="processor_test_suite_t.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="co_generator_t.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="checker_t.h">
       <Filter>Header Files</Filter>
     </ClInclude>

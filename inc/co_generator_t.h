@@ -1,11 +1,11 @@
 #pragma once
 
-#ifdef USE_COROUTINES
-
 #include <coroutine>
 #include <utility>
 
 // from https://www.scs.stanford.edu/~dm/blog/c++-coroutines.html
+
+namespace EightBit {
 
 template<typename T>
 struct co_generator_t final {
@@ -57,5 +57,4 @@ private:
         }
     }
 };
-
-#endif // USE_COROUTINES
+}

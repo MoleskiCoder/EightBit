@@ -185,7 +185,6 @@
     <ClInclude Include="array_t.h" />
     <ClInclude Include="byte_t.h" />
     <ClInclude Include="checker_t.h" />
-    <ClInclude Include="co_generator_t.h" />
     <ClInclude Include="cycles_t.h" />
     <ClInclude Include="cycle_t.h" />
     <ClInclude Include="element_t.h" />

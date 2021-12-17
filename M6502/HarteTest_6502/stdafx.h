@@ -21,7 +21,6 @@
 #include <mos6502.h>
 #include <Disassembly.h>
 #include <Symbols.h>
+#include <co_generator_t.h>
 
 #include "simdjson/simdjson.h"
-
-#define USE_COROUTINES
