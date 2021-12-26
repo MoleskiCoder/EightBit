@@ -340,9 +340,9 @@ TEST_CASE("Add Memory to Accumulator", "[ADD][ADDA][ADDB][ADDD]") {
 		REQUIRE(cpu.A() == 0xe0);
 		REQUIRE(cpu.B() == 0x00);
 		REQUIRE(cpu.negative() != 0);
-		REQUIRE(cpu.zero()) == 0);
+		REQUIRE(cpu.zero() == 0);
 		REQUIRE(cpu.overflow() != 0);
-		REQUIRE(cpu.carry()) == 0);
+		REQUIRE(cpu.carry() == 0);
 		REQUIRE(cpu.cycles() == 4);
     }
 }
