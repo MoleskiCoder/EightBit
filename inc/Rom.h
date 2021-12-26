@@ -35,6 +35,22 @@ namespace EightBit {
 		int load(std::string path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 		int load(const std::vector<uint8_t>& bytes, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 
+		template <typename Iter>
+		int load(Iter start, Iter end, int writeOffset = 0, int readOffset = 0, int limit = -1) {
+
+			const auto size = end - start;
+			if (limit < 0)
+				limit = size - readOffset;
+
+			const size_t extent = limit + writeOffset;
+			if (m_bytes.size() < extent)
+				m_bytes.resize(extent);
+
+			std::copy(start + readOffset, start + readOffset + limit, m_bytes.begin() + writeOffset);
+
+			return limit;
+		}
+
 		[[nodiscard]] uint8_t peek(uint16_t address) const noexcept final;
 	};
 }
