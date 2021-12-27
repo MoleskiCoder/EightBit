@@ -68,6 +68,9 @@ namespace EightBit {
 
 		virtual ~Chip() {}
 
+		Chip(const Chip& rhs)
+		: Device(rhs) {}
+
 	protected:
 		Chip() noexcept = default;
 	};

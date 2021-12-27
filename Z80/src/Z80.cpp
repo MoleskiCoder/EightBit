@@ -34,33 +34,77 @@ EightBit::Z80::Z80(Bus& bus)
 	});
 }
 
+EightBit::Z80::Z80(const Z80& rhs)
+: IntelProcessor(rhs) {
+
+	m_registers = rhs.m_registers;
+	m_registerSet = rhs.m_registerSet;
+
+	m_accumulatorFlags = rhs.m_accumulatorFlags;
+	m_accumulatorFlagsSet = rhs.m_accumulatorFlagsSet;
+
+	m_ix = rhs.m_ix;
+	m_iy = rhs.m_iy;
+
+	m_refresh = rhs.m_refresh;
+
+	iv = rhs.iv;
+	m_interruptMode = rhs.m_interruptMode;
+	m_iff1 = rhs.m_iff1;
+	m_iff2 = rhs.m_iff2;
+
+	RFSH() = rhs.RFSH();
+	NMI() = rhs.NMI();
+	M1() = rhs.M1();
+	MREQ() = rhs.MREQ();
+	IORQ() = rhs.IORQ();
+	RD() = rhs.RD();
+	WR() = rhs.WR();
+}
+
 bool EightBit::Z80::operator==(const EightBit::Z80& rhs) const {
 
 	const auto base = IntelProcessor::operator==(rhs);
 
-	auto* z80 = const_cast<Z80*>(this);
-	z80->exxAF();
-	z80->exx();
-
-	return base
-		&& RFSH() == rhs.RFSH()
+	const auto pins =
+		RFSH() == rhs.RFSH()
 		&& NMI() == rhs.NMI()
 		&& M1() == rhs.M1()
 		&& MREQ() == rhs.MREQ()
 		&& IORQ() == rhs.IORQ()
 		&& RD() == rhs.RD()
-		&& WR() == rhs.WR()
-		&& AF() == rhs.AF()
-		&& BC() == rhs.BC()
+		&& WR() == rhs.WR();
+
+	auto* z80 = const_cast<Z80*>(this);
+	auto& z80_rhs = const_cast<Z80&>(rhs);
+
+	z80->exxAF();
+	z80_rhs.exxAF();
+	const auto af = AF() == rhs.AF();
+	z80->exxAF();
+	z80_rhs.exxAF();
+
+	z80->exx();
+	z80_rhs.exx();
+	const auto pairs =
+		BC() == rhs.BC()
 		&& DE() == rhs.DE()
-		&& HL() == rhs.HL()
-		&& IX() == rhs.IX()
-		&& IY() == rhs.IY()
-		&& REFRESH() == rhs.REFRESH()
+		&& HL() == rhs.HL();
+	z80->exx();
+	z80_rhs.exx();
+
+	const auto indices =
+		IX() == rhs.IX()
+		&& IY() == rhs.IY();
+
+	const auto miscellaneous =
+		REFRESH() == rhs.REFRESH()
 		&& IV() == rhs.IV()
 		&& IM() == rhs.IM()
 		&& IFF1() == rhs.IFF1()
 		&& IFF2() == rhs.IFF2();
+
+	return base && pins && af && pairs && indices && miscellaneous;
 }
 
 DEFINE_PIN_LEVEL_CHANGERS(NMI, Z80);

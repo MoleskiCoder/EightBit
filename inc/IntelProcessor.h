@@ -46,6 +46,7 @@ namespace EightBit {
 
 		virtual ~IntelProcessor() {};
 
+		IntelProcessor(const IntelProcessor& rhs);
 		bool operator==(const IntelProcessor& rhs) const;
 
 		[[nodiscard]] constexpr const auto& getDecodedOpcode(const size_t i) const noexcept {

@@ -19,6 +19,15 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 	});
 }
 
+EightBit::IntelProcessor::IntelProcessor(const IntelProcessor& rhs)
+: LittleEndianProcessor(rhs) {
+
+	m_sp = rhs.m_sp;
+	m_memptr = rhs.m_memptr;
+
+	HALT() = rhs.HALT();
+}
+
 void EightBit::IntelProcessor::resetWorkingRegisters() {
 	AF() = BC() = DE() = HL() = Mask16;
 }

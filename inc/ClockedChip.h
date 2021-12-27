@@ -9,6 +9,7 @@ namespace EightBit {
 	public:
 		virtual ~ClockedChip() noexcept {};
 
+		ClockedChip(const ClockedChip& rhs);
 		bool operator==(const ClockedChip& rhs) const;
 
 		Signal<EventArgs> Ticked;

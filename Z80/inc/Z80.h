@@ -71,6 +71,7 @@ namespace EightBit {
 
 		Z80(Bus& bus);
 
+		Z80(const Z80& rhs);
 		bool operator==(const Z80& rhs) const;
 
 		Signal<Z80> ExecutingInstruction;

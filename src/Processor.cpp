@@ -5,6 +5,14 @@ EightBit::Processor::Processor(Bus& bus) noexcept
 : m_bus(bus) {
 }
 
+EightBit::Processor::Processor(const Processor& rhs)
+: ClockedChip(rhs),
+  m_bus(rhs.m_bus) {
+	RESET() = rhs.RESET();
+	INT() = rhs.INT();
+	PC() = rhs.PC();
+}
+
 DEFINE_PIN_LEVEL_CHANGERS(RESET, Processor);
 DEFINE_PIN_LEVEL_CHANGERS(INT, Processor);
 

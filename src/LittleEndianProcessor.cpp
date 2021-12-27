@@ -4,6 +4,9 @@
 EightBit::LittleEndianProcessor::LittleEndianProcessor(Bus& memory)
 : Processor(memory) {}
 
+EightBit::LittleEndianProcessor::LittleEndianProcessor(const LittleEndianProcessor& rhs)
+: Processor(rhs) {}
+
 EightBit::register16_t EightBit::LittleEndianProcessor::getWord() {
 	const auto low = memoryRead();
 	++BUS().ADDRESS();
