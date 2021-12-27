@@ -26,10 +26,14 @@ namespace EightBit {
 			Signal<LR35902> ExecutingInstruction;
 			Signal<LR35902> ExecutedInstruction;
 
-			[[nodiscard]] register16_t& AF() noexcept final;
-			[[nodiscard]] register16_t& BC() noexcept final;
-			[[nodiscard]] register16_t& DE() noexcept final;
-			[[nodiscard]] register16_t& HL() noexcept final;
+			[[nodiscard]] const register16_t& AF() const noexcept final;
+			[[nodiscard]] auto& AF() noexcept { return IntelProcessor::AF(); }
+			[[nodiscard]] const register16_t& BC() const noexcept final;
+			[[nodiscard]] auto& BC() noexcept { return IntelProcessor::BC(); }
+			[[nodiscard]] const register16_t& DE() const noexcept final;
+			[[nodiscard]] auto& DE() noexcept { return IntelProcessor::DE(); }
+			[[nodiscard]] const register16_t& HL() const noexcept final;
+			[[nodiscard]] auto& HL() noexcept { return IntelProcessor::HL(); }
 
 			bool& IME() noexcept { return m_ime; }
 

@@ -23,7 +23,10 @@ namespace EightBit {
 
 		virtual ~Processor() noexcept {}
 
+		bool operator==(const Processor& rhs) const;
+
 		[[nodiscard]] constexpr auto& PC() noexcept { return m_pc; }
+		[[nodiscard]] constexpr const auto& PC() const noexcept { return m_pc; }
 
 		int run(int limit);
 		virtual int step() = 0;

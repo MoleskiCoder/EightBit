@@ -28,6 +28,7 @@ namespace EightBit {
 		Rom(size_t size = 0) noexcept;
 		Rom(const Rom& rhs);
 		Rom& operator=(const Rom& rhs);
+		bool operator==(const Rom& rhs) const;
 
 		[[nodiscard]] size_t size() const noexcept final;
 

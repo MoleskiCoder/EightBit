@@ -9,6 +9,16 @@
 #include "Signal.h"
 #include "EightBitCompilerDefinitions.h"
 
+#define NON_CONST_ACCESSOR(accessor, type) \
+	[[nodiscard]] auto& accessor() noexcept { \
+		const auto& consted = *this; \
+		const auto& reference = consted.accessor(); \
+		return const_cast<type&>(reference); \
+	}
+
+#define NON_CONST_REGISTOR_ACCESSOR(accessor) \
+	NON_CONST_ACCESSOR(accessor, register16_t)
+
 namespace EightBit {
 
 	class Bus;
@@ -36,27 +46,35 @@ namespace EightBit {
 
 		virtual ~IntelProcessor() {};
 
+		bool operator==(const IntelProcessor& rhs) const;
+
 		[[nodiscard]] constexpr const auto& getDecodedOpcode(const size_t i) const noexcept {
 			return m_decodedOpcodes[i];
 		}
 
 		[[nodiscard]] constexpr auto& MEMPTR() noexcept { return m_memptr; }
+		[[nodiscard]] constexpr auto MEMPTR() const noexcept { return m_memptr; }
 
 		[[nodiscard]] constexpr auto& SP() noexcept { return m_sp; }
+		[[nodiscard]] register16_t SP() const noexcept { return m_sp; }
 
-		[[nodiscard]] virtual register16_t& AF() noexcept = 0;
+		[[nodiscard]] virtual const register16_t& AF() const noexcept = 0;
+		NON_CONST_REGISTOR_ACCESSOR(AF);
 		[[nodiscard]] auto& A() noexcept { return AF().high; }
 		[[nodiscard]] auto& F() noexcept { return AF().low; }
 
-		[[nodiscard]] virtual register16_t& BC() noexcept = 0;
+		[[nodiscard]] virtual const register16_t& BC() const noexcept = 0;
+		NON_CONST_REGISTOR_ACCESSOR(BC);
 		[[nodiscard]] auto& B() noexcept { return BC().high; }
 		[[nodiscard]] auto& C() noexcept { return BC().low; }
 
-		[[nodiscard]] virtual register16_t& DE() noexcept = 0;
+		[[nodiscard]] virtual const register16_t& DE() const noexcept = 0;
+		NON_CONST_REGISTOR_ACCESSOR(DE);
 		[[nodiscard]] auto& D() noexcept { return DE().high; }
 		[[nodiscard]] auto& E() noexcept { return DE().low; }
 
-		[[nodiscard]] virtual register16_t& HL() noexcept = 0;
+		[[nodiscard]] virtual const register16_t& HL() const noexcept = 0;
+		NON_CONST_REGISTOR_ACCESSOR(HL);
 		[[nodiscard]] auto& H() noexcept { return HL().high; }
 		[[nodiscard]] auto& L() noexcept { return HL().low; }
 
@@ -140,6 +158,8 @@ namespace EightBit {
 		virtual void jr(int8_t offset);
 		virtual int jrConditional(int condition);
 		void ret() override;
+
+		void resetWorkingRegisters();
 
 	private:
 		static std::array<int, 8> m_halfCarryTableAdd;

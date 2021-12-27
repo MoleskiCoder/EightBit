@@ -23,7 +23,8 @@ EightBit::Z80::Z80(Bus& bus)
 		exxAF();
 		exx();
 
-		AF() = IX() = IY() = BC() = DE() = HL() = Mask16;
+		IX() = IY() = Mask16;
+		resetWorkingRegisters();
 
 		resetPrefixes();
 	});
@@ -31,6 +32,35 @@ EightBit::Z80::Z80(Bus& bus)
 	RaisedM1.connect([this](EventArgs) {
 		++REFRESH();
 	});
+}
+
+bool EightBit::Z80::operator==(const EightBit::Z80& rhs) const {
+
+	const auto base = IntelProcessor::operator==(rhs);
+
+	auto* z80 = const_cast<Z80*>(this);
+	z80->exxAF();
+	z80->exx();
+
+	return base
+		&& RFSH() == rhs.RFSH()
+		&& NMI() == rhs.NMI()
+		&& M1() == rhs.M1()
+		&& MREQ() == rhs.MREQ()
+		&& IORQ() == rhs.IORQ()
+		&& RD() == rhs.RD()
+		&& WR() == rhs.WR()
+		&& AF() == rhs.AF()
+		&& BC() == rhs.BC()
+		&& DE() == rhs.DE()
+		&& HL() == rhs.HL()
+		&& IX() == rhs.IX()
+		&& IY() == rhs.IY()
+		&& REFRESH() == rhs.REFRESH()
+		&& IV() == rhs.IV()
+		&& IM() == rhs.IM()
+		&& IFF1() == rhs.IFF1()
+		&& IFF2() == rhs.IFF2();
 }
 
 DEFINE_PIN_LEVEL_CHANGERS(NMI, Z80);
@@ -41,19 +71,19 @@ DEFINE_PIN_LEVEL_CHANGERS(IORQ, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(RD, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(WR, Z80);
 
-EightBit::register16_t& EightBit::Z80::AF() noexcept {
+const EightBit::register16_t& EightBit::Z80::AF() const noexcept {
 	return m_accumulatorFlags[m_accumulatorFlagsSet];
 }
 
-EightBit::register16_t& EightBit::Z80::BC() noexcept {
+const EightBit::register16_t& EightBit::Z80::BC() const noexcept {
 	return m_registers[m_registerSet][BC_IDX];
 }
 
-EightBit::register16_t& EightBit::Z80::DE() noexcept {
+const EightBit::register16_t& EightBit::Z80::DE() const noexcept {
 	return m_registers[m_registerSet][DE_IDX];
 }
 
-EightBit::register16_t& EightBit::Z80::HL() noexcept {
+const EightBit::register16_t& EightBit::Z80::HL() const noexcept {
 	return m_registers[m_registerSet][HL_IDX];
 }
 

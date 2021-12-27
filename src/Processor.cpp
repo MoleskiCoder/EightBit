@@ -98,3 +98,11 @@ void EightBit::Processor::call(const register16_t destination) {
 void EightBit::Processor::ret() {
 	jump(popWord());
 }
+
+bool EightBit::Processor::operator==(const EightBit::Processor& rhs) const {
+	return
+		ClockedChip::operator==(rhs)
+		&& RESET() == rhs.RESET()
+		&& INT() == rhs.INT()
+		&& PC() == rhs.PC();
+}

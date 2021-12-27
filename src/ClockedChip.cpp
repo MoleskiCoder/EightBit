@@ -14,3 +14,9 @@ void EightBit::ClockedChip::tick() {
 void EightBit::ClockedChip::resetCycles() noexcept {
 	m_cycles = 0;
 }
+
+bool EightBit::ClockedChip::operator==(const EightBit::ClockedChip& rhs) const {
+	return
+		Device::operator==(rhs)
+		&& cycles() == rhs.cycles();
+}

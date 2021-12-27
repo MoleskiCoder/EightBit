@@ -108,6 +108,8 @@ namespace EightBit {
 
 		virtual ~Device() noexcept {};
 
+		bool operator==(const Device& rhs) const;
+
 		[[nodiscard]] constexpr bool powered() const noexcept { return raised(POWER()); }
 
 	protected:

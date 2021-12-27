@@ -71,6 +71,8 @@ namespace EightBit {
 
 		Z80(Bus& bus);
 
+		bool operator==(const Z80& rhs) const;
+
 		Signal<Z80> ExecutingInstruction;
 		Signal<Z80> ExecutedInstruction;
 
@@ -89,16 +91,22 @@ namespace EightBit {
 		int execute() final;
 		int step() final;
 
-		[[nodiscard]] register16_t& AF() noexcept final;
-		[[nodiscard]] register16_t& BC() noexcept final;
-		[[nodiscard]] register16_t& DE() noexcept final;
-		[[nodiscard]] register16_t& HL() noexcept final;
+		[[nodiscard]] const register16_t& AF() const noexcept final;
+		[[nodiscard]] auto& AF() noexcept { return IntelProcessor::AF(); }
+		[[nodiscard]] const register16_t& BC() const noexcept final;
+		[[nodiscard]] auto& BC() noexcept { return IntelProcessor::BC(); }
+		[[nodiscard]] const register16_t& DE() const noexcept final;
+		[[nodiscard]] auto& DE() noexcept { return IntelProcessor::DE(); }
+		[[nodiscard]] const register16_t& HL() const noexcept final;
+		[[nodiscard]] auto& HL() noexcept { return IntelProcessor::HL(); }
 
-		[[nodiscard]] auto& IX() noexcept { return m_ix; }
+		[[nodiscard]] const auto& IX() const noexcept { return m_ix; }
+		NON_CONST_REGISTOR_ACCESSOR(IX);
 		[[nodiscard]] auto& IXH() noexcept { return IX().high; }
 		[[nodiscard]] auto& IXL() noexcept { return IX().low; }
 
-		[[nodiscard]] auto& IY() noexcept { return m_iy; }
+		[[nodiscard]] const auto& IY() const noexcept { return m_iy; }
+		NON_CONST_REGISTOR_ACCESSOR(IY);
 		[[nodiscard]] auto& IYH() noexcept { return IY().high; }
 		[[nodiscard]] auto& IYL() noexcept { return IY().low; }
 
@@ -114,11 +122,16 @@ namespace EightBit {
 		// programmer. During refresh, the contents of the I Register are placed on the upper eight
 		// bits of the address bus.
 		[[nodiscard]] constexpr auto& REFRESH() noexcept { return m_refresh; }
+		[[nodiscard]] constexpr auto REFRESH() const noexcept { return m_refresh; }
 
 		[[nodiscard]] constexpr auto& IV() noexcept { return iv; }
+		[[nodiscard]] constexpr auto IV() const noexcept { return iv; }
 		[[nodiscard]] constexpr auto& IM() noexcept { return m_interruptMode; }
+		[[nodiscard]] constexpr auto IM() const noexcept { return m_interruptMode; }
 		[[nodiscard]] constexpr auto& IFF1() noexcept { return m_iff1; }
+		[[nodiscard]] constexpr auto IFF1() const noexcept { return m_iff1; }
 		[[nodiscard]] constexpr auto& IFF2() noexcept { return m_iff2; }
+		[[nodiscard]] constexpr auto IFF2() const noexcept { return m_iff2; }
 
 		constexpr void exx() noexcept { m_registerSet ^= 1; }
 		constexpr void exxAF() noexcept { m_accumulatorFlagsSet ^= 1; }

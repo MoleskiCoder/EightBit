@@ -19,20 +19,21 @@ EightBit::Intel8080::Intel8080(Bus& bus)
 DEFINE_PIN_LEVEL_CHANGERS(DBIN, Intel8080);
 DEFINE_PIN_LEVEL_CHANGERS(WR, Intel8080);
 
-EightBit::register16_t& EightBit::Intel8080::AF() noexcept {
-	af.low = (af.low | Bit1) & ~(Bit5 | Bit3);
+const EightBit::register16_t& EightBit::Intel8080::AF() const noexcept {
+	auto* processor = const_cast<Intel8080*>(this);
+	processor->af.low = (af.low | Bit1) & ~(Bit5 | Bit3);
 	return af;
 }
 
-EightBit::register16_t& EightBit::Intel8080::BC() noexcept {
+const EightBit::register16_t& EightBit::Intel8080::BC() const noexcept {
 	return bc;
 }
 
-EightBit::register16_t& EightBit::Intel8080::DE() noexcept {
+const EightBit::register16_t& EightBit::Intel8080::DE() const noexcept {
 	return de;
 }
 
-EightBit::register16_t& EightBit::Intel8080::HL() noexcept {
+const EightBit::register16_t& EightBit::Intel8080::HL() const noexcept {
 	return hl;
 }
 

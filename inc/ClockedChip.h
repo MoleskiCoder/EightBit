@@ -9,6 +9,8 @@ namespace EightBit {
 	public:
 		virtual ~ClockedChip() noexcept {};
 
+		bool operator==(const ClockedChip& rhs) const;
+
 		Signal<EventArgs> Ticked;
 
 		[[nodiscard]] constexpr auto cycles() const noexcept { return m_cycles; }

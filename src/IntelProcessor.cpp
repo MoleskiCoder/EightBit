@@ -13,9 +13,14 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 	RaisedHALT.connect([this](EventArgs) noexcept { ++PC(); });
 
 	RaisedPOWER.connect([this](EventArgs) {
-		PC() = SP() = AF() = BC() = DE() = HL() = Mask16;
+		PC() = SP() = Mask16;
+		resetWorkingRegisters();
 		raiseHALT();
 	});
+}
+
+void EightBit::IntelProcessor::resetWorkingRegisters() {
+	AF() = BC() = DE() = HL() = Mask16;
 }
 
 DEFINE_PIN_LEVEL_CHANGERS(HALT, IntelProcessor);
@@ -84,4 +89,16 @@ int EightBit::IntelProcessor::jrConditional(const int condition) {
 void EightBit::IntelProcessor::ret() {
 	Processor::ret();
 	MEMPTR() = PC();
+}
+
+bool EightBit::IntelProcessor::operator==(const EightBit::IntelProcessor& rhs) const {
+	return
+		Processor::operator==(rhs)
+		&& HALT() == rhs.HALT()
+		&& MEMPTR() == rhs.MEMPTR()
+		&& SP() == rhs.SP()
+		&& AF() == rhs.AF()
+		&& BC() == rhs.BC()
+		&& DE() == rhs.DE()
+		&& HL() == rhs.HL();
 }

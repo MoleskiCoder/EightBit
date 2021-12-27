@@ -3,6 +3,10 @@
 
 #include <iostream>
 
+bool EightBit::Rom::operator==(const Rom& rhs) const {
+	return BYTES() == rhs.BYTES();
+}
+
 int EightBit::Rom::load(std::ifstream& file, std::vector<uint8_t>& output, const int writeOffset, const int readOffset, int limit, const int maximumSize) {
 
 	file.seekg(0, std::ios::end);

@@ -13,20 +13,21 @@ EightBit::GameBoy::LR35902::LR35902(Bus& memory)
 	});
 }
 
-EightBit::register16_t& EightBit::GameBoy::LR35902::AF() noexcept {
-	af.low = higherNibble(af.low);
+const EightBit::register16_t& EightBit::GameBoy::LR35902::AF() const noexcept {
+	auto* gb = const_cast<LR35902*>(this);
+	gb->af.low = higherNibble(af.low);
 	return af;
 }
 
-EightBit::register16_t& EightBit::GameBoy::LR35902::BC() noexcept {
+const EightBit::register16_t& EightBit::GameBoy::LR35902::BC() const noexcept {
 	return bc;
 }
 
-EightBit::register16_t& EightBit::GameBoy::LR35902::DE() noexcept {
+const EightBit::register16_t& EightBit::GameBoy::LR35902::DE() const noexcept {
 	return de;
 }
 
-EightBit::register16_t& EightBit::GameBoy::LR35902::HL() noexcept {
+const EightBit::register16_t& EightBit::GameBoy::LR35902::HL() const noexcept {
 	return hl;
 }
 
