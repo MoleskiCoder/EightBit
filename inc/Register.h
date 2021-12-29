@@ -74,8 +74,8 @@ namespace EightBit {
 		return lhs.word == rhs.word;
 	}
 
-	[[nodiscard]] constexpr inline auto operator!=(const register16_t lhs, const register16_t rhs) noexcept {
-		return !(lhs == rhs);
+	[[nodiscard]] constexpr auto operator<=>(const register16_t lhs, const register16_t rhs) noexcept {
+		return lhs.word <=> rhs.word;
 	}
 
 	[[nodiscard]] constexpr inline auto operator+(register16_t lhs, const register16_t rhs) noexcept {
