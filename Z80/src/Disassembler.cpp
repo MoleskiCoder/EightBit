@@ -16,41 +16,23 @@ EightBit::Disassembler::Disassembler(Bus& bus) noexcept
 
 std::string EightBit::Disassembler::state(Z80& cpu) {
 
-	auto pc = cpu.PC();
-	auto sp = cpu.SP();
-
-	auto a = cpu.A();
-	auto f = cpu.F();
-
-	auto b = cpu.B();
-	auto c = cpu.C();
-
-	auto d = cpu.D();
-	auto e = cpu.E();
-
-	auto h = cpu.H();
-	auto l = cpu.L();
-
-	auto i = cpu.IV();
-	uint8_t r = cpu.REFRESH();
-
-	auto im = cpu.IM();
-
 	std::ostringstream output;
 
 	output
-		<< "PC=" << pc
-		<< " "
-		<< "SP=" << sp
-		<< " " << "A=" << hex(a) << " " << "F=" << flags(f)
-		<< " " << "B=" << hex(b) << " " << "C=" << hex(c)
-		<< " " << "D=" << hex(d) << " " << "E=" << hex(e)
-		<< " " << "H=" << hex(h) << " " << "L=" << hex(l)
-		<< " " << "IX=" << cpu.IX()
-		<< " " << "IY=" << cpu.IY()
-		<< " " << "I=" << hex(i) << " " << "R=" << hex(r)
-		<< " " << "IM=" << im
-		<< " " << "IFF1=" << cpu.IFF1()
+		<< "PC=" << cpu.PC()
+		<< " SP=" << cpu.SP()
+
+		<< std::hex << std::setfill('0')
+		<< " A=" << std::setw(2) << (int)cpu.A() << " F=" << flags(cpu.F())
+		<< " B=" << std::setw(2) << (int)cpu.B() << " C=" << std::setw(2) << (int)cpu.C()
+		<< " D=" << std::setw(2) << (int)cpu.D() << " E=" << std::setw(2) << (int)cpu.E()
+		<< " H=" << std::setw(2) << (int)cpu.H() << " L=" << std::setw(2) << (int)cpu.L()
+
+		<< " IX=" << cpu.IX()
+		<< " IY=" << cpu.IY()
+		<< " I=" << hex(cpu.IV()) << " R=" << hex(cpu.REFRESH())
+		<< " IM=" << cpu.IM()
+		<< " IFF1=" << cpu.IFF1()
 		<< " " << (Device::lowered(cpu.RESET()) ? "R" : "-")
 		<<        (Device::lowered(cpu.INT()) ? "I" : "-")
 		<<        (Device::lowered(cpu.HALT()) ? "H" : "-")
@@ -723,23 +705,19 @@ void EightBit::Disassembler::disassembleOther(
 }
 
 std::string EightBit::Disassembler::flag(uint8_t value, int flag, const std::string represents) {
-	std::ostringstream output;
-	output << (value & flag ? represents : "-");
-	return output.str();
+	return value & flag ? represents : "-";
 }
 
 std::string EightBit::Disassembler::flags(uint8_t value) {
-	std::ostringstream output;
-	output
-		<< flag(value, Z80::SF, "S")
-		<< flag(value, Z80::ZF, "Z")
-		<< flag(value, Z80::YF, "Y")
-		<< flag(value, Z80::HC, "H")
-		<< flag(value, Z80::XF, "X")
-		<< flag(value, Z80::PF, "P")
-		<< flag(value, Z80::NF, "N")
-		<< flag(value, Z80::CF, "C");
-	return output.str();
+	return
+		  flag(value, Z80::SF, "S")
+		+ flag(value, Z80::ZF, "Z")
+		+ flag(value, Z80::YF, "Y")
+		+ flag(value, Z80::HC, "H")
+		+ flag(value, Z80::XF, "X")
+		+ flag(value, Z80::PF, "P")
+		+ flag(value, Z80::NF, "N")
+		+ flag(value, Z80::CF, "C");
 }
 
 std::string EightBit::Disassembler::hex(uint8_t value) {
