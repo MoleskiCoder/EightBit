@@ -27,28 +27,32 @@ void EightBit::Profiler::dump() const {
 }
 
 void EightBit::Profiler::dumpInstructionProfiles() const {
-	std::cout << "** instructions" << std::endl;
-	for (int i = 0; i < 0x100; ++i) {
-		auto count = m_instructions[i];
-		if (count > 0)
-			std::cout << Disassembler::hex((uint8_t)i) << "\t" << count << std::endl;
+	if (instructions_available()) {
+		std::cout << "** instructions" << std::endl;
+		for (int i = 0; i < 0x100; ++i) {
+			auto count = m_instructions[i];
+			if (count > 0)
+				std::cout << Disassembler::hex((uint8_t)i) << "\t" << count << std::endl;
+		}
 	}
 }
 
 void EightBit::Profiler::dumpAddressProfiles() const {
-	std::cout << "** addresses" << std::endl;
-	for (int i = 0; i < 0x10000; ++i) {
-		auto count = m_addresses[i];
+	if (addresses_available()) {
+		std::cout << "** addresses" << std::endl;
+		for (int i = 0; i < 0x10000; ++i) {
+			auto count = m_addresses[i];
 
-		m_cpu.PC().word = i;
+			m_cpu.PC().word = i;
 
-		if (count > 0)
-			std::cout
+			if (count > 0)
+				std::cout
 				<< Disassembler::hex((uint16_t)i)
 				<< "\t"
 				<< count
 				<< "\t"
 				<< m_disassembler.disassemble(m_cpu)
 				<< std::endl;
+		}
 	}
 }

@@ -24,6 +24,27 @@ namespace EightBit {
 		Z80& m_cpu;
 		Disassembler& m_disassembler;
 
+		[[nodiscard]] constexpr const auto& instructions() const { return m_instructions; }
+		[[nodiscard]] constexpr const auto& addresses() const { return m_addresses; }
+
+		[[nodiscard]] constexpr auto instructions_available() const noexcept {
+			const auto found = std::find_if(
+				instructions().begin(), instructions().end(),
+				[](const auto& value) { return value != 0; });
+			return found != instructions().end();
+		}
+
+		[[nodiscard]] constexpr auto addresses_available() const noexcept {
+			const auto found = std::find_if(
+				addresses().begin(), addresses().end(),
+				[](const auto& value) { return value != 0; });
+			return found != addresses().end();
+		}
+
+		[[nodiscard]] constexpr auto available() const noexcept {
+			return instructions_available() || addresses_available();
+		}
+
 		void dumpInstructionProfiles() const;
 		void dumpAddressProfiles() const;
 	};
