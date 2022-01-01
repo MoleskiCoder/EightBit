@@ -12,9 +12,9 @@ protected:
 public:
 	array_t(simdjson::dom::array input) noexcept;
 
-	[[nodiscard]] auto begin() const noexcept { return m_raw.begin(); }
-	[[nodiscard]] auto end() const noexcept { return m_raw.end(); }
-	[[nodiscard]] auto size() const noexcept { return m_raw.size(); }
+	[[nodiscard]] auto begin() const noexcept { return raw().begin(); }
+	[[nodiscard]] auto end() const noexcept { return raw().end(); }
+	[[nodiscard]] auto size() const noexcept { return raw().size(); }
 
 	[[nodiscard]] auto at(size_t idx) const noexcept { return raw().at(idx); }
 	[[nodiscard]] auto operator[](size_t idx) const noexcept { return at(idx); }
