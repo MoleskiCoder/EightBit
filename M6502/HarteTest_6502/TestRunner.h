@@ -1,11 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <set>
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include <Bus.h>
 #include <Ram.h>
 #include <mos6502.h>
