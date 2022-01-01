@@ -168,7 +168,7 @@ void Game::removeJoystick(SDL_Event& e) {
 	const auto which = e.jdevice.which;
 	const auto found = m_gameControllers.find(which);
 	SDL_assert(found != m_gameControllers.end());
-	auto controller = found->second;
+	auto& controller = found->second;
 	const auto joystickId = controller->getJoystickId();
 	m_mappedControllers.erase(joystickId);
 	m_gameControllers.erase(which);
@@ -181,7 +181,11 @@ void Game::addJoystick(SDL_Event& e) {
 	auto controller = std::make_shared<GameController>(which);
 	const auto joystickId = controller->getJoystickId();
 	m_gameControllers[which] = controller;
+#if __cplusplus >= 202002L
 	SDL_assert(m_mappedControllers.contains(joystickId));
+#else
+	SDL_assert(m_mappedControllers.find(joystickId) != m_mappedControllers.end());
+#endif
 	m_mappedControllers[joystickId] = which;
 	SDL_Log("Joystick device %d added (%zd controllers)", which, m_gameControllers.size());
 }

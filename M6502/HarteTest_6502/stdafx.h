@@ -21,6 +21,12 @@
 #include <mos6502.h>
 #include <Disassembly.h>
 #include <Symbols.h>
-#include <co_generator_t.h>
+
+#if __cplusplus >= 202002L
+#	include <co_generator_t.h>
+#else
+#	include <boost/coroutine2/all.hpp>
+#	include <boost/bind.hpp>
+#endif
 
 #include "simdjson/simdjson.h"

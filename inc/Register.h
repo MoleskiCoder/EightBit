@@ -74,9 +74,15 @@ namespace EightBit {
 		return lhs.word == rhs.word;
 	}
 
+#if __cplusplus >= 202002L
 	[[nodiscard]] constexpr auto operator<=>(const register16_t lhs, const register16_t rhs) noexcept {
 		return lhs.word <=> rhs.word;
 	}
+#else
+	[[nodiscard]] constexpr inline auto operator!=(const register16_t lhs, const register16_t rhs) noexcept {
+		return lhs.word != rhs.word;
+	}
+#endif
 
 	[[nodiscard]] constexpr inline auto operator+(register16_t lhs, const register16_t rhs) noexcept {
 		lhs += rhs;

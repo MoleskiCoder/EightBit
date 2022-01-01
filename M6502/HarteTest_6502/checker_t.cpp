@@ -210,7 +210,11 @@ void checker_t::check(test_t current) {
     const auto pc = cpu.PC().word;
     const auto start_opcode = runner().peek(pc);
 
+#if __cplusplus >= 202002L
     m_undocumented = m_undocumented_opcodes.contains(start_opcode);
+#else
+    m_undocumented = m_undocumented_opcodes.find(start_opcode) != m_undocumented_opcodes.end();
+#endif
     if (undocumented()) {
         m_valid = false;
         m_messages.push_back("Undocumented");

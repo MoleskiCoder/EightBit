@@ -2,7 +2,11 @@
 
 #include <string>
 
-#include <co_generator_t.h>
+#if __cplusplus >= 202002L
+#   include <co_generator_t.h>
+#else
+#	include <boost/coroutine2/all.hpp>
+#endif
 
 #include "parser_t.h"
 #include "test_t.h"
@@ -18,5 +22,9 @@ public:
     [[nodiscard]] auto begin() const noexcept { return array().begin(); }
     [[nodiscard]] auto end() const noexcept { return array().end(); }
 
+#if __cplusplus >= 202002L
     [[nodiscard]] EightBit::co_generator_t<test_t> generator();
+#else
+    void generator(boost::coroutines2::coroutine<test_t>::push_type& sink);
+#endif
 };

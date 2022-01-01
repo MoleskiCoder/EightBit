@@ -4,6 +4,10 @@
 #include <iostream>
 #include <filesystem>
 
+#if __cplusplus < 202002L
+#   include <boost/bind.hpp>
+#endif
+
 #include "TestRunner.h"
 #include "checker_t.h"
 #include "test_t.h"
@@ -25,6 +29,8 @@ int main() {
 
     checker_t checker(runner);
     checker.initialise();
+
+#if __cplusplus >= 202002L
 
     processor_test_suite_t m6502_tests(directory);
     auto opcode_generator = m6502_tests.generator();
@@ -55,6 +61,37 @@ int main() {
             }
         }
     }
+
+#else
+
+    processor_test_suite_t m6502_tests(directory);
+    boost::coroutines2::coroutine<opcode_test_suite_t>::pull_type opcodes(boost::bind(&processor_test_suite_t::generator, &m6502_tests, _1));
+    for (auto& opcode : opcodes) {
+
+        const auto path = std::filesystem::path(opcode.path());
+        std::cout << "Processing: " << path.filename() << "\n";
+        opcode.load();
+
+        boost::coroutines2::coroutine<test_t>::pull_type tests(boost::bind(&opcode_test_suite_t::generator, &opcode, _1));
+        for (auto& test : tests) {
+
+            checker.check(test);
+
+            if (checker.invalid()) {
+                ++invalid_opcode_count;
+                if (checker.unimplemented())
+                    ++unimplemented_opcode_count;
+                if (checker.undocumented())
+                    ++undocumented_opcode_count;
+                std::cout << "** Failed: " << test.name() << "\n";
+                for (const auto& message : checker.messages())
+                    std::cout << "**** " << message << "\n";
+                break;
+            }
+        }
+    }
+
+#endif
 
    const auto finish_time = std::chrono::steady_clock::now();
    const auto elapsed_time = finish_time - start_time;

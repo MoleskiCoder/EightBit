@@ -27,6 +27,8 @@ namespace EightBit {
 		[[nodiscard]] constexpr const auto& instructions() const { return m_instructions; }
 		[[nodiscard]] constexpr const auto& addresses() const { return m_addresses; }
 
+#if __cplusplus >= 202002L
+
 		[[nodiscard]] constexpr auto instructions_available() const noexcept {
 			const auto found = std::find_if(
 				instructions().begin(), instructions().end(),
@@ -44,6 +46,28 @@ namespace EightBit {
 		[[nodiscard]] constexpr auto available() const noexcept {
 			return instructions_available() || addresses_available();
 		}
+
+#else
+
+		[[nodiscard]] auto instructions_available() const noexcept {
+			const auto found = std::find_if(
+				instructions().begin(), instructions().end(),
+				[](const auto& value) { return value != 0; });
+			return found != instructions().end();
+		}
+
+		[[nodiscard]] auto addresses_available() const noexcept {
+			const auto found = std::find_if(
+				addresses().begin(), addresses().end(),
+				[](const auto& value) { return value != 0; });
+			return found != addresses().end();
+		}
+
+		[[nodiscard]] auto available() const noexcept {
+			return instructions_available() || addresses_available();
+		}
+
+#endif
 
 		void dumpInstructionProfiles() const;
 		void dumpAddressProfiles() const;

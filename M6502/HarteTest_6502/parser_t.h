@@ -19,7 +19,11 @@ public:
     parser_t() noexcept {}
     parser_t(std::string path) noexcept;
 
+#if __cplusplus >= 202002L
     [[nodiscard]] constexpr std::string_view path() const noexcept { return m_path; }
+#else
+    [[nodiscard]] std::string_view path() const noexcept { return m_path; }
+#endif
     [[nodiscard]] const auto raw() const noexcept { return m_raw; }
 
     virtual void load();
