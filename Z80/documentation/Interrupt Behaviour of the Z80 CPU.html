@@ -1,0 +1,133 @@
+
+<!-- saved from url=(0032)http://www.z80.info/interrup.htm -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Interrupt Behaviour of the Z80 CPU</title>
+<meta name="title" content="Thomas Scherrer Z80-Family HomePage">
+<meta name="author" content="Achim Flammenkamp">
+<meta name="keywords" content="Z80,Z180,Z280,Z380,Programming,Hardware,Software,Utilities,FAQ,Support,CPU,assembler,emulators,simulators">
+<meta name="description" content="Interrupt Behaviour of the Z80 CPU">
+</head>
+<body bgcolor="#FFFFFF">
+<a href="http://www.z80.info/index.htm">
+<img src="./Interrupt Behaviour of the Z80 CPU_files/zlogo1.gif" alt="Z80 Home" height="98" width="198" border="0"></a>
+<a name="TOP">
+
+
+<h1> Interrupt Behaviour of the Z80 CPU</h1>
+<p><i>by Achim Flammenkamp</i></p>
+
+<h2>Interrupt timing</h2>
+Only at the end of an instruction execution, except a NOP in case HALT, a LDD in case LDDR, a OUTI in case OTIR, etc., the CPU checks for an interrupt request.
+Thus the INT-pin should be active for at least 23 clock ticks because some IX
+resp. IY instruction last so long.
+Now an interrupt is accepted if INT-pin is low(active) and the interrupt flip flop
+IFF1 is set or the NMI-pin is respectively was active during the just performed instruction.
+If this is the case, the following happens:<br>
+
+Immediately IFF1 is reset to 0 and if INT-pin is low also IFF2 is reset to 0.
+Then the behavior depends whether it is a non maskable interrupt (NMI) or a
+maskable interrupt (INT). In the later case the interrupt mode (IM) of the CPU is
+also decisive:
+<ul>
+<li>NMI<br>
+It takes 11 clock cycles to get to #0066:
+<ol>
+  <li> M1 cycle: 5 T states to do an opcode read and decrement SP
+  </li><li> M2 cycle: 3 T states write high byte of PC to the stack and decrement SP
+  </li><li> M3 cycle: 3 T states write the low byte of PC and jump to #0066.
+</li></ol>   
+</li><li>INT and interrupt mode 0 set<br>
+In this mode, timing depends on the instruction put on the bus.
+The interrupt processing last 2 clock cycles more
+than this instruction usually needs.<br>
+Two typical examples follow:<br>
+<ol>
+a RST n on the data bus, it takes 13 cycles to get to 'n':
+<li> M1 cycle: 7 ticks<br>acknowledge interrupt and decrement SP
+</li><li> M2 cycle: 3 ticks<br>write high byte and decrement SP
+</li><li> M3 cycle: 3 ticks<br>write low byte and jump to 'n' 
+</li></ol>
+
+<ol>
+With a CALL nnnn on the data bus, it takes 19 cycles:
+<li> M1 cycle: 7 ticks<br>acknowledge interrupt
+</li><li> M2 cycle: 3 ticks<br>read low byte of 'nnnn' from data bus
+</li><li> M3 cycle: 3 ticks<br>read high byte of 'nnnn' and decrement SP
+</li><li> M4 cycle: 3 ticks<br>write high byte of PC to the stack and decrement SP
+</li><li> M5 cycle: 3 ticks<br>write low byte of PC and jump to 'nnnn'. 
+</li></ol>
+</li><li>INT and interrupt mode 1 set<br>
+It takes 13 clock cycles to reach #0038:
+<ol>
+ <li> M1 cycle: 7 ticks<br>
+ acknowledge interrupt and decrement SP
+ </li><li> M2 cycle: 3 ticks<br>
+ write high byte of PC onto the stack and decrement SP
+ </li><li> M3 cycle: 3 ticks<br>
+ write low byte onto the stack and to set PC to #0038.
+</li></ol>
+</li><li>INT and interrupt mode 2 set<br>
+It takes 19 clock cycles to get to the interrupt routine:
+<ol>
+ <li> M1 cycle: 7 ticks<br>
+ acknowledge interrupt and decrement SP
+ </li><li> M2 cycle: 3 ticks<br>
+ write high byte of PC onto stack and decrement SP
+ </li><li> M3 cycle: 3 ticks<br>
+ write low byte onto the stack
+ </li><li> M4 cycle: 3 ticks<br>
+ read low byte from the interrupt vector
+ </li><li> M5 cycle: 3 ticks<br>
+ read high byte from bus and jump to interrupt routine 
+</li></ol></li></ul>
+Some remarks:
+<ol>
+<li> "acknowledge interrupt" means pin IORQ gets together with M1-pin
+active/low. Furthermore the CPU adds 2 wait states to the normal machine cycle.
+</li><li>Quoted remark<em>:
+<ul>
+<li>If a LD A,I or LD A,R (which copy IFF2
+to the P/V flag) is interrupted, then the P/V flag is reset, even if
+interrupts were enabled beforehand.
+</li><li>If interrupts are disabled when a EI instruction is
+interrupted, then the interrupt will not occur until after the
+instruction following the EI, as when IFF1 is sampled
+during the one and only machine-cycle of the EI, it will be reset.
+</li></ul>
+</em>
+
+</li><li>An INT will let the INT-pin low(active) until it is indirectly
+reseted by an RETI or other external hardware. In contrast a signal
+at the NMI-pin will be recognized when its state going from high to low!
+Thus it is not a level trigger signal, but a pulse which is stored internally
+by the CPU until the next M1 cycle.
+</li></ol>
+<p>
+</p><h2>Reset Timing</h2>
+One can consider a reset (RESET-pin gets low) as a very special interrupt.
+If this occurs, the following happens in one machine cycle:<br>
+<ul>
+It takes 3 clock cycles:
+<li>IFF1 and IFF2 as well as interrupt mode is set to 0
+</li><li>PC is set to 0, I and R registers are reset also.
+</li><li>SP is set to 0xffff as well as the A and the F register is set to 0xff.
+</li></ul>
+<p>
+</p><h3>Thanks for contribution goes to:</h3>
+</a><ul><a name="TOP">
+<li>Z80 Family CPU User Manual
+</li><li>Sean Young (sean[AT]msxnet[DOT]org)
+</li></a><li><a name="TOP"></a><a href="http://www.nvg.ntnu.no/sinclair/faq/tech_z80.html">http://www.nvg.ntnu.no/sinclair/faq/tech_z80.html</a>
+</li><li>Mutt (redflame[AT]xmission[DOT]com)
+</li><li>Andrew Campbell (campbell[AT]comet[DOT]columbia[DOT]edu)
+</li></ul>
+<p></p>
+<hr>
+<a href="http://www.z80.info/index.htm">Back to main page</a>.
+<br>
+
+
+
+
+
+</body></html>
