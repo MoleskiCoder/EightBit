@@ -4,6 +4,7 @@
 opcode_test_suite_t::opcode_test_suite_t(const std::string path) noexcept
 : parser_t(path) {}
 
+#ifdef USE_COROUTINES
 #if __cplusplus >= 202002L
 EightBit::co_generator_t<test_t> opcode_test_suite_t::generator() {
 	for (const auto element : *this)
@@ -13,5 +14,13 @@ EightBit::co_generator_t<test_t> opcode_test_suite_t::generator() {
 void opcode_test_suite_t::generator(boost::coroutines2::coroutine<test_t>::push_type& sink) {
 	for (const auto element : *this)
 		sink(test_t(element));
+}
+#endif
+#else
+std::vector<test_t> opcode_test_suite_t::generate() {
+	std::vector<test_t> returned;
+	for (const auto element : *this)
+		returned.push_back(test_t(element));
+	return returned;
 }
 #endif

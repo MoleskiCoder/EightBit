@@ -30,6 +30,8 @@ int main() {
     checker_t checker(runner);
     checker.initialise();
 
+#ifdef USE_COROUTINES
+
 #if __cplusplus >= 202002L
 
     processor_test_suite_t m6502_tests(directory);
@@ -73,6 +75,37 @@ int main() {
         opcode.load();
 
         boost::coroutines2::coroutine<test_t>::pull_type tests(boost::bind(&opcode_test_suite_t::generator, &opcode, _1));
+        for (auto& test : tests) {
+
+            checker.check(test);
+
+            if (checker.invalid()) {
+                ++invalid_opcode_count;
+                if (checker.unimplemented())
+                    ++unimplemented_opcode_count;
+                if (checker.undocumented())
+                    ++undocumented_opcode_count;
+                std::cout << "** Failed: " << test.name() << "\n";
+                for (const auto& message : checker.messages())
+                    std::cout << "**** " << message << "\n";
+                break;
+            }
+        }
+    }
+
+#endif
+
+#else
+
+    processor_test_suite_t m6502_tests(directory);
+    auto opcodes = m6502_tests.generate();
+    for (auto& opcode : opcodes) {
+
+        const auto path = std::filesystem::path(opcode.path());
+        std::cout << "Processing: " << path.filename() << "\n";
+        opcode.load();
+
+        auto tests = opcode.generate();
         for (auto& test : tests) {
 
             checker.check(test);

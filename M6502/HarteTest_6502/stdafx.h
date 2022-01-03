@@ -22,11 +22,15 @@
 #include <Disassembly.h>
 #include <Symbols.h>
 
+#define USE_COROUTINES
+
+#ifdef USE_COROUTINES
 #if __cplusplus >= 202002L
 #	include <co_generator_t.h>
 #else
 #	include <boost/coroutine2/all.hpp>
 #	include <boost/bind.hpp>
+#endif
 #endif
 
 #include "simdjson/simdjson.h"
