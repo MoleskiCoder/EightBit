@@ -30,7 +30,7 @@ namespace EightBit {
 		Rom& operator=(const Rom& rhs);
 		bool operator==(const Rom& rhs) const;
 
-		[[nodiscard]] size_t size() const noexcept final;
+		[[nodiscard]] uint16_t size() const noexcept final;
 
 		int load(std::ifstream& file, int writeOffset = 0, int readOffset = 0, int limit = -1) final;
 		int load(std::string path, int writeOffset = 0, int readOffset = 0, int limit = -1) final;

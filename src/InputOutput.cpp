@@ -6,7 +6,7 @@
 
 #include "../inc/Register.h"
 
-size_t EightBit::InputOutput::size() const noexcept {
+uint16_t EightBit::InputOutput::size() const noexcept {
 	return 0x100;
 }
 

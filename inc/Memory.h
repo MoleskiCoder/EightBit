@@ -16,7 +16,7 @@ namespace EightBit {
 	public:
 		virtual ~Memory() {};
 
-		[[nodiscard]] virtual size_t size() const noexcept = 0;
+		[[nodiscard]] virtual uint16_t size() const noexcept = 0;
 		[[nodiscard]] virtual uint8_t peek(uint16_t address) const noexcept = 0;
 
 		[[nodiscard]] virtual uint8_t& reference(uint16_t) noexcept;

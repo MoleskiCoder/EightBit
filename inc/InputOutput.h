@@ -10,7 +10,7 @@ namespace EightBit {
 	public:
 		enum class AccessType { Unknown, Reading, Writing };
 
-		[[nodiscard]] size_t size() const noexcept override;
+		[[nodiscard]] uint16_t size() const noexcept override;
 		[[nodiscard]] uint8_t peek(uint16_t address) const noexcept override;
 
 		[[nodiscard]] uint8_t& reference(uint16_t address) noexcept override;

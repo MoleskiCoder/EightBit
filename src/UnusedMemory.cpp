@@ -3,10 +3,10 @@
 
 #include <cassert>
 
-EightBit::UnusedMemory::UnusedMemory(const size_t size, const uint8_t value) noexcept
+EightBit::UnusedMemory::UnusedMemory(const uint16_t size, const uint8_t value) noexcept
 : m_size(size), m_value(value) {}
 
-size_t EightBit::UnusedMemory::size() const noexcept {
+uint16_t EightBit::UnusedMemory::size() const noexcept {
 	return m_size;
 }
 

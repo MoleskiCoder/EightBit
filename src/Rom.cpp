@@ -57,8 +57,10 @@ EightBit::Rom& EightBit::Rom::operator=(const Rom& rhs) {
 	return *this;
 }
 
-size_t EightBit::Rom::size() const noexcept {
-	return m_bytes.size();
+uint16_t EightBit::Rom::size() const noexcept {
+	const auto size = BYTES().size();
+	assert(size <= 0x10000);
+	return static_cast<uint16_t>(size);
 }
 
 int EightBit::Rom::load(std::ifstream& file, const int writeOffset, const int readOffset, const int limit) {
