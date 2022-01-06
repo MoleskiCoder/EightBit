@@ -24,14 +24,15 @@ public:
 
     [[nodiscard]] auto begin() const noexcept { return array().begin(); }
     [[nodiscard]] auto end() const noexcept { return array().end(); }
+    [[nodiscard]] auto size() const noexcept { return array().size(); }
 
 #ifdef USE_COROUTINES
 #if __cplusplus >= 202002L
-    [[nodiscard]] EightBit::co_generator_t<test_t> generator();
+    [[nodiscard]] EightBit::co_generator_t<test_t> generator() const;
 #else
-    void generator(boost::coroutines2::coroutine<test_t>::push_type& sink);
+    void generator(boost::coroutines2::coroutine<test_t>::push_type& sink) const;
 #endif
 #else
-    std::vector<test_t> generate();
+    std::vector<test_t> generate() const;
 #endif
 };

@@ -21,8 +21,6 @@ private:
     EightBit::Symbols m_symbols;
     EightBit::Disassembly m_disassembler = { m_runner, m_runner.CPU(), m_symbols };
 
-    test_t m_test;
-
     std::ostringstream m_os;
     std::vector<std::string> m_messages;
 
@@ -35,12 +33,12 @@ private:
     bool m_valid = true;
     bool m_undocumented = false;
 
-    [[nodiscard]] auto& os() { return m_os; }
+    [[nodiscard]] constexpr auto& os() noexcept { return m_os; }
 
-    [[nodiscard]] auto& runner() noexcept { return m_runner; }
+    [[nodiscard]] constexpr auto& runner() noexcept { return m_runner; }
 
     void seedUndocumentedOpcodes();
-    [[nodiscard]] bool checkState();
+    [[nodiscard]] bool checkState(test_t test);
 
     void pushCurrentMessage();
 
@@ -84,9 +82,7 @@ private:
     void dumpCycles(const actual_cycles_t& cycles);
     void dumpCycle(const actual_cycle_t& cycle);
 
-    [[nodiscard]] auto test() const noexcept { return m_test; }
-
-    void initialiseState();
+    void initialiseState(test_t test);
 
 public:
     checker_t(TestRunner& runner);
@@ -103,5 +99,5 @@ public:
 
     void initialise();
 
-    void check(test_t current);
+    void check(test_t test);
 };

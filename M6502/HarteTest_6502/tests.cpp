@@ -66,7 +66,7 @@ int main() {
 
 #else
 
-    processor_test_suite_t m6502_tests(directory);
+    const processor_test_suite_t m6502_tests(directory);
     boost::coroutines2::coroutine<opcode_test_suite_t>::pull_type opcodes(boost::bind(&processor_test_suite_t::generator, &m6502_tests, _1));
     for (auto& opcode : opcodes) {
 
@@ -75,7 +75,7 @@ int main() {
         opcode.load();
 
         boost::coroutines2::coroutine<test_t>::pull_type tests(boost::bind(&opcode_test_suite_t::generator, &opcode, _1));
-        for (auto& test : tests) {
+        for (const auto& test : tests) {
 
             checker.check(test);
 
@@ -97,7 +97,7 @@ int main() {
 
 #else
 
-    processor_test_suite_t m6502_tests(directory);
+    const processor_test_suite_t m6502_tests(directory);
     auto opcodes = m6502_tests.generate();
     for (auto& opcode : opcodes) {
 
@@ -105,8 +105,8 @@ int main() {
         std::cout << "Processing: " << path.filename() << "\n";
         opcode.load();
 
-        auto tests = opcode.generate();
-        for (auto& test : tests) {
+        const auto tests = opcode.generate();
+        for (const auto& test : tests) {
 
             checker.check(test);
 

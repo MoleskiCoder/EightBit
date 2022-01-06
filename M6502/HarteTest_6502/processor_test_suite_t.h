@@ -22,15 +22,19 @@ private:
 public:
 	processor_test_suite_t(std::string location) noexcept;
 
-	std::string_view location() const noexcept { return m_location; }
+#if __cplusplus >= 202002L
+	[[nodiscard]] constexpr std::string_view location() const noexcept { return m_location; }
+#else
+	[[nodiscard]] std::string_view location() const noexcept { return m_location; }
+#endif
 
 #ifdef USE_COROUTINES
 #if __cplusplus >= 202002L
-	[[nodiscard]] EightBit::co_generator_t<opcode_test_suite_t> generator();
+	[[nodiscard]] EightBit::co_generator_t<opcode_test_suite_t> generator() const;
 #else
-	void generator(boost::coroutines2::coroutine<opcode_test_suite_t>::push_type& sink);
+	void generator(boost::coroutines2::coroutine<opcode_test_suite_t>::push_type& sink) const;
 #endif
 #else
-	std::vector<opcode_test_suite_t> generate();
+	[[nodiscard]] std::vector<opcode_test_suite_t> generate() const;
 #endif
 };

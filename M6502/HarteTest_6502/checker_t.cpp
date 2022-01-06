@@ -91,12 +91,12 @@ bool checker_t::check(const std::string what, const uint16_t address, const uint
 checker_t::checker_t(TestRunner& runner)
 : m_runner(runner) {}
 
-void checker_t::initialiseState() {
+void checker_t::initialiseState(const test_t test) {
 
     auto& cpu = runner().CPU();
     auto& ram = runner().RAM();
 
-    const auto initial = test().initial();
+    const auto initial = test.initial();
 
     cpu.PC().word = initial.pc();
     cpu.S() = initial.s();
@@ -105,10 +105,10 @@ void checker_t::initialiseState() {
     cpu.Y() = initial.y();
     cpu.P() = initial.p();
     for (const auto entry : initial.ram()) {
-        const byte_t byte(entry);
-        const auto address = byte.address();
-        const auto value = byte.value();
-        ram.poke(address, value);
+        auto data = entry.begin();
+        const int64_t address = (*data).get_int64();
+        const int64_t value = (*++data).get_int64();
+        ram.poke((uint16_t)address, (uint8_t)value);
     }
 }
 
@@ -130,12 +130,12 @@ void checker_t::initialise() {
 }
 
 //
-bool checker_t::checkState() {
+bool checker_t::checkState(test_t test) {
 
     auto& cpu = runner().CPU();
     auto& ram = runner().RAM();
 
-    const auto expected_cycles = test().cycles();
+    const auto expected_cycles = test.cycles();
     const auto& actual_cycles = m_actualCycles;
     m_cycle_count_mismatch = expected_cycles.size() != actual_cycles.size();
     if (m_cycle_count_mismatch)
@@ -144,23 +144,23 @@ bool checker_t::checkState() {
     size_t actual_idx = 0;
     for (const auto expected_cycle : expected_cycles) {
 
-        const auto expected = cycle_t(expected_cycle);
+        auto expected_data = expected_cycle.begin();
         const auto& actual = actual_cycles.at(actual_idx++);   // actual could be less than expected
 
-        const auto expected_address = expected.address();
+        const int64_t expected_address = (*expected_data).get_int64();
         const auto actual_address = std::get<0>(actual);
-        check("Cycle address", expected_address, actual_address);
+        check("Cycle address", (uint16_t)expected_address, actual_address);
 
-        const auto expected_value = expected.value();
+        const int64_t expected_value = (*++expected_data).get_int64();
         const auto actual_value = std::get<1>(actual);
-        check("Cycle value", expected_value, actual_value);
+        check("Cycle value", (uint8_t)expected_value, actual_value);
 
-        const auto expected_action = expected.action();
+        const std::string_view expected_action = (*++expected_data).get_string();
         const auto& actual_action = std::get<2>(actual);
         check("Cycle action", expected_action, std::string_view(actual_action));
     }
 
-    const auto final = test().final();
+    const auto final = test.final();
     const auto pc_good = check("PC", final.pc(), cpu.PC().word);
     const auto s_good = check("S", final.s(), cpu.S());
     const auto a_good = check("A", final.a(), cpu.A());
@@ -170,9 +170,9 @@ bool checker_t::checkState() {
 
     bool ram_problem = false;
     for (const auto entry : final.ram()) {
-        const byte_t byte(entry);
-        const auto address = byte.address();
-        const auto value = byte.value();
+        auto data = entry.begin();
+        const int64_t address = (*data).get_int64();
+        const int64_t value = (*++data).get_int64();
         const auto ram_good = check("RAM", address, value, ram.peek(address));
         if (!ram_good && !ram_problem)
             ram_problem = true;
@@ -196,9 +196,7 @@ void checker_t::disassemble(uint16_t address) {
     pushCurrentMessage();
 }
 
-void checker_t::check(test_t current) {
-
-    m_test = current;
+void checker_t::check(test_t test) {
 
     auto& cpu = runner().CPU();
 
@@ -206,7 +204,7 @@ void checker_t::check(test_t current) {
     m_actualCycles.clear();
 
     runner().raisePOWER();
-    initialiseState();
+    initialiseState(test);
     const auto pc = cpu.PC().word;
     const auto start_opcode = runner().peek(pc);
 
@@ -224,7 +222,7 @@ void checker_t::check(test_t current) {
     m_cycles = cpu.step();
     runner().lowerPOWER();
 
-    m_valid = checkState();
+    m_valid = checkState(test);
 
     if (unimplemented()) {
         m_messages.push_back("Unimplemented");
@@ -235,7 +233,7 @@ void checker_t::check(test_t current) {
 
         disassemble(pc);
 
-        const auto final = test().final();
+        const auto final = test.final();
         raise("PC", final.pc(), cpu.PC().word);
         raise("S", final.s(), cpu.S());
         raise("A", final.a(), cpu.A());
@@ -246,11 +244,11 @@ void checker_t::check(test_t current) {
         os()
             << std::dec << std::setfill(' ')
             << "Stepped cycles: " << cycles()
-            << ", expected events: " << test().cycles().size()
+            << ", expected events: " << test.cycles().size()
             << ", actual events: " << m_actualCycles.size();
         pushCurrentMessage();
 
-        dumpCycles("-- Expected cycles", test().cycles());
+        dumpCycles("-- Expected cycles", test.cycles());
         dumpCycles("-- Actual cycles", m_actualCycles);
     }
 }
