@@ -10,7 +10,7 @@
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration) {}
 
-void Board::raisePOWER() {
+void Board::raisePOWER() noexcept {
 	EightBit::Bus::raisePOWER();
 	CPU().raisePOWER();
 	CPU().raiseRESET();
@@ -20,7 +20,7 @@ void Board::raisePOWER() {
 	CPU().raiseRDY();
 }
 
-void Board::lowerPOWER() {
+void Board::lowerPOWER() noexcept {
 	CPU().lowerPOWER();
 	EightBit::Bus::lowerPOWER();
 }

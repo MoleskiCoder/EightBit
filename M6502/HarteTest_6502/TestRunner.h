@@ -15,8 +15,8 @@ protected:
 public:
     TestRunner();
 
-    void raisePOWER() final;
-    void lowerPOWER() final;
+    void raisePOWER() noexcept final;
+    void lowerPOWER() noexcept final;
 
     void initialise() final;
 

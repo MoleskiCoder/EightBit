@@ -11,8 +11,8 @@ public:
 
 	constexpr EightBit::mc6809& CPU() noexcept { return m_cpu; }
 
-	void raisePOWER() final;
-	void lowerPOWER() final;
+	void raisePOWER() noexcept final;
+	void lowerPOWER() noexcept final;
 
 protected:
 	void initialise() final;

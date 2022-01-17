@@ -47,22 +47,22 @@ namespace EightBit {
 			void tickMachine() { tick(4); MachineTicked.fire(); }
 
 		protected:
-			int execute() final;
-			int step() final;
+			int execute() noexcept final;
+			int step() noexcept final;
 
-			void handleRESET() final;
-			void handleINT() final;
+			void handleRESET() noexcept final;
+			void handleINT() noexcept final;
 
-			void memoryWrite() final;
-			uint8_t memoryRead() final;
+			void memoryWrite() noexcept final;
+			uint8_t memoryRead() noexcept final;
 
-			void pushWord(register16_t value) final;
+			void pushWord(register16_t value) noexcept final;
 
-			void jr(int8_t offset) final;
-			int jumpConditional(int condition) final;
-			int returnConditional(int condition) final;
-			int jrConditional(int condition) final;
-			void ret() final;
+			void jr(int8_t offset) noexcept final;
+			int jumpConditional(int condition) noexcept final;
+			int returnConditional(int condition) noexcept final;
+			int jrConditional(int condition) noexcept final;
+			void ret() noexcept final;
 
 		private:
 			Bus& m_bus;

@@ -31,59 +31,59 @@ const EightBit::register16_t& EightBit::GameBoy::LR35902::HL() const noexcept {
 	return hl;
 }
 
-void EightBit::GameBoy::LR35902::handleRESET() {
+void EightBit::GameBoy::LR35902::handleRESET() noexcept {
 	IntelProcessor::handleRESET();
 	di();
 	SP() = Mask16 - 1;
 	tickMachine(4);
 }
 
-void EightBit::GameBoy::LR35902::handleINT() {
+void EightBit::GameBoy::LR35902::handleINT() noexcept {
 	IntelProcessor::handleINT();
 	raiseHALT();
 	di();
 	restart(BUS().DATA());
 }
 
-void EightBit::GameBoy::LR35902::memoryWrite() {
+void EightBit::GameBoy::LR35902::memoryWrite() noexcept {
 	tickMachine();
 	IntelProcessor::memoryWrite();
 }
 
-uint8_t EightBit::GameBoy::LR35902::memoryRead() {
+uint8_t EightBit::GameBoy::LR35902::memoryRead() noexcept {
 	tickMachine();
 	return IntelProcessor::memoryRead();
 }
 
-void EightBit::GameBoy::LR35902::pushWord(register16_t value) {
+void EightBit::GameBoy::LR35902::pushWord(register16_t value) noexcept {
 	tickMachine();
 	IntelProcessor::pushWord(value);
 }
 
-void EightBit::GameBoy::LR35902::jr(int8_t offset) {
+void EightBit::GameBoy::LR35902::jr(int8_t offset) noexcept {
 	IntelProcessor::jr(offset);
 	tickMachine();
 }
 
-int EightBit::GameBoy::LR35902::jumpConditional(const int condition) {
+int EightBit::GameBoy::LR35902::jumpConditional(const int condition) noexcept {
 	if (IntelProcessor::jumpConditional(condition))
 		tickMachine();
 	return condition;
 }
 
-int EightBit::GameBoy::LR35902::returnConditional(const int condition) {
+int EightBit::GameBoy::LR35902::returnConditional(const int condition) noexcept {
 	IntelProcessor::returnConditional(condition);
 	tickMachine();
 	return condition;
 }
 
-int EightBit::GameBoy::LR35902::jrConditional(const int condition) {
+int EightBit::GameBoy::LR35902::jrConditional(const int condition) noexcept {
 	if (!IntelProcessor::jrConditional(condition))
 		tickMachine();
 	return condition;
 }
 
-void EightBit::GameBoy::LR35902::ret() {
+void EightBit::GameBoy::LR35902::ret() noexcept {
 	IntelProcessor::ret();
 	tickMachine();
 }
@@ -435,7 +435,7 @@ uint8_t EightBit::GameBoy::LR35902::maskedInterrupts() noexcept {
 	return enabledInterrupts() & flaggedInterrupts();
 }
 
-int EightBit::GameBoy::LR35902::step() {
+int EightBit::GameBoy::LR35902::step() noexcept {
 
 	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;
@@ -470,7 +470,7 @@ int EightBit::GameBoy::LR35902::step() {
 	return cycles();
 }
 
-int EightBit::GameBoy::LR35902::execute() {
+int EightBit::GameBoy::LR35902::execute() noexcept {
 
 	const auto& decoded = getDecodedOpcode(opcode());
 
@@ -486,8 +486,7 @@ int EightBit::GameBoy::LR35902::execute() {
 	else
 		executeCB(x, y, z, p, q);
 
-	if (UNLIKELY(cycles() == 0))
-		throw std::logic_error("Unhandled opcode");
+	assert(cycles() > 0);
 
 	return cycles();
 }
@@ -802,14 +801,14 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				IntelProcessor::memoryWrite(IoRegisters::BASE + C(), A());
 				break;
 			case 5:	// GB: LD (nn),A
-				BUS().ADDRESS() = MEMPTR() = fetchWord();
-				IntelProcessor::memoryWrite(A());
+				MEMPTR() = BUS().ADDRESS() = fetchWord();
+					IntelProcessor::memoryWrite(A());
 				break;
 			case 6:	// GB: LD A,(FF00 + C)
 				A() = IntelProcessor::memoryRead(IoRegisters::BASE + C());
 				break;
 			case 7:	// GB: LD A,(nn)
-				BUS().ADDRESS() = MEMPTR() = fetchWord();
+				MEMPTR() = BUS().ADDRESS() = fetchWord();
 				A() = memoryRead();
 				break;
 			default:

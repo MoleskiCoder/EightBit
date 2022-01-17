@@ -46,3 +46,14 @@ void Fuse::ExpectedTestResult::read(std::ifstream& file) {
 		}
 	} while (!line.empty());
 }
+
+// returns a vector of: address, expected, actual
+std::vector<std::tuple<int, int, int>> Fuse::ExpectedTestResult::findDifferences(const EightBit::Memory& memory) const {
+	std::vector<std::tuple<int, int, int>> returned;
+	for (const auto& memoryDatum : memoryData) {
+		const auto found = memoryDatum.findDifferences(memory);
+		if (!found.empty())
+			returned.insert(returned.end(), found.begin(), found.end());
+	}
+	return returned;
+}

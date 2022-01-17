@@ -46,8 +46,8 @@ namespace Fuse {
 		bool failed() const { return m_failed; }
 		bool unimplemented() const { return m_unimplemented; }
 
-		virtual void raisePOWER() final;
-		virtual void lowerPOWER() final;
+		void raisePOWER() noexcept final;
+		void lowerPOWER() noexcept final;
 
 		void initialise();
 	};

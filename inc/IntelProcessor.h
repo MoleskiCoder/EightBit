@@ -10,7 +10,7 @@
 #include "EightBitCompilerDefinitions.h"
 
 #define NON_CONST_ACCESSOR(accessor, type) \
-	[[nodiscard]] auto& accessor() noexcept { \
+	[[nodiscard]] constexpr auto& accessor() noexcept { \
 		const auto& consted = *this; \
 		const auto& reference = consted.accessor(); \
 		return const_cast<type&>(reference); \
@@ -140,25 +140,25 @@ namespace EightBit {
 			return calculateHalfCarry(m_halfCarryTableSub, before, value, calculation);
 		}
 
-		void handleRESET() override;
+		void handleRESET() noexcept override;
 
-		void push(uint8_t value) final;
-		[[nodiscard]] uint8_t pop() final;
-
-		//
-
-		[[nodiscard]] register16_t getWord() final;
-		void setWord(register16_t value) final;
+		void push(uint8_t value) noexcept final;
+		[[nodiscard]] uint8_t pop() noexcept final;
 
 		//
 
-		virtual void restart(uint8_t address);
-		virtual int callConditional(int condition);
-		virtual int jumpConditional(int condition);
-		virtual int returnConditional(int condition);
-		virtual void jr(int8_t offset);
-		virtual int jrConditional(int condition);
-		void ret() override;
+		[[nodiscard]] register16_t getWord() noexcept final;
+		void setWord(register16_t value) noexcept final;
+
+		//
+
+		virtual void restart(uint8_t address) noexcept;
+		virtual int callConditional(int condition) noexcept;
+		virtual int jumpConditional(int condition) noexcept;
+		virtual int returnConditional(int condition) noexcept;
+		virtual void jr(int8_t offset) noexcept;
+		virtual int jrConditional(int condition) noexcept;
+		void ret() noexcept override;
 
 		void resetWorkingRegisters();
 

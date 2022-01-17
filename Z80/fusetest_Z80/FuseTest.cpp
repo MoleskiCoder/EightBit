@@ -23,3 +23,12 @@ void Fuse::Test::read(std::ifstream& file) {
 			memoryData.push_back(memoryDatum);
 	} while (!complete);
 }
+
+void Fuse::Test::transferMemory(EightBit::Memory& memory) const {
+	for (const auto& memoryDatum : memoryData)
+		memoryDatum.transfer(memory);
+}
+
+void Fuse::Test::transferRegisters(EightBit::Z80 & cpu) const {
+	registerState.transfer(cpu);
+}

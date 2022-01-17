@@ -3,6 +3,9 @@
 #include <cinttypes>
 #include <vector>
 #include <fstream>
+#include <tuple>
+
+#include <Memory.h>
 
 namespace Fuse {
 	class MemoryDatum {
@@ -19,5 +22,10 @@ namespace Fuse {
 
 		bool finished() const { return finish; }
 		void read(std::ifstream& file);
+
+		void transfer(EightBit::Memory& memory) const;
+
+		// returns a vector of: address, expected, actual
+		std::vector<std::tuple<int, int, int>> findDifferences(const EightBit::Memory& memory) const;
 	};
 }

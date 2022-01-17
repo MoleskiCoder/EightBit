@@ -8,6 +8,10 @@ namespace Fuse {
 	public:
 		std::vector<TestEvent> events;
 
+		bool operator==(const TestEvents& rhs) const;
+
 		void read(std::ifstream& file);
+
+		void dump() const;
 	};
 }

@@ -33,21 +33,21 @@ namespace EightBit {
 		virtual void poke(const uint16_t address, const uint8_t value) noexcept { reference(address) = value; }
 		void poke(const register16_t address, const uint8_t value) noexcept { poke(address.word, value); }
 
-		[[nodiscard]] uint8_t read();
+		[[nodiscard]] uint8_t read() noexcept;
 		template<class T> [[nodiscard]] auto read(const T address) {
 			ADDRESS() = address;
 			return read();
 		}
 
-		void write();
-		void write(uint8_t value);
-		template<class T> void write(const T offset, const uint8_t value) {
+		void write() noexcept;
+		void write(uint8_t value) noexcept;
+		template<class T> void write(const T offset, const uint8_t value) noexcept {
 			ADDRESS() = offset;
 			write(value);
 		}
 
-		virtual void raisePOWER();
-		virtual void lowerPOWER();
+		virtual void raisePOWER() noexcept;
+		virtual void lowerPOWER() noexcept;
 
 		virtual void initialise() = 0;
 

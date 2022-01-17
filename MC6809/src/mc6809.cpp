@@ -20,7 +20,7 @@ DEFINE_PIN_LEVEL_CHANGERS(BA, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(BS, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(RW, mc6809);
 
-int EightBit::mc6809::step() {
+int EightBit::mc6809::step() noexcept {
 	resetCycles();
 	ExecutingInstruction.fire(*this);
 	if (LIKELY(powered())) {
@@ -49,7 +49,7 @@ void EightBit::mc6809::handleHALT() {
 	raiseBS();
 }
 
-void EightBit::mc6809::handleRESET() {
+void EightBit::mc6809::handleRESET() noexcept {
 	BigEndianProcessor::handleRESET();
 	memoryRead({ RESETvector, 0xff });
 	raiseNMI();
@@ -80,7 +80,7 @@ void EightBit::mc6809::handleNMI() {
 	eat();
 }
 
-void EightBit::mc6809::handleINT() {
+void EightBit::mc6809::handleINT() noexcept {
 	BigEndianProcessor::handleINT();
 	lowerBA();
 	raiseBS();
@@ -111,13 +111,13 @@ void EightBit::mc6809::handleFIRQ() {
 
 //
 
-void EightBit::mc6809::busWrite() {
+void EightBit::mc6809::busWrite() noexcept {
 	tick();
 	lowerRW();
 	Processor::busWrite();
 }
 
-uint8_t EightBit::mc6809::busRead() {
+uint8_t EightBit::mc6809::busRead() noexcept {
 	tick();
 	raiseRW();
 	return Processor::busRead();
@@ -125,21 +125,21 @@ uint8_t EightBit::mc6809::busRead() {
 
 //
 
-void EightBit::mc6809::call(register16_t destination) {
+void EightBit::mc6809::call(register16_t destination) noexcept {
 	memoryRead(destination);
 	eat();
 	BigEndianProcessor::pushWord(PC());
 	jump(destination);
 }
 
-void EightBit::mc6809::ret() {
+void EightBit::mc6809::ret() noexcept {
 	BigEndianProcessor::ret();
 	eat();
 }
 
 //
 
-int EightBit::mc6809::execute() {
+int EightBit::mc6809::execute() noexcept {
 	lowerBA();
 	lowerBS();
 	const bool prefixed = m_prefix10 || m_prefix11;
@@ -628,11 +628,11 @@ void EightBit::mc6809::execute11() {
 
 //
 
-void EightBit::mc6809::push(const uint8_t value) {
+void EightBit::mc6809::push(const uint8_t value) noexcept {
 	pushS(value);
 }
 
-uint8_t EightBit::mc6809::pop() {
+uint8_t EightBit::mc6809::pop() noexcept {
 	return popS();
 }
 

@@ -66,8 +66,8 @@ namespace EightBit {
 		Signal<mc6809> ExecutingInstruction;
 		Signal<mc6809> ExecutedInstruction;
 
-		int execute() final;
-		[[nodiscard]] int step() final;
+		int execute() noexcept final;
+		[[nodiscard]] int step() noexcept final;
 
 		[[nodiscard]] constexpr auto& D() noexcept { return m_d; }
 		[[nodiscard]] constexpr auto& A() noexcept { return D().high; }
@@ -111,21 +111,21 @@ namespace EightBit {
 	protected:
 		// Default push/pop handlers
 
-		void push(uint8_t value) final;
-		[[nodiscard]] uint8_t pop() final;
+		void push(uint8_t value) noexcept final;
+		[[nodiscard]] uint8_t pop() noexcept final;
 
 		// Interrupt (etc.) handlers
 
-		void handleRESET() final;
-		void handleINT() final;
+		void handleRESET() noexcept final;
+		void handleINT() noexcept final;
 
 		// Bus reader/writers
 
-		void busWrite() final;
-		uint8_t busRead() final;
+		void busWrite() noexcept final;
+		uint8_t busRead() noexcept final;
 
-		void call(register16_t destination) final;
-		void ret() final;
+		void call(register16_t destination) noexcept final;
+		void ret() noexcept final;
 
 	private:
 		const uint8_t RESETvector = 0xfe;		// RESET vector

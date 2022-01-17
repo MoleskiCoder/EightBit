@@ -20,7 +20,7 @@ DEFINE_PIN_LEVEL_CHANGERS(SYNC, MOS6502);
 DEFINE_PIN_LEVEL_CHANGERS(RDY, MOS6502);
 DEFINE_PIN_LEVEL_CHANGERS(RW, MOS6502);
 
-int EightBit::MOS6502::step() {
+int EightBit::MOS6502::step() noexcept {
 	resetCycles();
 	ExecutingInstruction.fire(*this);
 	if (LIKELY(powered())) {
@@ -46,25 +46,25 @@ int EightBit::MOS6502::step() {
 
 // Interrupt (etc.) handlers
 
-void EightBit::MOS6502::handleSO() {
+void EightBit::MOS6502::handleSO() noexcept {
 	raiseSO();
 	P() |= VF;
 }
 
-void EightBit::MOS6502::handleRESET() {
+void EightBit::MOS6502::handleRESET() noexcept {
 	raiseRESET();
 	m_handlingRESET = true;
 	opcode() = 0x00;	// BRK
 }
 
 
-void EightBit::MOS6502::handleNMI() {
+void EightBit::MOS6502::handleNMI() noexcept {
 	raiseNMI();
 	m_handlingNMI = true;
 	opcode() = 0x00;	// BRK
 }
 
-void EightBit::MOS6502::handleINT() {
+void EightBit::MOS6502::handleINT() noexcept {
 	raiseINT();
 	m_handlingINT = true;
 	opcode() = 0x00;	// BRK
@@ -92,13 +92,13 @@ void EightBit::MOS6502::interrupt() {
 
 //
 
-void EightBit::MOS6502::busWrite() {
+void EightBit::MOS6502::busWrite() noexcept {
 	tick();
 	lowerRW();
 	Processor::busWrite();
 }
 
-uint8_t EightBit::MOS6502::busRead() {
+uint8_t EightBit::MOS6502::busRead() noexcept {
 	tick();
 	raiseRW();
 	return Processor::busRead();
@@ -106,7 +106,7 @@ uint8_t EightBit::MOS6502::busRead() {
 
 //
 
-int EightBit::MOS6502::execute() { 
+int EightBit::MOS6502::execute() noexcept {
 
 	raiseSYNC();	// Instruction fetch has now completed
 
@@ -391,15 +391,15 @@ int EightBit::MOS6502::execute() {
 
 ////
 
-void EightBit::MOS6502::push(uint8_t value) {
+void EightBit::MOS6502::push(uint8_t value) noexcept {
 	setBytePaged(1, S()--, value);
 }
 
-uint8_t EightBit::MOS6502::pop() {
+uint8_t EightBit::MOS6502::pop() noexcept {
 	return getBytePaged(1, ++S());
 }
 
-void EightBit::MOS6502::dummyPush(const uint8_t value) {
+void EightBit::MOS6502::dummyPush(const uint8_t value) noexcept {
 	tick();
 	BUS().DATA() = value;
 	BUS().ADDRESS() = { S()--, 1 };

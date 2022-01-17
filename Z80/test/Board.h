@@ -18,7 +18,7 @@ public:
 
 	EightBit::Z80& CPU() noexcept { return m_cpu; }
 
-	void raisePOWER() final;
+	void raisePOWER() noexcept final;
 	void lowerPOWER() noexcept final;
 
 	void initialise() final;

@@ -12,9 +12,12 @@ namespace Fuse {
 
 		TestEvent() 
 		: valid(false),
-		  cycles(-1), address(-1), value(-1) {
-		}
+		  cycles(-1), address(-1), value(-1) {}
+
+		bool operator==(const TestEvent& rhs) const;
 
 		void read(std::ifstream& file);
+
+		void dump() const;
 	};
 }

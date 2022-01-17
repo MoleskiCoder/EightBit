@@ -17,9 +17,8 @@
 namespace EightBit {
 	template<class ConfigurationT, class BoardT> class TestHarness final {
 	public:
-		TestHarness(const ConfigurationT& configuration)
-		: m_board(configuration) {
-		}
+		TestHarness(const ConfigurationT& configuration) noexcept
+		: m_board(configuration) {}
 
 		~TestHarness() {
 			std::cout << std::dec << std::endl;
@@ -55,7 +54,7 @@ namespace EightBit {
 			return (long long)floating;
 		}
 
-		void run() {
+		void run() noexcept {
 			m_startTime = now();
 			m_totalCycles = m_instructions = 0L;
 			m_startHostCycles = currentHostCycles();

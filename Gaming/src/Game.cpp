@@ -25,7 +25,7 @@ int Game::displayHeight() const noexcept {
 	return rasterHeight();
 }
 
-void Game::raisePOWER() {
+void Game::raisePOWER() noexcept {
 
 	Device::raisePOWER();
 

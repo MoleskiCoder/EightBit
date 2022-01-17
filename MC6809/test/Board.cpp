@@ -4,7 +4,7 @@
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration) {}
 
-void Board::raisePOWER() {
+void Board::raisePOWER() noexcept {
 
 	EightBit::Bus::raisePOWER();
 
@@ -26,7 +26,7 @@ void Board::raisePOWER() {
 	accessAcia();
 }
 
-void Board::lowerPOWER() {
+void Board::lowerPOWER() noexcept {
 
 	if (m_configuration.isProfileMode()) {
 		m_profiler.EmitLine.connect([this](EightBit::ProfileLineEventArgs line) {

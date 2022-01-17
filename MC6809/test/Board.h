@@ -20,8 +20,8 @@ public:
 	auto& CPU() { return m_cpu; }
 	auto& ACIA() { return m_acia; }
 
-	void raisePOWER() final;
-	void lowerPOWER() final;
+	void raisePOWER() noexcept final;
+	void lowerPOWER() noexcept final;
 
 	virtual void initialise() final;
 

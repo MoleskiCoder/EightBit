@@ -23,7 +23,7 @@ namespace Gaming {
 		virtual ~Game();
 
 		virtual void runLoop();
-		void raisePOWER() override;
+		void raisePOWER() noexcept override;
 
 	protected:
 		[[nodiscard]] virtual float fps() const noexcept = 0;

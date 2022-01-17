@@ -17,8 +17,8 @@ public:
 	EightBit::Intel8080& CPU() { return m_cpu; }
 	const EightBit::Intel8080& CPU() const { return m_cpu; }
 
-	virtual void raisePOWER() final;
-	virtual void lowerPOWER() final;
+	void raisePOWER() noexcept final;
+	void lowerPOWER() noexcept final;
 
 	virtual void initialise() final;
 

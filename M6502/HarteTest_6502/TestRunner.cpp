@@ -7,7 +7,7 @@ EightBit::MemoryMapping TestRunner::mapping(const uint16_t address) noexcept {
     return { RAM(), 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 }
 
-void TestRunner::raisePOWER() {
+void TestRunner::raisePOWER() noexcept {
     EightBit::Bus::raisePOWER();
     CPU().raisePOWER();
     CPU().raiseRESET();
@@ -17,7 +17,7 @@ void TestRunner::raisePOWER() {
     CPU().raiseRDY();
 }
 
-void TestRunner::lowerPOWER() {
+void TestRunner::lowerPOWER() noexcept {
     CPU().lowerPOWER();
     EightBit::Bus::lowerPOWER();
 }

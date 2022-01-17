@@ -10,17 +10,17 @@
 	Signal<EventArgs> Lowered ## name;
 
 #define DECLARE_PIN_LEVEL_RAISE(name) \
-	virtual void raise ## name();
+	virtual void raise ## name() noexcept;
 
 #define DECLARE_PIN_LEVEL_LOWER(name) \
-	virtual void lower ## name();
+	virtual void lower ## name() noexcept;
 
 #define DECLARE_PIN_LEVEL_CHANGERS(name) \
 	DECLARE_PIN_LEVEL_RAISE(name) \
 	DECLARE_PIN_LEVEL_LOWER(name)
 
 #define DEFINE_PIN_LEVEL_RAISE(name, within) \
-	void EightBit:: within ::raise ## name() { \
+	void EightBit:: within ::raise ## name() noexcept { \
 		if (lowered( name ())) { \
 			Raising ## name.fire(); \
 			raise( name ()); \
@@ -29,7 +29,7 @@
 	}
 
 #define DEFINE_PIN_LEVEL_LOWER(name, within) \
-	void EightBit:: within ::lower ## name() { \
+	void EightBit:: within ::lower ## name() noexcept { \
 		if (raised( name ())) { \
 			Lowering ## name.fire(); \
 			lower( name ()); \

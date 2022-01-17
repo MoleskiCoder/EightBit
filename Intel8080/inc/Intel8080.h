@@ -32,8 +32,8 @@ namespace EightBit {
 		Signal<Intel8080> ExecutingInstruction;
 		Signal<Intel8080> ExecutedInstruction;
 
-		virtual int execute() final;
-		virtual int step() final;
+		int execute() noexcept final;
+		int step() noexcept final;
 
 		[[nodiscard]] const register16_t& AF() const noexcept final;
 		[[nodiscard]] auto& AF() noexcept { return IntelProcessor::AF(); }
@@ -51,14 +51,14 @@ namespace EightBit {
 		[[nodiscard]] bool requestingWrite() noexcept { return lowered(WR()); }
 
 	protected:
-		void handleRESET() final;
-		void handleINT() final;
+		void handleRESET() noexcept final;
+		void handleINT() noexcept final;
 
-		void memoryWrite() final;
-		uint8_t memoryRead() final;
+		void memoryWrite() noexcept final;
+		uint8_t memoryRead() noexcept final;
 
-		void busWrite() final;
-		uint8_t busRead() final;
+		void busWrite() noexcept final;
+		uint8_t busRead() noexcept final;
 
 	private:
 		bool m_requestIO = false;

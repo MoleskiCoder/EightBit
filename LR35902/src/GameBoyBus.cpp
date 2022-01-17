@@ -8,14 +8,14 @@ EightBit::GameBoy::Bus::Bus() noexcept
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
 }
 
-void EightBit::GameBoy::Bus::raisePOWER() {
+void EightBit::GameBoy::Bus::raisePOWER() noexcept {
 	EightBit::Bus::raisePOWER();
 	CPU().raisePOWER();
 	CPU().raiseINT();
 	reset();
 }
 
-void EightBit::GameBoy::Bus::lowerPOWER() {
+void EightBit::GameBoy::Bus::lowerPOWER() noexcept {
 	CPU().lowerPOWER();
 	EightBit::Bus::lowerPOWER();
 }

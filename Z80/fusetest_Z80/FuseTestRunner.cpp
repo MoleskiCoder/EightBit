@@ -51,16 +51,16 @@ void Fuse::TestRunner::addActualEvent(const std::string& specifier) {
 
 //
 
-void Fuse::TestRunner::raisePOWER() {
+void Fuse::TestRunner::raisePOWER() noexcept {
 	EightBit::Bus::raisePOWER();
 	m_cpu.raisePOWER();
 	m_cpu.raiseRESET();
 	m_cpu.raiseINT();
 	m_cpu.raiseNMI();
-	initialiseRegisters();
+	m_test.transferRegisters(m_cpu);
 }
 
-void Fuse::TestRunner::lowerPOWER() {
+void Fuse::TestRunner::lowerPOWER() noexcept {
 	m_cpu.lowerPOWER();
 	EightBit::Bus::lowerPOWER();
 }
@@ -99,47 +99,7 @@ EightBit::MemoryMapping Fuse::TestRunner::mapping(uint16_t address) noexcept {
 }
 
 void Fuse::TestRunner::initialise() {
-	initialiseMemory();
-}
-
-void Fuse::TestRunner::initialiseRegisters() {
-
-	const auto& testState = m_test.registerState;
-	const auto& inputRegisters = testState.registers;
-
-	m_cpu.AF() = inputRegisters[Fuse::RegisterState::AF_];
-	m_cpu.BC() = inputRegisters[Fuse::RegisterState::BC_];
-	m_cpu.DE() = inputRegisters[Fuse::RegisterState::DE_];
-	m_cpu.HL() = inputRegisters[Fuse::RegisterState::HL_];
-	m_cpu.exx();
-	m_cpu.exxAF();
-	m_cpu.AF() = inputRegisters[Fuse::RegisterState::AF];
-	m_cpu.BC() = inputRegisters[Fuse::RegisterState::BC];
-	m_cpu.DE() = inputRegisters[Fuse::RegisterState::DE];
-	m_cpu.HL() = inputRegisters[Fuse::RegisterState::HL];
-
-	m_cpu.IX() = inputRegisters[Fuse::RegisterState::IX];
-	m_cpu.IY() = inputRegisters[Fuse::RegisterState::IY];
-
-	m_cpu.SP() = inputRegisters[Fuse::RegisterState::SP];
-	m_cpu.PC() = inputRegisters[Fuse::RegisterState::PC];
-
-	m_cpu.MEMPTR() = inputRegisters[Fuse::RegisterState::MEMPTR];
-
-	m_cpu.IV() = testState.i;
-	m_cpu.REFRESH() = testState.r;
-	m_cpu.IFF1() = testState.iff1;
-	m_cpu.IFF2() = testState.iff2;
-	m_cpu.IM() = testState.im;
-}
-
-void Fuse::TestRunner::initialiseMemory() {
-	for (auto memoryDatum : m_test.memoryData) {
-		auto address = memoryDatum.address;
-		auto bytes = memoryDatum.bytes;
-		for (int i = 0; i < bytes.size(); ++i)
-			m_ram.poke(address + i, bytes[i]);
-	}
+	m_test.transferMemory(m_ram);
 }
 
 //
@@ -378,51 +338,26 @@ void Fuse::TestRunner::checkRegisters() {
 }
 
 void Fuse::TestRunner::checkMemory() {
-
-	bool first = true;
-
-	for (auto memoryDatum : m_result.memoryData) {
-		auto bytes = memoryDatum.bytes;
-		for (int i = 0; i < bytes.size(); ++i) {
-			auto expected = bytes[i];
-			uint16_t address = memoryDatum.address + i;
-			auto actual = m_ram.peek(address);
-			if (expected != actual) {
-				m_failed = true;
-				if (first) {
-					first = false;
-					std::cerr << "**** Failed test (Memory): " << m_test.description << std::endl;
-				}
-				std::cerr
-					<< "**** Difference: "
-					<< "Address: " << EightBit::Disassembler::hex(address)
-					<< " Expected: " << EightBit::Disassembler::hex(expected)
-					<< " Actual: " << EightBit::Disassembler::hex(actual)
-					<< std::endl;
-			}
+	const auto differences = m_result.findDifferences(m_ram);
+	const auto failure = !differences.empty();
+	if (failure) {
+		m_failed = true;
+		std::cerr << "**** Failed test (Memory): " << m_test.description << std::endl;
+		for (const auto& difference : differences) {
+			const auto [address, expected, actual] = difference;
+			std::cerr
+				<< "**** Difference: "
+				<< "Address: " << EightBit::Disassembler::hex((uint16_t)address)
+				<< " Expected: " << EightBit::Disassembler::hex((uint8_t)expected)
+				<< " Actual: " << EightBit::Disassembler::hex((uint8_t)actual)
+				<< std::endl;
 		}
 	}
 }
 
 void Fuse::TestRunner::checkEvents() {
 
-	const auto& expectations = m_expectedEvents.events;
-	const auto& actuals = m_actualEvents.events;
-
-	auto eventFailure = expectations.size() != actuals.size();
-	for (auto i = 0; !eventFailure && (i < expectations.size()); ++i) {
-
-		const auto& expectation = expectations[i];
-		const auto& actual = actuals[i];
-
-		const auto equalCycles = expectation.cycles == actual.cycles;
-		const auto equalSpecifier = expectation.specifier == actual.specifier;
-		const auto equalAddress = expectation.address == actual.address;
-		const auto equalValue = expectation.value == actual.value;
-
-		const auto equal = equalCycles && equalSpecifier && equalAddress && equalValue;
-		eventFailure = !equal;
-	}
+	auto eventFailure = m_expectedEvents != m_actualEvents;
 
 	if (eventFailure) {
 		dumpExpectedEvents();
@@ -435,28 +370,12 @@ void Fuse::TestRunner::checkEvents() {
 
 void Fuse::TestRunner::dumpExpectedEvents() const {
 	std::cerr << "++++ Dumping expected events:" << std::endl;
-	dumpEvents(m_expectedEvents.events);
+	m_expectedEvents.dump();
 }
 
 void Fuse::TestRunner::dumpActualEvents() const {
 	std::cerr << "++++ Dumping actual events:" << std::endl;
-	dumpEvents(m_actualEvents.events);
-}
-
-void Fuse::TestRunner::dumpEvents(const std::vector<TestEvent>& events) {
-	for (const auto& event : events) {
-		dumpEvent(event);
-	}
-}
-
-void Fuse::TestRunner::dumpEvent(const TestEvent& event) {
-	std::cerr << " Event issue " <<
-		"Cycles = " << event.cycles <<
-		", Specifier = " << event.specifier <<
-		", Address = " << EightBit::Disassembler::hex((uint16_t)event.address);
-	if (!boost::algorithm::ends_with(event.specifier, "C"))
-		std::cerr << ", Value=" << EightBit::Disassembler::hex((uint8_t)event.value);
-	std::cerr << std::endl;
+	m_actualEvents.dump();
 }
 
 void Fuse::TestRunner::run() {

@@ -37,39 +37,39 @@ const EightBit::register16_t& EightBit::Intel8080::HL() const noexcept {
 	return hl;
 }
 
-void EightBit::Intel8080::memoryWrite() {
+void EightBit::Intel8080::memoryWrite() noexcept {
 	requestMemory();
 	IntelProcessor::memoryWrite();
 	releaseMemory();
 }
 
-uint8_t EightBit::Intel8080::memoryRead() {
+uint8_t EightBit::Intel8080::memoryRead() noexcept {
 	requestMemory();
 	const auto returned = IntelProcessor::memoryRead();
 	releaseMemory();
 	return returned;
 }
 
-void EightBit::Intel8080::busWrite() {
+void EightBit::Intel8080::busWrite() noexcept {
 	requestWrite();
 	IntelProcessor::busWrite();
 	releaseWrite();
 }
 
-uint8_t EightBit::Intel8080::busRead() {
+uint8_t EightBit::Intel8080::busRead() noexcept {
 	requestRead();
 	const auto returned = IntelProcessor::busRead();
 	releaseRead();
 	return returned;
 }
 
-void EightBit::Intel8080::handleRESET() {
+void EightBit::Intel8080::handleRESET() noexcept {
 	IntelProcessor::handleRESET();
 	di();
 	tick(3);
 }
 
-void EightBit::Intel8080::handleINT() {
+void EightBit::Intel8080::handleINT() noexcept {
 	IntelProcessor::handleINT();
 	raiseHALT();
 	if (m_interruptEnable) {
@@ -310,7 +310,7 @@ uint8_t EightBit::Intel8080::portRead() {
 	return returned;
 }
 
-int EightBit::Intel8080::step() {
+int EightBit::Intel8080::step() noexcept {
 	ExecutingInstruction.fire(*this);
 	resetCycles();
 	if (LIKELY(powered())) {
@@ -328,7 +328,7 @@ int EightBit::Intel8080::step() {
 	return cycles();
 }
 
-int EightBit::Intel8080::execute() {
+int EightBit::Intel8080::execute() noexcept {
 
 	const auto& decoded = getDecodedOpcode(opcode());
 

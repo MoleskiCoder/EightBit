@@ -38,8 +38,8 @@ namespace EightBit {
 		Signal<MOS6502> ExecutingInstruction;
 		Signal<MOS6502> ExecutedInstruction;
 
-		int execute() final;
-		[[nodiscard]] int step() final;
+		int execute() noexcept final;
+		[[nodiscard]] int step() noexcept final;
 
 		[[nodiscard]] constexpr auto& X() noexcept { return x; }
 		[[nodiscard]] constexpr auto& Y() noexcept { return y; }
@@ -50,11 +50,11 @@ namespace EightBit {
 		[[nodiscard]] constexpr const auto& P() const noexcept { return p; }
 
 	protected:
-		void handleRESET() final;
-		void handleINT() final;
+		void handleRESET() noexcept final;
+		void handleINT() noexcept final;
 
-		void busWrite() final;
-		[[nodiscard]] uint8_t busRead() final;
+		void busWrite() noexcept final;
+		[[nodiscard]] uint8_t busRead() noexcept final;
 
 		[[nodiscard]] virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
 		[[nodiscard]] uint8_t sbc(uint8_t operand, uint8_t data) noexcept;
@@ -71,16 +71,16 @@ namespace EightBit {
 		const uint8_t RSTvector = 0xfc;		// RST vector
 		const uint8_t NMIvector = 0xfa;		// NMI vector
 
-		void handleNMI();
-		void handleSO();
+		void handleNMI() noexcept;
+		void handleSO() noexcept;
 
 		void interrupt();
 
-		void push(uint8_t value) final;
-		[[nodiscard]] uint8_t pop() final;
+		void push(uint8_t value) noexcept final;
+		[[nodiscard]] uint8_t pop() noexcept final;
 
 		// Dummy stack push, used during RESET
-		void dummyPush(uint8_t value);
+		void dummyPush(uint8_t value) noexcept;
 
 		// Addressing modes
 

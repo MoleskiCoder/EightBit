@@ -9,7 +9,7 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& expecte
 
 //
 
-void Fuse::TestRunner::raisePOWER() {
+void Fuse::TestRunner::raisePOWER() noexcept {
 	EightBit::Bus::raisePOWER();
 	CPU().raisePOWER();
 	CPU().raiseRESET();
@@ -18,7 +18,7 @@ void Fuse::TestRunner::raisePOWER() {
 	initialiseMemory();
 }
 
-void Fuse::TestRunner::lowerPOWER() {
+void Fuse::TestRunner::lowerPOWER() noexcept {
 	CPU().lowerPOWER();
 	EightBit::Bus::lowerPOWER();
 }

@@ -10,14 +10,14 @@ Board::Board(const Configuration& configuration)
   m_disassembler(*this) {
 }
 
-void Board::raisePOWER() {
+void Board::raisePOWER() noexcept {
 	EightBit::Bus::raisePOWER();
 	CPU().raisePOWER();
 	CPU().raiseRESET();
 	CPU().raiseINT();
 }
 
-void Board::lowerPOWER() {
+void Board::lowerPOWER() noexcept {
 	CPU().lowerPOWER();
 	EightBit::Bus::lowerPOWER();
 }

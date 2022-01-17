@@ -3,7 +3,7 @@
 
 Board::Board() {}
 
-void Board::raisePOWER() {
+void Board::raisePOWER() noexcept {
 	EightBit::Bus::raisePOWER();
 
 	CPU().raisePOWER();
@@ -16,7 +16,7 @@ void Board::raisePOWER() {
 	CPU().raiseHALT();
 }
 
-void Board::lowerPOWER() {
+void Board::lowerPOWER() noexcept {
 	CPU().lowerPOWER();
 	EightBit::Bus::lowerPOWER();
 }

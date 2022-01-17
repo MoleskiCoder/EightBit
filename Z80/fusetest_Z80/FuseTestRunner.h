@@ -26,9 +26,6 @@ namespace Fuse {
 
 		int m_totalCycles;
 
-		void initialiseRegisters();
-		void initialiseMemory();
-
 		void check();
 		void checkRegisters();
 		void checkMemory();
@@ -44,9 +41,6 @@ namespace Fuse {
 		void dumpExpectedEvents() const;
 		void dumpActualEvents() const;
 
-		static void dumpEvents(const std::vector<TestEvent>& events);
-		static void dumpEvent(const TestEvent& event);
-
 	protected:
 		virtual EightBit::MemoryMapping mapping(uint16_t address) noexcept final;
 
@@ -57,9 +51,9 @@ namespace Fuse {
 		bool failed() const { return m_failed; }
 		bool unimplemented() const { return m_unimplemented; }
 
-		virtual void raisePOWER() final;
-		virtual void lowerPOWER() final;
+		void raisePOWER() noexcept final;
+		void lowerPOWER() noexcept final;
 
-		virtual void initialise() final;
+		void initialise() final;
 	};
 }
