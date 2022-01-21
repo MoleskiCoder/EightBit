@@ -42,19 +42,19 @@ private:
 
     void pushCurrentMessage();
 
-    void raise(std::string what, uint16_t expected, uint16_t actual);
-    void raise(std::string what, uint8_t expected, uint8_t actual);
-    void raise(std::string what, std::string_view expected, std::string_view actual);
+    void raise(std::string_view what, uint16_t expected, uint16_t actual);
+    void raise(std::string_view what, uint8_t expected, uint8_t actual);
+    void raise(std::string_view what, std::string_view expected, std::string_view actual);
 
     template<class T>
-    bool check(std::string what, T expected, T actual) {
+    bool check(std::string_view what, T expected, T actual) {
         const auto success = actual == expected;
         if (!success)
             raise(what, expected, actual);
         return success;
     }
 
-    bool check(std::string what, uint16_t address, uint8_t expected, uint8_t actual);
+    bool check(std::string_view what, uint16_t address, uint8_t expected, uint8_t actual);
 
     void addActualCycle(uint16_t address, uint8_t value, std::string action);
     void addActualCycle(EightBit::register16_t address, uint8_t value, std::string action);

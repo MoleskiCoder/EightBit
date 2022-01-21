@@ -48,7 +48,7 @@ void checker_t::dumpCycle(const cycle_t cycle) {
     dumpCycle(cycle.address(), cycle.value(), cycle.action());
 }
 
-void checker_t::raise(const std::string what, const uint16_t expected, const uint16_t actual) {
+void checker_t::raise(std::string_view what, const uint16_t expected, const uint16_t actual) {
     os()
         << std::setw(2) << std::setfill(' ')
         << what
@@ -58,7 +58,7 @@ void checker_t::raise(const std::string what, const uint16_t expected, const uin
     pushCurrentMessage();
 }
 
-void checker_t::raise(const std::string what, const uint8_t expected, const uint8_t actual) {
+void checker_t::raise(std::string_view what, const uint8_t expected, const uint8_t actual) {
     os()
         << std::setw(2) << std::setfill(' ')
         << what
@@ -70,7 +70,7 @@ void checker_t::raise(const std::string what, const uint8_t expected, const uint
     pushCurrentMessage();
 }
 
-void checker_t::raise(const std::string what, const std::string_view expected, const std::string_view actual) {
+void checker_t::raise(std::string_view what, const std::string_view expected, const std::string_view actual) {
     os()
         << std::setw(0) << std::setfill(' ')
         << what
@@ -79,7 +79,7 @@ void checker_t::raise(const std::string what, const std::string_view expected, c
     pushCurrentMessage();
 }
 
-bool checker_t::check(const std::string what, const uint16_t address, const uint8_t expected, const uint8_t actual) {
+bool checker_t::check(std::string_view what, const uint16_t address, const uint8_t expected, const uint8_t actual) {
     const auto success = actual == expected;
     if (!success) {
         os() << what << ": " << std::setw(4) << std::setfill('0') << (int)address;
