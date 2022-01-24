@@ -70,7 +70,7 @@ void EightBit::MOS6502::handleINT() noexcept {
 	opcode() = 0x00;	// BRK
 }
 
-void EightBit::MOS6502::interrupt() {
+void EightBit::MOS6502::interrupt() noexcept {
 	const bool reset = m_handlingRESET;
 	const bool nmi = m_handlingNMI;
 	const bool irq = m_handlingINT;
@@ -407,76 +407,76 @@ void EightBit::MOS6502::dummyPush(const uint8_t value) noexcept {
 
 ////
 
-EightBit::register16_t EightBit::MOS6502::Address_Absolute() {
+EightBit::register16_t EightBit::MOS6502::Address_Absolute() noexcept {
 	return fetchWord();
 }
 
-uint8_t EightBit::MOS6502::Address_ZeroPage() {
+uint8_t EightBit::MOS6502::Address_ZeroPage() noexcept {
 	return fetchByte();
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_ZeroPageIndirect() {
+EightBit::register16_t EightBit::MOS6502::Address_ZeroPageIndirect() noexcept {
 	return getWordPaged(0, Address_ZeroPage());
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_Indirect() {
+EightBit::register16_t EightBit::MOS6502::Address_Indirect() noexcept {
 	const auto address = Address_Absolute();
 	return getWordPaged(address.high, address.low);
 }
 
-uint8_t EightBit::MOS6502::Address_ZeroPageX() {
+uint8_t EightBit::MOS6502::Address_ZeroPageX() noexcept {
 	const auto address = Address_ZeroPage();
 	memoryRead(address);
 	return address + X();
 }
 
-uint8_t EightBit::MOS6502::Address_ZeroPageY() {
+uint8_t EightBit::MOS6502::Address_ZeroPageY() noexcept {
 	const auto address = Address_ZeroPage();
 	memoryRead(address);
 	return address + Y();
 }
 
-std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteX() {
+std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteX() noexcept {
 	const auto address = Address_Absolute();
 	const auto page = address.high;
 	return { address + X(), page };
 }
 
-std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteY() {
+std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteY() noexcept {
 	const auto address = Address_Absolute();
 	const auto page = address.high;
 	return { address + Y(), page };
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() {
+EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() noexcept {
 	return getWordPaged(0, Address_ZeroPageX());
 }
 
-std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_IndirectIndexedY() {
+std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_IndirectIndexedY() noexcept {
 	const auto address = Address_ZeroPageIndirect();
 	const auto page = address.high;
 	return { address + Y(), page };
 }
 
-EightBit::register16_t EightBit::MOS6502::Address_relative_byte() {
+EightBit::register16_t EightBit::MOS6502::Address_relative_byte() noexcept {
 	return PC() + (int8_t)fetchByte();
 }
 
 // Addressing modes, read
 
-uint8_t EightBit::MOS6502::AM_Immediate() {
+uint8_t EightBit::MOS6502::AM_Immediate() noexcept {
 	return fetchByte();
 }
 
-uint8_t EightBit::MOS6502::AM_Absolute() {
+uint8_t EightBit::MOS6502::AM_Absolute() noexcept {
 	return memoryRead(Address_Absolute());
 }
 
-uint8_t EightBit::MOS6502::AM_ZeroPage() {
+uint8_t EightBit::MOS6502::AM_ZeroPage() noexcept {
 	return memoryRead(Address_ZeroPage());
 }
 
-uint8_t EightBit::MOS6502::AM_AbsoluteX(const PageCrossingBehavior behaviour) {
+uint8_t EightBit::MOS6502::AM_AbsoluteX(const PageCrossingBehavior behaviour) noexcept {
 	const auto [address, page] = Address_AbsoluteX();
 	auto possible = getBytePaged(page, address.low);
 	if ((behaviour == PageCrossingBehavior::AlwaysReadTwice) || UNLIKELY(page != address.high))
@@ -484,7 +484,7 @@ uint8_t EightBit::MOS6502::AM_AbsoluteX(const PageCrossingBehavior behaviour) {
 	return possible;
 }
 
-uint8_t EightBit::MOS6502::AM_AbsoluteY() {
+uint8_t EightBit::MOS6502::AM_AbsoluteY() noexcept {
 	const auto [address, page] = Address_AbsoluteY();
 	auto possible = getBytePaged(page, address.low);
 	if (UNLIKELY(page != address.high))
@@ -492,19 +492,19 @@ uint8_t EightBit::MOS6502::AM_AbsoluteY() {
 	return possible;
 }
 
-uint8_t EightBit::MOS6502::AM_ZeroPageX() {
+uint8_t EightBit::MOS6502::AM_ZeroPageX() noexcept {
 	return memoryRead(Address_ZeroPageX());
 }
 
-uint8_t EightBit::MOS6502::AM_ZeroPageY() {
+uint8_t EightBit::MOS6502::AM_ZeroPageY() noexcept {
 	return memoryRead(Address_ZeroPageY());
 }
 
-uint8_t EightBit::MOS6502::AM_IndexedIndirectX() {
+uint8_t EightBit::MOS6502::AM_IndexedIndirectX() noexcept {
 	return memoryRead(Address_IndexedIndirectX());
 }
 
-uint8_t EightBit::MOS6502::AM_IndirectIndexedY() {
+uint8_t EightBit::MOS6502::AM_IndirectIndexedY() noexcept {
 	const auto [address, page] = Address_IndirectIndexedY();
 	auto possible = getBytePaged(page, address.low);
 	if (page != address.high)
@@ -514,7 +514,7 @@ uint8_t EightBit::MOS6502::AM_IndirectIndexedY() {
 
 ////
 
-void EightBit::MOS6502::branch(const int condition) {
+void EightBit::MOS6502::branch(const int condition) noexcept {
 	const auto destination = Address_relative_byte();
 	if (condition) {
 		memoryRead(PC());
@@ -639,7 +639,7 @@ uint8_t EightBit::MOS6502::inc(const uint8_t value) noexcept {
 	return through(value + 1);
 }
 
-void EightBit::MOS6502::jsr() {
+void EightBit::MOS6502::jsr() noexcept {
 	const auto low = fetchByte();
 	getBytePaged(1, S()); // dummy read
 	pushWord(PC());
@@ -656,11 +656,11 @@ uint8_t EightBit::MOS6502::orr(const uint8_t operand, const uint8_t data) noexce
 	return through(operand | data);
 }
 
-void EightBit::MOS6502::php() {
+void EightBit::MOS6502::php() noexcept {
 	push(P() | BF);
 }
 
-void EightBit::MOS6502::plp() {
+void EightBit::MOS6502::plp() noexcept {
 	P() = (pop() | RF) & ~BF;
 }
 
@@ -678,13 +678,13 @@ uint8_t EightBit::MOS6502::ror(const uint8_t operand) noexcept {
 	return through(result);
 }
 
-void EightBit::MOS6502::rti() {
+void EightBit::MOS6502::rti() noexcept {
 	getBytePaged(1, S()); // dummy read
 	plp();
 	ret();
 }
 
-void EightBit::MOS6502::rts() {
+void EightBit::MOS6502::rts() noexcept {
 	getBytePaged(1, S()); // dummy read
 	ret();
 	fetchByte();
@@ -714,45 +714,45 @@ void EightBit::MOS6502::axs(const uint8_t value) noexcept {
 	P() = clearBit(P(), CF, m_intermediate.high);
 }
 
-void EightBit::MOS6502::dcp(const uint8_t value) {
+void EightBit::MOS6502::dcp(const uint8_t value) noexcept {
 	memoryReadModifyWrite(dec(value));
 	cmp(A(), BUS().DATA());
 }
 
-void EightBit::MOS6502::isb(const uint8_t value) {
+void EightBit::MOS6502::isb(const uint8_t value) noexcept {
 	memoryReadModifyWrite(inc(value));
 	A() = sbc(A(), BUS().DATA());
 }
 
-void EightBit::MOS6502::rla(const uint8_t value) {
+void EightBit::MOS6502::rla(const uint8_t value) noexcept {
 	memoryReadModifyWrite(rol(value));
 	A() = andr(A(), BUS().DATA());
 }
 
-void EightBit::MOS6502::rra(const uint8_t value) {
+void EightBit::MOS6502::rra(const uint8_t value) noexcept {
 	memoryReadModifyWrite(ror(value));
 	A() = adc(A(), BUS().DATA());
 }
 
-void EightBit::MOS6502::slo(const uint8_t value) {
+void EightBit::MOS6502::slo(const uint8_t value) noexcept {
 	memoryReadModifyWrite(asl(value));
 	A() = orr(A(), BUS().DATA());
 }
 
-void EightBit::MOS6502::sre(const uint8_t value) {
+void EightBit::MOS6502::sre(const uint8_t value) noexcept {
 	memoryReadModifyWrite(lsr(value));
 	A() = eorr(A(), BUS().DATA());
 }
 
 //
 
-void EightBit::MOS6502::sta_AbsoluteX() {
+void EightBit::MOS6502::sta_AbsoluteX() noexcept {
 	const auto [address, page] = Address_AbsoluteX();
 	getBytePaged(page, address.low);
 	memoryWrite(address, A());
 }
 
-void EightBit::MOS6502::sta_AbsoluteY() {
+void EightBit::MOS6502::sta_AbsoluteY() noexcept {
 	const auto [address, page] = Address_AbsoluteY();
 	getBytePaged(page, address.low);
 	memoryWrite(address, A());

@@ -74,7 +74,7 @@ namespace EightBit {
 		void handleNMI() noexcept;
 		void handleSO() noexcept;
 
-		void interrupt();
+		void interrupt() noexcept;
 
 		void push(uint8_t value) noexcept final;
 		[[nodiscard]] uint8_t pop() noexcept final;
@@ -84,31 +84,31 @@ namespace EightBit {
 
 		// Addressing modes
 
-		[[nodiscard]] register16_t Address_Absolute();
-		[[nodiscard]] uint8_t Address_ZeroPage();
-		[[nodiscard]] register16_t Address_ZeroPageIndirect();
-		[[nodiscard]] register16_t Address_Indirect();
-		[[nodiscard]] uint8_t Address_ZeroPageX();
-		[[nodiscard]] uint8_t Address_ZeroPageY();
-		[[nodiscard]] std::pair<register16_t, uint8_t> Address_AbsoluteX();
-		[[nodiscard]] std::pair<register16_t, uint8_t> Address_AbsoluteY();
-		[[nodiscard]] register16_t Address_IndexedIndirectX();
-		[[nodiscard]] std::pair<register16_t, uint8_t> Address_IndirectIndexedY();
-		[[nodiscard]] register16_t Address_relative_byte();
+		[[nodiscard]] register16_t Address_Absolute() noexcept;
+		[[nodiscard]] uint8_t Address_ZeroPage() noexcept;
+		[[nodiscard]] register16_t Address_ZeroPageIndirect() noexcept;
+		[[nodiscard]] register16_t Address_Indirect() noexcept;
+		[[nodiscard]] uint8_t Address_ZeroPageX() noexcept;
+		[[nodiscard]] uint8_t Address_ZeroPageY() noexcept;
+		[[nodiscard]] std::pair<register16_t, uint8_t> Address_AbsoluteX() noexcept;
+		[[nodiscard]] std::pair<register16_t, uint8_t> Address_AbsoluteY() noexcept;
+		[[nodiscard]] register16_t Address_IndexedIndirectX() noexcept;
+		[[nodiscard]] std::pair<register16_t, uint8_t> Address_IndirectIndexedY() noexcept;
+		[[nodiscard]] register16_t Address_relative_byte() noexcept;
 
 		// Addressing modes, read
 
 		enum class PageCrossingBehavior { AlwaysReadTwice, MaybeReadTwice };
 
-		uint8_t AM_Immediate();
-		uint8_t AM_Absolute();
-		uint8_t AM_ZeroPage();
-		uint8_t AM_AbsoluteX(PageCrossingBehavior behaviour = PageCrossingBehavior::MaybeReadTwice);
-		uint8_t AM_AbsoluteY();
-		uint8_t AM_ZeroPageX();
-		uint8_t AM_ZeroPageY();
-		uint8_t AM_IndexedIndirectX();
-		uint8_t AM_IndirectIndexedY();
+		uint8_t AM_Immediate() noexcept;
+		uint8_t AM_Absolute() noexcept;
+		uint8_t AM_ZeroPage() noexcept;
+		uint8_t AM_AbsoluteX(PageCrossingBehavior behaviour = PageCrossingBehavior::MaybeReadTwice) noexcept;
+		uint8_t AM_AbsoluteY() noexcept;
+		uint8_t AM_ZeroPageX() noexcept;
+		uint8_t AM_ZeroPageY() noexcept;
+		uint8_t AM_IndexedIndirectX() noexcept;
+		uint8_t AM_IndirectIndexedY() noexcept;
 
 		// Flag checking
 
@@ -139,14 +139,14 @@ namespace EightBit {
 
 		// Miscellaneous
 
-		void branch(int condition);
+		void branch(int condition) noexcept;
 
 		[[nodiscard]] constexpr auto through(const uint8_t data) noexcept {
 			adjustNZ(data);
 			return data;
 		}
 
-		void memoryReadModifyWrite(const uint8_t data) {
+		void memoryReadModifyWrite(const uint8_t data)  noexcept {
 			// The read will have already taken place...
 			memoryWrite();
 			memoryWrite(data);
@@ -161,15 +161,15 @@ namespace EightBit {
 		[[nodiscard]] uint8_t dec(uint8_t value) noexcept;
 		[[nodiscard]] uint8_t eorr(uint8_t operand, uint8_t data) noexcept;
 		[[nodiscard]] uint8_t inc(uint8_t value) noexcept;
-		void jsr();
+		void jsr() noexcept;
 		[[nodiscard]] uint8_t lsr(uint8_t value) noexcept;
 		[[nodiscard]] uint8_t orr(uint8_t operand, uint8_t data) noexcept;
-		void php();
-		void plp();
+		void php() noexcept;
+		void plp() noexcept;
 		[[nodiscard]] uint8_t rol(uint8_t operand) noexcept;
 		[[nodiscard]] uint8_t ror(uint8_t operand) noexcept;
-		void rti();
-		void rts();
+		void rti() noexcept;
+		void rts() noexcept;
 
 		// Undocumented compound instructions
 
@@ -177,17 +177,17 @@ namespace EightBit {
 		void arr(uint8_t value) noexcept;
 		void asr(uint8_t value) noexcept;
 		void axs(uint8_t value) noexcept;
-		void dcp(uint8_t value);
-		void isb(uint8_t value);
-		void rla(uint8_t value);
-		void rra(uint8_t value);
-		void slo(uint8_t value);
-		void sre(uint8_t value);
+		void dcp(uint8_t value) noexcept;
+		void isb(uint8_t value) noexcept;
+		void rla(uint8_t value) noexcept;
+		void rra(uint8_t value) noexcept;
+		void slo(uint8_t value) noexcept;
+		void sre(uint8_t value) noexcept;
 
 		// Complicated addressing mode implementations
 
-		void sta_AbsoluteX();
-		void sta_AbsoluteY();
+		void sta_AbsoluteX() noexcept;
+		void sta_AbsoluteY() noexcept;
 
 		uint8_t x = 0;		// index register X
 		uint8_t y = 0;		// index register Y
