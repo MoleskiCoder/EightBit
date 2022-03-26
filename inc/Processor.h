@@ -21,8 +21,6 @@ namespace EightBit {
 			return result;
 		}
 
-		virtual ~Processor() noexcept {}
-
 		Processor(const Processor& rhs);
 		bool operator==(const Processor& rhs) const;
 

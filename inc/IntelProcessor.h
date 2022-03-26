@@ -44,8 +44,6 @@ namespace EightBit {
 			}
 		};
 
-		virtual ~IntelProcessor() {};
-
 		IntelProcessor(const IntelProcessor& rhs);
 		bool operator==(const IntelProcessor& rhs) const;
 

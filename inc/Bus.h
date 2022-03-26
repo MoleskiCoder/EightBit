@@ -12,7 +12,7 @@
 namespace EightBit {
 	class Bus : public Mapper {
 	public:
-		virtual ~Bus() {};
+		virtual ~Bus() noexcept {};
 
 		Signal<EventArgs> WritingByte;
 		Signal<EventArgs> WrittenByte;

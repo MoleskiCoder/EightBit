@@ -7,10 +7,8 @@
 namespace EightBit {
 	class ClockedChip : public Chip {
 	public:
-		virtual ~ClockedChip() noexcept {};
-
-		ClockedChip(const ClockedChip& rhs);
-		bool operator==(const ClockedChip& rhs) const;
+		ClockedChip(const ClockedChip& rhs) noexcept;
+		bool operator==(const ClockedChip& rhs) const noexcept;
 
 		Signal<EventArgs> Ticked;
 

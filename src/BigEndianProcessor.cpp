@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "../inc/BigEndianProcessor.h"
 
-EightBit::BigEndianProcessor::BigEndianProcessor(Bus& memory)
+EightBit::BigEndianProcessor::BigEndianProcessor(Bus& memory) noexcept
 : Processor(memory) {}
 
 EightBit::register16_t EightBit::BigEndianProcessor::getWord() noexcept {

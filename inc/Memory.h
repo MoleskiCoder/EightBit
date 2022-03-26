@@ -14,8 +14,6 @@ namespace EightBit {
 	// *) Possibly 'reference'able (Very likely if you've exposed 'poke')
 	class Memory {
 	public:
-		virtual ~Memory() {};
-
 		[[nodiscard]] virtual uint16_t size() const noexcept = 0;
 		[[nodiscard]] virtual uint8_t peek(uint16_t address) const noexcept = 0;
 
