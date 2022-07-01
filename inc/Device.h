@@ -96,15 +96,15 @@ namespace EightBit {
 
 	public:
 		[[nodiscard]] static constexpr auto raised(const PinLevel line) noexcept { return line == PinLevel::High; }
-		static constexpr void raise(PinLevel& line) noexcept { line = PinLevel::High; }
+		static constexpr void raise(PinLevel& line) noexcept { match(line, PinLevel::High); }
 		[[nodiscard]] static constexpr auto lowered(const PinLevel line) noexcept { return line == PinLevel::Low; }
-		static constexpr void lower(PinLevel& line) noexcept { line = PinLevel::Low; }
+		static constexpr void lower(PinLevel& line) noexcept { match(line, PinLevel::Low); }
 
 		static constexpr void match(PinLevel& line, int condition) noexcept { match(line, condition != 0); }
 		static constexpr void match(PinLevel& line, bool condition) noexcept { condition ? raise(line) : lower(line); }
 		static constexpr void match(PinLevel& out, PinLevel in) noexcept { out = in; }
 
-		static constexpr void flip(PinLevel& out) noexcept { out = out == PinLevel::Low ? PinLevel::High : PinLevel::Low; }
+		static constexpr void flip(PinLevel& out) noexcept { match(out, out == PinLevel::Low ? PinLevel::High : PinLevel::Low); }
 
 		virtual ~Device() noexcept {};
 
