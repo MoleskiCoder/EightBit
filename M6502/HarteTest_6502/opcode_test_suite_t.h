@@ -2,14 +2,7 @@
 
 #include <string>
 
-#ifdef USE_COROUTINES
-#if __cplusplus >= 202002L
-#   include <co_generator_t.h>
-#else
-#	include <boost/coroutine2/all.hpp>
-#endif
-#   include <vector>
-#endif
+#include <co_generator_t.h>
 
 #include "parser_t.h"
 #include "test_t.h"
@@ -26,13 +19,5 @@ public:
     [[nodiscard]] auto end() const noexcept { return array().end(); }
     [[nodiscard]] auto size() const noexcept { return array().size(); }
 
-#ifdef USE_COROUTINES
-#if __cplusplus >= 202002L
     [[nodiscard]] EightBit::co_generator_t<test_t> generator() const;
-#else
-    void generator(boost::coroutines2::coroutine<test_t>::push_type& sink) const;
-#endif
-#else
-    std::vector<test_t> generate() const;
-#endif
 };
