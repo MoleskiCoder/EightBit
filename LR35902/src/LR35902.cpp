@@ -460,7 +460,7 @@ int EightBit::GameBoy::LR35902::step() noexcept {
 			handleINT();
 		} else if (UNLIKELY(lowered(HALT()))) {
 			IntelProcessor::memoryRead(PC());
-			Processor::execute(0);	// NOP
+			//Processor::execute(0);	// NOP
 		} else {
 			Processor::execute(fetchByte());
 		}
