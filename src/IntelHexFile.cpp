@@ -18,8 +18,10 @@ std::map<uint16_t, std::vector<uint8_t>> EightBit::IntelHexFile::parse() {
 		std::getline(m_file, line);
 
 		const auto parsed = parse(line);
-		if (parsed.has_value())
-			returned[parsed.value().first] = parsed.value().second;
+		if (parsed.has_value()) {
+			const auto& [address, content] = parsed.value();
+			returned[address] = content;
+		}
 	}
 
 	if (!m_eof)

@@ -10,12 +10,11 @@ Fuse::TestSuite::TestSuite(std::string path) {
 void Fuse::TestSuite::run() {
 	auto failedCount = 0;
 	auto unimplementedCount = 0;
-	for (auto test : m_tests.container()) {
+	for (const auto& test : m_tests.container()) {
 
-		auto key = test.first;
+		const auto& [key, input] = test;
 		std::cout << "** Checking: " << key << std::endl;
 
-		auto input = test.second;
 		auto result = m_results.container().find(key)->second;
 
 		Fuse::TestRunner runner(input, result);

@@ -30,8 +30,7 @@ void EightBit::Bus::loadHexFile(const std::string path) {
 	IntelHexFile file(path);
 	const auto chunks = file.parse();
 	for (const auto& chunk : chunks) {
-		const auto address = chunk.first;
-		const auto content = chunk.second;
+		const auto& [address, content] = chunk;
 		const auto mapped = mapping(address);
 		const uint16_t offset = address - mapped.begin;
 		mapped.memory.load(content, offset);

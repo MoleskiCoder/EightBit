@@ -42,9 +42,8 @@ void EightBit::Profiler::EmitProfileInformation() {
 
 	{
 		StartingScopeOutput.fire();
-		for (auto& scopeCycle : scopeCycles) {
-			auto name = scopeCycle.first;
-			auto cycles = scopeCycle.second;
+		for (const auto& scopeCycle : scopeCycles) {
+			const auto& [name, cycles] = scopeCycle;
 			auto namedAddress = (size_t)symbols.addresses().find(name)->second;
 			auto count = addressCounts[namedAddress];
 			ProfileScopeEventArgs event(name, cycles, count);
@@ -72,9 +71,8 @@ void EightBit::Profiler::addAddress(uint16_t address, int cycles) {
 }
 
 void EightBit::Profiler::BuildAddressScopes() {
-	for (auto& label : symbols.labels()) {
-		auto address = label.first;
-		auto key = label.second;
+	for (const auto& label : symbols.labels()) {
+		const auto& [address, key] = label;
 		auto scope = symbols.scopes().find(key);
 		if (scope != symbols.scopes().end()) {
 			for (uint16_t i = address; i < address + scope->second; ++i) {
