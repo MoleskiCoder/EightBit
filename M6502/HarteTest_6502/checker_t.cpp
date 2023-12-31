@@ -159,6 +159,8 @@ bool checker_t::checkState(test_t test) {
         const auto& actual_action = std::get<2>(actual);
         check("Cycle action", expected_action, std::string_view(actual_action));
     }
+    if (!m_messages.empty())
+        return false;
 
     const auto final = test.final();
     const auto pc_good = check("PC", final.pc(), cpu.PC().word);
