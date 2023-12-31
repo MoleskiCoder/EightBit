@@ -190,6 +190,11 @@ namespace EightBit {
 		void sta_AbsoluteY() noexcept;
 		void sta_IndirectIndexedY() noexcept;
 
+		void write_A_with_fixup(const register16_t& address, uint8_t unfixed_page) noexcept {
+			getBytePaged(unfixed_page, address.low);	// Possible fixup for page boundary crossing
+			memoryWrite(address, A());
+		}
+
 		uint8_t x = 0;		// index register X
 		uint8_t y = 0;		// index register Y
 		uint8_t a = 0;		// accumulator

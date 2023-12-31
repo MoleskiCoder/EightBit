@@ -73,14 +73,14 @@ void EightBit::MOS6502::handleINT() noexcept {
 void EightBit::MOS6502::interrupt() noexcept {
 	const bool reset = m_handlingRESET;
 	const bool nmi = m_handlingNMI;
-	const bool irq = m_handlingINT;
-	const bool hardware = nmi || irq || reset;
-	const bool software = !hardware;
 	if (reset) {
 		dummyPush(PC().high);
 		dummyPush(PC().low);
 		dummyPush(P());
 	} else {
+		const bool irq = m_handlingINT;
+		const bool hardware = nmi || irq || reset;
+		const bool software = !hardware;
 		pushWord(PC());
 		push(P() | (software ? BF : 0));
 	}
@@ -748,18 +748,15 @@ void EightBit::MOS6502::sre(const uint8_t value) noexcept {
 
 void EightBit::MOS6502::sta_AbsoluteX() noexcept {
 	const auto [address, page] = Address_AbsoluteX();
-	getBytePaged(page, address.low);
-	memoryWrite(address, A());
+	write_A_with_fixup(address, page);
 }
 
 void EightBit::MOS6502::sta_AbsoluteY() noexcept {
 	const auto [address, page] = Address_AbsoluteY();
-	getBytePaged(page, address.low);
-	memoryWrite(address, A());
+	write_A_with_fixup(address, page);
 }
 
 void EightBit::MOS6502::sta_IndirectIndexedY() noexcept {
 	const auto [address, page] = Address_IndirectIndexedY();
-	getBytePaged(page, address.low);	// Possible fixup for page boundary crossing
-	memoryWrite(address, A());
+	write_A_with_fixup(address, page);
 }
