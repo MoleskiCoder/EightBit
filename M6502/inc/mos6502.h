@@ -188,6 +188,7 @@ namespace EightBit {
 
 		void sta_AbsoluteX() noexcept;
 		void sta_AbsoluteY() noexcept;
+		void sta_IndirectIndexedY() noexcept;
 
 		uint8_t x = 0;		// index register X
 		uint8_t y = 0;		// index register Y
