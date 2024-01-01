@@ -106,9 +106,9 @@ void checker_t::initialiseState(const test_t test) {
     cpu.P() = initial.p();
     for (const auto entry : initial.ram()) {
         auto data = entry.begin();
-        const int64_t address = (*data).get_int64();
-        const int64_t value = (*++data).get_int64();
-        ram.poke((uint16_t)address, (uint8_t)value);
+        const auto address = uint16_t(int64_t(*data++));
+        const auto value = uint8_t(int64_t(*data));
+        ram.poke(address, value);
     }
 }
 
@@ -147,15 +147,15 @@ bool checker_t::checkState(test_t test) {
         auto expected_data = expected_cycle.begin();
         const auto& actual = actual_cycles.at(actual_idx++);   // actual could be less than expected
 
-        const int64_t expected_address = (*expected_data).get_int64();
+        const auto expected_address = uint16_t(int64_t(*expected_data++));
         const auto actual_address = std::get<0>(actual);
-        check("Cycle address", (uint16_t)expected_address, actual_address);
+        check("Cycle address", expected_address, actual_address);
 
-        const int64_t expected_value = (*++expected_data).get_int64();
+        const auto expected_value = uint8_t(int64_t(*expected_data++));
         const auto actual_value = std::get<1>(actual);
-        check("Cycle value", (uint8_t)expected_value, actual_value);
+        check("Cycle value", expected_value, actual_value);
 
-        const std::string_view expected_action = (*++expected_data).get_string();
+        const auto expected_action = std::string_view(*expected_data);
         const auto& actual_action = std::get<2>(actual);
         check("Cycle action", expected_action, std::string_view(actual_action));
     }
@@ -173,8 +173,8 @@ bool checker_t::checkState(test_t test) {
     bool ram_problem = false;
     for (const auto entry : final.ram()) {
         auto data = entry.begin();
-        const int64_t address = (*data).get_int64();
-        const int64_t value = (*++data).get_int64();
+        const auto address = uint16_t(int64_t(*data++));
+        const auto value = uint8_t(int64_t(*data));
         const auto ram_good = check("RAM", address, value, ram.peek(address));
         if (!ram_good && !ram_problem)
             ram_problem = true;
