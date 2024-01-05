@@ -16,7 +16,6 @@ int main() {
 
     const auto start_time = std::chrono::steady_clock::now();
 
-    int undocumented_opcode_count = 0;
     int unimplemented_opcode_count = 0;
     int invalid_opcode_count = 0;
 
@@ -46,8 +45,6 @@ int main() {
                 ++invalid_opcode_count;
                 if (checker.unimplemented())
                     ++unimplemented_opcode_count;
-                if (checker.undocumented())
-                    ++undocumented_opcode_count;
                 std::cout << "** Failed: " << test.name() << "\n";
                 for (const auto& message : checker.messages())
                     std::cout << "**** " << message << "\n";
@@ -61,7 +58,6 @@ int main() {
    const auto seconds = std::chrono::duration_cast<std::chrono::duration<double>>(elapsed_time).count();
    std::cout
        << "Elapsed time: " << seconds << " seconds"
-       << ", undocumented opcode count: " << undocumented_opcode_count
        << ", unimplemented opcode count: " << unimplemented_opcode_count
        << ", invalid opcode count: " << (invalid_opcode_count - unimplemented_opcode_count)
        << std::endl;

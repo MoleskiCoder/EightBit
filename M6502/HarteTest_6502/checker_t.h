@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <set>
 
 #include <Disassembly.h>
 #include <Symbols.h>
@@ -14,9 +13,6 @@
 
 class checker_t {
 private:
-    static std::set<uint8_t> m_undocumented_opcodes;
-    static bool m_undocumented_opcodes_initialised;
-
     TestRunner& m_runner;
     EightBit::Symbols m_symbols;
     EightBit::Disassembly m_disassembler = { m_runner, m_runner.CPU(), m_symbols };
@@ -31,13 +27,11 @@ private:
 
     int m_cycles = 0;
     bool m_valid = true;
-    bool m_undocumented = false;
 
     [[nodiscard]] constexpr auto& os() noexcept { return m_os; }
 
     [[nodiscard]] constexpr auto& runner() noexcept { return m_runner; }
 
-    void seedUndocumentedOpcodes();
     [[nodiscard]] bool checkState(test_t test);
 
     void pushCurrentMessage();
@@ -92,8 +86,6 @@ public:
     [[nodiscard]] constexpr auto invalid() const noexcept { return !valid(); }
     [[nodiscard]] constexpr auto unimplemented() const noexcept { return invalid() && m_cycle_count_mismatch && (cycles() == 1); }
     [[nodiscard]] constexpr auto implemented() const noexcept { return !unimplemented(); }
-    [[nodiscard]] constexpr auto undocumented() const noexcept { return m_undocumented; }
-    [[nodiscard]] constexpr auto documented() const noexcept { return !undocumented(); }
 
     [[nodiscard]] constexpr const auto& messages() const noexcept { return m_messages; }
 

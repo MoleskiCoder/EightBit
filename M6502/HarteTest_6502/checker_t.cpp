@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "checker_t.h"
 
-std::set<uint8_t> checker_t::m_undocumented_opcodes;
-bool checker_t::m_undocumented_opcodes_initialised = false;
-
 void checker_t::addActualCycle(const uint16_t address, const uint8_t value, const std::string action) {
     m_actualCycles.push_back({ address, value, action });
 }
@@ -114,8 +111,6 @@ void checker_t::initialiseState(const test_t test) {
 
 void checker_t::initialise() {
 
-    seedUndocumentedOpcodes();
-
     auto& bus = runner();
 
     bus.ReadByte.connect([this, &bus](EightBit::EventArgs&) {
@@ -180,7 +175,10 @@ bool checker_t::checkState(test_t test) {
             ram_problem = true;
     }
 
-    return pc_good && s_good && a_good && x_good && y_good && p_good && !ram_problem;
+    return
+        pc_good && s_good
+        && a_good && x_good && y_good && p_good
+        && !ram_problem;
 }
 //
 void checker_t::pushCurrentMessage() {
@@ -209,13 +207,6 @@ void checker_t::check(test_t test) {
     initialiseState(test);
     const auto pc = cpu.PC().word;
     const auto start_opcode = runner().peek(pc);
-
-    m_undocumented = m_undocumented_opcodes.contains(start_opcode);
-    if (undocumented()) {
-        m_valid = false;
-        m_messages.push_back("Undocumented");
-        return;
-    }
 
     m_cycles = cpu.step();
     runner().lowerPOWER();
@@ -249,27 +240,4 @@ void checker_t::check(test_t test) {
         dumpCycles("-- Expected cycles", test.cycles());
         dumpCycles("-- Actual cycles", m_actualCycles);
     }
-}
-
-void checker_t::seedUndocumentedOpcodes() {
-    if (m_undocumented_opcodes_initialised) return;
-    m_undocumented_opcodes = {
-        0x02, 0x03, 0x04, 0x07, 0x0b, 0x0c, 0x0f,
-        0x12, 0x13, 0x14, 0x17, 0x1a, 0x1b, 0x1c, 0x1f,
-        0x22, 0x23, 0x27, 0x2b, 0x2f,
-        0x32, 0x33, 0x34, 0x37, 0x3a, 0x3b, 0x3c, 0x3f,
-        0x42, 0x43, 0x44, 0x47, 0x4b, 0x4f,
-        0x52, 0x53, 0x54, 0x57, 0x5a, 0x5b, 0x5c, 0x5f,
-        0x62, 0x63, 0x64, 0x67, 0x6b, 0x6f,
-        0x72, 0x73, 0x74, 0x77, 0x7a, 0x7b, 0x7c, 0x7f,
-        0x80, 0x82, 0x83, 0x87, 0x89, 0x8b, 0x8f,
-        0x92, 0x93, 0x97, 0x9b, 0x9c, 0x9e, 0x9f,
-        0xa3, 0xa7, 0xab, 0xaf,
-        0xb2, 0xb3, 0xb7, 0xbb, 0xbf,
-        0xc2, 0xc3, 0xc7, 0xcb, 0xcf,
-        0xd2, 0xd3, 0xd4, 0xd7, 0xda, 0xdb, 0xdc, 0xdf,
-        0xe2, 0xe3, 0xe7, 0xeb, 0xef,
-        0xf1, 0xf2, 0xf3, 0xf4, 0xf7, 0xfa, 0xfb, 0xfc, 0xff,
-    };
-    m_undocumented_opcodes_initialised = true;
 }
