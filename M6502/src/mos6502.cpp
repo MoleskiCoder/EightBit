@@ -293,7 +293,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0xa8:	memoryRead(PC()); Y() = through(A());						break;	// TAY (implied)
 	case 0xa9:	A() = through(AM_Immediate());								break;	// LDA (immediate)
 	case 0xaa:	memoryRead(PC()); X() = through(A());						break;	// TAX (implied)
-	case 0xab:	A() = X() = through(AM_Immediate());						break;	// *ATX (immediate)
+	case 0xab:	A() = X() = through((A() | 0xee) & AM_Immediate());			break;	// *ATX (immediate)
 	case 0xac:	Y() = through(AM_Absolute());								break;	// LDY (absolute)
 	case 0xad:	A() = through(AM_Absolute());								break;	// LDA (absolute)
 	case 0xae:	X() = through(AM_Absolute());								break;	// LDX (absolute)
