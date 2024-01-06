@@ -190,6 +190,7 @@ namespace EightBit {
 		void rra(uint8_t value) noexcept;
 		void slo(uint8_t value) noexcept;
 		void sre(uint8_t value) noexcept;
+		void jam() noexcept;
 
 		// Unconditional page fixup cycle required
 		void fixup(const register16_t address, const uint8_t unfixed_page) noexcept {

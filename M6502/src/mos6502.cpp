@@ -113,7 +113,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0x00:	fetchByte(); interrupt();									break;	// BRK (implied)
 	case 0x01:	A() = orr(A(), AM_IndexedIndirectX());						break;	// ORA (indexed indirect X)
-	case 0x02:																break;
+	case 0x02:	jam();														break;	// *JAM
 	case 0x03:	slo(AM_IndexedIndirectX());									break;	// *SLO (indexed indirect X)
 	case 0x04:	AM_ZeroPage();												break;	// *NOP (zero page)
 	case 0x05:	A() = orr(A(), AM_ZeroPage());								break;	// ORA (zero page)
@@ -130,7 +130,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0x10:	branch(negative() == 0);									break;	// BPL (relative)
 	case 0x11:	A() = orr(A(), AM_IndirectIndexedY());						break;	// ORA (indirect indexed Y)
-	case 0x12:																break;
+	case 0x12:	jam();														break;	// *JAM
 	case 0x13:	slo_IndirectIndexedY();										break;	// *SLO (indirect indexed Y)
 	case 0x14:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
 	case 0x15:	A() = orr(A(), AM_ZeroPageX());								break;	// ORA (zero page, X)
@@ -147,7 +147,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0x20:	jsr();														break;	// JSR (absolute)
 	case 0x21:	A() = andr(A(), AM_IndexedIndirectX());						break;	// AND (indexed indirect X)
-	case 0x22:																break;
+	case 0x22:	jam();														break;	// *JAM
 	case 0x23:	rla(AM_IndexedIndirectX());									break;	// *RLA (indexed indirect X)
 	case 0x24:	bit(A(), AM_ZeroPage());									break;	// BIT (zero page)
 	case 0x25:	A() = andr(A(), AM_ZeroPage());								break;	// AND (zero page)
@@ -164,7 +164,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0x30:	branch(negative());											break;	// BMI (relative)
 	case 0x31:	A() = andr(A(), AM_IndirectIndexedY());						break;	// AND (indirect indexed Y)
-	case 0x32:																break;
+	case 0x32:	jam();														break;	// *JAM
 	case 0x33:	rla_IndirectIndexedY();										break;	// *RLA (indirect indexed Y)
 	case 0x34:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
 	case 0x35:	A() = andr(A(), AM_ZeroPageX());							break;	// AND (zero page, X)
@@ -181,7 +181,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0x40:	memoryRead(PC()); rti();									break;	// RTI (implied)
 	case 0x41:	A() = eorr(A(), AM_IndexedIndirectX());						break;	// EOR (indexed indirect X)
-	case 0x42:																break;
+	case 0x42:	jam();														break;	// *JAM
 	case 0x43:	sre(AM_IndexedIndirectX());									break;	// *SRE (indexed indirect X)
 	case 0x44:	AM_ZeroPage();												break;	// *NOP (zero page)
 	case 0x45:	A() = eorr(A(), AM_ZeroPage());								break;	// EOR (zero page)
@@ -198,7 +198,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0x50:	branch(overflow() == 0);									break;	// BVC (relative)
 	case 0x51:	A() = eorr(A(), AM_IndirectIndexedY());						break;	// EOR (indirect indexed Y)
-	case 0x52:																break;
+	case 0x52:	jam();														break;	// *JAM
 	case 0x53:	sre_IndirectIndexedY();										break;	// *SRE (indirect indexed Y)
 	case 0x54:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
 	case 0x55:	A() = eorr(A(), AM_ZeroPageX());							break;	// EOR (zero page, X)
@@ -215,7 +215,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0x60:	memoryRead(PC()); rts();									break;	// RTS (implied)
 	case 0x61:	A() = adc(A(), AM_IndexedIndirectX());						break;	// ADC (indexed indirect X)
-	case 0x62:																break;
+	case 0x62:	jam();														break;	// *JAM
 	case 0x63:	rra(AM_IndexedIndirectX());									break;	// *RRA (indexed indirect X)
 	case 0x64:	AM_ZeroPage();												break;	// *NOP (zero page)
 	case 0x65:	A() = adc(A(), AM_ZeroPage());								break;	// ADC (zero page)
@@ -232,7 +232,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0x70:	branch(overflow());											break;	// BVS (relative)
 	case 0x71:	A() = adc(A(), AM_IndirectIndexedY());						break;	// ADC (indirect indexed Y)
-	case 0x72:																break;
+	case 0x72:	jam();														break;	// *JAM
 	case 0x73:	rra_IndirectIndexedY();										break;	// *RRA (indirect indexed Y)
 	case 0x74:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
 	case 0x75:	A() = adc(A(), AM_ZeroPageX());								break;	// ADC (zero page, X)
@@ -266,7 +266,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0x90:	branch(carry() == 0);										break;	// BCC (relative)
 	case 0x91:	sta_IndirectIndexedY();										break;	// STA (indirect indexed Y)
-	case 0x92:																break;
+	case 0x92:	jam();														break;	// *JAM
 	case 0x93:																break;
 	case 0x94:	memoryWrite(Address_ZeroPageX(), Y());						break;	// STY (zero page, X)
 	case 0x95:	memoryWrite(Address_ZeroPageX(), A());						break;	// STA (zero page, X)
@@ -300,7 +300,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0xb0:	branch(carry());											break;	// BCS (relative)
 	case 0xb1:	A() = through(AM_IndirectIndexedY());						break;	// LDA (indirect indexed Y)
-	case 0xb2:																break;
+	case 0xb2:	jam();														break;	// *JAM
 	case 0xb3:	A() = X() = through(AM_IndirectIndexedY());					break;	// *LAX (indirect indexed Y)
 	case 0xb4:	Y() = through(AM_ZeroPageX());								break;	// LDY (zero page, X)
 	case 0xb5:	A() = through(AM_ZeroPageX());								break;	// LDA (zero page, X)
@@ -334,7 +334,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0xd0:	branch(zero() == 0);										break;	// BNE (relative)
 	case 0xd1:	cmp(A(), AM_IndirectIndexedY());							break;	// CMP (indirect indexed Y)
-	case 0xd2:																break;
+	case 0xd2:	jam();														break;	// *JAM
 	case 0xd3:	dcp_IndirectIndexedY();										break;	// *DCP (indirect indexed Y)
 	case 0xd4:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
 	case 0xd5:	cmp(A(), AM_ZeroPageX());									break;	// CMP (zero page, X)
@@ -368,7 +368,7 @@ int EightBit::MOS6502::execute() noexcept {
 
 	case 0xf0:	branch(zero());												break;	// BEQ (relative)
 	case 0xf1:	A() = sbc(A(), AM_IndirectIndexedY());						break;	// SBC (indirect indexed Y)
-	case 0xf2:																break;
+	case 0xf2:	jam();														break;	// *JAM
 	case 0xf3:	isb_IndirectIndexedY();										break;	// *ISB (indirect indexed Y)
 	case 0xf4:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
 	case 0xf5:	A() = sbc(A(), AM_ZeroPageX());								break;	// SBC (zero page, X)
@@ -764,6 +764,11 @@ void EightBit::MOS6502::slo(const uint8_t value) noexcept {
 void EightBit::MOS6502::sre(const uint8_t value) noexcept {
 	memoryReadModifyWrite(lsr(value));
 	A() = eorr(A(), BUS().DATA());
+}
+
+void EightBit::MOS6502::jam() noexcept {
+	memoryRead(PC());
+	memoryRead(PC()--);
 }
 
 //
