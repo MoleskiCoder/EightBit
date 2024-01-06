@@ -56,6 +56,8 @@ namespace EightBit {
 		void busWrite() noexcept final;
 		[[nodiscard]] uint8_t busRead() noexcept final;
 
+		// Instructions with BCD effects
+
 		[[nodiscard]] virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
 		[[nodiscard]] uint8_t sbc(uint8_t operand, uint8_t data) noexcept;
 		[[nodiscard]] uint8_t sub_b(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
@@ -65,6 +67,12 @@ namespace EightBit {
 		[[nodiscard]] uint8_t adc(uint8_t operand, uint8_t data) noexcept;
 		[[nodiscard]] uint8_t add_b(uint8_t operand, uint8_t data, int carry) noexcept;
 		[[nodiscard]] uint8_t add_d(uint8_t operand, uint8_t data, int carry) noexcept;
+
+		// Undocumented compound instructions (with BCD effects)
+
+		virtual void arr(uint8_t value) noexcept;
+		virtual void arr_b(uint8_t value) noexcept;
+		virtual void arr_d(uint8_t value) noexcept;
 
 	private:
 		const uint8_t IRQvector = 0xfe;		// IRQ vector
@@ -174,7 +182,6 @@ namespace EightBit {
 		// Undocumented compound instructions
 
 		void anc(uint8_t value) noexcept;
-		void arr(uint8_t value) noexcept;
 		void asr(uint8_t value) noexcept;
 		void axs(uint8_t value) noexcept;
 		void dcp(uint8_t value) noexcept;

@@ -698,10 +698,33 @@ void EightBit::MOS6502::anc(const uint8_t value) noexcept {
 }
 
 void EightBit::MOS6502::arr(const uint8_t value) noexcept {
-	A() = andr(A(), value);
-	A() = ror(A());
+	decimal() ? arr_d(value) : arr_b(value);
+}
+
+void EightBit::MOS6502::arr_d(const uint8_t value) noexcept {
+
+	// With thanks to https://github.com/TomHarte/CLK
+	// What a very strange instruction ARR is...
+
+	A() &= value;
+	auto unshiftedA = A();
+	A() = through((A() >> 1) | (carry() << 7));
+	P() = setBit(P(), VF, (A() ^ (A() << 1)) & VF);
+
+	if (lowerNibble(unshiftedA) + (unshiftedA & 0x1) > 5)
+		A() = lowerNibble(A() + 6) | higherNibble(A());
+
+	P() = setBit(P(), CF, higherNibble(unshiftedA) + (unshiftedA & 0x10) > 0x50);
+	
+	if (carry())
+		A() += 0x60;
+}
+
+void EightBit::MOS6502::arr_b(const uint8_t value) noexcept {
+	A() &= value;
+	A() = through((A() >> 1) | (carry() << 7));
 	P() = setBit(P(), CF, A() & Bit6);
-	P() = setBit(P(), VF, ((A() & Bit6) >> 6) ^((A() & Bit5) >> 5));
+	P() = setBit(P(), VF, (A() ^ (A() << 1)) & VF);
 }
 
 void EightBit::MOS6502::asr(const uint8_t value) noexcept {
