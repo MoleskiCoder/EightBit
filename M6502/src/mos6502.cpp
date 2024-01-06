@@ -24,7 +24,6 @@ int EightBit::MOS6502::step() noexcept {
 	resetCycles();
 	ExecutingInstruction.fire(*this);
 	if (LIKELY(powered())) {
-		tick();
 		if (UNLIKELY(lowered(SO())))
 			handleSO();
 		if (LIKELY(raised(RDY()))) {

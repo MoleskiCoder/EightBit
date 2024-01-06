@@ -84,7 +84,7 @@ public:
     [[nodiscard]] constexpr auto cycles() const noexcept { return m_cycles; }
     [[nodiscard]] constexpr auto valid() const noexcept { return m_valid; }
     [[nodiscard]] constexpr auto invalid() const noexcept { return !valid(); }
-    [[nodiscard]] constexpr auto unimplemented() const noexcept { return invalid() && m_cycle_count_mismatch && (cycles() == 1); }
+    [[nodiscard]] constexpr auto unimplemented() const noexcept { return invalid() && m_cycle_count_mismatch && (cycles() == 0); }
     [[nodiscard]] constexpr auto implemented() const noexcept { return !unimplemented(); }
 
     [[nodiscard]] constexpr const auto& messages() const noexcept { return m_messages; }
