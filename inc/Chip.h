@@ -66,7 +66,7 @@ namespace EightBit {
 		[[nodiscard]] static constexpr auto promoteNibble(const int value) noexcept { return value << 4; }
 		[[nodiscard]] static constexpr auto demoteNibble(const int value) noexcept { return highNibble(value); }
 
-		Chip(const Chip& rhs)
+		Chip(const Chip& rhs) noexcept
 		: Device(rhs) {}
 
 	protected:
