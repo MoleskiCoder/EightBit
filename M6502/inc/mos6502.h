@@ -257,6 +257,12 @@ namespace EightBit {
 			sre(memoryRead());
 		}
 
+		// SYA
+		void sya_AbsoluteX() noexcept;
+
+		// SXA
+		void sxa_AbsoluteY() noexcept;
+
 		// NOP
 		void nop_AbsoluteX() noexcept;
 
