@@ -36,20 +36,37 @@ int main() {
         opcode.load();
 
         auto test_generator = opcode.generator();
+        std::vector<std::string> test_names;
         while (test_generator) {
 
             const auto test = test_generator();
             checker.check(test);
-
             if (checker.invalid()) {
+
+                std::cout << "** Failed: " << test.name() << "\n";
+
                 ++invalid_opcode_count;
+
+                // Was it just unimplemented?
                 if (checker.unimplemented())
                     ++unimplemented_opcode_count;
-                std::cout << "** Failed: " << test.name() << "\n";
+
+                // Let's see if we had any successes!
+                if (!test_names.empty()) {
+                    std::cout << "**** The follow test variations succeeeded\n";
+                    for (const auto& test_name : test_names)
+                        std::cout << "****** " << test_name << "\n";
+                }
+
+                // OK, we've attempted an implementation, how did it fail?
                 for (const auto& message : checker.messages())
                     std::cout << "**** " << message << "\n";
+
+                // I'm not really interested in the remaining tests for this opcode
                 break;
             }
+
+            test_names.push_back(std::string(std::string_view(test.name())));
         }
     }
 
