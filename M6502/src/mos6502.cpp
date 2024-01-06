@@ -258,7 +258,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0x88:	memoryRead(PC()); Y() = dec(Y());							break;	// DEY (implied)
 	case 0x89:	AM_Immediate();												break;	// *NOP (immediate)
 	case 0x8a:	memoryRead(PC()); A() = through(X());						break;	// TXA (implied)
-	case 0x8b:																break;
+	case 0x8b:	A() = through((A() | 0xee) & X() & AM_Immediate());			break;  // *ANE (immediate)
 	case 0x8c:	memoryWrite(Address_Absolute(), Y());						break;	// STY (absolute)
 	case 0x8d:	memoryWrite(Address_Absolute(), A());						break;	// STA (absolute)
 	case 0x8e:	memoryWrite(Address_Absolute(), X());						break;	// STX (absolute)
