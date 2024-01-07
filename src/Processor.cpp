@@ -13,8 +13,8 @@ EightBit::Processor::Processor(const Processor& rhs)
 	PC() = rhs.PC();
 }
 
-DEFINE_PIN_LEVEL_CHANGERS(RESET, Processor);
-DEFINE_PIN_LEVEL_CHANGERS(INT, Processor);
+DEFINE_PIN_LEVEL_CHANGERS(RESET, Processor)
+DEFINE_PIN_LEVEL_CHANGERS(INT, Processor)
 
 void EightBit::Processor::handleRESET() noexcept {
 	raiseRESET();

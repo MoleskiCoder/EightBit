@@ -100,7 +100,7 @@ void EightBit::MOS6502::interrupt() noexcept {
 		pushWord(PC());
 		push(P() | (software ? BF : 0));
 	}
-	P() = setBit(P(), IF);	// Disable IRQ
+	set_flag(IF);	// Disable IRQ
 	const uint8_t vector = reset ? RSTvector : (nmi ? NMIvector : IRQvector);
 	jump(getWordPaged(0xff, vector));
 	m_handlingRESET = m_handlingNMI = m_handlingINT = false;
@@ -153,7 +153,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0x15:	A() = orr(A(), AM_ZeroPageX());								break;	// ORA (zero page, X)
 	case 0x16:	memoryReadModifyWrite(asl(AM_ZeroPageX()));					break;	// ASL (zero page, X)
 	case 0x17:	slo(AM_ZeroPageX());										break;	// *SLO (zero page, X)
-	case 0x18:	swallow(); P() = clearBit(P(), CF);							break;	// CLC (implied)
+	case 0x18:	swallow(); reset_flag(CF);									break;	// CLC (implied)
 	case 0x19:	A() = orr(A(), AM_AbsoluteY());								break;	// ORA (absolute, Y)
 	case 0x1a:	swallow();													break;	// *NOP (implied)
 	case 0x1b:	slo_AbsoluteY();											break;	// *SLO (absolute, Y)
@@ -170,7 +170,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0x25:	A() = andr(A(), AM_ZeroPage());								break;	// AND (zero page)
 	case 0x26:	memoryReadModifyWrite(rol(AM_ZeroPage()));					break;	// ROL (zero page)
 	case 0x27:	rla(AM_ZeroPage());											break;	// *RLA (zero page)
-	case 0x28:	swallow(); swallow_stack(); plp();							break;	// PLP (implied)
+	case 0x28:	swallow(); plp();											break;	// PLP (implied)
 	case 0x29:	A() = andr(A(), AM_Immediate());							break;	// AND (immediate)
 	case 0x2a:	swallow(); A() = rol(A());									break;	// ROL A (implied)
 	case 0x2b:	anc(AM_Immediate());										break;	// *ANC (immediate)
@@ -187,7 +187,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0x35:	A() = andr(A(), AM_ZeroPageX());							break;	// AND (zero page, X)
 	case 0x36:	memoryReadModifyWrite(rol(AM_ZeroPageX()));					break;	// ROL (zero page, X)
 	case 0x37:	rla(AM_ZeroPageX());										break;	// *RLA (zero page, X)
-	case 0x38:	swallow(); P() = setBit(P(), CF);							break;	// SEC (implied)
+	case 0x38:	swallow(); set_flag(CF);									break;	// SEC (implied)
 	case 0x39:	A() = andr(A(), AM_AbsoluteY());							break;	// AND (absolute, Y)
 	case 0x3a:	swallow();													break;	// *NOP (implied)
 	case 0x3b:	rla_AbsoluteY();											break;	// *RLA (absolute, Y)
@@ -221,7 +221,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0x55:	A() = eorr(A(), AM_ZeroPageX());							break;	// EOR (zero page, X)
 	case 0x56:	memoryReadModifyWrite(lsr(AM_ZeroPageX()));					break;	// LSR (zero page, X)
 	case 0x57:	sre(AM_ZeroPageX());										break;	// *SRE (zero page, X)
-	case 0x58:	swallow(); P() = clearBit(P(), IF);							break;	// CLI (implied)
+	case 0x58:	swallow(); reset_flag(IF);									break;	// CLI (implied)
 	case 0x59:	A() = eorr(A(), AM_AbsoluteY());							break;	// EOR (absolute, Y)
 	case 0x5a:	swallow();													break;	// *NOP (implied)
 	case 0x5b:	sre_AbsoluteY();											break;	// *SRE (absolute, Y)
@@ -255,7 +255,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0x75:	A() = adc(A(), AM_ZeroPageX());								break;	// ADC (zero page, X)
 	case 0x76:	memoryReadModifyWrite(ror(AM_ZeroPageX()));					break;	// ROR (zero page, X)
 	case 0x77:	rra(AM_ZeroPageX());										break;	// *RRA (zero page, X)
-	case 0x78:	swallow(); P() = setBit(P(), IF);							break;	// SEI (implied)
+	case 0x78:	swallow(); set_flag(IF);									break;	// SEI (implied)
 	case 0x79:	A() = adc(A(), AM_AbsoluteY());								break;	// ADC (absolute, Y)
 	case 0x7a:	swallow();													break;	// *NOP (implied)
 	case 0x7b:	rra_AbsoluteY();											break;	// *RRA (absolute, Y)
@@ -323,7 +323,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0xb5:	A() = through(AM_ZeroPageX());								break;	// LDA (zero page, X)
 	case 0xb6:	X() = through(AM_ZeroPageY());								break;	// LDX (zero page, Y)
 	case 0xb7:	A() = X() = through(AM_ZeroPageY());						break;	// *LAX (zero page, Y)
-	case 0xb8:	swallow(); P() = clearBit(P(), VF);							break;	// CLV (implied)
+	case 0xb8:	swallow(); reset_flag(VF);									break;	// CLV (implied)
 	case 0xb9:	A() = through(AM_AbsoluteY());								break;	// LDA (absolute, Y)
 	case 0xba:	swallow(); X() = through(S());								break;	// TSX (implied)
 	case 0xbb:																break;
@@ -357,7 +357,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0xd5:	cmp(A(), AM_ZeroPageX());									break;	// CMP (zero page, X)
 	case 0xd6:	memoryReadModifyWrite(dec(AM_ZeroPageX()));					break;	// DEC (zero page, X)
 	case 0xd7:	dcp(AM_ZeroPageX());										break;	// *DCP (zero page, X)
-	case 0xd8:	swallow(); P() = clearBit(P(), DF);							break;	// CLD (implied)
+	case 0xd8:	swallow(); reset_flag(DF);									break;	// CLD (implied)
 	case 0xd9:	cmp(A(), AM_AbsoluteY());									break;	// CMP (absolute, Y)
 	case 0xda:	swallow();													break;	// *NOP (implied)
 	case 0xdb:	dcp_AbsoluteY();											break;	// *DCP (absolute, Y)
@@ -391,7 +391,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0xf5:	A() = sbc(A(), AM_ZeroPageX());								break;	// SBC (zero page, X)
 	case 0xf6:	memoryReadModifyWrite(inc(AM_ZeroPageX()));					break;	// INC (zero page, X)
 	case 0xf7:	isb(AM_ZeroPageX());										break;	// *ISB (zero page, X)
-	case 0xf8:	swallow(); P() = setBit(P(), DF);							break;	// SED (implied)
+	case 0xf8:	swallow(); set_flag(DF);									break;	// SED (implied)
 	case 0xf9:	A() = sbc(A(), AM_AbsoluteY());								break;	// SBC (absolute, Y)
 	case 0xfa:	swallow();													break;	// *NOP (implied)
 	case 0xfb:	isb_AbsoluteY();											break;	// *ISB (absolute, Y)
@@ -549,8 +549,8 @@ uint8_t EightBit::MOS6502::sbc(const uint8_t operand, const uint8_t data) noexce
 
 	const auto difference = m_intermediate;
 	adjustNZ(difference.low);
-	P() = setBit(P(), VF, (operand ^ data) & (operand ^ difference.low) & NF);
-	P() = clearBit(P(), CF, difference.high);
+	set_flag(VF, negative((operand ^ data) & (operand ^ difference.low)));
+	reset_flag(CF, difference.high);
 
 	return returned;
 }
@@ -591,8 +591,8 @@ uint8_t EightBit::MOS6502::add(uint8_t operand, uint8_t data, int carrying) noex
 uint8_t EightBit::MOS6502::add_b(uint8_t operand, uint8_t data, int carrying) noexcept {
 	m_intermediate.word = operand + data + carrying;
 
-	P() = setBit(P(), VF, ~(operand ^ data) & (operand ^ m_intermediate.low) & NF);
-	P() = setBit(P(), CF, carry(m_intermediate.high));
+	set_flag(VF, negative(~(operand ^ data) & (operand ^ m_intermediate.low)));
+	set_flag(CF, carry(m_intermediate.high));
 
 	adjustNZ(m_intermediate.low);
 
@@ -604,7 +604,7 @@ uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) noexc
 	register16_t low = lowerNibble(operand) + lowerNibble(data) + carry;
 	register16_t high = higherNibble(operand) + higherNibble(data);
 
-	P() = clearBit(P(), ZF, (low + high).low);
+	adjustZero((low + high).low);
 
 	if (low.word > 0x09) {
 		high += 0x10;
@@ -612,12 +612,12 @@ uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) noexc
 	}
 
 	adjustNegative(high.low);
-	P() = setBit(P(), VF, ~(operand ^ data) & (operand ^ high.low) & NF);
+	set_flag(VF, negative(~(operand ^ data) & (operand ^ high.low)));
 
 	if (high.word > 0x90)
 		high += 0x60;
 
-	P() = setBit(P(), CF, high.high);
+	set_flag(CF, high.high);
 
 	return lowerNibble(low.low) | higherNibble(high.low);
 }
@@ -626,13 +626,8 @@ uint8_t EightBit::MOS6502::andr(const uint8_t operand, const uint8_t data) noexc
 	return through(operand & data);
 }
 
-uint8_t EightBit::MOS6502::asl(const uint8_t value) noexcept {
-	P() = setBit(P(), CF, value & Bit7);
-	return through(value << 1);
-}
-
 void EightBit::MOS6502::bit(const uint8_t operand, const uint8_t data) noexcept {
-	P() = setBit(P(), VF, overflow(data));
+	set_flag(VF, overflow(data));
 	adjustZero(operand & data);
 	adjustNegative(data);
 }
@@ -640,7 +635,7 @@ void EightBit::MOS6502::bit(const uint8_t operand, const uint8_t data) noexcept 
 void EightBit::MOS6502::cmp(const uint8_t first, const uint8_t second) noexcept {
 	const register16_t result = first - second;
 	adjustNZ(result.low);
-	P() = clearBit(P(), CF, result.high);
+	reset_flag(CF, result.high);
 }
 
 uint8_t EightBit::MOS6502::dec(const uint8_t value) noexcept {
@@ -663,11 +658,6 @@ void EightBit::MOS6502::jsr() noexcept {
 	PC().low = low;
 }
 
-uint8_t EightBit::MOS6502::lsr(const uint8_t value) noexcept {
-	P() = setBit(P(), CF, value & Bit0);
-	return through(value >> 1);
-}
-
 uint8_t EightBit::MOS6502::orr(const uint8_t operand, const uint8_t data) noexcept {
 	return through(operand | data);
 }
@@ -677,25 +667,11 @@ void EightBit::MOS6502::php() noexcept {
 }
 
 void EightBit::MOS6502::plp() noexcept {
+	swallow_stack();
 	P() = (pop() | RF) & ~BF;
 }
 
-uint8_t EightBit::MOS6502::rol(const uint8_t operand) noexcept {
-	const auto carryIn = carry();
-	P() = setBit(P(), CF, operand & Bit7);
-	const uint8_t result = (operand << 1) | carryIn;
-	return through(result);
-}
-
-uint8_t EightBit::MOS6502::ror(const uint8_t operand) noexcept {
-	const auto carryIn = carry();
-	P() = setBit(P(), CF, operand & Bit0);
-	const uint8_t result = (operand >> 1) | (carryIn << 7);
-	return through(result);
-}
-
 void EightBit::MOS6502::rti() noexcept {
-	swallow_stack();
 	plp();
 	ret();
 }
@@ -710,7 +686,7 @@ void EightBit::MOS6502::rts() noexcept {
 
 void EightBit::MOS6502::anc(const uint8_t value) noexcept {
 	A() = andr(A(), value);
-	P() = setBit(P(), CF, A() & Bit7);
+	set_flag(CF, A() & Bit7);
 }
 
 void EightBit::MOS6502::arr(const uint8_t value) noexcept {
@@ -725,12 +701,12 @@ void EightBit::MOS6502::arr_d(const uint8_t value) noexcept {
 	A() &= value;
 	auto unshiftedA = A();
 	A() = through((A() >> 1) | (carry() << 7));
-	P() = setBit(P(), VF, (A() ^ (A() << 1)) & VF);
+	set_flag(VF, overflow((A() ^ (A() << 1))));
 
 	if (lowerNibble(unshiftedA) + (unshiftedA & 0x1) > 5)
 		A() = lowerNibble(A() + 6) | higherNibble(A());
 
-	P() = setBit(P(), CF, higherNibble(unshiftedA) + (unshiftedA & 0x10) > 0x50);
+	set_flag(CF, higherNibble(unshiftedA) + (unshiftedA & 0x10) > 0x50);
 	
 	if (carry())
 		A() += 0x60;
@@ -739,8 +715,8 @@ void EightBit::MOS6502::arr_d(const uint8_t value) noexcept {
 void EightBit::MOS6502::arr_b(const uint8_t value) noexcept {
 	A() &= value;
 	A() = through((A() >> 1) | (carry() << 7));
-	P() = setBit(P(), CF, A() & Bit6);
-	P() = setBit(P(), VF, (A() ^ (A() << 1)) & VF);
+	set_flag(CF, A() & Bit6);
+	set_flag(VF, overflow((A() ^ (A() << 1))));
 }
 
 void EightBit::MOS6502::asr(const uint8_t value) noexcept {
@@ -750,7 +726,7 @@ void EightBit::MOS6502::asr(const uint8_t value) noexcept {
 
 void EightBit::MOS6502::axs(const uint8_t value) noexcept {
 	X() = through(sub_b(A() & X(), value));
-	P() = clearBit(P(), CF, m_intermediate.high);
+	reset_flag(CF, m_intermediate.high);
 }
 
 void EightBit::MOS6502::dcp(const uint8_t value) noexcept {

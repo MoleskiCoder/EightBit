@@ -137,8 +137,8 @@ namespace EightBit {
 
 		// Flag adjustment
 
-		constexpr void adjustZero(const uint8_t datum) noexcept { P() = clearBit(P(), ZF, datum); }
-		constexpr void adjustNegative(const uint8_t datum) noexcept { P() = setBit(P(), NF, negative(datum)); }
+		constexpr void adjustZero(const uint8_t datum) noexcept { reset_flag(ZF, datum); }
+		constexpr void adjustNegative(const uint8_t datum) noexcept { set_flag(NF, negative(datum)); }
 
 		constexpr void adjustNZ(const uint8_t datum) noexcept {
 			adjustZero(datum);
@@ -166,6 +166,14 @@ namespace EightBit {
 			BUS().ADDRESS() = address;
 		}
 
+		// Status flag operations
+		
+		constexpr void set_flag(int which, int condition) noexcept { P() = setBit(P(), which, condition); }
+		constexpr void set_flag(int which) noexcept { P() = setBit(P(), which); }
+
+		constexpr void reset_flag(int which, int condition) noexcept { P() = clearBit(P(), which, condition); }
+		constexpr void reset_flag(int which) noexcept { P() = clearBit(P(), which); }
+
 		// Chew up a cycle
 		void swallow() noexcept { memoryRead(PC()); }
 		void swallow_stack() noexcept { getBytePaged(1, S()); }
@@ -174,21 +182,37 @@ namespace EightBit {
 		// Instruction implementations
 
 		[[nodiscard]] uint8_t andr(uint8_t operand, uint8_t data) noexcept;
-		[[nodiscard]] uint8_t asl(uint8_t value) noexcept;
 		void bit(uint8_t operand, uint8_t data) noexcept;
 		void cmp(uint8_t first, uint8_t second) noexcept;
 		[[nodiscard]] uint8_t dec(uint8_t value) noexcept;
 		[[nodiscard]] uint8_t eorr(uint8_t operand, uint8_t data) noexcept;
 		[[nodiscard]] uint8_t inc(uint8_t value) noexcept;
 		void jsr() noexcept;
-		[[nodiscard]] uint8_t lsr(uint8_t value) noexcept;
 		[[nodiscard]] uint8_t orr(uint8_t operand, uint8_t data) noexcept;
 		void php() noexcept;
 		void plp() noexcept;
-		[[nodiscard]] uint8_t rol(uint8_t operand) noexcept;
-		[[nodiscard]] uint8_t ror(uint8_t operand) noexcept;
 		void rti() noexcept;
 		void rts() noexcept;
+
+		[[nodiscard]] constexpr uint8_t asl(uint8_t value) noexcept {
+			set_flag(CF, value & Bit7);
+			return through(value << 1);
+		}
+
+		[[nodiscard]] constexpr uint8_t rol(uint8_t operand) noexcept {
+			const auto carryIn = carry();
+			return through(asl(operand) | carryIn);
+		}
+
+		[[nodiscard]] constexpr uint8_t lsr(uint8_t value) noexcept {
+			set_flag(CF, value & Bit0);
+			return through(value >> 1);
+		}
+
+		[[nodiscard]] constexpr uint8_t ror(uint8_t operand) noexcept {
+			const auto carryIn = carry();
+			return through(lsr(operand) | (carryIn << 7));
+		}
 
 		// Undocumented compound instructions
 
