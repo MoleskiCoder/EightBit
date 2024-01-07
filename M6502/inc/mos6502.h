@@ -174,6 +174,12 @@ namespace EightBit {
 			BUS().ADDRESS() = address;
 		}
 
+		void maybe_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
+			if (address.high != unfixed_page)
+				fixup(address, unfixed_page);
+		}
+
+
 		// Status flag operations
 		
 		constexpr void set_flag(int which, int condition) noexcept { P() = setBit(P(), which, condition); }
@@ -305,6 +311,12 @@ namespace EightBit {
 		// SHA
 		void sha_AbsoluteY() noexcept;
 		void sha_IndirectIndexedY() noexcept;
+
+		// TAS
+		void tas_AbsoluteY() noexcept;
+
+		// LAS
+		void las_AbsoluteY() noexcept;
 
 		// SYA
 		void sya_AbsoluteX() noexcept;

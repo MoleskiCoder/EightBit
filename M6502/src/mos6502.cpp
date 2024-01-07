@@ -292,7 +292,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0x98:	swallow(); A() = through(Y());								break;	// TYA (implied)
 	case 0x99:	sta_AbsoluteY();											break;	// STA (absolute, Y)
 	case 0x9a:	swallow(); S() = X();										break;	// TXS (implied)
-	case 0x9b:																break;
+	case 0x9b:	tas_AbsoluteY();											break;	// *TAS (absolute, Y)
 	case 0x9c:	sya_AbsoluteX();											break;  // *SYA (absolute, X)
 	case 0x9d:	sta_AbsoluteX();											break;	// STA (absolute, X)
 	case 0x9e:	sxa_AbsoluteY();											break;  // *SXA (absolute, Y)
@@ -325,7 +325,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0xb8:	swallow(); reset_flag(VF);									break;	// CLV (implied)
 	case 0xb9:	A() = through(AM_AbsoluteY());								break;	// LDA (absolute, Y)
 	case 0xba:	swallow(); X() = through(S());								break;	// TSX (implied)
-	case 0xbb:																break;
+	case 0xbb:	las_AbsoluteY();											break;	// *LAS (absolute, Y)
 	case 0xbc:	Y() = through(AM_AbsoluteX());								break;	// LDY (absolute, X)
 	case 0xbd:	A() = through(AM_AbsoluteX());								break;	// LDA (absolute, X)
 	case 0xbe:	X() = through(AM_AbsoluteY());								break;	// LDX (absolute, Y)
@@ -889,6 +889,17 @@ void EightBit::MOS6502::sya_AbsoluteX() noexcept {
 	const auto [address, page] = Address_AbsoluteX();
 	fixup(address, page);
 	memoryWrite(Y() & (address.high + 1));
+}
+
+void EightBit::MOS6502::tas_AbsoluteY() noexcept {
+	S() = A() & X();
+	sha_AbsoluteY();
+}
+
+void EightBit::MOS6502::las_AbsoluteY() noexcept {
+	const auto [address, page] = Address_AbsoluteY();
+	maybe_fixup(address, page);
+	A() = X() = S() = through(memoryRead(address) & S());
 }
 
 void EightBit::MOS6502::sxa_AbsoluteY() noexcept {
