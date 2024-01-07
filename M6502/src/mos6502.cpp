@@ -21,25 +21,42 @@ DEFINE_PIN_LEVEL_CHANGERS(RDY, MOS6502)
 DEFINE_PIN_LEVEL_CHANGERS(RW, MOS6502)
 
 int EightBit::MOS6502::step() noexcept {
+
 	resetCycles();
+
 	ExecutingInstruction.fire(*this);
 	if (LIKELY(powered())) {
+
+		tick();	// A cycle is used, whether or RDY is high or not
+
 		if (UNLIKELY(lowered(SO())))
 			handleSO();
+
 		if (LIKELY(raised(RDY()))) {
+
 			lowerSYNC();	// Instruction fetch beginning
+
+			// Read the opcode within the existing cycle
+			assert(cycles() == 1 && "An extra cycle has occurred");
+			// Can't use fetchByte, since that would add an extra tick.
 			raiseRW();
-			opcode() = BUS().read(PC()++);	// can't use fetchByte
+			opcode() = BUS().read(PC()++);
+			assert(cycles() == 1 && "BUS read has introduced stray cycles");
+
+			// Priority: RESET > NMI > INT
 			if (UNLIKELY(lowered(RESET())))
 				handleRESET();
 			else if (UNLIKELY(lowered(NMI())))
 				handleNMI();
 			else if (UNLIKELY(lowered(INT()) && !interruptMasked()))
 				handleINT();
+
+			// Whatever opcode is available, execute it.
 			execute();
 		}
 	}
 	ExecutedInstruction.fire(*this);
+
 	return cycles();
 }
 
