@@ -145,6 +145,14 @@ namespace EightBit {
 			adjustNegative(datum);
 		}
 
+		constexpr void adjustOverflow_add(uint8_t operand, uint8_t data, uint8_t intermediate) noexcept {
+			set_flag(VF, negative(~(operand ^ data) & (operand ^ intermediate)));
+		}
+
+		constexpr void adjustOverflow_subtract(uint8_t operand, uint8_t data, uint8_t intermediate) noexcept {
+			set_flag(VF, negative((operand ^ data) & (operand ^ intermediate)));
+		}
+
 		// Miscellaneous
 
 		void branch(int condition) noexcept;

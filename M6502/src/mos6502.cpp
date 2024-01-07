@@ -549,7 +549,7 @@ uint8_t EightBit::MOS6502::sbc(const uint8_t operand, const uint8_t data) noexce
 
 	const auto difference = m_intermediate;
 	adjustNZ(difference.low);
-	set_flag(VF, negative((operand ^ data) & (operand ^ difference.low)));
+	adjustOverflow_subtract(operand, data, difference.low);
 	reset_flag(CF, difference.high);
 
 	return returned;
@@ -591,7 +591,7 @@ uint8_t EightBit::MOS6502::add(uint8_t operand, uint8_t data, int carrying) noex
 uint8_t EightBit::MOS6502::add_b(uint8_t operand, uint8_t data, int carrying) noexcept {
 	m_intermediate.word = operand + data + carrying;
 
-	set_flag(VF, negative(~(operand ^ data) & (operand ^ m_intermediate.low)));
+	adjustOverflow_add(operand, data, m_intermediate.low);
 	set_flag(CF, carry(m_intermediate.high));
 
 	adjustNZ(m_intermediate.low);
@@ -612,7 +612,7 @@ uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) noexc
 	}
 
 	adjustNegative(high.low);
-	set_flag(VF, negative(~(operand ^ data) & (operand ^ high.low)));
+	adjustOverflow_add(operand, data, high.low);
 
 	if (high.word > 0x90)
 		high += 0x60;
