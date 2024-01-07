@@ -160,6 +160,17 @@ namespace EightBit {
 			memoryWrite(data);
 		}
 
+		// Unconditional page fixup cycle required
+		void fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
+			getBytePaged(unfixed_page, address.low);	// Possible fixup for page boundary crossing
+			BUS().ADDRESS() = address;
+		}
+
+		// Chew up a cycle
+		void swallow() noexcept { memoryRead(PC()); }
+		void swallow_stack() noexcept { getBytePaged(1, S()); }
+		void swallow_fetch() noexcept { fetchByte(); }
+
 		// Instruction implementations
 
 		[[nodiscard]] uint8_t andr(uint8_t operand, uint8_t data) noexcept;
@@ -191,12 +202,6 @@ namespace EightBit {
 		void slo(uint8_t value) noexcept;
 		void sre(uint8_t value) noexcept;
 		void jam() noexcept;
-
-		// Unconditional page fixup cycle required
-		void fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
-			getBytePaged(unfixed_page, address.low);	// Possible fixup for page boundary crossing
-			BUS().ADDRESS() = address;
-		}
 
 		// Complicated addressing mode implementations
 
