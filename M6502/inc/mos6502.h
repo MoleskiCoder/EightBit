@@ -246,7 +246,7 @@ namespace EightBit {
 			memoryWrite(A());
 		}
 
-		// Undocumented complicated  mode implementations
+		// Undocumented complicated mode implementations
 
 		// SLO
 		void slo_AbsoluteX() noexcept;
@@ -301,6 +301,10 @@ namespace EightBit {
 			fixup(address, unfixed_page);
 			sre(memoryRead());
 		}
+
+		// SHA
+		void sha_AbsoluteY() noexcept;
+		void sha_IndirectIndexedY() noexcept;
 
 		// SYA
 		void sya_AbsoluteX() noexcept;

@@ -2,7 +2,7 @@
 #include "../inc/mos6502.h"
 
 EightBit::MOS6502::MOS6502(Bus& bus) noexcept
-	: LittleEndianProcessor(bus) {
+: LittleEndianProcessor(bus) {
 	RaisedPOWER.connect([this](EventArgs) {
 		X() = Bit7;
 		Y() = 0;
@@ -284,7 +284,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0x90:	branch(carry() == 0);										break;	// BCC (relative)
 	case 0x91:	sta_IndirectIndexedY();										break;	// STA (indirect indexed Y)
 	case 0x92:	jam();														break;	// *JAM
-	case 0x93:																break;
+	case 0x93:	sha_IndirectIndexedY();										break;	// *SHA (indirect indexed, Y)
 	case 0x94:	memoryWrite(Address_ZeroPageX(), Y());						break;	// STY (zero page, X)
 	case 0x95:	memoryWrite(Address_ZeroPageX(), A());						break;	// STA (zero page, X)
 	case 0x96:	memoryWrite(Address_ZeroPageY(), X());						break;	// STX (zero page, Y)
@@ -296,8 +296,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0x9c:	sya_AbsoluteX();											break;  // *SYA (absolute, X)
 	case 0x9d:	sta_AbsoluteX();											break;	// STA (absolute, X)
 	case 0x9e:	sxa_AbsoluteY();											break;  // *SXA (absolute, Y)
-	case 0x9f:																break;
-
+	case 0x9f:  sha_AbsoluteY();											break;	// *SHA (absolute, Y)
 	case 0xa0:	Y() = through(AM_Immediate());								break;	// LDY (immediate)
 	case 0xa1:	A() = through(AM_IndexedIndirectX());						break;	// LDA (indexed indirect X)
 	case 0xa2:	X() = through(AM_Immediate());								break;	// LDX (immediate)
@@ -872,6 +871,18 @@ void EightBit::MOS6502::sre_AbsoluteY() noexcept {
 void EightBit::MOS6502::sre_IndirectIndexedY() noexcept {
 	const auto [address, page] = Address_IndirectIndexedY();
 	sre_with_fixup(address, page);
+}
+
+void EightBit::MOS6502::sha_AbsoluteY() noexcept {
+	const auto [address, page] = Address_AbsoluteY();
+	fixup(address, page);
+	memoryWrite(address, A() & X() & (address.high + 1));
+}
+
+void EightBit::MOS6502::sha_IndirectIndexedY() noexcept {
+	const auto [address, page] = Address_IndirectIndexedY();
+	fixup(address, page);
+	memoryWrite(address, A() & X() & (address.high + 1));
 }
 
 void EightBit::MOS6502::sya_AbsoluteX() noexcept {
