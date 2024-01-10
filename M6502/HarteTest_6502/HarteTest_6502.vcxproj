@@ -160,11 +160,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="array_t.cpp" />
-    <ClCompile Include="byte_t.cpp" />
     <ClCompile Include="checker_t.cpp" />
-    <ClCompile Include="cycle_t.cpp" />
-    <ClCompile Include="element_t.cpp" />
     <ClCompile Include="opcode_test_suite_t.cpp" />
     <ClCompile Include="parser_t.cpp" />
     <ClCompile Include="processor_test_suite_t.cpp" />
@@ -174,7 +170,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="state_t.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -183,7 +178,6 @@
     </ClCompile>
     <ClCompile Include="TestRunner.cpp" />
     <ClCompile Include="tests.cpp" />
-    <ClCompile Include="test_t.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array_t.h" />

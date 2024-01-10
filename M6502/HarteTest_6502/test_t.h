@@ -8,8 +8,10 @@
 
 class test_t final : public element_t {
 public:
-    test_t() noexcept;
-    test_t(simdjson::dom::element input) noexcept;
+    test_t() noexcept {}
+
+    test_t(const simdjson::dom::element input) noexcept
+    : element_t(input) {}
 
     [[nodiscard]] auto name() const noexcept { return at("name"); }
     [[nodiscard]] auto initial() const noexcept { return state_t(at("initial")); }

@@ -8,7 +8,8 @@
 
 class byte_t : public array_t {
 public:
-	byte_t(simdjson::dom::array input) noexcept;
+	byte_t(const simdjson::dom::array input) noexcept
+	: array_t(input) {}
 
 	[[nodiscard]] auto address_at(size_t idx) const noexcept { return uint16_t(integer_at(idx)); }
 	[[nodiscard]] auto byte_at(size_t idx) const noexcept { return uint8_t(integer_at(idx)); }

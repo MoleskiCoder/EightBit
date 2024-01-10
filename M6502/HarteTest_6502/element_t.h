@@ -12,8 +12,10 @@ protected:
     [[nodiscard]] auto raw() const noexcept { return m_raw; }
 
 public:
-    element_t() noexcept;
-    element_t(simdjson::dom::element input) noexcept;
+    element_t() noexcept {}
+
+    element_t(const simdjson::dom::element input) noexcept
+    : m_raw(input) {}
 
     [[nodiscard]] auto at(std::string_view key) const noexcept { return raw()[key]; }
     [[nodiscard]] auto operator[](std::string_view key) const noexcept { return at(key); }

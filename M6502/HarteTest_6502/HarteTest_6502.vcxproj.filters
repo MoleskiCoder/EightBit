@@ -20,12 +20,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="state_t.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="test_t.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="opcode_test_suite_t.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -34,18 +28,6 @@
     </ClCompile>
     <ClCompile Include="simdjson\simdjson.cpp">
       <Filter>Header Files\simdjson</Filter>
-    </ClCompile>
-    <ClCompile Include="cycle_t.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="byte_t.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="array_t.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="element_t.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="parser_t.cpp">
       <Filter>Source Files</Filter>

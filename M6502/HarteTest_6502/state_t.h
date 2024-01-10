@@ -10,7 +10,8 @@
 
 class state_t final : public element_t {
 public:
-    state_t(simdjson::dom::element input) noexcept;
+    state_t(const simdjson::dom::element input) noexcept
+    : element_t(input) {}
 
     [[nodiscard]] auto address_at(std::string_view key) const noexcept { return uint16_t(integer_at(key)); }
     [[nodiscard]] auto byte_at(std::string_view key) const noexcept { return uint8_t(integer_at(key)); }

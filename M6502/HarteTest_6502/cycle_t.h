@@ -8,7 +8,8 @@
 
 class cycle_t final : public byte_t {
 public:
-	cycle_t(simdjson::dom::array input) noexcept;
+	cycle_t(const simdjson::dom::array input) noexcept
+	: byte_t(input) {}
 
 	[[nodiscard]] auto action() const noexcept { return std::string(std::string_view(at(2))); }
 };

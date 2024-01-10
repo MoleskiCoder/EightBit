@@ -10,7 +10,8 @@ protected:
 	[[nodiscard]] auto raw() const noexcept { return m_raw; }
 
 public:
-	array_t(simdjson::dom::array input) noexcept;
+	array_t(const simdjson::dom::array input) noexcept
+	: m_raw(input) {}
 
 	[[nodiscard]] auto begin() const noexcept { return raw().begin(); }
 	[[nodiscard]] auto end() const noexcept { return raw().end(); }
