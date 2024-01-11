@@ -186,9 +186,13 @@ void checker_t::pushCurrentMessage() {
     os().str("");
 }
 
-void checker_t::disassemble(uint16_t address) {
+std::string checker_t::disassemble(uint16_t address) {
+    return m_disassembler.disassemble(address);
+}
+
+void checker_t::add_disassembly(uint16_t address) {
     try {
-        os() << m_disassembler.disassemble(address);
+        os() << disassemble(address);
     }
     catch (const std::domain_error& error) {
         os() << "Disassembly problem: " << error.what();
@@ -220,7 +224,7 @@ void checker_t::check(test_t test) {
 
     if (invalid() && implemented()) {
 
-        disassemble(pc);
+        add_disassembly(pc);
 
         const auto final = test.final();
         raise("PC", final.pc(), cpu.PC().word);

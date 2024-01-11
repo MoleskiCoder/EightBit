@@ -56,7 +56,7 @@ private:
     void addActualReadCycle(EightBit::register16_t address, uint8_t value);
     void addActualWriteCycle(EightBit::register16_t address, uint8_t value);
 
-    void disassemble(uint16_t address);
+    void add_disassembly(uint16_t address);
 
     template<class T>
     void dumpCycle(const uint16_t address, const uint8_t value, const T action) {
@@ -90,6 +90,8 @@ public:
     [[nodiscard]] constexpr const auto& messages() const noexcept { return m_messages; }
 
     void initialise();
+
+    [[nodiscard]] std::string disassemble(uint16_t address);
 
     void check(test_t test);
 };
