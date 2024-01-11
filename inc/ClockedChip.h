@@ -14,7 +14,7 @@ namespace EightBit {
 
 		[[nodiscard]] constexpr auto cycles() const noexcept { return m_cycles; }
 
-		void tick(int extra = 1) noexcept {
+		void tick(int extra = 1) {
 			for (int i = 0; i < extra; ++i) {
 				++m_cycles;
 				Ticked.fire();
