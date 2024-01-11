@@ -41,9 +41,9 @@ namespace EightBit {
 
 			const auto size = end - start;
 			if (limit < 0)
-				limit = size - readOffset;
+				limit = static_cast<int>(size - readOffset);
 
-			const size_t extent = limit + writeOffset;
+			const size_t extent = static_cast<size_t>(limit) + writeOffset;
 			if (m_bytes.size() < extent)
 				m_bytes.resize(extent);
 
