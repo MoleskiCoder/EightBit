@@ -8,23 +8,23 @@ namespace EightBit {
 
 	class LittleEndianProcessor : public Processor {
 	public:
-		LittleEndianProcessor(const LittleEndianProcessor& rhs);
+		LittleEndianProcessor(const LittleEndianProcessor& rhs) noexcept;
 
 		[[nodiscard]] register16_t peekWord(register16_t address) noexcept final;
 		void pokeWord(register16_t address, register16_t value) noexcept final;
 
 	protected:
-		LittleEndianProcessor(Bus& memory);
+		LittleEndianProcessor(Bus& memory) noexcept;
 
-		[[nodiscard]] register16_t getWord() noexcept override;
-		void setWord(register16_t value) noexcept override;
+		[[nodiscard]] register16_t getWord() override;
+		void setWord(register16_t value) override;
 
-		[[nodiscard]] register16_t getWordPaged(uint8_t page, uint8_t offset) noexcept override;
-		void setWordPaged(uint8_t page, uint8_t offset, register16_t value) noexcept override;
+		[[nodiscard]] register16_t getWordPaged(uint8_t page, uint8_t offset) override;
+		void setWordPaged(uint8_t page, uint8_t offset, register16_t value) override;
 
-		[[nodiscard]] register16_t fetchWord() noexcept final;
+		[[nodiscard]] register16_t fetchWord() final;
 
-		void pushWord(register16_t value) noexcept override;
-		[[nodiscard]] register16_t popWord() noexcept override;
+		void pushWord(register16_t value) override;
+		[[nodiscard]] register16_t popWord() override;
 	};
 }

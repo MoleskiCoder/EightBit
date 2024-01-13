@@ -12,7 +12,7 @@
 namespace EightBit {
 	class Bus : public Mapper {
 	public:
-		virtual ~Bus() noexcept {};
+		virtual ~Bus() noexcept = default;
 
 		Signal<EventArgs> WritingByte;
 		Signal<EventArgs> WrittenByte;
@@ -33,15 +33,15 @@ namespace EightBit {
 		virtual void poke(const uint16_t address, const uint8_t value) noexcept { reference(address) = value; }
 		void poke(const register16_t address, const uint8_t value) noexcept { poke(address.word, value); }
 
-		[[nodiscard]] uint8_t read() noexcept;
+		[[nodiscard]] uint8_t read();
 		template<class T> [[nodiscard]] auto read(const T address) {
 			ADDRESS() = address;
 			return read();
 		}
 
-		void write() noexcept;
-		void write(uint8_t value) noexcept;
-		template<class T> void write(const T offset, const uint8_t value) noexcept {
+		void write();
+		void write(uint8_t value);
+		template<class T> void write(const T offset, const uint8_t value) {
 			ADDRESS() = offset;
 			write(value);
 		}
@@ -56,7 +56,7 @@ namespace EightBit {
 		[[nodiscard]] auto& reference(const register16_t address) noexcept { return reference(address.word); }
 		[[nodiscard]] uint8_t& reference() noexcept { return reference(ADDRESS()); }
 
-		void loadHexFile(std::string path);
+		void loadHexFile(const std::string& path);
 
 	private:
 		uint8_t m_data = Chip::Mask8;

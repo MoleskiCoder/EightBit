@@ -44,8 +44,8 @@ namespace EightBit {
 			}
 		};
 
-		IntelProcessor(const IntelProcessor& rhs);
-		bool operator==(const IntelProcessor& rhs) const;
+		IntelProcessor(const IntelProcessor& rhs) noexcept;
+		bool operator==(const IntelProcessor& rhs) const noexcept;
 
 		[[nodiscard]] constexpr const auto& getDecodedOpcode(const size_t i) const noexcept {
 			return m_decodedOpcodes[i];
@@ -138,27 +138,27 @@ namespace EightBit {
 			return calculateHalfCarry(m_halfCarryTableSub, before, value, calculation);
 		}
 
-		void handleRESET() noexcept override;
+		void handleRESET() override;
 
-		void push(uint8_t value) noexcept final;
-		[[nodiscard]] uint8_t pop() noexcept final;
-
-		//
-
-		[[nodiscard]] register16_t getWord() noexcept final;
-		void setWord(register16_t value) noexcept final;
+		void push(uint8_t value) final;
+		[[nodiscard]] uint8_t pop() final;
 
 		//
 
-		virtual void restart(uint8_t address) noexcept;
-		virtual int callConditional(int condition) noexcept;
-		virtual int jumpConditional(int condition) noexcept;
-		virtual int returnConditional(int condition) noexcept;
+		[[nodiscard]] register16_t getWord() final;
+		void setWord(register16_t value) final;
+
+		//
+
+		virtual void restart(uint8_t address);
+		virtual int callConditional(int condition);
+		virtual int jumpConditional(int condition);
+		virtual int returnConditional(int condition);
 		virtual void jr(int8_t offset) noexcept;
-		virtual int jrConditional(int condition) noexcept;
-		void ret() noexcept override;
+		virtual int jrConditional(int condition);
+		void ret() override;
 
-		void resetWorkingRegisters();
+		void resetWorkingRegisters() noexcept;
 
 	private:
 		static std::array<int, 8> m_halfCarryTableAdd;

@@ -5,7 +5,7 @@ EightBit::Processor::Processor(Bus& bus) noexcept
 : m_bus(bus) {
 }
 
-EightBit::Processor::Processor(const Processor& rhs)
+EightBit::Processor::Processor(const Processor& rhs) noexcept
 : ClockedChip(rhs),
   m_bus(rhs.m_bus) {
 	RESET() = rhs.RESET();
@@ -16,68 +16,68 @@ EightBit::Processor::Processor(const Processor& rhs)
 DEFINE_PIN_LEVEL_CHANGERS(RESET, Processor)
 DEFINE_PIN_LEVEL_CHANGERS(INT, Processor)
 
-void EightBit::Processor::handleRESET() noexcept {
+void EightBit::Processor::handleRESET() {
 	raiseRESET();
 }
 
-void EightBit::Processor::handleINT() noexcept {
+void EightBit::Processor::handleINT() {
 	raiseINT();
 }
 
-void EightBit::Processor::memoryWrite(const register16_t address, const uint8_t data) noexcept {
+void EightBit::Processor::memoryWrite(const register16_t address, const uint8_t data) {
 	BUS().ADDRESS() = address;
 	memoryWrite(data);
 }
 
-void EightBit::Processor::memoryWrite(const register16_t address)  noexcept {
+void EightBit::Processor::memoryWrite(const register16_t address) {
 	BUS().ADDRESS() = address;
 	memoryWrite();
 }
 
-void EightBit::Processor::memoryWrite(const uint8_t data)  noexcept {
+void EightBit::Processor::memoryWrite(const uint8_t data) {
 	BUS().DATA() = data;
 	memoryWrite();
 }
 
-void EightBit::Processor::memoryWrite()  noexcept {
+void EightBit::Processor::memoryWrite() {
 	busWrite();
 }
 
-void EightBit::Processor::busWrite() noexcept {
+void EightBit::Processor::busWrite() {
 	BUS().write();
 }
 
-uint8_t EightBit::Processor::memoryRead(const register16_t address) noexcept {
+uint8_t EightBit::Processor::memoryRead(const register16_t address) {
 	BUS().ADDRESS() = address;
 	return memoryRead();
 }
 
-uint8_t EightBit::Processor::memoryRead() noexcept {
+uint8_t EightBit::Processor::memoryRead() {
 	return busRead();
 }
 
-uint8_t EightBit::Processor::busRead() noexcept {
+uint8_t EightBit::Processor::busRead() {
 	return BUS().read();
 }
 
-uint8_t EightBit::Processor::getBytePaged(const uint8_t page, const uint8_t offset) noexcept {
+uint8_t EightBit::Processor::getBytePaged(const uint8_t page, const uint8_t offset) {
 	return memoryRead(register16_t(offset, page));
 }
 
-void EightBit::Processor::setBytePaged(const uint8_t page, const uint8_t offset, const uint8_t value) noexcept {
+void EightBit::Processor::setBytePaged(const uint8_t page, const uint8_t offset, const uint8_t value) {
 	memoryWrite(register16_t(offset, page), value);
 }
 
-uint8_t EightBit::Processor::fetchByte() noexcept {
+uint8_t EightBit::Processor::fetchByte() {
 	return memoryRead(PC()++);
 }
 
-EightBit::register16_t EightBit::Processor::getWord(const register16_t address) noexcept {
+EightBit::register16_t EightBit::Processor::getWord(const register16_t address) {
 	BUS().ADDRESS() = address;
 	return getWord();
 }
 
-void EightBit::Processor::setWord(const register16_t address, const register16_t value) noexcept {
+void EightBit::Processor::setWord(const register16_t address, const register16_t value) {
 	BUS().ADDRESS() = address;
 	setWord(value);
 }
@@ -98,16 +98,16 @@ void EightBit::Processor::jump(const register16_t destination) noexcept {
 	PC() = destination;
 }
 
-void EightBit::Processor::call(const register16_t destination) noexcept {
+void EightBit::Processor::call(const register16_t destination) {
 	pushWord(PC());
 	jump(destination);
 }
 
-void EightBit::Processor::ret() noexcept {
+void EightBit::Processor::ret() {
 	jump(popWord());
 }
 
-bool EightBit::Processor::operator==(const EightBit::Processor& rhs) const {
+bool EightBit::Processor::operator==(const EightBit::Processor& rhs) const noexcept {
 	return
 		ClockedChip::operator==(rhs)
 		&& RESET() == rhs.RESET()

@@ -21,8 +21,8 @@ namespace EightBit {
 			return result;
 		}
 
-		Processor(const Processor& rhs);
-		bool operator==(const Processor& rhs) const;
+		Processor(const Processor& rhs) noexcept;
+		bool operator==(const Processor& rhs) const noexcept;
 
 		[[nodiscard]] constexpr auto& PC() noexcept { return m_pc; }
 		[[nodiscard]] constexpr const auto& PC() const noexcept { return m_pc; }
@@ -44,44 +44,44 @@ namespace EightBit {
 		[[nodiscard]] constexpr auto& opcode() noexcept { return m_opcode; }
 		[[nodiscard]] constexpr auto& BUS() noexcept { return m_bus; }
 
-		virtual void handleRESET() noexcept;
-		virtual void handleINT() noexcept;
+		virtual void handleRESET();
+		virtual void handleINT();
 
-		void memoryWrite(register16_t address, uint8_t data) noexcept;
-		void memoryWrite(register16_t address) noexcept;
-		void memoryWrite(uint8_t data) noexcept;
-		virtual void memoryWrite() noexcept;
-		virtual void busWrite() noexcept;
+		void memoryWrite(register16_t address, uint8_t data);
+		void memoryWrite(register16_t address);
+		void memoryWrite(uint8_t data);
+		virtual void memoryWrite();
+		virtual void busWrite();
 
-		uint8_t memoryRead(register16_t address) noexcept;
-		virtual uint8_t memoryRead() noexcept;
-		virtual uint8_t busRead() noexcept;
+		uint8_t memoryRead(register16_t address);
+		virtual uint8_t memoryRead();
+		virtual uint8_t busRead();
 
-		uint8_t getBytePaged(uint8_t page, uint8_t offset) noexcept;
-		void setBytePaged(uint8_t page, uint8_t offset, uint8_t value) noexcept;
+		uint8_t getBytePaged(uint8_t page, uint8_t offset);
+		void setBytePaged(uint8_t page, uint8_t offset, uint8_t value);
 
-		uint8_t fetchByte() noexcept;
+		uint8_t fetchByte();
 
-		[[nodiscard]] virtual register16_t getWord() noexcept = 0;
-		virtual void setWord(register16_t value) noexcept = 0;
+		[[nodiscard]] virtual register16_t getWord() = 0;
+		virtual void setWord(register16_t value) = 0;
 
-		[[nodiscard]] virtual register16_t getWordPaged(uint8_t page, uint8_t offset)  noexcept = 0;
-		virtual void setWordPaged(uint8_t page, uint8_t offset, register16_t value)  noexcept = 0;
+		[[nodiscard]] virtual register16_t getWordPaged(uint8_t page, uint8_t offset) = 0;
+		virtual void setWordPaged(uint8_t page, uint8_t offset, register16_t value) = 0;
 
-		[[nodiscard]] virtual register16_t fetchWord() noexcept = 0;
+		[[nodiscard]] virtual register16_t fetchWord() = 0;
 
-		virtual void push(uint8_t value) noexcept = 0;
-		[[nodiscard]] virtual uint8_t pop() noexcept = 0;
+		virtual void push(uint8_t value) = 0;
+		[[nodiscard]] virtual uint8_t pop() = 0;
 
-		virtual void pushWord(register16_t value) noexcept = 0;
-		[[nodiscard]] virtual register16_t popWord() noexcept = 0;
+		virtual void pushWord(register16_t value) = 0;
+		[[nodiscard]] virtual register16_t popWord() = 0;
 
-		[[nodiscard]] register16_t getWord(register16_t address) noexcept;
-		void setWord(register16_t address, register16_t value) noexcept;
+		[[nodiscard]] register16_t getWord(register16_t address);
+		void setWord(register16_t address, register16_t value);
 
 		void jump(const register16_t destination) noexcept;
-		virtual void call(register16_t destination) noexcept;
-		virtual void ret() noexcept;
+		virtual void call(register16_t destination);
+		virtual void ret();
 
 	private:
 		Bus& m_bus;

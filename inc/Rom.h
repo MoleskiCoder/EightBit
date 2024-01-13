@@ -27,6 +27,7 @@ namespace EightBit {
 
 		Rom(size_t size = 0) noexcept;
 		Rom(const Rom& rhs);
+		virtual ~Rom() = default;
 		Rom& operator=(const Rom& rhs);
 		bool operator==(const Rom& rhs) const;
 
@@ -41,7 +42,7 @@ namespace EightBit {
 
 			const auto size = end - start;
 			if (limit < 0)
-				limit = static_cast<int>(size - readOffset);
+				limit = static_cast<int>(size) - readOffset;
 
 			const size_t extent = static_cast<size_t>(limit) + writeOffset;
 			if (m_bytes.size() < extent)

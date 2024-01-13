@@ -10,17 +10,17 @@
 	Signal<EventArgs> Lowered ## name;
 
 #define DECLARE_PIN_LEVEL_RAISE(name) \
-	virtual void raise ## name() noexcept;
+	virtual void raise ## name();
 
 #define DECLARE_PIN_LEVEL_LOWER(name) \
-	virtual void lower ## name() noexcept;
+	virtual void lower ## name();
 
 #define DECLARE_PIN_LEVEL_CHANGERS(name) \
 	DECLARE_PIN_LEVEL_RAISE(name) \
 	DECLARE_PIN_LEVEL_LOWER(name)
 
 #define DEFINE_PIN_LEVEL_RAISE(name, within) \
-	void EightBit:: within ::raise ## name() noexcept { \
+	void EightBit:: within ::raise ## name() { \
 		if (lowered( name ())) { \
 			Raising ## name.fire(); \
 			raise( name ()); \
@@ -29,7 +29,7 @@
 	}
 
 #define DEFINE_PIN_LEVEL_LOWER(name, within) \
-	void EightBit:: within ::lower ## name() noexcept { \
+	void EightBit:: within ::lower ## name() { \
 		if (raised( name ())) { \
 			Lowering ## name.fire(); \
 			lower( name ()); \
@@ -106,7 +106,7 @@ namespace EightBit {
 
 		static constexpr void flip(PinLevel& out) noexcept { match(out, out == PinLevel::Low ? PinLevel::High : PinLevel::Low); }
 
-		virtual ~Device() noexcept {};
+		virtual ~Device() noexcept = default;
 
 		Device(const Device& rhs) noexcept;
 		bool operator==(const Device& rhs) const noexcept;
