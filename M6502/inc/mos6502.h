@@ -41,13 +41,13 @@ namespace EightBit {
 		int execute() noexcept final;
 		[[nodiscard]] int step() noexcept final;
 
-		[[nodiscard]] constexpr auto& X() noexcept { return x; }
-		[[nodiscard]] constexpr auto& Y() noexcept { return y; }
-		[[nodiscard]] constexpr auto& A() noexcept { return a; }
-		[[nodiscard]] constexpr auto& S() noexcept { return s; }
+		[[nodiscard]] constexpr auto& X() noexcept { return m_x; }
+		[[nodiscard]] constexpr auto& Y() noexcept { return m_y; }
+		[[nodiscard]] constexpr auto& A() noexcept { return m_a; }
+		[[nodiscard]] constexpr auto& S() noexcept { return m_s; }
 
-		[[nodiscard]] constexpr auto& P() noexcept { return p; }
-		[[nodiscard]] constexpr const auto& P() const noexcept { return p; }
+		[[nodiscard]] constexpr auto& P() noexcept { return m_p; }
+		[[nodiscard]] constexpr const auto& P() const noexcept { return m_p; }
 
 	protected:
 		void handleRESET() noexcept final;
@@ -92,6 +92,7 @@ namespace EightBit {
 
 		// Addressing modes
 
+		[[nodiscard]] register16_t Address_Immediate() noexcept;
 		[[nodiscard]] register16_t Address_Absolute() noexcept;
 		[[nodiscard]] uint8_t Address_ZeroPage() noexcept;
 		[[nodiscard]] register16_t Address_ZeroPageIndirect() noexcept;
@@ -168,15 +169,17 @@ namespace EightBit {
 			memoryWrite(data);
 		}
 
-		// Unconditional page fixup cycle required
-		void fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
-			getBytePaged(unfixed_page, address.low);	// Possible fixup for page boundary crossing
+		bool maybe_fixup(register16_t address, uint8_t unfixed_page, bool always_fixup = false) noexcept {
+			BUS().ADDRESS() = { address.low, unfixed_page };
+			const auto fixing = unfixed_page != address.high;
+			if (always_fixup || fixing)
+				memoryRead();
 			BUS().ADDRESS() = address;
+			return fixing;
 		}
 
-		void maybe_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
-			if (address.high != unfixed_page)
-				fixup(address, unfixed_page);
+		void fixup(register16_t address, uint8_t unfixed_page) noexcept {
+			maybe_fixup(address, unfixed_page, true);
 		}
 
 
@@ -327,11 +330,11 @@ namespace EightBit {
 		// NOP
 		void nop_AbsoluteX() noexcept;
 
-		uint8_t x = 0;		// index register X
-		uint8_t y = 0;		// index register Y
-		uint8_t a = 0;		// accumulator
-		uint8_t s = 0;		// stack pointer
-		uint8_t p = 0;		// processor status
+		uint8_t m_x = 0;		// index register X
+		uint8_t m_y = 0;		// index register Y
+		uint8_t m_a = 0;		// accumulator
+		uint8_t m_s = 0;		// stack pointer
+		uint8_t m_p = 0;		// processor status
 
 		register16_t m_intermediate;
 

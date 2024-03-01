@@ -102,7 +102,8 @@ void EightBit::MOS6502::interrupt() noexcept {
 	}
 	set_flag(IF);	// Disable IRQ
 	const uint8_t vector = reset ? RSTvector : (nmi ? NMIvector : IRQvector);
-	jump(getWordPaged(0xff, vector));
+	BUS().ADDRESS() = { vector, 0xff };
+	jump(getWordPaged());
 	m_handlingRESET = m_handlingNMI = m_handlingINT = false;
 }
 
@@ -422,6 +423,10 @@ void EightBit::MOS6502::dummyPush(const uint8_t value) noexcept {
 
 ////
 
+EightBit::register16_t EightBit::MOS6502::Address_Immediate() noexcept {
+	return PC()++;
+}
+
 EightBit::register16_t EightBit::MOS6502::Address_Absolute() noexcept {
 	return fetchWord();
 }
@@ -431,12 +436,13 @@ uint8_t EightBit::MOS6502::Address_ZeroPage() noexcept {
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_ZeroPageIndirect() noexcept {
-	return getWordPaged(0, Address_ZeroPage());
+	BUS().ADDRESS() = { Address_ZeroPage(), 0 };
+	return getWordPaged();
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_Indirect() noexcept {
-	const auto address = Address_Absolute();
-	return getWordPaged(address.high, address.low);
+	BUS().ADDRESS() = Address_Absolute();
+	return getWordPaged();
 }
 
 uint8_t EightBit::MOS6502::Address_ZeroPageX() noexcept {
@@ -464,7 +470,8 @@ std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteY(
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() noexcept {
-	return getWordPaged(0, Address_ZeroPageX());
+	BUS().ADDRESS() = { Address_ZeroPageX(), 0 };
+	return getWordPaged();
 }
 
 std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_IndirectIndexedY() noexcept {
@@ -480,7 +487,7 @@ EightBit::register16_t EightBit::MOS6502::Address_relative_byte() noexcept {
 // Addressing modes, read
 
 uint8_t EightBit::MOS6502::AM_Immediate() noexcept {
-	return fetchByte();
+	return memoryRead(Address_Immediate());
 }
 
 uint8_t EightBit::MOS6502::AM_Absolute() noexcept {
@@ -493,18 +500,14 @@ uint8_t EightBit::MOS6502::AM_ZeroPage() noexcept {
 
 uint8_t EightBit::MOS6502::AM_AbsoluteX(const PageCrossingBehavior behaviour) noexcept {
 	const auto [address, page] = Address_AbsoluteX();
-	auto possible = getBytePaged(page, address.low);
-	if ((behaviour == PageCrossingBehavior::AlwaysReadTwice) || UNLIKELY(page != address.high))
-		possible = memoryRead(address);
-	return possible;
+	maybe_fixup(address, page, behaviour == PageCrossingBehavior::AlwaysReadTwice);
+	return memoryRead();
 }
 
 uint8_t EightBit::MOS6502::AM_AbsoluteY() noexcept {
 	const auto [address, page] = Address_AbsoluteY();
-	auto possible = getBytePaged(page, address.low);
-	if (UNLIKELY(page != address.high))
-		possible = memoryRead(address);
-	return possible;
+	maybe_fixup(address, page);
+	return memoryRead();
 }
 
 uint8_t EightBit::MOS6502::AM_ZeroPageX() noexcept {
@@ -521,10 +524,8 @@ uint8_t EightBit::MOS6502::AM_IndexedIndirectX() noexcept {
 
 uint8_t EightBit::MOS6502::AM_IndirectIndexedY() noexcept {
 	const auto [address, page] = Address_IndirectIndexedY();
-	auto possible = getBytePaged(page, address.low);
-	if (page != address.high)
-		possible = memoryRead(address);
-	return possible;
+	maybe_fixup(address, page);
+	return memoryRead();
 }
 
 ////
@@ -535,8 +536,7 @@ void EightBit::MOS6502::branch(const int condition) noexcept {
 		swallow();
 		const auto page = PC().high;
 		jump(destination);
-		if (UNLIKELY(PC().high != page))
-			getBytePaged(page, PC().low);
+		maybe_fixup(PC(), page);
 	}
 }
 
