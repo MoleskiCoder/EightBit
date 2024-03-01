@@ -17,15 +17,15 @@ void EightBit::BigEndianProcessor::setWord(const register16_t value) {
 	memoryWrite(value.low);
 }
 
-EightBit::register16_t EightBit::BigEndianProcessor::getWordPaged(const uint8_t page, const uint8_t offset) {
-	const auto high = getBytePaged(page, offset);
+EightBit::register16_t EightBit::BigEndianProcessor::getWordPaged() {
+	const auto high = getBytePaged();
 	++BUS().ADDRESS().low;
 	const auto low = memoryRead();
 	return { low, high };
 }
 
-void EightBit::BigEndianProcessor::setWordPaged(const uint8_t page, const uint8_t offset, const register16_t value) {
-	setBytePaged(page, offset, value.high);
+void EightBit::BigEndianProcessor::setWordPaged(const register16_t value) {
+	setBytePaged(value.high);
 	++BUS().ADDRESS().low;
 	memoryWrite(value.low);
 }

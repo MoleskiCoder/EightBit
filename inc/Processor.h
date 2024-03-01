@@ -57,7 +57,9 @@ namespace EightBit {
 		virtual uint8_t memoryRead();
 		virtual uint8_t busRead();
 
+		uint8_t getBytePaged() { return memoryRead(); }
 		uint8_t getBytePaged(uint8_t page, uint8_t offset);
+		void setBytePaged(uint8_t value) { memoryWrite(value); }
 		void setBytePaged(uint8_t page, uint8_t offset, uint8_t value);
 
 		uint8_t fetchByte();
@@ -65,8 +67,10 @@ namespace EightBit {
 		[[nodiscard]] virtual register16_t getWord() = 0;
 		virtual void setWord(register16_t value) = 0;
 
-		[[nodiscard]] virtual register16_t getWordPaged(uint8_t page, uint8_t offset) = 0;
-		virtual void setWordPaged(uint8_t page, uint8_t offset, register16_t value) = 0;
+		[[nodiscard]] register16_t getWordPaged(uint8_t page, uint8_t offset);
+		[[nodiscard]] virtual register16_t getWordPaged() = 0;
+		void setWordPaged(uint8_t page, uint8_t offset, register16_t value);
+		virtual void setWordPaged(register16_t value) = 0;
 
 		[[nodiscard]] virtual register16_t fetchWord() = 0;
 

@@ -19,8 +19,8 @@ namespace EightBit {
 		[[nodiscard]] register16_t getWord() override;
 		void setWord(register16_t value) override;
 
-		[[nodiscard]] register16_t getWordPaged(uint8_t page, uint8_t offset) override;
-		void setWordPaged(uint8_t page, uint8_t offset, register16_t value) override;
+		[[nodiscard]] register16_t getWordPaged() override;
+		void setWordPaged(register16_t value) override;
 
 		[[nodiscard]] register16_t fetchWord() final;
 
