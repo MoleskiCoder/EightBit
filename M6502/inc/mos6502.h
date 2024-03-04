@@ -92,9 +92,9 @@ namespace EightBit {
 
 		// Addressing modes
 
-		[[nodiscard]] register16_t Address_Immediate() noexcept;
-		[[nodiscard]] register16_t Address_Absolute() noexcept;
-		[[nodiscard]] uint8_t Address_ZeroPage() noexcept;
+		[[nodiscard]] auto Address_Immediate() noexcept { return PC()++; }
+		[[nodiscard]] auto Address_Absolute() noexcept { return fetchWord(); }
+		[[nodiscard]] auto Address_ZeroPage() noexcept { return fetchByte(); }
 		[[nodiscard]] register16_t Address_ZeroPageIndirect() noexcept;
 		[[nodiscard]] register16_t Address_Indirect() noexcept;
 		[[nodiscard]] uint8_t Address_ZeroPageX() noexcept;
@@ -107,17 +107,28 @@ namespace EightBit {
 
 		// Addressing modes, read
 
-		enum class PageCrossingBehavior { AlwaysReadTwice, MaybeReadTwice };
+		auto AM_Immediate() noexcept { return memoryRead(Address_Immediate()); }
+		auto AM_Absolute() noexcept { return memoryRead(Address_Absolute()); }
+		auto AM_ZeroPage() noexcept { return memoryRead(Address_ZeroPage()); }
+		auto AM_ZeroPageX() noexcept { return memoryRead(Address_ZeroPageX()); }
+		auto AM_ZeroPageY() noexcept { return memoryRead(Address_ZeroPageY()); }
+		auto AM_IndexedIndirectX() noexcept { return memoryRead(Address_IndexedIndirectX()); }
 
-		uint8_t AM_Immediate() noexcept;
-		uint8_t AM_Absolute() noexcept;
-		uint8_t AM_ZeroPage() noexcept;
-		uint8_t AM_AbsoluteX(PageCrossingBehavior behaviour = PageCrossingBehavior::MaybeReadTwice) noexcept;
-		uint8_t AM_AbsoluteY() noexcept;
-		uint8_t AM_ZeroPageX() noexcept;
-		uint8_t AM_ZeroPageY() noexcept;
-		uint8_t AM_IndexedIndirectX() noexcept;
-		uint8_t AM_IndirectIndexedY() noexcept;
+		enum class PageCrossingBehavior { AlwaysReadTwice, MaybeReadTwice };
+		auto AM_AbsoluteX(PageCrossingBehavior behaviour = PageCrossingBehavior::MaybeReadTwice) noexcept {
+			maybe_fixup(Address_AbsoluteX(), behaviour == PageCrossingBehavior::AlwaysReadTwice);
+			return memoryRead();
+		}
+
+		auto AM_AbsoluteY() noexcept {
+			maybe_fixup(Address_AbsoluteY());
+			return memoryRead();
+		}
+
+		auto AM_IndirectIndexedY() noexcept {
+			maybe_fixup(Address_IndirectIndexedY());
+			return memoryRead();
+		}
 
 		// Flag checking
 
@@ -169,19 +180,27 @@ namespace EightBit {
 			memoryWrite(data);
 		}
 
-		bool maybe_fixup(register16_t address, uint8_t unfixed_page, bool always_fixup = false) noexcept {
+		void maybe_fixup(register16_t address, uint8_t unfixed_page, bool always_fixup = false) noexcept {
 			BUS().ADDRESS() = { address.low, unfixed_page };
 			const auto fixing = unfixed_page != address.high;
 			if (always_fixup || fixing)
 				memoryRead();
 			BUS().ADDRESS() = address;
-			return fixing;
+		}
+
+		void maybe_fixup(std::pair<register16_t, uint8_t> fixing, bool always_fixup = false) noexcept {
+			const auto [address, page] = fixing;
+			maybe_fixup(address, page, always_fixup);
 		}
 
 		void fixup(register16_t address, uint8_t unfixed_page) noexcept {
 			maybe_fixup(address, unfixed_page, true);
 		}
 
+		void fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
+			const auto [address, page] = fixing;
+			fixup(address, page);
+		}
 
 		// Status flag operations
 		
@@ -246,69 +265,68 @@ namespace EightBit {
 
 		// Complicated addressing mode implementations
 
-		void sta_AbsoluteX() noexcept;
-		void sta_AbsoluteY() noexcept;
-		void sta_IndirectIndexedY() noexcept;
-
 		void sta_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
 			fixup(address, unfixed_page);
 			memoryWrite(A());
+		}
+		void sta_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
+			sta_with_fixup(fixing.first, fixing.second);
 		}
 
 		// Undocumented complicated mode implementations
 
 		// SLO
-		void slo_AbsoluteX() noexcept;
-		void slo_AbsoluteY() noexcept;
-		void slo_IndirectIndexedY() noexcept;
 		void slo_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
 			fixup(address, unfixed_page);
 			slo(memoryRead());
 		}
+		void slo_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
+			slo_with_fixup(fixing.first, fixing.second);
+		}
 
 		// ISB
-		void isb_AbsoluteX() noexcept;
-		void isb_AbsoluteY() noexcept;
-		void isb_IndirectIndexedY() noexcept;
 		void isb_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
 			fixup(address, unfixed_page);
 			isb(memoryRead());
 		}
+		void isb_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
+			isb_with_fixup(fixing.first, fixing.second);
+		}
 
 		// RLA
-		void rla_AbsoluteX() noexcept;
-		void rla_AbsoluteY() noexcept;
-		void rla_IndirectIndexedY() noexcept;
 		void rla_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
 			fixup(address, unfixed_page);
 			rla(memoryRead());
 		}
+		void rla_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
+			rla_with_fixup(fixing.first, fixing.second);
+		}
 
 		// RRA
-		void rra_AbsoluteX() noexcept;
-		void rra_AbsoluteY() noexcept;
-		void rra_IndirectIndexedY() noexcept;
 		void rra_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
 			fixup(address, unfixed_page);
 			rra(memoryRead());
 		}
+		void rra_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
+			rra_with_fixup(fixing.first, fixing.second);
+		}
 
 		// DCP
-		void dcp_AbsoluteX() noexcept;
-		void dcp_AbsoluteY() noexcept;
-		void dcp_IndirectIndexedY() noexcept;
 		void dcp_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
 			fixup(address, unfixed_page);
 			dcp(memoryRead());
 		}
+		void dcp_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
+			dcp_with_fixup(fixing.first, fixing.second);
+		}
 
 		// SRE
-		void sre_AbsoluteX() noexcept;
-		void sre_AbsoluteY() noexcept;
-		void sre_IndirectIndexedY() noexcept;
 		void sre_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
 			fixup(address, unfixed_page);
 			sre(memoryRead());
+		}
+		void sre_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
+			sre_with_fixup(fixing.first, fixing.second);
 		}
 
 		// SHA
@@ -326,9 +344,6 @@ namespace EightBit {
 
 		// SXA
 		void sxa_AbsoluteY() noexcept;
-
-		// NOP
-		void nop_AbsoluteX() noexcept;
 
 		uint8_t m_x = 0;		// index register X
 		uint8_t m_y = 0;		// index register Y
