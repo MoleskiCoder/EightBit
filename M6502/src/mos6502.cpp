@@ -425,7 +425,7 @@ void EightBit::MOS6502::dummyPush(const uint8_t value) noexcept {
 ////
 
 EightBit::register16_t EightBit::MOS6502::Address_ZeroPageIndirect() noexcept {
-	BUS().ADDRESS() = { Address_ZeroPage(), 0 };
+	BUS().ADDRESS() = Address_ZeroPage();
 	return getWordPaged();
 }
 
@@ -434,16 +434,16 @@ EightBit::register16_t EightBit::MOS6502::Address_Indirect() noexcept {
 	return getWordPaged();
 }
 
-uint8_t EightBit::MOS6502::Address_ZeroPageX() noexcept {
+EightBit::register16_t EightBit::MOS6502::Address_ZeroPageX() noexcept {
 	const auto address = Address_ZeroPage();
 	memoryRead(address);
-	return address + X();
+	return register16_t(address.low + X(), 0);
 }
 
-uint8_t EightBit::MOS6502::Address_ZeroPageY() noexcept {
+EightBit::register16_t EightBit::MOS6502::Address_ZeroPageY() noexcept {
 	const auto address = Address_ZeroPage();
 	memoryRead(address);
-	return address + Y();
+	return register16_t(address.low + Y(), 0);
 }
 
 std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteX() noexcept {
@@ -459,7 +459,7 @@ std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteY(
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() noexcept {
-	BUS().ADDRESS() = { Address_ZeroPageX(), 0 };
+	BUS().ADDRESS() = Address_ZeroPageX();
 	return getWordPaged();
 }
 

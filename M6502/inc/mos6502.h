@@ -94,11 +94,11 @@ namespace EightBit {
 
 		[[nodiscard]] auto Address_Immediate() noexcept { return PC()++; }
 		[[nodiscard]] auto Address_Absolute() noexcept { return fetchWord(); }
-		[[nodiscard]] auto Address_ZeroPage() noexcept { return fetchByte(); }
+		[[nodiscard]] auto Address_ZeroPage() noexcept { return register16_t(fetchByte(), 0); }
 		[[nodiscard]] register16_t Address_ZeroPageIndirect() noexcept;
 		[[nodiscard]] register16_t Address_Indirect() noexcept;
-		[[nodiscard]] uint8_t Address_ZeroPageX() noexcept;
-		[[nodiscard]] uint8_t Address_ZeroPageY() noexcept;
+		[[nodiscard]] register16_t Address_ZeroPageX() noexcept;
+		[[nodiscard]] register16_t Address_ZeroPageY() noexcept;
 		[[nodiscard]] std::pair<register16_t, uint8_t> Address_AbsoluteX() noexcept;
 		[[nodiscard]] std::pair<register16_t, uint8_t> Address_AbsoluteY() noexcept;
 		[[nodiscard]] register16_t Address_IndexedIndirectX() noexcept;
