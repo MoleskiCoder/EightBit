@@ -183,9 +183,10 @@ namespace EightBit {
 		void maybe_fixup(register16_t address, uint8_t unfixed_page, bool always_fixup = false) noexcept {
 			BUS().ADDRESS() = { address.low, unfixed_page };
 			const auto fixing = unfixed_page != address.high;
-			if (always_fixup || fixing)
+			if (always_fixup || fixing) {
 				memoryRead();
-			BUS().ADDRESS() = address;
+				BUS().ADDRESS().high = address.high;
+			}
 		}
 
 		void maybe_fixup(std::pair<register16_t, uint8_t> fixing, bool always_fixup = false) noexcept {

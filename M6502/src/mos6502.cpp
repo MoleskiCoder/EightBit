@@ -102,8 +102,7 @@ void EightBit::MOS6502::interrupt() noexcept {
 	}
 	set_flag(IF);	// Disable IRQ
 	const uint8_t vector = reset ? RSTvector : (nmi ? NMIvector : IRQvector);
-	BUS().ADDRESS() = { vector, 0xff };
-	jump(getWordPaged());
+	jump(Processor::getWordPaged(0xff, vector));
 	m_handlingRESET = m_handlingNMI = m_handlingINT = false;
 }
 
@@ -425,24 +424,20 @@ void EightBit::MOS6502::dummyPush(const uint8_t value) noexcept {
 ////
 
 EightBit::register16_t EightBit::MOS6502::Address_ZeroPageIndirect() noexcept {
-	BUS().ADDRESS() = Address_ZeroPage();
-	return getWordPaged();
+	return Processor::getWordPaged(Address_ZeroPage());
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_Indirect() noexcept {
-	BUS().ADDRESS() = Address_Absolute();
-	return getWordPaged();
+	return Processor::getWordPaged(Address_Absolute());
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_ZeroPageX() noexcept {
-	BUS().ADDRESS() = Address_ZeroPage();
-	memoryRead();
+	memoryRead(Address_ZeroPage());
 	return register16_t(BUS().ADDRESS().low + X(), 0);
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_ZeroPageY() noexcept {
-	BUS().ADDRESS() = Address_ZeroPage();
-	memoryRead();
+	memoryRead(Address_ZeroPage());
 	return register16_t(BUS().ADDRESS().low + Y(), 0);
 }
 
@@ -457,8 +452,7 @@ std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteY(
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() noexcept {
-	BUS().ADDRESS() = Address_ZeroPageX();
-	return getWordPaged();
+	return Processor::getWordPaged(Address_ZeroPageX());
 }
 
 std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_IndirectIndexedY() noexcept {

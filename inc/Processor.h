@@ -67,8 +67,10 @@ namespace EightBit {
 		[[nodiscard]] virtual register16_t getWord() = 0;
 		virtual void setWord(register16_t value) = 0;
 
+		[[nodiscard]] register16_t getWordPaged(register16_t address);
 		[[nodiscard]] register16_t getWordPaged(uint8_t page, uint8_t offset);
 		[[nodiscard]] virtual register16_t getWordPaged() = 0;
+		void setWordPaged(register16_t address, register16_t value);
 		void setWordPaged(uint8_t page, uint8_t offset, register16_t value);
 		virtual void setWordPaged(register16_t value) = 0;
 
