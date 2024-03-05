@@ -435,27 +435,25 @@ EightBit::register16_t EightBit::MOS6502::Address_Indirect() noexcept {
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_ZeroPageX() noexcept {
-	const auto address = Address_ZeroPage();
-	memoryRead(address);
-	return register16_t(address.low + X(), 0);
+	BUS().ADDRESS() = Address_ZeroPage();
+	memoryRead();
+	return register16_t(BUS().ADDRESS().low + X(), 0);
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_ZeroPageY() noexcept {
-	const auto address = Address_ZeroPage();
-	memoryRead(address);
-	return register16_t(address.low + Y(), 0);
+	BUS().ADDRESS() = Address_ZeroPage();
+	memoryRead();
+	return register16_t(BUS().ADDRESS().low + Y(), 0);
 }
 
 std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteX() noexcept {
 	const auto address = Address_Absolute();
-	const auto page = address.high;
-	return { address + X(), page };
+	return { address + X(), address.high };
 }
 
 std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_AbsoluteY() noexcept {
 	const auto address = Address_Absolute();
-	const auto page = address.high;
-	return { address + Y(), page };
+	return { address + Y(), address.high };
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() noexcept {
@@ -465,12 +463,11 @@ EightBit::register16_t EightBit::MOS6502::Address_IndexedIndirectX() noexcept {
 
 std::pair<EightBit::register16_t, uint8_t> EightBit::MOS6502::Address_IndirectIndexedY() noexcept {
 	const auto address = Address_ZeroPageIndirect();
-	const auto page = address.high;
-	return { address + Y(), page };
+	return { address + Y(), address.high };
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_relative_byte() noexcept {
-	return PC() + (int8_t)fetchByte();
+	return PC() + int8_t(fetchByte());
 }
 
 ////
@@ -714,13 +711,13 @@ void EightBit::MOS6502::jam() noexcept {
 void EightBit::MOS6502::sha_AbsoluteY() noexcept {
 	const auto [address, page] = Address_AbsoluteY();
 	fixup(address, page);
-	memoryWrite(address, A() & X() & (address.high + 1));
+	memoryWrite(A() & X() & (address.high + 1));
 }
 
 void EightBit::MOS6502::sha_IndirectIndexedY() noexcept {
 	const auto [address, page] = Address_IndirectIndexedY();
 	fixup(address, page);
-	memoryWrite(address, A() & X() & (address.high + 1));
+	memoryWrite(A() & X() & (address.high + 1));
 }
 
 void EightBit::MOS6502::sya_AbsoluteX() noexcept {
@@ -737,7 +734,7 @@ void EightBit::MOS6502::tas_AbsoluteY() noexcept {
 void EightBit::MOS6502::las_AbsoluteY() noexcept {
 	const auto [address, page] = Address_AbsoluteY();
 	maybe_fixup(address, page);
-	A() = X() = S() = through(memoryRead(address) & S());
+	A() = X() = S() = through(memoryRead() & S());
 }
 
 void EightBit::MOS6502::sxa_AbsoluteY() noexcept {
