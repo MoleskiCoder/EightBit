@@ -59,12 +59,12 @@ namespace EightBit {
 		// Instructions with BCD effects
 
 		[[nodiscard]] virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
-		[[nodiscard]] uint8_t sbc(uint8_t operand, uint8_t data) noexcept;
+		[[nodiscard]] void sbc() noexcept;
 		[[nodiscard]] uint8_t sub_b(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
 		[[nodiscard]] uint8_t sub_d(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
 
 		[[nodiscard]] virtual uint8_t add(uint8_t operand, uint8_t data, int carry = 0) noexcept;
-		[[nodiscard]] uint8_t adc(uint8_t operand, uint8_t data) noexcept;
+		[[nodiscard]] void adc() noexcept;
 		[[nodiscard]] uint8_t add_b(uint8_t operand, uint8_t data, int carry) noexcept;
 		[[nodiscard]] uint8_t add_d(uint8_t operand, uint8_t data, int carry) noexcept;
 
@@ -114,9 +114,8 @@ namespace EightBit {
 		auto AM_ZeroPageY() noexcept { return memoryRead(Address_ZeroPageY()); }
 		auto AM_IndexedIndirectX() noexcept { return memoryRead(Address_IndexedIndirectX()); }
 
-		enum class PageCrossingBehavior { AlwaysReadTwice, MaybeReadTwice };
-		auto AM_AbsoluteX(PageCrossingBehavior behaviour = PageCrossingBehavior::MaybeReadTwice) noexcept {
-			maybe_fixup(Address_AbsoluteX(), behaviour == PageCrossingBehavior::AlwaysReadTwice);
+		auto AM_AbsoluteX() noexcept {
+			maybe_fixup(Address_AbsoluteX());
 			return memoryRead();
 		}
 
@@ -174,7 +173,20 @@ namespace EightBit {
 			return data;
 		}
 
-		void memoryReadModifyWrite(const uint8_t data)  noexcept {
+#define FIXUP_RMW(ADDRESSING, OPERATION) \
+		{ \
+			fixup(ADDRESSING()); \
+			const auto result = OPERATION(memoryRead()); \
+			memoryModifyWrite(result); \
+		}
+
+#define RMW(ADDRESSING, OPERATION) \
+		{ \
+			const auto result = OPERATION(memoryRead(ADDRESSING())); \
+			memoryModifyWrite(result); \
+		}
+
+		void memoryModifyWrite(const uint8_t data)  noexcept {
 			// The read will have already taken place...
 			memoryWrite();
 			memoryWrite(data);
@@ -195,12 +207,14 @@ namespace EightBit {
 		}
 
 		void fixup(register16_t address, uint8_t unfixed_page) noexcept {
-			maybe_fixup(address, unfixed_page, true);
+			getBytePaged(unfixed_page, address.low);
+			BUS().ADDRESS().high = address.high;
 		}
 
 		void fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
 			const auto [address, page] = fixing;
-			fixup(address, page);
+			getBytePaged(page, address.low);
+			BUS().ADDRESS().high = address.high;
 		}
 
 		// Status flag operations
@@ -218,14 +232,14 @@ namespace EightBit {
 
 		// Instruction implementations
 
-		[[nodiscard]] uint8_t andr(uint8_t operand, uint8_t data) noexcept;
+		void andr() noexcept;
 		void bit(uint8_t operand, uint8_t data) noexcept;
-		void cmp(uint8_t first, uint8_t second) noexcept;
+		void cmp(uint8_t first) noexcept;
 		[[nodiscard]] uint8_t dec(uint8_t value) noexcept;
-		[[nodiscard]] uint8_t eorr(uint8_t operand, uint8_t data) noexcept;
+		void eorr() noexcept;
 		[[nodiscard]] uint8_t inc(uint8_t value) noexcept;
 		void jsr() noexcept;
-		[[nodiscard]] uint8_t orr(uint8_t operand, uint8_t data) noexcept;
+		void orr() noexcept;
 		void php() noexcept;
 		void plp() noexcept;
 		void rti() noexcept;
@@ -256,79 +270,13 @@ namespace EightBit {
 		void anc(uint8_t value) noexcept;
 		void asr(uint8_t value) noexcept;
 		void axs(uint8_t value) noexcept;
-		void dcp(uint8_t value) noexcept;
-		void isb(uint8_t value) noexcept;
 		void rla(uint8_t value) noexcept;
 		void rra(uint8_t value) noexcept;
 		void slo(uint8_t value) noexcept;
 		void sre(uint8_t value) noexcept;
 		void jam() noexcept;
 
-		// Complicated addressing mode implementations
-
-		void sta_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
-			fixup(address, unfixed_page);
-			memoryWrite(A());
-		}
-		void sta_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
-			sta_with_fixup(fixing.first, fixing.second);
-		}
-
 		// Undocumented complicated mode implementations
-
-		// SLO
-		void slo_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
-			fixup(address, unfixed_page);
-			slo(memoryRead());
-		}
-		void slo_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
-			slo_with_fixup(fixing.first, fixing.second);
-		}
-
-		// ISB
-		void isb_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
-			fixup(address, unfixed_page);
-			isb(memoryRead());
-		}
-		void isb_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
-			isb_with_fixup(fixing.first, fixing.second);
-		}
-
-		// RLA
-		void rla_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
-			fixup(address, unfixed_page);
-			rla(memoryRead());
-		}
-		void rla_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
-			rla_with_fixup(fixing.first, fixing.second);
-		}
-
-		// RRA
-		void rra_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
-			fixup(address, unfixed_page);
-			rra(memoryRead());
-		}
-		void rra_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
-			rra_with_fixup(fixing.first, fixing.second);
-		}
-
-		// DCP
-		void dcp_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
-			fixup(address, unfixed_page);
-			dcp(memoryRead());
-		}
-		void dcp_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
-			dcp_with_fixup(fixing.first, fixing.second);
-		}
-
-		// SRE
-		void sre_with_fixup(const register16_t address, const uint8_t unfixed_page) noexcept {
-			fixup(address, unfixed_page);
-			sre(memoryRead());
-		}
-		void sre_with_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
-			sre_with_fixup(fixing.first, fixing.second);
-		}
 
 		// SHA
 		void sha_AbsoluteY() noexcept;
