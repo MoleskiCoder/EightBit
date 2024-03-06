@@ -347,7 +347,7 @@ int EightBit::MOS6502::execute() noexcept {
 	case 0xcc:	AM_Absolute(); cmp(Y());									break;	// CPY (absolute)
 	case 0xcd:	AM_Absolute(); cmp(A());									break;	// CMP (absolute)
 	case 0xce:	RMW(Address_Absolute, dec);									break;	// DEC (absolute)
-	case 0xcf:	RMW(Address_Absolute, dec); cmp(A());											break;	// *DCP (absolute)
+	case 0xcf:	RMW(Address_Absolute, dec); cmp(A());						break;	// *DCP (absolute)
 
 	case 0xd0:	branch(zero() == 0);										break;	// BNE (relative)
 	case 0xd1:	AM_IndirectIndexedY(); cmp(A());							break;	// CMP (indirect indexed Y)
