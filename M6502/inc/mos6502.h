@@ -267,13 +267,8 @@ namespace EightBit {
 
 		// Undocumented compound instructions
 
-		void anc(uint8_t value) noexcept;
-		void asr(uint8_t value) noexcept;
-		void axs(uint8_t value) noexcept;
-		void rla(uint8_t value) noexcept;
-		void rra(uint8_t value) noexcept;
-		void slo(uint8_t value) noexcept;
-		void sre(uint8_t value) noexcept;
+		void anc() noexcept;
+		void axs() noexcept;
 		void jam() noexcept;
 
 		// Undocumented complicated mode implementations
