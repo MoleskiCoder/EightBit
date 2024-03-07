@@ -176,20 +176,21 @@ namespace EightBit {
 #define FIXUP_RMW(ADDRESSING, OPERATION) \
 		{ \
 			fixup(ADDRESSING()); \
-			const auto result = OPERATION(memoryRead()); \
-			memoryModifyWrite(result); \
+			_RMW(OPERATION); \
 		}
 
 #define RMW(ADDRESSING, OPERATION) \
 		{ \
-			const auto result = OPERATION(memoryRead(ADDRESSING())); \
-			memoryModifyWrite(result); \
+			BUS().ADDRESS() = ADDRESSING(); \
+			_RMW(OPERATION); \
 		}
 
-		void memoryModifyWrite(const uint8_t data)  noexcept {
-			// The read will have already taken place...
-			memoryWrite();
-			memoryWrite(data);
+#define _RMW(OPERATION) \
+		{ \
+			const auto data = memoryRead(); \
+			const auto result = OPERATION(data); \
+			memoryWrite(); \
+			memoryWrite(result); \
 		}
 
 		void maybe_fixup(register16_t address, uint8_t unfixed_page, bool always_fixup = false) noexcept {
