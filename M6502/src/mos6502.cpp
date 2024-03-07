@@ -27,7 +27,7 @@ int EightBit::MOS6502::step() noexcept {
 	ExecutingInstruction.fire(*this);
 	if (LIKELY(powered())) {
 
-		tick();	// A cycle is used, whether or RDY is high or not
+		tick();	// A cycle is used, whether RDY is high or not
 
 		if (UNLIKELY(lowered(SO())))
 			handleSO();
@@ -432,12 +432,12 @@ EightBit::register16_t EightBit::MOS6502::Address_Indirect() noexcept {
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_ZeroPageX() noexcept {
-	memoryRead(Address_ZeroPage());
+	AM_ZeroPage();
 	return register16_t(BUS().ADDRESS().low + X(), 0);
 }
 
 EightBit::register16_t EightBit::MOS6502::Address_ZeroPageY() noexcept {
-	memoryRead(Address_ZeroPage());
+	AM_ZeroPage();
 	return register16_t(BUS().ADDRESS().low + Y(), 0);
 }
 
