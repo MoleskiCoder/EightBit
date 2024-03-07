@@ -68,9 +68,19 @@ void EightBit::Processor::setBytePaged(const uint8_t page, const uint8_t offset,
 	memoryWrite(register16_t(offset, page), value);
 }
 
+EightBit::register16_t EightBit::Processor::getWordPaged(register16_t address) {
+	BUS().ADDRESS() = address;
+	return getWordPaged();
+}
+
 EightBit::register16_t EightBit::Processor::getWordPaged(const uint8_t page, const uint8_t offset) {
 	BUS().ADDRESS() = { offset, page };
 	return getWordPaged();
+}
+
+void EightBit::Processor::setWordPaged(register16_t address, const register16_t value) {
+	BUS().ADDRESS() = address;
+	setWordPaged(value);
 }
 
 void EightBit::Processor::setWordPaged(const uint8_t page, const uint8_t offset, const register16_t value) {
