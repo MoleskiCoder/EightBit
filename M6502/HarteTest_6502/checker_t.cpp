@@ -1,20 +1,20 @@
 #include "stdafx.h"
 #include "checker_t.h"
 
-void checker_t::addActualCycle(const uint16_t address, const uint8_t value, const std::string action) {
+void checker_t::addActualCycle(const uint16_t address, const uint8_t value, const std::string_view action) {
     m_actualCycles.push_back({ address, value, action });
 }
 
-void checker_t::addActualCycle(const EightBit::register16_t address, const uint8_t value, const std::string action) {
+void checker_t::addActualCycle(const EightBit::register16_t address, const uint8_t value, const std::string_view action) {
     addActualCycle(address.word, value, action);
 }
 
 void checker_t::addActualReadCycle(const EightBit::register16_t address, const uint8_t value) {
-    addActualCycle(address, value, "read");
+    addActualCycle(address, value, m_read_action);
 }
 
 void checker_t::addActualWriteCycle(const EightBit::register16_t address, const uint8_t value) {
-    addActualCycle(address, value, "write");
+    addActualCycle(address, value, m_write_action);
 }
 
 void checker_t::dumpCycles(const std::string which, const actual_cycles_t& events) {

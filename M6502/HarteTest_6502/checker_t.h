@@ -20,7 +20,10 @@ private:
     std::ostringstream m_os;
     std::vector<std::string> m_messages;
 
-    typedef std::tuple<uint16_t, uint8_t, std::string> actual_cycle_t;
+    const std::string m_read_action = { "read" };
+    const std::string m_write_action = { "write" };
+
+    typedef std::tuple<uint16_t, uint8_t, std::string_view> actual_cycle_t;
     typedef std::vector<actual_cycle_t> actual_cycles_t;
     actual_cycles_t m_actualCycles;
     bool m_cycle_count_mismatch = false;
@@ -50,8 +53,8 @@ private:
 
     bool check(std::string_view what, uint16_t address, uint8_t expected, uint8_t actual);
 
-    void addActualCycle(uint16_t address, uint8_t value, std::string action);
-    void addActualCycle(EightBit::register16_t address, uint8_t value, std::string action);
+    void addActualCycle(uint16_t address, uint8_t value, std::string_view action);
+    void addActualCycle(EightBit::register16_t address, uint8_t value, std::string_view action);
 
     void addActualReadCycle(EightBit::register16_t address, uint8_t value);
     void addActualWriteCycle(EightBit::register16_t address, uint8_t value);
