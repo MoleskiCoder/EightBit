@@ -11,5 +11,5 @@ public:
 	cycle_t(const simdjson::dom::array input) noexcept
 	: byte_t(input) {}
 
-	[[nodiscard]] auto action() const noexcept { return std::string(std::string_view(at(2))); }
+	[[nodiscard]] auto action() const noexcept { return at(2).get_string(); }
 };

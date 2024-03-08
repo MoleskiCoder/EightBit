@@ -150,9 +150,9 @@ bool checker_t::checkState(test_t test) {
         const auto actual_value = std::get<1>(actual);
         check("Cycle value", expected_value, actual_value);
 
-        const auto expected_action = std::string_view(*expected_data);
-        const auto& actual_action = std::get<2>(actual);
-        check("Cycle action", expected_action, std::string_view(actual_action));
+        const auto expected_action = (*expected_data).get_string();
+        const auto actual_action = std::get<2>(actual);
+        check("Cycle action", expected_action.value_unsafe(), actual_action);
     }
     if (!m_messages.empty())
         return false;
