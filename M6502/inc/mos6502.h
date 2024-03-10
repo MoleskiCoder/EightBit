@@ -84,6 +84,19 @@ namespace EightBit {
 
 		void interrupt() noexcept;
 
+		constexpr void setStackAddress(uint8_t position) noexcept {
+			BUS().ADDRESS() = { position, 1 };
+		}
+
+		constexpr void pushDownStackAddress(uint8_t value) noexcept {
+			BUS().DATA() = value;
+			setStackAddress(S()--);
+		}
+
+		constexpr void popUpStackAddress() noexcept {
+			setStackAddress(++S());
+		}
+
 		void push(uint8_t value) noexcept final;
 		[[nodiscard]] uint8_t pop() noexcept final;
 
@@ -193,29 +206,26 @@ namespace EightBit {
 			memoryWrite(result); \
 		}
 
-		void maybe_fixup(register16_t address, uint8_t unfixed_page, bool always_fixup = false) noexcept {
+		void maybe_fixup(register16_t address, uint8_t unfixed_page) noexcept {
 			BUS().ADDRESS() = { address.low, unfixed_page };
-			const auto fixing = unfixed_page != address.high;
-			if (always_fixup || fixing) {
+			if (unfixed_page != address.high) {
 				memoryRead();
 				BUS().ADDRESS().high = address.high;
 			}
 		}
 
-		void maybe_fixup(std::pair<register16_t, uint8_t> fixing, bool always_fixup = false) noexcept {
-			const auto [address, page] = fixing;
-			maybe_fixup(address, page, always_fixup);
+		void maybe_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
+			maybe_fixup(fixing.first, fixing.second);
 		}
 
 		void fixup(register16_t address, uint8_t unfixed_page) noexcept {
-			getBytePaged(unfixed_page, address.low);
+			BUS().ADDRESS() = { address.low, unfixed_page };
+			memoryRead();
 			BUS().ADDRESS().high = address.high;
 		}
 
 		void fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
-			const auto [address, page] = fixing;
-			getBytePaged(page, address.low);
-			BUS().ADDRESS().high = address.high;
+			fixup(fixing.first, fixing.second);
 		}
 
 		// Status flag operations
