@@ -76,7 +76,7 @@ void EightBit::mc6809::handleNMI() {
 	eat();
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	CC() = setBit(CC(), FF);	// Disable FIRQ
-	jump(getWordPaged(0xff, NMIvector));
+	jump(Processor::getWordPaged(0xff, NMIvector));
 	eat();
 }
 
@@ -90,7 +90,7 @@ void EightBit::mc6809::handleINT() noexcept {
 	saveEntireRegisterState();
 	eat();
 	CC() = setBit(CC(), IF);	// Disable IRQ
-	jump(getWordPaged(0xff, IRQvector));
+	jump(Processor::getWordPaged(0xff, IRQvector));
 	eat();
 }
 
@@ -105,7 +105,7 @@ void EightBit::mc6809::handleFIRQ() {
 	eat();
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	CC() = setBit(CC(), FF);	// Disable FIRQ
-	jump(getWordPaged(0xff, FIRQvector));
+	jump(Processor::getWordPaged(0xff, FIRQvector));
 	eat();
 }
 
@@ -1088,21 +1088,21 @@ void EightBit::mc6809::swi() {
 	saveEntireRegisterState();
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	CC() = setBit(CC(), FF);	// Disable FIRQ
-	jump(getWordPaged(0xff, SWIvector));
+	jump(Processor::getWordPaged(0xff, SWIvector));
 	eat();
 }
 
 void EightBit::mc6809::swi2() {
 	eat();
 	saveEntireRegisterState();
-	jump(getWordPaged(0xff, SWI2vector));
+	jump(Processor::getWordPaged(0xff, SWI2vector));
 	eat();
 }
 
 void EightBit::mc6809::swi3() {
 	eat();
 	saveEntireRegisterState();
-	jump(getWordPaged(0xff, SWI3vector));
+	jump(Processor::getWordPaged(0xff, SWI3vector));
 	eat();
 }
 
