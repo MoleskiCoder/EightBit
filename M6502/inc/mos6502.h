@@ -116,19 +116,18 @@ namespace EightBit {
 		[[nodiscard]] register16_t Address_AbsoluteY() noexcept;
 		[[nodiscard]] register16_t Address_IndexedIndirectX() noexcept;
 		[[nodiscard]] register16_t Address_IndirectIndexedY() noexcept;
-		[[nodiscard]] register16_t Address_relative_byte() noexcept;
 
 		// Addressing modes, read
 
-		void AM_Immediate() noexcept { memoryRead(Address_Immediate()); }
-		void AM_Absolute() noexcept { memoryRead(Address_Absolute()); }
-		void AM_ZeroPage() noexcept { memoryRead(Address_ZeroPage()); }
-		void AM_ZeroPageX() noexcept { memoryRead(Address_ZeroPageX()); }
-		void AM_ZeroPageY() noexcept { memoryRead(Address_ZeroPageY()); }
-		void AM_IndexedIndirectX() noexcept { memoryRead(Address_IndexedIndirectX()); }
-		void AM_AbsoluteX() noexcept { maybe_fixup(Address_AbsoluteX()); memoryRead(); }
-		void AM_AbsoluteY() noexcept { maybe_fixup(Address_AbsoluteY()); memoryRead(); }
-		void AM_IndirectIndexedY() noexcept { maybe_fixup(Address_IndirectIndexedY()); memoryRead(); }
+		void AM_Immediate() noexcept { BUS().ADDRESS() = Address_Immediate(); memoryRead(); }
+		void AM_Absolute() noexcept { BUS().ADDRESS() = Address_Absolute(); memoryRead(); }
+		void AM_ZeroPage() noexcept { BUS().ADDRESS() = Address_ZeroPage(); memoryRead(); }
+		void AM_ZeroPageX() noexcept { BUS().ADDRESS() = Address_ZeroPageX(); memoryRead(); }
+		void AM_ZeroPageY() noexcept { BUS().ADDRESS() = Address_ZeroPageY(); memoryRead(); }
+		void AM_IndexedIndirectX() noexcept { BUS().ADDRESS() = Address_IndexedIndirectX(); memoryRead(); }
+		void AM_AbsoluteX() noexcept { BUS().ADDRESS() = Address_AbsoluteX(); maybe_fixup(BUS().ADDRESS()); memoryRead(); }
+		void AM_AbsoluteY() noexcept { BUS().ADDRESS() = Address_AbsoluteY(); maybe_fixup(BUS().ADDRESS()); memoryRead(); }
+		void AM_IndirectIndexedY() noexcept { BUS().ADDRESS() = Address_IndirectIndexedY(); maybe_fixup(BUS().ADDRESS()); memoryRead(); }
 
 		// Flag checking
 
