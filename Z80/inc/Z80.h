@@ -89,7 +89,7 @@ namespace EightBit {
 		Signal<EventArgs> WritingIO;
 		Signal<EventArgs> WrittenIO;
 
-		int execute() noexcept final;
+		void execute() noexcept final;
 		int step() noexcept final;
 
 		[[nodiscard]] const register16_t& AF() const noexcept final;

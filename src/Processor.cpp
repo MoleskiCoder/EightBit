@@ -109,9 +109,9 @@ int EightBit::Processor::run(const int limit) noexcept {
 	return current;
 }
 
-int EightBit::Processor::execute(const uint8_t value) noexcept {
+void EightBit::Processor::execute(const uint8_t value) noexcept {
 	opcode() = value;
-	return execute();
+	execute();
 }
 
 void EightBit::Processor::jump(const register16_t destination) noexcept {

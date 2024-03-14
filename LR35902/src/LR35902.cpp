@@ -466,11 +466,12 @@ int EightBit::GameBoy::LR35902::step() noexcept {
 		}
 	}
 	ExecutedInstruction.fire(*this);
+	assert(cycles() > 0);
 	assert(cycles() % 4 == 0);
 	return cycles();
 }
 
-int EightBit::GameBoy::LR35902::execute() noexcept {
+void EightBit::GameBoy::LR35902::execute() noexcept {
 
 	const auto& decoded = getDecodedOpcode(opcode());
 
@@ -485,10 +486,6 @@ int EightBit::GameBoy::LR35902::execute() noexcept {
 		executeOther(x, y, z, p, q);
 	else
 		executeCB(x, y, z, p, q);
-
-	assert(cycles() > 0);
-
-	return cycles();
 }
 
 void EightBit::GameBoy::LR35902::executeCB(const int x, const int y, const int z, int, int) {

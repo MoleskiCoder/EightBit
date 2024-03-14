@@ -325,10 +325,11 @@ int EightBit::Intel8080::step() noexcept {
 		}
 	}
 	ExecutedInstruction.fire(*this);
+	ASSUME(cycles() > 0);
 	return cycles();
 }
 
-int EightBit::Intel8080::execute() noexcept {
+void EightBit::Intel8080::execute() noexcept {
 
 	const auto& decoded = getDecodedOpcode(opcode());
 
@@ -340,9 +341,6 @@ int EightBit::Intel8080::execute() noexcept {
 	const auto q = decoded.q;
 
 	execute(x, y, z, p, q);
-
-	ASSUME(cycles() > 0);
-	return cycles();
 }
 
 void EightBit::Intel8080::execute(const int x, const int y, const int z, const int p, const int q) {

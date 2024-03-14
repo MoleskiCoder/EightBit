@@ -601,9 +601,9 @@ uint8_t EightBit::Z80::fetchOpCode() noexcept {
 		const auto halted = lowered(HALT());
 		returned = IntelProcessor::memoryRead(PC());
 		if (UNLIKELY(halted))
-			returned = 0;	// NOP
-		else
-			PC()++;
+		returned = 0;	// NOP
+	else
+		PC()++;
 	}
 	BUS().ADDRESS() = { REFRESH(), IV() };
 	{
@@ -778,10 +778,11 @@ int EightBit::Z80::step() noexcept {
 			IntelProcessor::execute(fetchOpCode());
 	}
 	ExecutedInstruction.fire(*this);
+	ASSUME(cycles() > 0);
 	return cycles();
 }
 
-int EightBit::Z80::execute() noexcept {
+void EightBit::Z80::execute() noexcept {
 
 	const auto& decoded = getDecodedOpcode(opcode());
 
@@ -798,9 +799,6 @@ int EightBit::Z80::execute() noexcept {
 		executeED(x, y, z, p, q);
 	else
 		executeOther(x, y, z, p, q);
-
-	ASSUME(cycles() > 0);
-	return cycles();
 }
 
 void EightBit::Z80::executeCB(const int x, const int y, const int z) noexcept {

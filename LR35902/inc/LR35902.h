@@ -47,7 +47,7 @@ namespace EightBit {
 			void tickMachine() { tick(4); MachineTicked.fire(); }
 
 		protected:
-			int execute() noexcept final;
+			void execute() noexcept final;
 			int step() noexcept final;
 
 			void handleRESET() noexcept final;

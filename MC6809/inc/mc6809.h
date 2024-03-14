@@ -66,7 +66,7 @@ namespace EightBit {
 		Signal<mc6809> ExecutingInstruction;
 		Signal<mc6809> ExecutedInstruction;
 
-		int execute() noexcept final;
+		void execute() noexcept final;
 		[[nodiscard]] int step() noexcept final;
 
 		[[nodiscard]] constexpr auto& D() noexcept { return m_d; }

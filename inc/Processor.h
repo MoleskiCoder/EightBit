@@ -29,8 +29,8 @@ namespace EightBit {
 
 		int run(int limit) noexcept;
 		virtual int step() noexcept = 0;
-		virtual int execute() noexcept = 0;
-		int execute(uint8_t value) noexcept;
+		virtual void execute() noexcept = 0;
+		void execute(uint8_t value) noexcept;
 
 		[[nodiscard]] virtual register16_t peekWord(register16_t address) noexcept = 0;
 		virtual void pokeWord(register16_t address, register16_t value) noexcept = 0;

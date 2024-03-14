@@ -32,7 +32,7 @@ namespace EightBit {
 		Signal<Intel8080> ExecutingInstruction;
 		Signal<Intel8080> ExecutedInstruction;
 
-		int execute() noexcept final;
+		void execute() noexcept final;
 		int step() noexcept final;
 
 		[[nodiscard]] const register16_t& AF() const noexcept final;

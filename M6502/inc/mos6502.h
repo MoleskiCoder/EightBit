@@ -38,7 +38,7 @@ namespace EightBit {
 		Signal<MOS6502> ExecutingInstruction;
 		Signal<MOS6502> ExecutedInstruction;
 
-		int execute() noexcept final;
+		void execute() noexcept final;
 		[[nodiscard]] int step() noexcept final;
 
 		[[nodiscard]] constexpr auto& X() noexcept { return m_x; }
@@ -58,19 +58,19 @@ namespace EightBit {
 
 		// Instructions with BCD effects
 
-		[[nodiscard]] virtual uint8_t sub(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
+		[[nodiscard]] virtual uint8_t sub(uint8_t operand, int borrow = 0) noexcept;
 		[[nodiscard]] void sbc() noexcept;
 		[[nodiscard]] uint8_t sub_b(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
 		[[nodiscard]] uint8_t sub_d(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
 
-		[[nodiscard]] virtual uint8_t add(uint8_t operand, uint8_t data, int carry = 0) noexcept;
+		[[nodiscard]] virtual uint8_t add(uint8_t operand, int carry = 0) noexcept;
 		[[nodiscard]] void adc() noexcept;
 		[[nodiscard]] uint8_t add_b(uint8_t operand, uint8_t data, int carry) noexcept;
 		[[nodiscard]] uint8_t add_d(uint8_t operand, uint8_t data, int carry) noexcept;
 
 		// Undocumented compound instructions (with BCD effects)
 
-		virtual void arr(uint8_t value) noexcept;
+		virtual void arr() noexcept;
 		virtual void arr_b(uint8_t value) noexcept;
 		virtual void arr_d(uint8_t value) noexcept;
 
@@ -112,35 +112,23 @@ namespace EightBit {
 		[[nodiscard]] register16_t Address_Indirect() noexcept;
 		[[nodiscard]] register16_t Address_ZeroPageX() noexcept;
 		[[nodiscard]] register16_t Address_ZeroPageY() noexcept;
-		[[nodiscard]] std::pair<register16_t, uint8_t> Address_AbsoluteX() noexcept;
-		[[nodiscard]] std::pair<register16_t, uint8_t> Address_AbsoluteY() noexcept;
+		[[nodiscard]] register16_t Address_AbsoluteX() noexcept;
+		[[nodiscard]] register16_t Address_AbsoluteY() noexcept;
 		[[nodiscard]] register16_t Address_IndexedIndirectX() noexcept;
-		[[nodiscard]] std::pair<register16_t, uint8_t> Address_IndirectIndexedY() noexcept;
+		[[nodiscard]] register16_t Address_IndirectIndexedY() noexcept;
 		[[nodiscard]] register16_t Address_relative_byte() noexcept;
 
 		// Addressing modes, read
 
-		auto AM_Immediate() noexcept { return memoryRead(Address_Immediate()); }
-		auto AM_Absolute() noexcept { return memoryRead(Address_Absolute()); }
-		auto AM_ZeroPage() noexcept { return memoryRead(Address_ZeroPage()); }
-		auto AM_ZeroPageX() noexcept { return memoryRead(Address_ZeroPageX()); }
-		auto AM_ZeroPageY() noexcept { return memoryRead(Address_ZeroPageY()); }
-		auto AM_IndexedIndirectX() noexcept { return memoryRead(Address_IndexedIndirectX()); }
-
-		auto AM_AbsoluteX() noexcept {
-			maybe_fixup(Address_AbsoluteX());
-			return memoryRead();
-		}
-
-		auto AM_AbsoluteY() noexcept {
-			maybe_fixup(Address_AbsoluteY());
-			return memoryRead();
-		}
-
-		auto AM_IndirectIndexedY() noexcept {
-			maybe_fixup(Address_IndirectIndexedY());
-			return memoryRead();
-		}
+		void AM_Immediate() noexcept { memoryRead(Address_Immediate()); }
+		void AM_Absolute() noexcept { memoryRead(Address_Absolute()); }
+		void AM_ZeroPage() noexcept { memoryRead(Address_ZeroPage()); }
+		void AM_ZeroPageX() noexcept { memoryRead(Address_ZeroPageX()); }
+		void AM_ZeroPageY() noexcept { memoryRead(Address_ZeroPageY()); }
+		void AM_IndexedIndirectX() noexcept { memoryRead(Address_IndexedIndirectX()); }
+		void AM_AbsoluteX() noexcept { maybe_fixup(Address_AbsoluteX()); memoryRead(); }
+		void AM_AbsoluteY() noexcept { maybe_fixup(Address_AbsoluteY()); memoryRead(); }
+		void AM_IndirectIndexedY() noexcept { maybe_fixup(Address_IndirectIndexedY()); memoryRead(); }
 
 		// Flag checking
 
@@ -206,34 +194,28 @@ namespace EightBit {
 			memoryWrite(result); \
 		}
 
-		void maybe_fixup(register16_t address, uint8_t unfixed_page) noexcept {
-			BUS().ADDRESS() = { address.low, unfixed_page };
-			if (unfixed_page != address.high) {
+		void maybe_fixup(register16_t address) noexcept {
+			BUS().ADDRESS() = { address.low, m_unfixed_page };
+			if (m_unfixed_page != address.high) {
 				memoryRead();
 				BUS().ADDRESS().high = address.high;
 			}
 		}
 
-		void maybe_fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
-			maybe_fixup(fixing.first, fixing.second);
-		}
-
-		void fixup(register16_t address, uint8_t unfixed_page) noexcept {
-			BUS().ADDRESS() = { address.low, unfixed_page };
+		void fixup(register16_t address) noexcept {
+			BUS().ADDRESS() = { address.low, m_unfixed_page };
 			memoryRead();
 			BUS().ADDRESS().high = address.high;
 		}
 
-		void fixup(std::pair<register16_t, uint8_t> fixing) noexcept {
-			fixup(fixing.first, fixing.second);
-		}
-
 		// Status flag operations
 		
-		constexpr void set_flag(int which, int condition) noexcept { P() = setBit(P(), which, condition); }
+		constexpr static void set_flag(uint8_t& f, int which, int condition) noexcept { f = setBit(f, which, condition); }
+		constexpr void set_flag(int which, int condition) noexcept { set_flag(P(), which, condition); }
 		constexpr void set_flag(int which) noexcept { P() = setBit(P(), which); }
 
-		constexpr void reset_flag(int which, int condition) noexcept { P() = clearBit(P(), which, condition); }
+		constexpr static void reset_flag(uint8_t& f, int which, int condition) noexcept { f = clearBit(f, which, condition); }
+		constexpr void reset_flag(int which, int condition) noexcept { reset_flag(P(), which, condition); }
 		constexpr void reset_flag(int which) noexcept { P() = clearBit(P(), which); }
 
 		// Chew up a cycle
@@ -244,7 +226,7 @@ namespace EightBit {
 		// Instruction implementations
 
 		void andr() noexcept;
-		void bit(uint8_t operand, uint8_t data) noexcept;
+		void bit(uint8_t operand) noexcept;
 		void cmp(uint8_t first) noexcept;
 		[[nodiscard]] uint8_t dec(uint8_t value) noexcept;
 		void eorr() noexcept;
@@ -311,5 +293,7 @@ namespace EightBit {
 		bool m_handlingRESET = false;
 		bool m_handlingNMI = false;
 		bool m_handlingINT = false;
+
+		uint8_t m_unfixed_page = 0;
 	};
 }

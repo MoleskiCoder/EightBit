@@ -39,6 +39,7 @@ int EightBit::mc6809::step() noexcept {
 			Processor::execute(fetchByte());
 	}
 	ExecutedInstruction.fire(*this);
+	assert(cycles() > 0);
 	return cycles();
 }
 
@@ -139,7 +140,7 @@ void EightBit::mc6809::ret() noexcept {
 
 //
 
-int EightBit::mc6809::execute() noexcept {
+void EightBit::mc6809::execute() noexcept {
 	lowerBA();
 	lowerBS();
 	const bool prefixed = m_prefix10 || m_prefix11;
@@ -152,8 +153,6 @@ int EightBit::mc6809::execute() noexcept {
 		else
 			execute11();
 	}
-	assert(cycles() > 0);
-	return cycles();
 }
 
 void EightBit::mc6809::executeUnprefixed() {
