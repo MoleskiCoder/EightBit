@@ -105,29 +105,29 @@ namespace EightBit {
 
 		// Addressing modes
 
-		[[nodiscard]] auto Address_Immediate() noexcept { return PC()++; }
-		[[nodiscard]] auto Address_Absolute() noexcept { return fetchWord(); }
-		[[nodiscard]] auto Address_ZeroPage() noexcept { return register16_t(fetchByte(), 0); }
-		[[nodiscard]] register16_t Address_ZeroPageIndirect() noexcept;
-		[[nodiscard]] register16_t Address_Indirect() noexcept;
-		[[nodiscard]] register16_t Address_ZeroPageX() noexcept;
-		[[nodiscard]] register16_t Address_ZeroPageY() noexcept;
-		[[nodiscard]] register16_t Address_AbsoluteX() noexcept;
-		[[nodiscard]] register16_t Address_AbsoluteY() noexcept;
-		[[nodiscard]] register16_t Address_IndexedIndirectX() noexcept;
-		[[nodiscard]] register16_t Address_IndirectIndexedY() noexcept;
+		void Address_Immediate() noexcept { BUS().ADDRESS() = PC()++; }
+		void Address_Absolute() noexcept { BUS().ADDRESS() = fetchWord(); }
+		void Address_ZeroPage() noexcept { BUS().ADDRESS() = register16_t(fetchByte(), 0); }
+		void Address_ZeroPageIndirect() noexcept;
+		void Address_Indirect() noexcept;
+		void Address_ZeroPageX() noexcept;
+		void Address_ZeroPageY() noexcept;
+		void Address_AbsoluteX() noexcept;
+		void Address_AbsoluteY() noexcept;
+		void Address_IndexedIndirectX() noexcept;
+		void Address_IndirectIndexedY() noexcept;
 
 		// Addressing modes, read
 
-		void AM_Immediate() noexcept { BUS().ADDRESS() = Address_Immediate(); memoryRead(); }
-		void AM_Absolute() noexcept { BUS().ADDRESS() = Address_Absolute(); memoryRead(); }
-		void AM_ZeroPage() noexcept { BUS().ADDRESS() = Address_ZeroPage(); memoryRead(); }
-		void AM_ZeroPageX() noexcept { BUS().ADDRESS() = Address_ZeroPageX(); memoryRead(); }
-		void AM_ZeroPageY() noexcept { BUS().ADDRESS() = Address_ZeroPageY(); memoryRead(); }
-		void AM_IndexedIndirectX() noexcept { BUS().ADDRESS() = Address_IndexedIndirectX(); memoryRead(); }
-		void AM_AbsoluteX() noexcept { BUS().ADDRESS() = Address_AbsoluteX(); maybe_fixup(BUS().ADDRESS()); memoryRead(); }
-		void AM_AbsoluteY() noexcept { BUS().ADDRESS() = Address_AbsoluteY(); maybe_fixup(BUS().ADDRESS()); memoryRead(); }
-		void AM_IndirectIndexedY() noexcept { BUS().ADDRESS() = Address_IndirectIndexedY(); maybe_fixup(BUS().ADDRESS()); memoryRead(); }
+		void AM_Immediate() noexcept { Address_Immediate(); memoryRead(); }
+		void AM_Absolute() noexcept { Address_Absolute(); memoryRead(); }
+		void AM_ZeroPage() noexcept { Address_ZeroPage(); memoryRead(); }
+		void AM_ZeroPageX() noexcept { Address_ZeroPageX(); memoryRead(); }
+		void AM_ZeroPageY() noexcept { Address_ZeroPageY(); memoryRead(); }
+		void AM_IndexedIndirectX() noexcept { Address_IndexedIndirectX(); memoryRead(); }
+		void AM_AbsoluteX() noexcept { Address_AbsoluteX(); maybe_fixup(); memoryRead(); }
+		void AM_AbsoluteY() noexcept { Address_AbsoluteY(); maybe_fixup(); memoryRead(); }
+		void AM_IndirectIndexedY() noexcept { Address_IndirectIndexedY(); maybe_fixup(); memoryRead(); }
 
 		// Flag checking
 
@@ -173,19 +173,13 @@ namespace EightBit {
 			return data;
 		}
 
-#define FIXUP_RMW(ADDRESSING, OPERATION) \
+#define FIXUP_RMW(OPERATION) \
 		{ \
-			fixup(ADDRESSING()); \
-			_RMW(OPERATION); \
+			fixup(); \
+			RMW(OPERATION); \
 		}
 
-#define RMW(ADDRESSING, OPERATION) \
-		{ \
-			BUS().ADDRESS() = ADDRESSING(); \
-			_RMW(OPERATION); \
-		}
-
-#define _RMW(OPERATION) \
+#define RMW(OPERATION) \
 		{ \
 			const auto data = memoryRead(); \
 			const auto result = OPERATION(data); \
@@ -193,18 +187,20 @@ namespace EightBit {
 			memoryWrite(result); \
 		}
 
-		void maybe_fixup(register16_t address) noexcept {
-			BUS().ADDRESS() = { address.low, m_unfixed_page };
-			if (m_unfixed_page != address.high) {
+		void maybe_fixup() noexcept {
+			const auto fixed = BUS().ADDRESS();
+			BUS().ADDRESS() = { fixed.low, m_unfixed_page };
+			if (m_unfixed_page != fixed.high) {
 				memoryRead();
-				BUS().ADDRESS().high = address.high;
+				BUS().ADDRESS().high = fixed.high;
 			}
 		}
 
-		void fixup(register16_t address) noexcept {
-			BUS().ADDRESS() = { address.low, m_unfixed_page };
+		void fixup() noexcept {
+			const auto fixed = BUS().ADDRESS();
+			BUS().ADDRESS() = { fixed.low, m_unfixed_page };
 			memoryRead();
-			BUS().ADDRESS().high = address.high;
+			BUS().ADDRESS().high = fixed.high;
 		}
 
 		// Status flag operations
