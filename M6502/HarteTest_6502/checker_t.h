@@ -44,7 +44,7 @@ private:
     void raise(std::string_view what, std::string_view expected, std::string_view actual);
 
     template<class T>
-    bool check(std::string_view what, T expected, T actual) {
+    constexpr bool check(std::string_view what, T expected, T actual) noexcept {
         const auto success = actual == expected;
         if (!success)
             raise(what, expected, actual);

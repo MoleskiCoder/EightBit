@@ -130,17 +130,19 @@ bool checker_t::checkState(test_t test) {
     auto& cpu = runner().CPU();
     auto& ram = runner().RAM();
 
-    const auto expected_cycles = test.cycles();
+    const auto& expected_cycles = test.cycles();
     const auto& actual_cycles = m_actualCycles;
-    m_cycle_count_mismatch = expected_cycles.size() != actual_cycles.size();
-    if (m_cycle_count_mismatch)
-        return false;
 
     size_t actual_idx = 0;
     for (const auto expected_cycle : expected_cycles) {
 
+        if (actual_idx >= actual_cycles.size()) {
+            m_cycle_count_mismatch = true;
+            return false; // more expected cycles than actual
+        }
+
         auto expected_data = expected_cycle.begin();
-        const auto& actual = actual_cycles.at(actual_idx++);   // actual could be less than expected
+        const auto& actual = actual_cycles[actual_idx++];
 
         const auto expected_address = uint16_t(int64_t(*expected_data++));
         const auto actual_address = std::get<0>(actual);
@@ -154,6 +156,12 @@ bool checker_t::checkState(test_t test) {
         const auto actual_action = std::get<2>(actual);
         check("Cycle action", expected_action.value_unsafe(), actual_action);
     }
+
+    if (actual_idx < actual_cycles.size()) {
+        m_cycle_count_mismatch = true;
+        return false; // less expected cycles than actual
+    }
+
     if (!m_messages.empty())
         return false;
 

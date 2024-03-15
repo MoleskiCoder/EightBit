@@ -36,7 +36,7 @@ int main() {
         opcode.load();
 
         auto test_generator = opcode.generator();
-        std::vector<std::string> test_names;
+        std::vector<std::string_view> test_names;
         while (test_generator) {
 
             const auto test = test_generator();
@@ -66,7 +66,7 @@ int main() {
                 break;
             }
 
-            test_names.push_back(std::string(std::string_view(test.name())));
+            test_names.push_back(test.name().get_string().value());
         }
     }
 
