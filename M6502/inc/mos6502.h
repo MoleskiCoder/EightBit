@@ -173,14 +173,7 @@ namespace EightBit {
 			return data;
 		}
 
-#define FIXUP_RMW(OPERATION) \
-		{ \
-			fixup(); \
-			RMW(OPERATION); \
-		}
-
-#define RMW(OPERATION) \
-		{ \
+		#define RMW(OPERATION) { \
 			const auto data = memoryRead(); \
 			const auto result = OPERATION(data); \
 			memoryWrite(); \
@@ -188,19 +181,19 @@ namespace EightBit {
 		}
 
 		void maybe_fixup() noexcept {
-			const auto fixed = BUS().ADDRESS();
-			BUS().ADDRESS() = { fixed.low, m_unfixed_page };
-			if (m_unfixed_page != fixed.high) {
+			const auto fixed_page = BUS().ADDRESS().high;
+			BUS().ADDRESS().high = m_unfixed_page;
+			if (m_unfixed_page != fixed_page) {
 				memoryRead();
-				BUS().ADDRESS().high = fixed.high;
+				BUS().ADDRESS().high = fixed_page;
 			}
 		}
 
 		void fixup() noexcept {
-			const auto fixed = BUS().ADDRESS();
-			BUS().ADDRESS() = { fixed.low, m_unfixed_page };
+			const auto fixed_page = BUS().ADDRESS().high;
+			BUS().ADDRESS().high = m_unfixed_page;
 			memoryRead();
-			BUS().ADDRESS().high = fixed.high;
+			BUS().ADDRESS().high = fixed_page;
 		}
 
 		// Status flag operations
