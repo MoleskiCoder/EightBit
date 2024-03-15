@@ -173,7 +173,7 @@ namespace EightBit {
 			return data;
 		}
 
-		#define RMW(OPERATION) { \
+#define RMW(OPERATION) { \
 			const auto data = memoryRead(); \
 			const auto result = OPERATION(data); \
 			memoryWrite(); \
@@ -197,7 +197,7 @@ namespace EightBit {
 		}
 
 		// Status flag operations
-		
+
 		constexpr static void set_flag(uint8_t& f, int which, int condition) noexcept { f = setBit(f, which, condition); }
 		constexpr void set_flag(int which, int condition) noexcept { set_flag(P(), which, condition); }
 		constexpr void set_flag(int which) noexcept { P() = setBit(P(), which); }
@@ -252,23 +252,20 @@ namespace EightBit {
 		void axs() noexcept;
 		void jam() noexcept;
 
-		// Undocumented complicated mode implementations
+		void sha() noexcept { memoryWrite(A() & X() & (BUS().ADDRESS().high + 1)); }
+		void tas() noexcept { S() = A() & X(); sha(); }
+		void las() noexcept { A() = X() = S() = through(memoryRead() & S()); }
+		void sya() noexcept { memoryWrite(Y() & (BUS().ADDRESS().high + 1)); }
+		void sxa() noexcept { memoryWrite(X() & (BUS().ADDRESS().high + 1)); }
+		void ane() noexcept { A() = through((A() | 0xee) & X() & BUS().DATA()); }
+		void atx() noexcept { A() = X() = through((A() | 0xee) & BUS().DATA()); }
 
-		// SHA
-		void sha_AbsoluteY() noexcept;
-		void sha_IndirectIndexedY() noexcept;
-
-		// TAS
-		void tas_AbsoluteY() noexcept;
-
-		// LAS
-		void las_AbsoluteY() noexcept;
-
-		// SYA
-		void sya_AbsoluteX() noexcept;
-
-		// SXA
-		void sxa_AbsoluteY() noexcept;
+		void isb() noexcept { RMW(inc); sbc(); }
+		void slo() noexcept { RMW(asl); orr(); }
+		void rla() noexcept { RMW(rol); andr(); }
+		void sre() noexcept { RMW(lsr); eorr(); }
+		void rra() noexcept { RMW(ror); adc(); }
+		void dcp() noexcept { RMW(dec); cmp(A()); }
 
 		uint8_t m_x = 0;		// index register X
 		uint8_t m_y = 0;		// index register Y
