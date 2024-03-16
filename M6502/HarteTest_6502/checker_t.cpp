@@ -218,7 +218,6 @@ void checker_t::check(test_t test) {
     runner().raisePOWER();
     initialiseState(test);
     const auto pc = cpu.PC().word;
-    const auto start_opcode = runner().peek(pc);
 
     m_cycles = cpu.step();
     runner().lowerPOWER();
