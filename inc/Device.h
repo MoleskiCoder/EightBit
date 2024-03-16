@@ -114,6 +114,8 @@ namespace EightBit {
 		[[nodiscard]] constexpr bool powered() const noexcept { return raised(POWER()); }
 
 	protected:
+		using base = Device;
+
 		Device() noexcept {};
 	};
 }

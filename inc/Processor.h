@@ -39,6 +39,8 @@ namespace EightBit {
 		DECLARE_PIN_INPUT(INT)
 
 	protected:
+		using base = Processor;
+
 		Processor(Bus& memory) noexcept;
 
 		[[nodiscard]] constexpr auto& opcode() noexcept { return m_opcode; }

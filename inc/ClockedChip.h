@@ -22,6 +22,8 @@ namespace EightBit {
 		}
 
 	protected:
+		using base = ClockedChip;
+
 		ClockedChip() noexcept = default;
 
 		constexpr void resetCycles() noexcept { m_cycles = 0; }

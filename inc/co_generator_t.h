@@ -15,6 +15,7 @@ public:
 private:
     using handle_t = std::coroutine_handle<promise_type>;
 
+public:
     class promise_type final {
     private:
         T value_;
@@ -42,6 +43,7 @@ private:
         [[nodiscard]] constexpr auto& exception() noexcept { return exception_; };
     };
 
+private:
     handle_t h_;
 
 private:
