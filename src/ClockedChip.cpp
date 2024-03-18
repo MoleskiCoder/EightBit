@@ -8,6 +8,6 @@ EightBit::ClockedChip::ClockedChip(const ClockedChip& rhs) noexcept
 
 bool EightBit::ClockedChip::operator==(const EightBit::ClockedChip& rhs) const noexcept {
 	return
-		Device::operator==(rhs)
+		Chip::operator==(rhs)
 		&& cycles() == rhs.cycles();
 }

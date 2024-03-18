@@ -214,7 +214,7 @@ namespace EightBit {
 
 		// Chew up a cycle
 		void swallow() noexcept { memoryRead(PC()); }
-		void swallow_stack() noexcept { getBytePaged(1, S()); }
+		void swallow_stack() noexcept { memoryRead({ S(), 1 }); }
 		void swallow_fetch() noexcept { fetchByte(); }
 
 		// Instruction implementations

@@ -39,8 +39,6 @@ namespace EightBit {
 		DECLARE_PIN_INPUT(INT)
 
 	protected:
-		using base = Processor;
-
 		Processor(Bus& memory) noexcept;
 
 		[[nodiscard]] constexpr auto& opcode() noexcept { return m_opcode; }
@@ -58,11 +56,6 @@ namespace EightBit {
 		uint8_t memoryRead(register16_t address);
 		virtual uint8_t memoryRead();
 		virtual uint8_t busRead();
-
-		uint8_t getBytePaged() { return memoryRead(); }
-		uint8_t getBytePaged(uint8_t page, uint8_t offset);
-		void setBytePaged(uint8_t value) { memoryWrite(value); }
-		void setBytePaged(uint8_t page, uint8_t offset, uint8_t value);
 
 		uint8_t fetchByte();
 

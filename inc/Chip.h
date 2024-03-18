@@ -70,8 +70,6 @@ namespace EightBit {
 		: Device(rhs) {}
 
 	protected:
-		using base = Chip;
-
 		Chip() noexcept = default;
 	};
 }

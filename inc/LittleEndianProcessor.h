@@ -14,8 +14,6 @@ namespace EightBit {
 		void pokeWord(register16_t address, register16_t value) noexcept final;
 
 	protected:
-		using base = LittleEndianProcessor;
-
 		LittleEndianProcessor(Bus& memory) noexcept;
 
 		[[nodiscard]] register16_t getWord() override;

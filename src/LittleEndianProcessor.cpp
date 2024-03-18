@@ -21,14 +21,14 @@ void EightBit::LittleEndianProcessor::setWord(const register16_t value) {
 }
 
 EightBit::register16_t EightBit::LittleEndianProcessor::getWordPaged() {
-	const auto low = getBytePaged();
+	const auto low = memoryRead();
 	++BUS().ADDRESS().low;
 	const auto high = memoryRead();
 	return { low, high };
 }
 
 void EightBit::LittleEndianProcessor::setWordPaged(register16_t value) {
-	setBytePaged(value.low);
+	memoryWrite(value.low);
 	++BUS().ADDRESS().low;
 	memoryWrite(value.high);
 }

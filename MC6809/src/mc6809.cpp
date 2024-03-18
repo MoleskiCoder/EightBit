@@ -36,7 +36,7 @@ int EightBit::mc6809::step() noexcept {
 		else if (UNLIKELY(lowered(INT()) && !interruptMasked()))
 			handleINT();
 		else
-			Processor::execute(fetchByte());
+			BigEndianProcessor::execute(fetchByte());
 	}
 	ExecutedInstruction.fire(*this);
 	assert(cycles() > 0);
@@ -115,13 +115,13 @@ void EightBit::mc6809::handleFIRQ() {
 void EightBit::mc6809::busWrite() noexcept {
 	tick();
 	lowerRW();
-	Processor::busWrite();
+	BigEndianProcessor::busWrite();
 }
 
 uint8_t EightBit::mc6809::busRead() noexcept {
 	tick();
 	raiseRW();
-	return Processor::busRead();
+	return BigEndianProcessor::busRead();
 }
 
 //

@@ -80,8 +80,6 @@ namespace EightBit {
 		DECLARE_PIN_OUTPUT(HALT)
 
 	protected:
-		using base = IntelProcessor;
-
 		IntelProcessor(Bus& bus);
 
 		template<class T> [[nodiscard]] static constexpr uint8_t adjustSign(uint8_t f, const uint8_t value) noexcept {

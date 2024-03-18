@@ -96,13 +96,13 @@ int EightBit::IntelProcessor::jrConditional(const int condition) {
 }
 
 void EightBit::IntelProcessor::ret() {
-	Processor::ret();
+	LittleEndianProcessor::ret();
 	MEMPTR() = PC();
 }
 
 bool EightBit::IntelProcessor::operator==(const EightBit::IntelProcessor& rhs) const noexcept {
 	return
-		Processor::operator==(rhs)
+		LittleEndianProcessor::operator==(rhs)
 		&& HALT() == rhs.HALT()
 		&& MEMPTR() == rhs.MEMPTR()
 		&& SP() == rhs.SP()

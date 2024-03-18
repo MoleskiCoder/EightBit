@@ -115,13 +115,13 @@ void EightBit::MOS6502::interrupt() noexcept {
 void EightBit::MOS6502::busWrite() noexcept {
 	tick();
 	lowerRW();
-	base::busWrite();
+	LittleEndianProcessor::busWrite();
 }
 
 uint8_t EightBit::MOS6502::busRead() noexcept {
 	tick();
 	raiseRW();
-	return base::busRead();
+	return LittleEndianProcessor::busRead();
 }
 
 //

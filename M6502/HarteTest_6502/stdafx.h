@@ -1,5 +1,7 @@
 #pragma once
 
+#define SIMDJSON_DISABLE_DEPRECATED_API
+
 #include <cassert>
 #include <chrono>
 #include <cstdint>

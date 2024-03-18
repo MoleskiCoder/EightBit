@@ -45,8 +45,6 @@ public:
 
 private:
     handle_t h_;
-
-private:
     bool full_ = false;
 
     constexpr void fill() {

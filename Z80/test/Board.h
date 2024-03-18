@@ -25,7 +25,7 @@ public:
 
 protected:
 	EightBit::MemoryMapping mapping(uint16_t address) noexcept final {
-		return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
+		return m_mapping;
 	}
 
 private:
@@ -35,6 +35,7 @@ private:
 	EightBit::Z80 m_cpu = *this;
 	EightBit::Disassembler m_disassembler = *this;
 	EightBit::Profiler m_profiler = { m_cpu, m_disassembler };
+	const EightBit::MemoryMapping m_mapping = { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 	int m_warmstartCount = 0;
 
 	void bdos();

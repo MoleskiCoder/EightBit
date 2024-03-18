@@ -60,14 +60,6 @@ uint8_t EightBit::Processor::busRead() {
 	return BUS().read();
 }
 
-uint8_t EightBit::Processor::getBytePaged(const uint8_t page, const uint8_t offset) {
-	return memoryRead(register16_t(offset, page));
-}
-
-void EightBit::Processor::setBytePaged(const uint8_t page, const uint8_t offset, const uint8_t value) {
-	memoryWrite(register16_t(offset, page), value);
-}
-
 EightBit::register16_t EightBit::Processor::getWordPaged(register16_t address) {
 	BUS().ADDRESS() = address;
 	return getWordPaged();

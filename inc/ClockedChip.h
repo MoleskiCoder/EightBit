@@ -14,16 +14,17 @@ namespace EightBit {
 
 		[[nodiscard]] constexpr auto cycles() const noexcept { return m_cycles; }
 
-		void tick(int extra = 1) {
-			for (int i = 0; i < extra; ++i) {
-				++m_cycles;
-				Ticked.fire();
-			}
+		void tick() {
+			++m_cycles;
+			Ticked.fire();
+		}
+
+		void tick(int extra) {
+			for (int i = 0; i < extra; ++i)
+				tick();
 		}
 
 	protected:
-		using base = ClockedChip;
-
 		ClockedChip() noexcept = default;
 
 		constexpr void resetCycles() noexcept { m_cycles = 0; }
