@@ -105,7 +105,7 @@ namespace EightBit {
 
 		// Addressing modes
 
-		constexpr void noteFixedPage(uint8_t page) noexcept { m_fixed_page = page; }
+		constexpr void noteFixedAddress(register16_t fixed) noexcept { m_fixed_page = fixed.high; BUS().ADDRESS().low = fixed.low; }
 
 		constexpr void Address_Immediate() noexcept { BUS().ADDRESS() = PC()++; }
 		void Address_Absolute() noexcept { BUS().ADDRESS() = fetchWord(); }
@@ -115,23 +115,11 @@ namespace EightBit {
 		void Address_ZeroPageWithIndex(uint8_t index) noexcept { AM_ZeroPage(); BUS().ADDRESS().low += index; }
 		void Address_ZeroPageX() noexcept { Address_ZeroPageWithIndex(X()); }
 		void Address_ZeroPageY() noexcept { Address_ZeroPageWithIndex(Y()); }
+		void Address_AbsoluteWithIndex(uint8_t index) noexcept { Address_Absolute(); noteFixedAddress(BUS().ADDRESS() + index); }
 		void Address_AbsoluteX() noexcept { Address_AbsoluteWithIndex(X()); }
 		void Address_AbsoluteY() noexcept { Address_AbsoluteWithIndex(Y()); }
 		void Address_IndexedIndirectX() noexcept { Address_ZeroPageX(); BUS().ADDRESS() = getWordPaged(); }
-
-		void Address_AbsoluteWithIndex(uint8_t index) noexcept {
-			Address_Absolute();
-			const auto address = BUS().ADDRESS() + index;
-			noteFixedPage(address.high);
-			BUS().ADDRESS().low = address.low;
-		}
-
-		void Address_IndirectIndexedY() noexcept {
-			Address_ZeroPageIndirect();
-			const auto address = BUS().ADDRESS() + Y();
-			noteFixedPage(address.high);
-			BUS().ADDRESS().low = address.low;
-		}
+		void Address_IndirectIndexedY() noexcept { Address_ZeroPageIndirect(); noteFixedAddress(BUS().ADDRESS() + Y()); }
 
 		// Addressing modes, with read
 
