@@ -105,7 +105,7 @@ namespace EightBit {
 
 		// Addressing modes
 
-		constexpr void noteUnfixedPage() noexcept { m_unfixed_page = BUS().ADDRESS().high; }
+		constexpr void noteFixedPage(uint8_t page) noexcept { m_fixed_page = page; }
 
 		constexpr void Address_Immediate() noexcept { BUS().ADDRESS() = PC()++; }
 		void Address_Absolute() noexcept { BUS().ADDRESS() = fetchWord(); }
@@ -115,11 +115,23 @@ namespace EightBit {
 		void Address_ZeroPageWithIndex(uint8_t index) noexcept { AM_ZeroPage(); BUS().ADDRESS().low += index; }
 		void Address_ZeroPageX() noexcept { Address_ZeroPageWithIndex(X()); }
 		void Address_ZeroPageY() noexcept { Address_ZeroPageWithIndex(Y()); }
-		void Address_AbsoluteWithIndex(uint8_t index) noexcept { Address_Absolute(); noteUnfixedPage(); BUS().ADDRESS() += index; }
 		void Address_AbsoluteX() noexcept { Address_AbsoluteWithIndex(X()); }
 		void Address_AbsoluteY() noexcept { Address_AbsoluteWithIndex(Y()); }
 		void Address_IndexedIndirectX() noexcept { Address_ZeroPageX(); BUS().ADDRESS() = getWordPaged(); }
-		void Address_IndirectIndexedY() noexcept { Address_ZeroPageIndirect(); noteUnfixedPage(); BUS().ADDRESS() += Y(); }
+
+		void Address_AbsoluteWithIndex(uint8_t index) noexcept {
+			Address_Absolute();
+			const auto address = BUS().ADDRESS() + index;
+			noteFixedPage(address.high);
+			BUS().ADDRESS().low = address.low;
+		}
+
+		void Address_IndirectIndexedY() noexcept {
+			Address_ZeroPageIndirect();
+			const auto address = BUS().ADDRESS() + Y();
+			noteFixedPage(address.high);
+			BUS().ADDRESS().low = address.low;
+		}
 
 		// Addressing modes, with read
 
@@ -184,19 +196,13 @@ namespace EightBit {
 		}
 
 		void maybe_fixup() noexcept {
-			const auto fixed_page = BUS().ADDRESS().high;
-			BUS().ADDRESS().high = m_unfixed_page;
-			if (m_unfixed_page != fixed_page) {
-				memoryRead();
-				BUS().ADDRESS().high = fixed_page;
-			}
+			if (BUS().ADDRESS().high != m_fixed_page)
+				fixup();
 		}
 
 		void fixup() noexcept {
-			const auto fixed_page = BUS().ADDRESS().high;
-			BUS().ADDRESS().high = m_unfixed_page;
 			memoryRead();
-			BUS().ADDRESS().high = fixed_page;
+			BUS().ADDRESS().high = m_fixed_page;
 		}
 
 		void maybe_fixupR() noexcept { maybe_fixup(); memoryRead(); }
@@ -288,6 +294,7 @@ namespace EightBit {
 		bool m_handlingNMI = false;
 		bool m_handlingINT = false;
 
-		uint8_t m_unfixed_page = 0;
+		//uint8_t m_unfixed_page = 0;
+		uint8_t m_fixed_page = 0;
 	};
 }

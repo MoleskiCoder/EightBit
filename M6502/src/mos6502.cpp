@@ -427,9 +427,10 @@ void EightBit::MOS6502::branch(const int condition) noexcept {
 	const auto relative = int8_t(fetchByte());
 	if (condition) {
 		swallow();
-		m_unfixed_page = PC().high;
-		jump(PC() + relative);
-		BUS().ADDRESS() = PC();
+		const auto address = PC() + relative;
+		noteFixedPage(address.high);
+		jump(address);
+		BUS().ADDRESS().low = address.low;
 		maybe_fixup();
 	}
 }
