@@ -94,9 +94,9 @@ void EightBit::MOS6502::interrupt() noexcept {
 	const bool reset = m_handlingRESET;
 	const bool nmi = m_handlingNMI;
 	if (reset) {
-		dummyPush(PC().high);
-		dummyPush(PC().low);
-		dummyPush(P());
+		dummyPush();
+		dummyPush();
+		dummyPush();
 	} else {
 		const bool irq = m_handlingINT;
 		const bool hardware = nmi || irq || reset;
@@ -407,17 +407,17 @@ void EightBit::MOS6502::execute() noexcept {
 ////
 
 void EightBit::MOS6502::push(uint8_t value) noexcept {
-	pushDownStackAddress(value);
-	memoryWrite();
+	lowerStack();
+	memoryWrite(value);
 }
 
 uint8_t EightBit::MOS6502::pop() noexcept {
-	popUpStackAddress();
+	raiseStack();
 	return memoryRead();
 }
 
-void EightBit::MOS6502::dummyPush(uint8_t value) noexcept {
-	pushDownStackAddress(value);
+void EightBit::MOS6502::dummyPush() noexcept {
+	lowerStack();
 	tick();	// In place of the memory write
 }
 

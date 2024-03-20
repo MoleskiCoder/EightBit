@@ -84,24 +84,15 @@ namespace EightBit {
 
 		void interrupt() noexcept;
 
-		constexpr void setStackAddress(uint8_t position) noexcept {
-			BUS().ADDRESS() = { position, 1 };
-		}
-
-		constexpr void pushDownStackAddress(uint8_t value) noexcept {
-			BUS().DATA() = value;
-			setStackAddress(S()--);
-		}
-
-		constexpr void popUpStackAddress() noexcept {
-			setStackAddress(++S());
-		}
+		constexpr void updateStack(uint8_t position) noexcept { BUS().ADDRESS() = { position, 1 }; }
+		constexpr void lowerStack() noexcept { updateStack(S()--); }
+		constexpr void raiseStack() noexcept { updateStack(++S()); }
 
 		void push(uint8_t value) noexcept final;
 		[[nodiscard]] uint8_t pop() noexcept final;
 
 		// Dummy stack push, used during RESET
-		void dummyPush(uint8_t value) noexcept;
+		void dummyPush() noexcept;
 
 		// Addressing modes
 
@@ -282,7 +273,6 @@ namespace EightBit {
 		bool m_handlingNMI = false;
 		bool m_handlingINT = false;
 
-		//uint8_t m_unfixed_page = 0;
 		uint8_t m_fixed_page = 0;
 	};
 }
