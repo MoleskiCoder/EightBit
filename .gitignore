@@ -49,3 +49,12 @@ packages/
 cpp_chip8
 
 src/state
+/config
+/DawnCache
+/GPUCache
+/M6502/HarteTest_6502/e000
+/M6502/HarteTest_6502/Intel® VTune™ Profiler Results/HarteTest_6502
+*.advidb2
+*.advixeproj
+/M6502/test/Intel® VTune™ Profiler Results/test_M6502
+/Z80/test/Intel® VTune™ Profiler Results

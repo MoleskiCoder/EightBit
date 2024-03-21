@@ -82,7 +82,9 @@ namespace EightBit {
 		void handleNMI() noexcept;
 		void handleSO() noexcept;
 
-		void interrupt() noexcept;
+		enum interrupt_source_t { hardware, software };
+		enum interrupt_type_t { reset, non_reset };
+		void interrupt(uint8_t vector, interrupt_source_t source = hardware, interrupt_type_t type = non_reset) noexcept;
 
 		constexpr void updateStack(uint8_t position) noexcept { BUS().ADDRESS() = { position, 1 }; }
 		constexpr void lowerStack() noexcept { updateStack(S()--); }
@@ -100,7 +102,7 @@ namespace EightBit {
 
 		constexpr void Address_Immediate() noexcept { BUS().ADDRESS() = PC()++; }
 		void Address_Absolute() noexcept { BUS().ADDRESS() = fetchWord(); }
-		void Address_ZeroPage() noexcept { BUS().ADDRESS() = register16_t(fetchByte(), 0); }
+		void Address_ZeroPage() noexcept { BUS().ADDRESS() = { fetchByte(), 0 }; }
 		void Address_ZeroPageIndirect() noexcept { Address_ZeroPage(); BUS().ADDRESS() = getWordPaged(); }
 		void Address_Indirect() noexcept { Address_Absolute(); BUS().ADDRESS() = getWordPaged(); }
 		void Address_ZeroPageWithIndex(uint8_t index) noexcept { AM_ZeroPage(); BUS().ADDRESS().low += index; }
@@ -168,7 +170,11 @@ namespace EightBit {
 			return data;
 		}
 
-#define MW(OPERATION) { \
+		[[nodiscard]] constexpr auto through() noexcept {
+			return through(BUS().DATA());
+		}
+
+		#define MW(OPERATION) { \
 			const auto result = OPERATION(BUS().DATA()); \
 			memoryWrite(); \
 			memoryWrite(result); \
@@ -268,10 +274,6 @@ namespace EightBit {
 		uint8_t m_p = 0;		// processor status
 
 		register16_t m_intermediate;
-
-		bool m_handlingRESET = false;
-		bool m_handlingNMI = false;
-		bool m_handlingINT = false;
 
 		uint8_t m_fixed_page = 0;
 	};
