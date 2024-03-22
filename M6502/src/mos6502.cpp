@@ -34,17 +34,7 @@ int EightBit::MOS6502::step() noexcept {
 
 		if (LIKELY(raised(RDY()))) {
 
-			lowerSYNC();	// Instruction fetch beginning
-
-			// Read the opcode within the existing cycle
-			assert(cycles() == 1 && "An extra cycle has occurred");
-			// Can't use fetchByte, since that would add an extra tick.
-			raiseRW();
-			opcode() = BUS().read(PC()++);
-			assert(cycles() == 1 && "BUS read has introduced stray cycles");
-
-			// Instruction fetch has now completed
-			raiseSYNC();
+			fetchInstruction();
 
 			// Priority: RESET > NMI > INT
 			if (UNLIKELY(lowered(RESET())))
@@ -102,14 +92,12 @@ void EightBit::MOS6502::interrupt(uint8_t vector, interrupt_source_t source, int
 
 void EightBit::MOS6502::busWrite() noexcept {
 	tick();
-	lowerRW();
-	LittleEndianProcessor::busWrite();
+	writeToBus();
 }
 
 uint8_t EightBit::MOS6502::busRead() noexcept {
 	tick();
-	raiseRW();
-	return LittleEndianProcessor::busRead();
+	return readFromBus();
 }
 
 //
@@ -430,23 +418,25 @@ void EightBit::MOS6502::sbc() noexcept {
 	const auto operand = A();
 	A() = sub(operand, carry(~P()));
 
-	const auto difference = m_intermediate;
-	adjustOverflow_subtract(operand, BUS().DATA(), difference.low);
-	adjustNZ(difference.low);
-	reset_flag(CF, difference.high);
+	adjustOverflow_subtract(operand);
+	adjustNZ(m_intermediate.low);
+	reset_flag(CF, m_intermediate.high);
 }
 
 uint8_t EightBit::MOS6502::sub(const uint8_t operand, const int borrow) noexcept {
-	const auto data = BUS().DATA();
-	return decimal() ? sub_d(operand, data, borrow) : sub_b(operand, data, borrow);
+	return decimal() ? sub_d(operand, borrow) : sub_b(operand, borrow);
 }
 
-uint8_t EightBit::MOS6502::sub_b(const uint8_t operand, const uint8_t data, const int borrow) noexcept {
+uint8_t EightBit::MOS6502::sub_b(const uint8_t operand, const int borrow) noexcept {
+	const auto data = BUS().DATA();
 	m_intermediate.word = operand - data - borrow;
 	return m_intermediate.low;
 }
 
-uint8_t EightBit::MOS6502::sub_d(const uint8_t operand, const uint8_t data, const int borrow) noexcept {
+uint8_t EightBit::MOS6502::sub_d(const uint8_t operand, const int borrow) noexcept {
+
+	const auto data = BUS().DATA();
+
 	m_intermediate.word = operand - data - borrow;
 
 	uint8_t low = lowNibble(operand) - lowNibble(data) - borrow;
@@ -463,29 +453,31 @@ uint8_t EightBit::MOS6502::sub_d(const uint8_t operand, const uint8_t data, cons
 }
 
 void EightBit::MOS6502::adc() noexcept {
-	A() = add(A(), carry());
+	decimal() ? adc_d() : adc_b();
 }
 
-uint8_t EightBit::MOS6502::add(uint8_t operand, int carrying) noexcept {
+void EightBit::MOS6502::adc_b() noexcept {
+
+	const auto operand = A();
 	const auto data = BUS().DATA();
-	return decimal() ? add_d(operand, data, carrying) : add_b(operand, data, carrying);
-}
+	m_intermediate.word = operand + data + carry();
 
-uint8_t EightBit::MOS6502::add_b(uint8_t operand, uint8_t data, int carrying) noexcept {
-	m_intermediate.word = operand + data + carrying;
-
-	adjustOverflow_add(operand, data, m_intermediate.low);
+	adjustOverflow_add(operand);
 	set_flag(CF, carry(m_intermediate.high));
 
 	adjustNZ(m_intermediate.low);
 
-	return m_intermediate.low;
+	A() = m_intermediate.low;
 }
 
-uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) noexcept {
+void EightBit::MOS6502::adc_d() noexcept {
 
-	register16_t low = lowerNibble(operand) + lowerNibble(data) + carry;
-	register16_t high = higherNibble(operand) + higherNibble(data);
+	const auto operand = A();
+	const auto data = BUS().DATA();
+
+	register16_t low = lowerNibble(operand) + lowerNibble(data) + carry();
+	m_intermediate = higherNibble(operand) + higherNibble(data);
+	auto& high = m_intermediate;
 
 	adjustZero((low + high).low);
 
@@ -495,14 +487,14 @@ uint8_t EightBit::MOS6502::add_d(uint8_t operand, uint8_t data, int carry) noexc
 	}
 
 	adjustNegative(high.low);
-	adjustOverflow_add(operand, data, high.low);
+	adjustOverflow_add(operand);
 
 	if (high.word > 0x90)
 		high += 0x60;
 
 	set_flag(CF, high.high);
 
-	return lowerNibble(low.low) | higherNibble(high.low);
+	A() = lowerNibble(low.low) | higherNibble(high.low);
 }
 
 void EightBit::MOS6502::andr() noexcept {
@@ -605,7 +597,7 @@ void EightBit::MOS6502::arr_b(const uint8_t value) noexcept {
 }
 
 void EightBit::MOS6502::axs() noexcept {
-	X() = through(sub_b(A() & X(), BUS().DATA()));
+	X() = through(sub_b(A() & X()));
 	reset_flag(CF, m_intermediate.high);
 }
 

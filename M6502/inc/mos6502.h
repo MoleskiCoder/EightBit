@@ -60,13 +60,12 @@ namespace EightBit {
 
 		void sbc() noexcept;
 		[[nodiscard]] virtual uint8_t sub(uint8_t operand, int borrow = 0) noexcept;
-		[[nodiscard]] uint8_t sub_b(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
-		[[nodiscard]] uint8_t sub_d(uint8_t operand, uint8_t data, int borrow = 0) noexcept;
+		[[nodiscard]] uint8_t sub_b(uint8_t operand, int borrow = 0) noexcept;
+		[[nodiscard]] uint8_t sub_d(uint8_t operand, int borrow = 0) noexcept;
 
-		void adc() noexcept;
-		[[nodiscard]] virtual uint8_t add(uint8_t operand, int carry = 0) noexcept;
-		[[nodiscard]] uint8_t add_b(uint8_t operand, uint8_t data, int carry) noexcept;
-		[[nodiscard]] uint8_t add_d(uint8_t operand, uint8_t data, int carry) noexcept;
+		virtual void adc() noexcept;
+		void adc_b() noexcept;
+		void adc_d() noexcept;
 
 		// Undocumented compound instructions (with BCD effects)
 
@@ -95,6 +94,34 @@ namespace EightBit {
 
 		// Dummy stack push, used during RESET
 		void dummyPush() noexcept;
+
+		uint8_t readFromBus() noexcept {
+			raiseRW();
+			return LittleEndianProcessor::busRead();
+		}
+
+		void writeToBus() noexcept {
+			lowerRW();
+			LittleEndianProcessor::busWrite();
+		}
+
+		// Read the opcode within the existing cycle
+		void fetchInstruction() noexcept {
+
+			// Instruction fetch beginning
+			lowerSYNC();
+
+			assert(cycles() == 1 && "An extra cycle has occurred");
+
+			// Can't use fetchByte, since that would add an extra tick.
+			Address_Immediate();
+			opcode() = readFromBus();
+
+			assert(cycles() == 1 && "BUS read has introduced stray cycles");
+
+			// Instruction fetch has now completed
+			raiseSYNC();
+		}
 
 		// Addressing modes
 
@@ -153,11 +180,15 @@ namespace EightBit {
 			adjustNegative(datum);
 		}
 
-		constexpr void adjustOverflow_add(uint8_t operand, uint8_t data, uint8_t intermediate) noexcept {
+		constexpr void adjustOverflow_add(uint8_t operand) noexcept {
+			const auto data = BUS().DATA();
+			const auto intermediate = m_intermediate.low;
 			set_flag(VF, negative(~(operand ^ data) & (operand ^ intermediate)));
 		}
 
-		constexpr void adjustOverflow_subtract(uint8_t operand, uint8_t data, uint8_t intermediate) noexcept {
+		constexpr void adjustOverflow_subtract(uint8_t operand) noexcept {
+			const auto data = BUS().DATA();
+			const auto intermediate = m_intermediate.low;
 			set_flag(VF, negative((operand ^ data) & (operand ^ intermediate)));
 		}
 
