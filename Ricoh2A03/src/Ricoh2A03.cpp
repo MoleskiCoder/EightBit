@@ -6,11 +6,9 @@ EightBit::Ricoh2A03::Ricoh2A03(Bus& bus)
 }
 
 uint8_t EightBit::Ricoh2A03::sub(uint8_t operand, int borrow) noexcept {
-	const auto data = BUS().DATA();
-	return MOS6502::sub_b(operand ,data, borrow);
+	return MOS6502::sub_b(operand, borrow);
 }
 
-uint8_t EightBit::Ricoh2A03::add(uint8_t operand, int carry) noexcept {
-	const auto data = BUS().DATA();
-	return MOS6502::add_b(operand, data, carry);
+void EightBit::Ricoh2A03::adc() noexcept {
+	MOS6502::adc_b();
 }
