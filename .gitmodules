@@ -1,3 +1,6 @@
 [submodule "modules/catch2"]
 	path = modules/catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "modules/65x02"]
+	path = modules/65x02
+	url = https://github.com/SingleStepTests/65x02.git
