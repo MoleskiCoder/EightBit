@@ -12,7 +12,7 @@
 
 int main() {
 
-    auto directory = std::string("C:\\github\\spectrum\\libraries\\EightBit\\modules\\ProcessorTests\\6502\\v1");
+    auto directory = std::string("C:\\github\\spectrum\\libraries\\EightBit\\modules\\65x02\\6502\\v1");
 
     const auto start_time = std::chrono::steady_clock::now();
 
