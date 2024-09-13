@@ -602,7 +602,17 @@ void EightBit::MOS6502::axs() noexcept {
 }
 
 void EightBit::MOS6502::jam() noexcept {
-	BUS().ADDRESS() = PC()--;
+	BUS().ADDRESS() = PC();
+	memoryRead();
+	memoryRead(0xffff);
+	BUS().ADDRESS().low = 0xfe;
+	memoryRead();
+	memoryRead();
+	BUS().ADDRESS().low = 0xff;
+	memoryRead();
+	memoryRead();
+	memoryRead();
+	memoryRead();
 	memoryRead();
 	memoryRead();
 }
