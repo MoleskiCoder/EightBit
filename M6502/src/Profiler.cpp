@@ -19,7 +19,7 @@ EightBit::Profiler::Profiler(MOS6502& targetProcessor, Disassembly& disassembler
 void EightBit::Profiler::Generate() {
 	StartingOutput.fire();
 	EmitProfileInformation();
-	StartingOutput.fire();
+	FinishedOutput.fire();
 }
 
 void EightBit::Profiler::EmitProfileInformation() {
