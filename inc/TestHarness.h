@@ -27,7 +27,7 @@ namespace EightBit {
 			std::cout << "Guest cycles = " << m_totalCycles << std::endl;
 			std::cout << "Seconds = " << getElapsedSeconds() << std::endl;
 
-			std::cout << getCyclesPerSecond() << " MHz" << std::endl;
+			std::cout << getCyclesPerSecond() / 1'000'000 << " MHz" << std::endl;
 			std::cout << getInstructionsPerSecond() << " instructions per second" << std::endl;
 
 			auto elapsedHostCycles = m_finishHostCycles - m_startHostCycles;
@@ -46,7 +46,7 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] auto getCyclesPerSecond() const {
-			return (m_totalCycles / 1000000 ) / getElapsedSeconds();
+			return m_totalCycles / getElapsedSeconds();
 		}
 
 		[[nodiscard]] auto getInstructionsPerSecond() {
