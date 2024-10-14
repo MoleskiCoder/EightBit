@@ -53,7 +53,14 @@ namespace EightBit {
 			void renderBackground() noexcept;
 			void renderBackground(
 				int bgArea, int bgCharacters,
-				tile_offset_t offsetType, 
+				tile_offset_t offsetType,
+				int offsetX, int offsetY,
+				const std::array<int, 4>& palette) noexcept;
+
+			void renderBackgroundTile(
+				int definitionOffset,
+				int row, int column,
+				int bgCharacters, tile_offset_t offsetType,
 				int offsetX, int offsetY,
 				const std::array<int, 4>& palette) noexcept;
 
