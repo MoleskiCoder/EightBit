@@ -14,6 +14,7 @@ EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& b
   m_colours(colours) {
 }
 
+#pragma optimize ("t", off)
 void EightBit::GameBoy::Display::renderCurrentScanline() noexcept {
 	m_scanLine = m_bus.IO().peek(IoRegisters::LY);
 	if (m_scanLine < RasterHeight) {
@@ -25,6 +26,7 @@ void EightBit::GameBoy::Display::renderCurrentScanline() noexcept {
 			renderObjects();
 	}
 }
+#pragma optimize ("t", on)
 
 std::array<int, 4> EightBit::GameBoy::Display::createPalette(const int address) noexcept {
 	const auto raw = m_bus.IO().peek(address);
@@ -81,6 +83,7 @@ void EightBit::GameBoy::Display::renderObjects() noexcept {
 	}
 }
 
+#pragma optimize ("t", off)
 void EightBit::GameBoy::Display::renderBackground() noexcept {
 
 	const auto palette = createPalette(IoRegisters::BGP);
@@ -101,38 +104,55 @@ void EightBit::GameBoy::Display::renderBackground() noexcept {
 	const auto offsetType = bgCharacters == 0 ? tile_offset_t::Unsigned : tile_offset_t::Signed;
 	renderBackground(bgArea, bgCharacters, offsetType, offsetX - scrollX, offsetY - scrollY, palette);
 }
+#pragma optimize ("t", on)
 
 void EightBit::GameBoy::Display::renderBackground(
-		int bgArea, int bgCharacters, tile_offset_t offsetType,
-		int offsetX, int offsetY,
-		const std::array<int, 4>& palette) noexcept {
+	int bgArea, int bgCharacters, tile_offset_t offsetType,
+	int offsetX, int offsetY,
+	const std::array<int, 4>& palette) noexcept {
 
 	const int row = (m_scanLine - offsetY) / 8;
-	auto address = bgArea + row * BufferCharacterWidth;
+	const auto address = bgArea + (row * BufferCharacterWidth);
 
 	for (int column = 0; column < BufferCharacterWidth; ++column) {
-
-		const auto character = m_vram.peek(address++);
-
+		const auto character = m_vram.peek(address + column);
 		const auto definitionOffset = offsetType == tile_offset_t::Signed ? 16 * (int8_t)character : 16 * character;
-		const auto definition = CharacterDefinition(m_vram, bgCharacters + definitionOffset);
 		renderBackgroundTile(
-			column * 8 + offsetX, row * 8 + offsetY,
-			palette,
-			definition);
+			definitionOffset,
+			row, column,
+			bgCharacters, offsetType,
+			offsetX, offsetY,
+			palette);
 	}
 }
 
 void EightBit::GameBoy::Display::renderSpriteTile(
-		const int height,
-		const int drawX, const int drawY,
-		const bool flipX, const bool flipY,
-		const std::array<int, 4>& palette,
-		const CharacterDefinition& definition) noexcept {
+	const int height,
+	const int drawX, const int drawY,
+	const bool flipX, const bool flipY,
+	const std::array<int, 4>& palette,
+	const CharacterDefinition& definition) noexcept {
 	renderTile(
 		height,
 		drawX, drawY,
 		flipX, flipY, true,
+		palette,
+		definition);
+}
+
+void EightBit::GameBoy::Display::renderBackgroundTile(
+	int definitionOffset,
+		int row, int column,
+		int bgCharacters, tile_offset_t offsetType,
+		int offsetX, int offsetY,
+		const std::array<int, 4>& palette) noexcept {
+
+	const auto definition = CharacterDefinition(m_vram, bgCharacters + definitionOffset);
+	const auto drawX = (column * 8) + offsetX;
+	const auto drawY = (row * 8) + offsetY;
+
+	renderBackgroundTile(
+		drawX, drawY,
 		palette,
 		definition);
 }

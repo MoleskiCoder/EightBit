@@ -10,7 +10,7 @@ EightBit::GameBoy::CharacterDefinition::CharacterDefinition(Ram& vram, const uin
 
 std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) const noexcept {
 
-	std::array<int, 8> returned;
+	std::array<int, 8> returned {};
 
 	const auto planeAddress = m_address + row * 2;
 	
