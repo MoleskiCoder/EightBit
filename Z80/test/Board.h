@@ -32,7 +32,7 @@ private:
 	const Configuration& m_configuration;
 	EightBit::Ram m_ram = 0x10000;
 	EightBit::InputOutput m_ports;
-	EightBit::Z80 m_cpu = *this;
+	EightBit::Z80 m_cpu{ *this, m_ports };
 	EightBit::Disassembler m_disassembler = *this;
 	EightBit::Profiler m_profiler = { m_cpu, m_disassembler };
 	const EightBit::MemoryMapping m_mapping = { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };

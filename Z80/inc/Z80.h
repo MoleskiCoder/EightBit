@@ -5,6 +5,7 @@
 #include <functional>
 
 #include <IntelProcessor.h>
+#include <InputOutput.h>
 #include <EventArgs.h>
 #include <Signal.h>
 #include <Register.h>
@@ -69,7 +70,7 @@ namespace EightBit {
 			CF = Bit0,
 		};
 
-		Z80(Bus& bus);
+		Z80(Bus& bus, InputOutput& ports);
 
 		Z80(const Z80& rhs);
 		bool operator==(const Z80& rhs) const;
@@ -159,6 +160,8 @@ namespace EightBit {
 		int jrConditional(int condition) noexcept final;
 
 	private:
+		InputOutput& m_ports;
+			
 		enum { BC_IDX, DE_IDX, HL_IDX };
 
 		std::array<std::array<register16_t, 3>, 2> m_registers;
@@ -553,7 +556,7 @@ namespace EightBit {
 		void portWrite(uint8_t port) noexcept;
 		void portWrite() noexcept;
 
-		uint8_t portRead(uint8_t port) noexcept;
-		uint8_t portRead() noexcept;
+		void portRead(uint8_t port) noexcept;
+		void portRead() noexcept;
 	};
 }

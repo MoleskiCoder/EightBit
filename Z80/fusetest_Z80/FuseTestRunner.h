@@ -22,9 +22,9 @@ namespace Fuse {
 
 		EightBit::Ram m_ram = 0x10000;
 		EightBit::InputOutput m_ports;
-		EightBit::Z80 m_cpu;
+		EightBit::Z80 m_cpu{ *this, m_ports };
 
-		int m_totalCycles;
+		int m_totalCycles = 0;
 
 		void check();
 		void checkRegisters();

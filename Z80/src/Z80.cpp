@@ -3,8 +3,9 @@
 
 // based on http://www.z80.info/decoding.htm
 
-EightBit::Z80::Z80(Bus& bus)
-: IntelProcessor(bus) {
+EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
+: IntelProcessor(bus),
+  m_ports(ports) {
 	RaisedPOWER.connect([this](EventArgs) {
 
 		raiseM1();
@@ -35,7 +36,8 @@ EightBit::Z80::Z80(Bus& bus)
 }
 
 EightBit::Z80::Z80(const Z80& rhs)
-: IntelProcessor(rhs) {
+: IntelProcessor(rhs),
+  m_ports(rhs.m_ports) {
 
 	m_registers = rhs.m_registers;
 	m_registerSet = rhs.m_registerSet;
@@ -524,16 +526,17 @@ void EightBit::Z80::portWrite() noexcept {
 
 	_Writer writer(*this);
 	_ActivateIORQ iorq(*this);
-	busWrite();
+	tick();
+	m_ports.writeOutputPort(BUS().ADDRESS().low, BUS().DATA());
 }
 
-uint8_t EightBit::Z80::portRead(const uint8_t port) noexcept {
+void EightBit::Z80::portRead(const uint8_t port) noexcept {
 	MEMPTR() = BUS().ADDRESS() = { port, A() };
 	++MEMPTR().low;
-	return portRead();
+	portRead();
 }
 
-uint8_t EightBit::Z80::portRead() noexcept {
+void EightBit::Z80::portRead() noexcept {
 
 	class _Reader final {
 		Z80& m_parent;
@@ -551,7 +554,8 @@ uint8_t EightBit::Z80::portRead() noexcept {
 
 	_Reader reader(*this);
 	_ActivateIORQ iorq(*this);
-	return busRead();
+	tick();
+	BUS().DATA() = m_ports.readInputPort(BUS().ADDRESS().low);
 }
 
 //
@@ -1391,7 +1395,8 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				portWrite(fetchByte());
 				break;
 			case 3:	// IN A,(n)
-				A() = portRead(fetchByte());
+				portRead(fetchByte());
+				A() = BUS().DATA();
 				break;
 			case 4:	// EX (SP),HL
 				xhtl(HL2());

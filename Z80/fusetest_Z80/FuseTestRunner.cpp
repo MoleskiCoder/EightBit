@@ -7,9 +7,7 @@
 
 Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& result)
 : m_test(test),
-  m_result(result),
-  m_cpu(*this),
-  m_totalCycles(0) {
+  m_result(result) {
 
 	for (const auto& event : m_result.events.events) {
 		if (!boost::algorithm::ends_with(event.specifier, "C"))
