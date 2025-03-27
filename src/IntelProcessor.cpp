@@ -63,14 +63,14 @@ void EightBit::IntelProcessor::restart(const uint8_t address) {
 }
 
 int EightBit::IntelProcessor::callConditional(const int condition) {
-	MEMPTR() = fetchWord();
+	fetchWordMEMPTR();
 	if (condition)
 		call(MEMPTR());
 	return condition;
 }
 
 int EightBit::IntelProcessor::jumpConditional(const int condition) {
-	MEMPTR() = fetchWord();
+	fetchWordMEMPTR();
 	if (condition)
 		jump(MEMPTR());
 	return condition;
@@ -98,6 +98,21 @@ int EightBit::IntelProcessor::jrConditional(const int condition) {
 void EightBit::IntelProcessor::ret() {
 	LittleEndianProcessor::ret();
 	MEMPTR() = PC();
+}
+
+void EightBit::IntelProcessor::fetchWordMEMPTR() {
+	const auto _ = fetchWord();
+	MEMPTR() = intermediate();
+}
+
+void EightBit::IntelProcessor::jumpIndirect() {
+	fetchWordMEMPTR();
+	jump(MEMPTR());
+}
+
+void EightBit::IntelProcessor::callIndirect() {
+	fetchWordMEMPTR();
+	call(MEMPTR());
 }
 
 bool EightBit::IntelProcessor::operator==(const EightBit::IntelProcessor& rhs) const noexcept {

@@ -289,7 +289,7 @@ EightBit::register16_t EightBit::Z80::sbc(uint8_t& f, const register16_t operand
 	const register16_t result = subtraction;
 
 	f = setBit(f, NF);
-	f = clearBit(f, ZF, result.word);
+	f = setBit(f, ZF, result.zero());
 	f = setBit(f, CF, subtraction & Bit16);
 	f = adjustHalfCarrySub(f, operand.high, value.high, result.high);
 	f = adjustXY<Z80>(f, result.high);
@@ -310,7 +310,7 @@ EightBit::register16_t EightBit::Z80::sbc(uint8_t& f, const register16_t operand
 EightBit::register16_t EightBit::Z80::adc(uint8_t& f, const register16_t operand, const register16_t value) noexcept {
 
 	const auto result = add(f, operand, value, f & CF);
-	f = clearBit(f, ZF, result.word);
+	f = setBit(f, ZF, result.zero());
 
 	const auto beforeNegative = operand.high & SF;
 	const auto valueNegative = value.high & SF;
@@ -688,7 +688,7 @@ uint8_t EightBit::Z80::R(const int r) noexcept {
 	case 5:
 		return HL2().low;
 	case 6:
-		return IntelProcessor::memoryRead(UNLIKELY(displaced()) ? displacedAddress() : HL().word);
+		return IntelProcessor::memoryRead(UNLIKELY(displaced()) ? displacedAddress() : HL());
 	case 7:
 		return A();
 	default:
@@ -717,7 +717,7 @@ void EightBit::Z80::R(const int r, const uint8_t value) noexcept {
 		HL2().low = value;
 		break;
 	case 6:
-		IntelProcessor::memoryWrite(UNLIKELY(displaced()) ? displacedAddress() : HL().word, value);
+		IntelProcessor::memoryWrite(UNLIKELY(displaced()) ? displacedAddress() : HL(), value);
 		break;
 	case 7:
 		A() = value;
@@ -1380,7 +1380,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0:	// JP nn
-				jump(MEMPTR() = fetchWord());
+				jumpIndirect();
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
@@ -1425,7 +1425,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
-					call(MEMPTR() = fetchWord());
+					callIndirect();
 					break;
 				case 1:	// DD prefix
 					m_prefixDD = true;

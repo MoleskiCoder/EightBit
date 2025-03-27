@@ -158,6 +158,11 @@ namespace EightBit {
 		virtual int jrConditional(int condition);
 		void ret() override;
 
+		virtual void fetchWordMEMPTR();
+
+		void jumpIndirect();
+		void callIndirect();
+
 		void resetWorkingRegisters() noexcept;
 
 	private:

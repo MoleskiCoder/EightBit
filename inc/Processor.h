@@ -27,6 +27,9 @@ namespace EightBit {
 		[[nodiscard]] constexpr auto& PC() noexcept { return m_pc; }
 		[[nodiscard]] constexpr const auto& PC() const noexcept { return m_pc; }
 
+		[[nodiscard]] constexpr auto& intermediate() noexcept { return m_intermediate; }
+		[[nodiscard]] constexpr const auto& intermediate() const noexcept { return m_intermediate; }
+
 		int run(int limit) noexcept;
 		virtual int step() noexcept = 0;
 		virtual void execute() noexcept = 0;
@@ -88,5 +91,6 @@ namespace EightBit {
 		Bus& m_bus;
 		uint8_t m_opcode = Mask8;
 		register16_t m_pc;
+		register16_t m_intermediate;
 	};
 }

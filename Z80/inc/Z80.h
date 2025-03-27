@@ -195,10 +195,11 @@ namespace EightBit {
 
 		[[nodiscard]] constexpr auto displaced() const noexcept { return m_prefixDD || m_prefixFD; }
 
-		[[nodiscard]] constexpr uint16_t displacedAddress() noexcept {
-			const auto address = (m_prefixDD ? IX() : IY()).word + m_displacement;
+		[[nodiscard]] constexpr const register16_t& displacedAddress() noexcept {
+			const auto& index_register = m_prefixDD ? IX() : IY();
+			const auto address = index_register.word + m_displacement;
 			MEMPTR().word = address;
-			return address;
+			return MEMPTR();
 		}
 
 		void fetchDisplacement() noexcept;

@@ -34,9 +34,9 @@ void EightBit::LittleEndianProcessor::setWordPaged(register16_t value) {
 }
 
 EightBit::register16_t EightBit::LittleEndianProcessor::fetchWord() {
-	const auto low = fetchByte();
-	const auto high = fetchByte();
-	return { low, high };
+	intermediate().low = fetchByte();
+	intermediate().high = fetchByte();
+	return intermediate();
 }
 
 void EightBit::LittleEndianProcessor::pushWord(const register16_t value) {

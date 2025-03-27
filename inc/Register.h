@@ -75,6 +75,9 @@ namespace EightBit {
 		[[nodiscard]] constexpr auto operator<=(const register16_t& rhs) const noexcept { return word <= rhs.word; }
 		[[nodiscard]] constexpr auto operator>(const register16_t& rhs) const noexcept { return word > rhs.word; }
 		[[nodiscard]] constexpr auto operator>=(const register16_t& rhs) const noexcept { return word >= rhs.word; }
+
+		[[nodiscard]] constexpr auto zero() const noexcept { return word == 0; }
+		[[nodiscard]] constexpr auto nonzero() const noexcept { return word != 0; }
 	};
 
 	[[nodiscard]] constexpr inline auto operator+(register16_t lhs, const register16_t rhs) noexcept {
