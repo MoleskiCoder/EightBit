@@ -4,3 +4,6 @@
 [submodule "modules/65x02"]
 	path = modules/65x02
 	url = https://github.com/SingleStepTests/65x02.git
+[submodule "modules/sm83"]
+	path = modules/sm83
+	url = https://github.com/SingleStepTests/sm83.git
