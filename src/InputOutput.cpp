@@ -1,45 +1,55 @@
 #include "stdafx.h"
 #include "../inc/InputOutput.h"
 
-#include <cassert>
-#include <stdexcept>
+namespace EightBit {
 
-#include "../inc/Register.h"
+// Input port actions
 
-uint16_t EightBit::InputOutput::size() const noexcept {
-	return 0x100;
+uint8_t InputOutput::read(register16_t port) {
+	return readInputPort(port);
 }
 
-uint8_t EightBit::InputOutput::peek(uint16_t) const noexcept {
-	assert(false && "Peek operation not allowed.");
-	return 0xff;
+uint8_t InputOutput::readInputPort(register16_t port) {
+	return readInputPort(port.word);
 }
 
-uint8_t& EightBit::InputOutput::reference(uint16_t address) noexcept {
-	const auto port = register16_t(address).low;
-	switch (accessType()) {
-	case AccessType::Reading:
-		return m_input.reference(port);
-	case AccessType::Writing:
-		return m_output.reference(port);
-	default:
-		assert(false && "Unknown I/O access type.");
-	}
-	return m_delivered;
+uint8_t InputOutput::readInputPort(uint16_t port) {
+	ReadingPort.fire(port);
+	const auto value = _input[port];
+	ReadPort.fire(port);
+	return value;
 }
 
-int EightBit::InputOutput::load(std::ifstream&, int, int, int) {
-	throw std::logic_error("load operation not allowed.");
+void InputOutput::writeInputPort(uint16_t port, uint8_t value) noexcept {
+	_input[port] = value;
 }
 
-int EightBit::InputOutput::load(std::string, int, int, int) {
-	throw std::logic_error("load operation not allowed.");
+void InputOutput::writeInputPort(register16_t port, uint8_t value) {
+	writeInputPort(port.word, value);
 }
 
-int EightBit::InputOutput::load(const std::vector<uint8_t>&, int, int, int) {
-	throw std::logic_error("load operation not allowed.");
+// Output port actions
+
+void InputOutput::write(register16_t port, uint8_t value) {
+	return writeOutputPort(port, value);
 }
 
-void EightBit::InputOutput::poke(uint16_t, uint8_t) noexcept {
-	assert(false && "Poke operation not allowed.");
+void InputOutput::writeOutputPort(register16_t port, uint8_t value) {
+	writeOutputPort(port.word ,value);
+}
+
+void InputOutput::writeOutputPort(uint16_t port, uint8_t value) {
+	WritingPort.fire(port);
+	_output[port] = value;
+	WrittenPort.fire(port);
+}
+
+uint8_t InputOutput::readOutputPort(uint16_t port) noexcept {
+	return _output[port];
+}
+
+uint8_t InputOutput::readOutputPort(register16_t port) {
+	return readOutputPort(port.word);
+}
+
 }

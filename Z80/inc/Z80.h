@@ -307,8 +307,8 @@ namespace EightBit {
 			return result;
 		}
 
-		void di() noexcept;
-		void ei() noexcept;
+		void disableInterrupts() override;
+		void enableInterrupts() override;
 
 		void retn() noexcept;
 		void reti() noexcept;

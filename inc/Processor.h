@@ -84,6 +84,8 @@ namespace EightBit {
 		void setWord(register16_t address, register16_t value);
 
 		void jump(const register16_t destination) noexcept;
+		void jump(uint16_t destination) noexcept;
+
 		virtual void call(register16_t destination);
 		virtual void ret();
 

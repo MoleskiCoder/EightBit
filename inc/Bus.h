@@ -26,25 +26,15 @@ namespace EightBit {
 		[[nodiscard]] constexpr auto DATA() const noexcept { return m_data; }
 		[[nodiscard]] constexpr auto& DATA() noexcept { return m_data; }
 
-		[[nodiscard]] auto peek() noexcept { return reference(); }
 		[[nodiscard]] virtual uint8_t peek(const uint16_t address) noexcept { return reference(address); }
 		[[nodiscard]] auto peek(const register16_t address) noexcept { return peek(address.word); }
+
 		void poke(const uint8_t value) noexcept { reference() = value; }
 		virtual void poke(const uint16_t address, const uint8_t value) noexcept { reference(address) = value; }
 		void poke(const register16_t address, const uint8_t value) noexcept { poke(address.word, value); }
 
 		[[nodiscard]] uint8_t read();
-		template<class T> [[nodiscard]] auto read(const T address) {
-			ADDRESS() = address;
-			return read();
-		}
-
 		void write();
-		void write(uint8_t value);
-		template<class T> void write(const T offset, const uint8_t value) {
-			ADDRESS() = offset;
-			write(value);
-		}
 
 		virtual void raisePOWER() noexcept;
 		virtual void lowerPOWER() noexcept;
@@ -53,8 +43,7 @@ namespace EightBit {
 
 	protected:
 		[[nodiscard]] uint8_t& reference(uint16_t address) noexcept;
-		[[nodiscard]] auto& reference(const register16_t address) noexcept { return reference(address.word); }
-		[[nodiscard]] uint8_t& reference() noexcept { return reference(ADDRESS()); }
+		[[nodiscard]] uint8_t& reference() noexcept { return reference(ADDRESS().word); }
 
 		void loadHexFile(const std::string& path);
 

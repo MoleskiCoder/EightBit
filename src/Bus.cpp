@@ -21,11 +21,6 @@ void EightBit::Bus::write() {
 	WrittenByte.fire();
 }
 
-void EightBit::Bus::write(const uint8_t value) {
-	DATA() = value;
-	write();
-}
-
 void EightBit::Bus::loadHexFile(const std::string& path) {
 	IntelHexFile file(path);
 	const auto chunks = file.parse();

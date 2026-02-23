@@ -36,7 +36,14 @@ DEFINE_PIN_LEVEL_CHANGERS(HALT, IntelProcessor);
 
 void EightBit::IntelProcessor::handleRESET() {
 	Processor::handleRESET();
-	PC() = 0;
+	disableInterrupts();
+	jump(0);
+}
+
+void EightBit::IntelProcessor::handleINT() {
+	Processor::handleINT();
+	disableInterrupts();
+	raiseHALT();
 }
 
 void EightBit::IntelProcessor::push(const uint8_t value) {

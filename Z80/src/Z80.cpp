@@ -15,7 +15,7 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 		raiseRD();
 		raiseWR();
 
-		di();
+		disableInterrupts();
 		IM() = 0;
 
 		REFRESH() = 0;
@@ -196,7 +196,7 @@ uint8_t EightBit::Z80::busRead() noexcept {
 
 void EightBit::Z80::handleRESET() noexcept {
 	IntelProcessor::handleRESET();
-	di();
+	disableInterrupts();
 	IV() = 0;
 	REFRESH() = 0;
 	SP().word = AF().word = Mask16;
@@ -220,7 +220,7 @@ void EightBit::Z80::handleINT() noexcept {
 		_ActivateIORQ iorq(*this);
 		data = readBusDataM1();
 	}
-	di();
+
 	switch (IM()) {
 	case 0:		// i8080 equivalent
 		IntelProcessor::execute(data);
@@ -230,18 +230,19 @@ void EightBit::Z80::handleINT() noexcept {
 		break;
 	case 2:
 		tick(7);	// How long to allow fetching data from the device...
-		call(MEMPTR() = { data, IV() });
+		MEMPTR() = Processor::getWordPaged(IV(), data);
+		call(MEMPTR());
 		break;
 	default:
 		UNREACHABLE;
 	}
 }
 
-void EightBit::Z80::di() noexcept {
+void EightBit::Z80::disableInterrupts() {
 	IFF1() = IFF2() = false;
 }
 
-void EightBit::Z80::ei() noexcept {
+void EightBit::Z80::enableInterrupts() {
 	IFF1() = IFF2() = true;
 }
 
@@ -1405,10 +1406,10 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				std::swap(DE(), HL());
 				break;
 			case 6:	// DI
-				di();
+				disableInterrupts();
 				break;
 			case 7:	// EI
-				ei();
+				enableInterrupts();
 				break;
 			default:
 				UNREACHABLE;

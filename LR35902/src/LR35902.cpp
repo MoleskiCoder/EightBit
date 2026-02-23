@@ -447,7 +447,7 @@ int EightBit::GameBoy::LR35902::step() noexcept {
 			if (IME()) {
 				m_bus.IO().poke(IoRegisters::IF, 0);
 				lowerINT();
-				const int index = EightBit::findFirstSet(masked);
+				const int index = findFirstSet(masked);
 				BUS().DATA() = 0x38 + (index << 3);
 			} else {
 				raiseHALT();

@@ -91,7 +91,7 @@ namespace EightBit {
 		}
 
 		template<class T> [[nodiscard]] static constexpr uint8_t adjustParity(uint8_t f, const uint8_t value) noexcept {
-			return clearBit(f, T::PF, PARITY(value));
+			return clearBit(f, T::PF, oddParity(value));
 		}
 
 		template<class T> [[nodiscard]] static constexpr uint8_t adjustSZ(uint8_t f, const uint8_t value) noexcept {
@@ -138,7 +138,12 @@ namespace EightBit {
 			return calculateHalfCarry(m_halfCarryTableSub, before, value, calculation);
 		}
 
+		virtual void disableInterrupts() = 0;
+
+		virtual void enableInterrupts() = 0;
+
 		void handleRESET() override;
+		void handleINT() override;
 
 		void push(uint8_t value) final;
 		[[nodiscard]] uint8_t pop() final;

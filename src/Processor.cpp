@@ -110,6 +110,10 @@ void EightBit::Processor::jump(const register16_t destination) noexcept {
 	PC() = destination;
 }
 
+void EightBit::Processor::jump(const uint16_t destination) noexcept {
+	PC().word = destination;
+}
+
 void EightBit::Processor::call(const register16_t destination) {
 	pushWord(PC());
 	jump(destination);
