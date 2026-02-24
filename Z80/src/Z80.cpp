@@ -408,7 +408,7 @@ void EightBit::Z80::blockLoad() noexcept {
 	const auto xy = A() + BUS().DATA();
 	setBit(XF, xy & Bit3);
 	setBit(YF, xy & Bit1);
-	clearBit((StatusBits)(NF | HC));
+	clearBit(NF | HC);
 	setBit(PF, --BC().word);
 	tick(2);
 }
@@ -439,8 +439,7 @@ void EightBit::Z80::lddr() noexcept {
 	tick(5);
 }
 
-void EightBit::Z80::repeatBlockInstruction()
-{
+void EightBit::Z80::repeatBlockInstruction() noexcept {
 	MEMPTR() = --PC();
 	--PC();
 	adjustXY(PC().high);
@@ -458,20 +457,20 @@ void EightBit::Z80::adjustBlockRepeatFlagsIO() {
 	}
 }
 
-void EightBit::Z80::adjustBlockInputOutputFlags(int basis) {
-	setBit((StatusBits)(HC | CF), basis > 0xff);
+void EightBit::Z80::adjustBlockInputOutputFlags(int basis) noexcept {
+	setBit(HC | CF, basis > 0xff);
 	adjustParity(((basis & (int)Mask::Mask3) ^ B()));
 }
 
-void EightBit::Z80::adjustBlockInFlagsIncrement() {
+void EightBit::Z80::adjustBlockInFlagsIncrement() noexcept {
 	adjustBlockInputOutputFlags((C() + 1) + BUS().DATA());
 }
 
-void EightBit::Z80::adjustBlockInFlagsDecrement() {
+void EightBit::Z80::adjustBlockInFlagsDecrement() noexcept {
 	adjustBlockInputOutputFlags((C() - 1) + BUS().DATA());
 }
 
-void EightBit::Z80::adjustBlockOutFlags() {
+void EightBit::Z80::adjustBlockOutFlags() noexcept {
 	// HL needs to have been incremented or decremented prior to this call
 	setBit(NF, signTest(BUS().DATA()));
 	adjustBlockInputOutputFlags(L() + BUS().DATA());
@@ -562,7 +561,7 @@ void EightBit::Z80::rrd(register16_t address, uint8_t& update) noexcept {
 	IntelProcessor::memoryWrite(promoteNibble(update) | highNibble(memory));
 	update = higherNibble(update) | lowerNibble(memory);
 	adjustSZPXY(update);
-	clearBit((StatusBits)(NF | HC));
+	clearBit(NF | HC);
 }
 
 void EightBit::Z80::rld(register16_t address, uint8_t& update) noexcept {
@@ -572,7 +571,7 @@ void EightBit::Z80::rld(register16_t address, uint8_t& update) noexcept {
 	IntelProcessor::memoryWrite(promoteNibble(memory) | lowNibble(update));
 	update = higherNibble(update) | highNibble(memory);
 	adjustSZPXY(update);
-	clearBit((StatusBits)(NF | HC));
+	clearBit(NF | HC);
 }
 
 void EightBit::Z80::writePort(const register16_t port) noexcept {
@@ -693,7 +692,7 @@ void EightBit::Z80::storeAccumulatorIndirect(addresser_t addresser) noexcept {
 
 void EightBit::Z80::readInternalRegister(reader_t reader) noexcept {
 	adjustSZXY(A() = reader());
-	clearBit((StatusBits)(NF | HC));
+	clearBit(NF | HC);
 	setBit(PF, IFF2());
 	tick();
 }
@@ -955,7 +954,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			if (y != 6)	// IN r[y],(C)
 				R(y, BUS().DATA());
 			adjustSZPXY(BUS().DATA());
-			clearBit((StatusBits)(NF | HC));
+			clearBit(NF | HC);
 			break;
 		case 1:	// Output to port with 16-bit address
 			BUS().DATA() = y == 6 ? 0 : R(y);

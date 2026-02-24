@@ -212,14 +212,14 @@ namespace EightBit {
 		void R(int r, uint8_t value) noexcept;
 		void R2(int r, uint8_t value) noexcept;
 
-		static [[nodiscard]] constexpr auto zeroTest(uint8_t data) noexcept { return data & ZF; }
-		static [[nodiscard]] constexpr auto carryTest(uint8_t data) noexcept { return data & CF; }
-		static [[nodiscard]] constexpr auto parityTest(uint8_t data) noexcept { return data & PF; }
-		static [[nodiscard]] constexpr auto signTest(uint8_t data) noexcept { return data & SF; }
-		static [[nodiscard]] constexpr auto halfCarryTest(uint8_t data) noexcept { return data & HC; }
-		static [[nodiscard]] constexpr auto subtractingTest(uint8_t data) noexcept { return data & NF; }
-		static [[nodiscard]] constexpr auto xTest(uint8_t data) noexcept { return data & XF; }
-		static [[nodiscard]] constexpr auto yTest(uint8_t data) noexcept { return data & YF; }
+		[[nodiscard]] static constexpr auto zeroTest(uint8_t data) noexcept { return data & ZF; }
+		[[nodiscard]] static constexpr auto carryTest(uint8_t data) noexcept { return data & CF; }
+		[[nodiscard]] static constexpr auto parityTest(uint8_t data) noexcept { return data & PF; }
+		[[nodiscard]] static constexpr auto signTest(uint8_t data) noexcept { return data & SF; }
+		[[nodiscard]] static constexpr auto halfCarryTest(uint8_t data) noexcept { return data & HC; }
+		[[nodiscard]] static constexpr auto subtractingTest(uint8_t data) noexcept { return data & NF; }
+		[[nodiscard]] static constexpr auto xTest(uint8_t data) noexcept { return data & XF; }
+		[[nodiscard]] static constexpr auto yTest(uint8_t data) noexcept { return data & YF; }
 
 		[[nodiscard]] constexpr auto zero() noexcept { return zeroTest(F()); }
 		[[nodiscard]] constexpr auto carry() noexcept { return carryTest(F()); }
@@ -228,55 +228,61 @@ namespace EightBit {
 		[[nodiscard]] constexpr auto halfCarry() noexcept { return halfCarryTest(F()); }
 		[[nodiscard]] constexpr auto subtracting() noexcept { return subtractingTest(F()); }
 
-		void adjustStatusFlags(uint8_t value) noexcept { m_modifiedF = F() = value; }
+		void adjustStatusFlags(uint8_t value) noexcept {
+			m_modifiedF = F();
+			F() = value;
+		}
 
-		void setBit(StatusBits flag) { return adjustStatusFlags(setBit(F(), flag)); }
-		static [[nodiscard]] constexpr uint8_t setBit(uint8_t f, StatusBits flag) noexcept { return Chip::setBit(f, (uint8_t)flag); }
+		void setBit(StatusBits flag) noexcept { return adjustStatusFlags(setBit(F(), flag)); }
+		void setBit(int flag) noexcept { return setBit((StatusBits)flag); }
+		[[nodiscard]] static constexpr uint8_t setBit(uint8_t f, StatusBits flag) noexcept { return Chip::setBit(f, (uint8_t)flag); }
 		void setBit(StatusBits flag, int condition) noexcept { adjustStatusFlags(Chip::setBit(F(), flag, condition)); }
-		static [[nodiscard]] constexpr uint8_t setBit(uint8_t f, StatusBits flag, int condition) noexcept { return Chip::setBit(f, (uint8_t)flag, condition); }
+		[[nodiscard]] static constexpr uint8_t setBit(uint8_t f, StatusBits flag, int condition) noexcept { return Chip::setBit(f, (uint8_t)flag, condition); }
 		void setBit(StatusBits flag, bool condition) noexcept { adjustStatusFlags(setBit(F(), flag, condition)); }
-		static [[nodiscard]] constexpr uint8_t setBit(uint8_t f, StatusBits flag, bool condition) noexcept { return Chip::setBit(f, (uint8_t)flag, condition); }
+		void setBit(int flag, bool condition) noexcept { setBit((StatusBits)flag, condition); }
+		[[nodiscard]] static constexpr uint8_t setBit(uint8_t f, StatusBits flag, bool condition) noexcept { return Chip::setBit(f, (uint8_t)flag, condition); }
 
 		void clearBit(StatusBits flag) noexcept { adjustStatusFlags(clearBit(F(), flag)); }
-		static [[nodiscard]] constexpr uint8_t clearBit(uint8_t f, StatusBits flag) noexcept { return Chip::clearBit(f, (uint8_t)flag); }
+		void clearBit(int flag) noexcept { clearBit((StatusBits)flag); }
+		[[nodiscard]] static constexpr uint8_t clearBit(uint8_t f, StatusBits flag) noexcept { return Chip::clearBit(f, (uint8_t)flag); }
 		void clearBit(StatusBits flag, int condition) noexcept { adjustStatusFlags(clearBit(F(), flag, condition)); }
-		static [[nodiscard]] constexpr uint8_t clearBit(uint8_t f, StatusBits flag, int condition) noexcept { return Chip::clearBit(f, (uint8_t)flag, condition); }
+		[[nodiscard]] static constexpr uint8_t clearBit(uint8_t f, StatusBits flag, int condition) noexcept { return Chip::clearBit(f, (uint8_t)flag, condition); }
 
 		void adjustSign(uint8_t value) noexcept { adjustStatusFlags(adjustSign(F(), value)); }
-		static [[nodiscard]] uint8_t adjustSign(uint8_t input, uint8_t value) noexcept { return setBit(input, SF, signTest(value)); }
+		[[nodiscard]] static constexpr uint8_t adjustSign(uint8_t input, uint8_t value) noexcept { return setBit(input, SF, signTest(value)); }
 
 		void adjustZero(uint8_t value) noexcept { adjustStatusFlags(adjustZero(F(), value)); }
-		static [[nodiscard]] constexpr uint8_t adjustZero(uint8_t input, uint8_t value) noexcept { return clearBit(input, ZF, value); }
+		[[nodiscard]] static constexpr uint8_t adjustZero(uint8_t input, uint8_t value) noexcept { return clearBit(input, ZF, value); }
 
 		void adjustParity(uint8_t value) noexcept { adjustStatusFlags(adjustParity(F(), value)); }
-		static [[nodiscard]] constexpr uint8_t adjustParity(uint8_t input, uint8_t value) noexcept { return setBit(input, PF, evenParity(value)); }
+		[[nodiscard]] static constexpr uint8_t adjustParity(uint8_t input, uint8_t value) noexcept { return setBit(input, PF, evenParity(value)); }
 
 		void adjustSZ(uint8_t value) noexcept { adjustStatusFlags(adjustSZ(F(), value)); }
-		static [[nodiscard]] uint8_t adjustSZ(uint8_t input, uint8_t value) noexcept {
+		[[nodiscard]] static constexpr uint8_t adjustSZ(uint8_t input, uint8_t value) noexcept {
 			input = adjustSign(input, value);
 			return adjustZero(input, value);
 		}
 
 		void adjustSZP(uint8_t value) noexcept { adjustStatusFlags(adjustSZP(F(), value)); }
-		static [[nodiscard]] uint8_t adjustSZP(uint8_t input, uint8_t value) noexcept {
+		[[nodiscard]] static constexpr uint8_t adjustSZP(uint8_t input, uint8_t value) noexcept {
 			input = adjustSZ(input, value);
 			return adjustParity(input, value);
 		}
 
 		void adjustXY(uint8_t value) noexcept { adjustStatusFlags(adjustXY(F(), value)); }
-		static [[nodiscard]] constexpr uint8_t adjustXY(uint8_t input, uint8_t value) noexcept {
+		[[nodiscard]] static constexpr uint8_t adjustXY(uint8_t input, uint8_t value) noexcept {
 			input = setBit(input, XF, xTest(value));
 			return setBit(input, YF, yTest(value));
 		}
 
 		void adjustSZPXY(uint8_t value) noexcept { adjustStatusFlags(adjustSZPXY(F(), value)); }
-		static [[nodiscard]] uint8_t adjustSZPXY(uint8_t input, uint8_t value) noexcept {
+		[[nodiscard]] static constexpr uint8_t adjustSZPXY(uint8_t input, uint8_t value) noexcept {
 			input = adjustSZP(input, value);
 			return adjustXY(input, value);
 		}
 
 		void adjustSZXY(uint8_t value) noexcept { adjustStatusFlags(adjustSZXY(F(), value)); }
-		static [[nodiscard]] uint8_t adjustSZXY(uint8_t input, uint8_t value) noexcept {
+		[[nodiscard]] static constexpr uint8_t adjustSZXY(uint8_t input, uint8_t value) noexcept {
 			input = adjustSZ(input, value);
 			return adjustXY(input, value);
 		}
@@ -297,37 +303,37 @@ namespace EightBit {
 			adjustStatusFlags(adjustHalfCarrySub(F(), before, value, calculation));
 		}
 
-		void adjustOverflowAdd(int beforeNegative, int valueNegative, int afterNegative) {
+		void adjustOverflowAdd(int beforeNegative, int valueNegative, int afterNegative) noexcept {
 			adjustStatusFlags(adjustOverflowAdd(F(), beforeNegative, valueNegative, afterNegative));
 		}
 
-		[[nodiscard]] static uint8_t adjustOverflowAdd(uint8_t input, int beforeNegative, int valueNegative, int afterNegative) {
+		[[nodiscard]] static constexpr uint8_t adjustOverflowAdd(uint8_t input, int beforeNegative, int valueNegative, int afterNegative) noexcept {
 			const auto overflow = beforeNegative == valueNegative && beforeNegative != afterNegative;
 			return setBit(input, VF, overflow);
 		}
 
-		void adjustOverflowAdd(uint8_t before, uint8_t value, uint8_t calculation) {
+		void adjustOverflowAdd(uint8_t before, uint8_t value, uint8_t calculation) noexcept {
 			adjustStatusFlags(adjustOverflowAdd(F(), before, value, calculation));
 		}
 
-		[[nodiscard]] static uint8_t adjustOverflowAdd(uint8_t input, uint8_t before, uint8_t value, uint8_t calculation) {
+		[[nodiscard]] static constexpr uint8_t adjustOverflowAdd(uint8_t input, uint8_t before, uint8_t value, uint8_t calculation) noexcept {
 			return adjustOverflowAdd(input, signTest(before), signTest(value), signTest(calculation));
 		}
 
-		void adjustOverflowSub(int beforeNegative, int valueNegative, int afterNegative) {
+		void adjustOverflowSub(int beforeNegative, int valueNegative, int afterNegative) noexcept {
 			adjustStatusFlags(adjustOverflowSub(F(), beforeNegative, valueNegative, afterNegative));
 		}
 
-		[[nodiscard]] static uint8_t adjustOverflowSub(uint8_t input, int beforeNegative, int valueNegative, int afterNegative) {
+		[[nodiscard]] static constexpr uint8_t adjustOverflowSub(uint8_t input, int beforeNegative, int valueNegative, int afterNegative) noexcept {
 			const auto overflow = beforeNegative != valueNegative && beforeNegative != afterNegative;
 			return setBit(input, VF, overflow);
 		}
 
-		void adjustOverflowSub(uint8_t before, uint8_t value, uint8_t calculation) {
+		void adjustOverflowSub(uint8_t before, uint8_t value, uint8_t calculation) noexcept {
 			adjustStatusFlags(adjustOverflowSub(F(), before, value, calculation));
 		}
 
-		[[nodiscard]] static uint8_t adjustOverflowSub(uint8_t input, uint8_t before, uint8_t value, uint8_t calculation) {
+		[[nodiscard]] static constexpr uint8_t adjustOverflowSub(uint8_t input, uint8_t before, uint8_t value, uint8_t calculation) noexcept {
 			return adjustOverflowSub(input, signTest(before), signTest(value), signTest(calculation));
 		}
 
@@ -437,17 +443,17 @@ namespace EightBit {
 
 		[[nodiscard]] void andr(uint8_t value) noexcept {
 			setBit(HC);
-			clearBit((StatusBits)(CF | NF));
+			clearBit(CF | NF);
 			adjustSZPXY(A() &= value);
 		}
 
 		[[nodiscard]] void xorr(uint8_t value) noexcept {
-			clearBit((StatusBits)(HC | CF | NF));
+			clearBit(HC | CF | NF);
 			adjustSZPXY(A() ^= value);
 		}
 
 		[[nodiscard]] void orr(uint8_t value) noexcept {
-			clearBit((StatusBits)(HC | CF | NF));
+			clearBit(HC | CF | NF);
 			adjustSZPXY(A() |= value);
 		}
 
@@ -457,7 +463,7 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] auto rlc(uint8_t operand) noexcept {
-			clearBit((StatusBits)(NF | HC));
+			clearBit(NF | HC);
 			const auto carry = operand & Bit7;
 			setBit(CF, carry);
 			const uint8_t result = (operand << 1) | (carry >> 7);
@@ -466,7 +472,7 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] auto rrc(uint8_t operand) noexcept {
-			clearBit((StatusBits)(NF | HC));
+			clearBit(NF | HC);
 			const auto carry = operand & Bit0;
 			setBit(CF, carry);
 			const uint8_t result = (operand >> 1) | (carry << 7);
@@ -475,7 +481,7 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] auto rl(uint8_t operand) noexcept {
-			clearBit((StatusBits)(NF | HC));
+			clearBit(NF | HC);
 			const auto carrying = carry();
 			setBit(CF, operand & Bit7);
 			const uint8_t result = (operand << 1) | carrying;
@@ -484,7 +490,7 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] auto rr(uint8_t operand) noexcept {
-			clearBit((StatusBits)(NF | HC));
+			clearBit(NF | HC);
 			const auto carrying = carry();
 			setBit(CF, operand & Bit0);
 			const uint8_t result = (operand >> 1) | (carrying << 7);
@@ -493,7 +499,7 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] auto sla(uint8_t operand) noexcept {
-			clearBit((StatusBits)(NF | HC));
+			clearBit(NF | HC);
 			setBit(CF, operand & Bit7);
 			const uint8_t result = operand << 1;
 			adjustXY(result);
@@ -501,7 +507,7 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] auto sra(uint8_t operand) noexcept {
-			clearBit((StatusBits)(NF | HC));
+			clearBit(NF | HC);
 			setBit(CF, operand & Bit0);
 			const uint8_t result = (operand >> 1) | (operand & Bit7);
 			adjustXY(result);
@@ -509,7 +515,7 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] auto sll(uint8_t operand) noexcept {
-			clearBit((StatusBits)(NF | HC));
+			clearBit(NF | HC);
 			setBit(CF, operand & Bit7);
 			const uint8_t result = (operand << 1) | Bit0;
 			adjustXY(result);
@@ -517,7 +523,7 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] auto srl(uint8_t operand) noexcept {
-			clearBit((StatusBits)(NF | HC));
+			clearBit(NF | HC);
 			setBit(CF, operand & Bit0);
 			const uint8_t result = (operand >> 1) & ~Bit7;
 			adjustXY(result);
@@ -561,7 +567,7 @@ namespace EightBit {
 
 		void scf(uint8_t operand) noexcept {
 			setBit(CF);
-			clearBit((StatusBits)(HC | NF));
+			clearBit(HC | NF);
 			adjustXY((Q() ^ F()) | A());
 		}
 
@@ -574,7 +580,7 @@ namespace EightBit {
 		}
 
 		void cpl() noexcept {
-			setBit((StatusBits)(HC | NF));
+			setBit(HC | NF);
 			adjustXY(A() = ~A());
 		}
 
@@ -596,12 +602,12 @@ namespace EightBit {
 		void ldd() noexcept;
 		void lddr() noexcept;
 
-		void repeatBlockInstruction();
+		void repeatBlockInstruction() noexcept;
 		void adjustBlockRepeatFlagsIO();
-		void adjustBlockInputOutputFlags(int basis);
-		void adjustBlockInFlagsIncrement();
-		void adjustBlockInFlagsDecrement();
-		void adjustBlockOutFlags();
+		void adjustBlockInputOutputFlags(int basis) noexcept;
+		void adjustBlockInFlagsIncrement() noexcept;
+		void adjustBlockInFlagsDecrement() noexcept;
+		void adjustBlockOutFlags() noexcept;
 
 		void blockIn() noexcept;
 
