@@ -14,9 +14,9 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& result)
 			m_expectedEvents.events.push_back(event);
 	}
 
-	m_cpu.ExecutedInstruction.connect([this](EightBit::Z80& cpu) {
-		m_totalCycles += cpu.cycles();
-		std::cout << "**** Cycle count: " << cpu.cycles() << std::endl;
+	m_cpu.ExecutedInstruction.connect([this](EightBit::EventArgs) {
+		m_totalCycles += m_cpu.cycles();
+		std::cout << "**** Cycle count: " << m_cpu.cycles() << std::endl;
 	});
 
 	m_cpu.ReadMemory.connect([this](EightBit::EventArgs&) {
@@ -27,11 +27,11 @@ Fuse::TestRunner::TestRunner(const Test& test, const ExpectedTestResult& result)
 		addActualEvent("MW");
 	});
 
-	m_cpu.ReadIO.connect([this](EightBit::EventArgs&) {
+	m_ports.ReadPort.connect([this](EightBit::register16_t) {
 		addActualEvent("PR");
 	});
 
-	m_cpu.WrittenIO.connect([this](EightBit::EventArgs&) {
+	m_ports.WrittenPort.connect([this](EightBit::register16_t) {
 		addActualEvent("PW");
 	});
 }
@@ -64,36 +64,12 @@ void Fuse::TestRunner::lowerPOWER() noexcept {
 }
 
 EightBit::MemoryMapping Fuse::TestRunner::mapping(uint16_t address) noexcept {
-
-	const bool memory = m_cpu.requestingMemory();
-	if (memory)
-		return {
-			m_ram,
-			0x0000,
-			0xffff,
-			EightBit::MemoryMapping::AccessLevel::ReadWrite
-		};
-
-	const bool io = m_cpu.requestingIO();
-	if (io) {
-
-		m_ports.accessType() = EightBit::InputOutput::AccessType::Unknown;
-
-		const bool reading = m_cpu.requestingRead();
-		if (reading)
-			m_ports.accessType() = EightBit::InputOutput::AccessType::Reading;
-
-		const bool writing = m_cpu.requestingWrite();
-		if (writing)
-			m_ports.accessType() = EightBit::InputOutput::AccessType::Writing;
-
-		return {
-			m_ports,
-			0x0000,
-			0xff,
-			EightBit::MemoryMapping::AccessLevel::ReadWrite
-		};
-	}
+	return {
+		m_ram,
+		0x0000,
+		0xffff,
+		EightBit::MemoryMapping::AccessLevel::ReadWrite
+	};
 }
 
 void Fuse::TestRunner::initialise() {

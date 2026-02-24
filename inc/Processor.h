@@ -11,6 +11,15 @@
 namespace EightBit {
 	class Processor : public ClockedChip {
 	public:
+		Signal<EventArgs> ExecutingInstruction;
+		Signal<EventArgs> ExecutedInstruction;
+
+		Signal<EventArgs> ReadingMemory;
+		Signal<EventArgs> ReadMemory;
+
+		Signal<EventArgs> WritingMemory;
+		Signal<EventArgs> WrittenMemory;
+
 		// http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
 		// b: number of bits representing the number in x
 		// x: sign extend this b-bit number to r

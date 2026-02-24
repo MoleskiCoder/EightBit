@@ -26,8 +26,8 @@ void Board::initialise() {
 		lowerPOWER();
 	});
 	
-	m_cpu.ExecutingInstruction.connect([this] (EightBit::Z80& cpu) {
-		switch (cpu.PC().word) {
+	m_cpu.ExecutingInstruction.connect([this] (EightBit::EventArgs) {
+		switch (m_cpu.PC().word) {
 		case 0x0:	// CP/M warm start
 			if (++m_warmstartCount == 2) {
 				lowerPOWER();
@@ -44,18 +44,18 @@ void Board::initialise() {
 	});
 
 	if (m_configuration.isProfileMode())
-		m_cpu.ExecutingInstruction.connect([this] (EightBit::Z80& cpu) {
-			const auto pc = cpu.PC();
+		m_cpu.ExecutingInstruction.connect([this] (EightBit::EventArgs) {
+			const auto pc = m_cpu.PC();
 			m_profiler.addAddress(pc.word);
 			m_profiler.addInstruction(peek(pc));
 		});
 
 	if (m_configuration.isDebugMode())
-		m_cpu.ExecutingInstruction.connect([this] (EightBit::Z80& cpu) {
+		m_cpu.ExecutingInstruction.connect([this] (EightBit::EventArgs) {
 			std::cerr
-				<< EightBit::Disassembler::state(cpu)
+				<< EightBit::Disassembler::state(m_cpu)
 				<< "\t"
-				<< m_disassembler.disassemble(cpu)
+				<< m_disassembler.disassemble(m_cpu)
 				<< std::endl;
 		});
 
