@@ -21,4 +21,5 @@ public:
 	[[nodiscard]] auto operator[](size_t idx) const noexcept { return at(idx); }
 
 	[[nodiscard]] auto integer_at(size_t idx) const noexcept { return int64_t(at(idx)); }
+	[[nodiscard]] auto string_at(size_t idx) const noexcept { return at(idx).get_string(); }
 };
