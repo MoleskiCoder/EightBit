@@ -102,9 +102,9 @@ void checker_t::initialiseState(const test_t test) {
     cpu.Y() = initial.y();
     cpu.P() = initial.p();
     for (const auto entry : initial.ram()) {
-        auto data = entry.begin();
-        const auto address = uint16_t(int64_t(*data));
-        const auto value = uint8_t(int64_t(*++data));
+        const byte_t byte{ entry };
+		const auto address = byte.address();
+		const auto value = byte.value();
         ram.poke(address, value);
     }
 }
@@ -141,18 +141,18 @@ bool checker_t::checkState(test_t test) {
             return false; // more expected cycles than actual
         }
 
-        auto expected_data = expected_cycle.begin();
+        const cycle_t expected{ expected_cycle };
         const auto& actual = actual_cycles[actual_idx++];
 
-        const auto expected_address = uint16_t(int64_t(*expected_data));
+        const auto expected_address = expected.address();
         const auto actual_address = std::get<0>(actual);
         check("Cycle address", expected_address, actual_address);
 
-        const auto expected_value = uint8_t(int64_t(*++expected_data));
+        const auto expected_value = expected.value();
         const auto actual_value = std::get<1>(actual);
         check("Cycle value", expected_value, actual_value);
 
-        const auto expected_action = (*++expected_data).get_string();
+        const auto expected_action = expected.action();
         const auto actual_action = std::get<2>(actual);
         check("Cycle action", expected_action.value_unsafe(), actual_action);
     }
@@ -175,12 +175,13 @@ bool checker_t::checkState(test_t test) {
 
     bool ram_problem = false;
     for (const auto entry : final.ram()) {
-        auto data = entry.begin();
-        const auto address = uint16_t(int64_t(*data));
-        const auto value = uint8_t(int64_t(*++data));
-        const auto ram_good = check("RAM", address, value, ram.peek(address));
-        if (!ram_good && !ram_problem)
-            ram_problem = true;
+        const auto byte = byte_t{ entry };
+        const auto address = byte.address();
+        const auto value = byte.value();
+        if (!check("RAM", address, value, ram.peek(address))) {
+			ram_problem = true;
+            break;
+        }
     }
 
     return
