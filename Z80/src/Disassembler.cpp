@@ -165,9 +165,13 @@ std::string EightBit::Disassembler::alu(int which) {
 }
 
 std::string EightBit::Disassembler::disassemble(Z80& cpu) {
+	return disassemble(cpu, cpu.PC().word);
+}
+
+std::string EightBit::Disassembler::disassemble(Z80& cpu, uint16_t address) {
 	m_displaced = m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
 	std::ostringstream output;
-	disassemble(output, cpu, cpu.PC().word);
+	disassemble(output, cpu, address);
 	return output.str();
 }
 
