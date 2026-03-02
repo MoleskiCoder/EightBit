@@ -169,10 +169,10 @@ void checker_t::initialise() {
         auto& bus = runner();
         auto& cpu = bus.CPU();
 
-        const std::string read = EightBit::Device::lowered(cpu.RD()) ? "r" : "-";
-        const std::string write = EightBit::Device::lowered(cpu.WR()) ? "w" : "-";
-        const std::string memory = EightBit::Device::lowered(cpu.MREQ()) ? "m" : "-";
-        const std::string io = EightBit::Device::lowered(cpu.IORQ()) ? "i" : "-";
+        const std::string read = cpu.requestingRead() ? "r" : "-";
+        const std::string write = cpu.requestingWrite() ? "w" : "-";
+        const std::string memory = cpu.requestingMemory() ? "m" : "-";
+        const std::string io = cpu.requestingIO() ? "i" : "-";
 
         addActualCycle(bus.ADDRESS(), bus.DATA(), read + write + memory + io);
     });
