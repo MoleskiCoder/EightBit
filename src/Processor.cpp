@@ -94,6 +94,16 @@ void EightBit::Processor::setWord(const register16_t address, const register16_t
 	setWord(value);
 }
 
+int EightBit::Processor::step() noexcept {
+	resetCycles();
+	ExecutingInstruction.fire();
+	if (LIKELY(powered()))
+		poweredStep();
+	ExecutedInstruction.fire();
+	ASSUME(cycles() > 0);
+	return cycles();
+}
+
 int EightBit::Processor::run(const int limit) noexcept {
 	int current = 0;
 	while (LIKELY(powered() && (current < limit)))

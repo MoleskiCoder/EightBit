@@ -26,12 +26,22 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 
 		IX() = IY() = Mask16;
 		resetWorkingRegisters();
-
-		resetPrefixes();
 	});
 
 	RaisedM1.connect([this](EventArgs) {
 		++REFRESH();
+	});
+
+	LoweredRESET.connect([this](EventArgs) {
+		m_resetPending = true;
+	});
+
+	LoweredNMI.connect([this](EventArgs) {
+		m_nonMaskableInterruptPending = true;
+	});
+
+	LoweredINT.connect([this](EventArgs) {
+		m_interruptPending = true;
 	});
 }
 
@@ -660,7 +670,7 @@ uint8_t EightBit::Z80::readBusDataM1() noexcept {
 // received from the memory is ignored and an NOP instruction is forced internally to the
 // CPU.The HALT acknowledge signal is active during this time indicating that the processor
 // is in the HALT state
-uint8_t EightBit::Z80::fetchOpCode() noexcept {
+uint8_t EightBit::Z80::fetchInstruction() noexcept {
 	uint8_t returned;
 	{
 		_ActivateM1 m1(*this);
@@ -820,32 +830,30 @@ void EightBit::Z80::R2(const int r, const uint8_t value) noexcept {
 	}
 }
 
-int EightBit::Z80::step() noexcept {
-	resetCycles();
-	ExecutingInstruction.fire();
-	if (LIKELY(powered())) {
-		resetPrefixes();
-		bool handled = false;
-		if (lowered(RESET())) {
-			handleRESET();
-			handled = true;
-		} else if (lowered(NMI())) {
-			handleNMI();
-			handled = true;
-		} else if (lowered(INT())) {
-			raiseINT();
-			raiseHALT();
-			if (IFF1()) {
-				handleINT();
-				handled = true;
-			}
+void EightBit::Z80::poweredStep() noexcept {
+
+	m_modifiedF = 0;
+	m_prefixCB = m_prefixDD = m_prefixED = m_prefixFD = false;
+
+	if (m_resetPending) {
+		m_resetPending = false;
+		handleRESET();
+		return;
+	} else if (m_nonMaskableInterruptPending) {
+		m_nonMaskableInterruptPending = false;
+		handleNMI();
+		return;
+	} else if (m_interruptPending) {
+		m_interruptPending = false;
+		if (IFF1()) {
+			handleINT();
+			return;
 		}
-		if (!handled)
-			IntelProcessor::execute(fetchOpCode());
 	}
-	ExecutedInstruction.fire();
-	ASSUME(cycles() > 0);
-	return cycles();
+
+	IntelProcessor::execute(fetchInstruction());
+
+	Q() = m_modifiedF;
 }
 
 void EightBit::Z80::execute() noexcept {
@@ -1419,7 +1427,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					fetchDisplacement();
 					IntelProcessor::execute(fetchByte());
 				} else {
-					IntelProcessor::execute(fetchOpCode());
+					IntelProcessor::execute(fetchInstruction());
 				}
 				break;
 			case 2:	// OUT (n),A
@@ -1460,15 +1468,15 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					break;
 				case 1:	// DD prefix
 					m_prefixDD = true;
-					IntelProcessor::execute(fetchOpCode());
+					IntelProcessor::execute(fetchInstruction());
 					break;
 				case 2:	// ED prefix
 					m_prefixED = true;
-					IntelProcessor::execute(fetchOpCode());
+					IntelProcessor::execute(fetchInstruction());
 					break;
 				case 3:	// FD prefix
 					m_prefixFD = true;
-					IntelProcessor::execute(fetchOpCode());
+					IntelProcessor::execute(fetchInstruction());
 					break;
 				default:
 					UNREACHABLE;

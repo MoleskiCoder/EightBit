@@ -76,7 +76,7 @@ namespace EightBit {
 		bool operator==(const Z80& rhs) const;
 
 		void execute() noexcept final;
-		int step() noexcept final;
+		void poweredStep() noexcept final;
 
 		[[nodiscard]] const register16_t& AF() const noexcept final;
 		[[nodiscard]] auto& AF() noexcept { return IntelProcessor::AF(); }
@@ -147,6 +147,10 @@ namespace EightBit {
 		int jrConditional(int condition) noexcept final;
 
 	private:
+		bool m_interruptPending = false;
+		bool m_nonMaskableInterruptPending = false;
+		bool m_resetPending = false;
+
 		InputOutput& m_ports;
 			
 		enum { BC_IDX, DE_IDX, HL_IDX };
@@ -193,7 +197,7 @@ namespace EightBit {
 		}
 
 		void fetchDisplacement() noexcept;
-		[[nodiscard]] uint8_t fetchOpCode() noexcept;
+		[[nodiscard]] uint8_t fetchInstruction() noexcept;
 
 		uint8_t readBusDataM1() noexcept;
 

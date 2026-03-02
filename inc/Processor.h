@@ -40,7 +40,8 @@ namespace EightBit {
 		[[nodiscard]] constexpr const auto& intermediate() const noexcept { return m_intermediate; }
 
 		int run(int limit) noexcept;
-		virtual int step() noexcept = 0;
+		virtual int step() noexcept;
+		virtual void poweredStep() noexcept = 0;
 		virtual void execute() noexcept = 0;
 		void execute(uint8_t value) noexcept;
 
