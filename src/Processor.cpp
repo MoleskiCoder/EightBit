@@ -80,8 +80,28 @@ void EightBit::Processor::setWordPaged(const uint8_t page, const uint8_t offset,
 	setWordPaged(value);
 }
 
+EightBit::register16_t& EightBit::Processor::incrementPC() {
+	PC()++;
+	return PC();
+}
+
+EightBit::register16_t& EightBit::Processor::decrementPC() {
+	PC()--;
+	return PC();
+}
+
+void EightBit::Processor::immediateAddress() {
+	BUS().ADDRESS() = PC();
+	incrementPC();
+}
+
 uint8_t EightBit::Processor::fetchByte() {
-	return memoryRead(PC()++);
+	immediateAddress();
+	return memoryRead();
+}
+
+uint8_t EightBit::Processor::fetchInstruction() {
+	return fetchByte();
 }
 
 EightBit::register16_t EightBit::Processor::getWord(const register16_t address) {

@@ -168,9 +168,6 @@
     <ClCompile Include="tests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\M6502\src\M6502.vcxproj">
-      <Project>{d8726a1b-bbfe-47ef-9860-26b90140ba66}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\EightBit.vcxproj">
       <Project>{a9c24bd9-0cb4-4c84-b09b-46b815f9da47}</Project>
     </ProjectReference>

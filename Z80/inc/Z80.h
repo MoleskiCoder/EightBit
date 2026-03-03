@@ -135,16 +135,14 @@ namespace EightBit {
 		void handleRESET() noexcept final;
 		void handleINT() noexcept final;
 
-		void pushWord(register16_t destination) noexcept final;
-
+		void memoryUpdate(int ticks) noexcept;
 		void memoryWrite() noexcept final;
 		uint8_t memoryRead() noexcept final;
+		void refreshMemory() noexcept;
 
-		void busWrite() noexcept final;
-		uint8_t busRead() noexcept final;
+		void jumpRelative(int8_t offset) noexcept final;
 
-		void jr(int8_t offset) noexcept final;
-		int jrConditional(int condition) noexcept final;
+		void call(register16_t destination) override;
 
 	private:
 		bool m_interruptPending = false;
@@ -189,17 +187,17 @@ namespace EightBit {
 
 		[[nodiscard]] constexpr auto displaced() const noexcept { return m_prefixDD || m_prefixFD; }
 
-		[[nodiscard]] constexpr const register16_t& displacedAddress() noexcept {
+		[[nodiscard]] constexpr void displaceAddress() noexcept {
 			const auto& index_register = m_prefixDD ? IX() : IY();
 			const auto address = index_register.word + m_displacement;
 			MEMPTR().word = address;
-			return MEMPTR();
+			BUS().ADDRESS() = MEMPTR();
 		}
 
 		void fetchDisplacement() noexcept;
-		[[nodiscard]] uint8_t fetchInstruction() noexcept;
+		[[nodiscard]] uint8_t fetchInstruction() noexcept final;
 
-		uint8_t readBusDataM1() noexcept;
+		uint8_t readDataUnderInterrupt();
 
 		typedef std::function<register16_t(void)> addresser_t;
 		void loadAccumulatorIndirect(addresser_t addresser) noexcept;
@@ -212,8 +210,8 @@ namespace EightBit {
 		[[nodiscard]] register16_t& RP(int rp) noexcept;
 		[[nodiscard]] register16_t& RP2(int rp) noexcept;
 
-		[[nodiscard]] uint8_t R(int r) noexcept;
-		void R(int r, uint8_t value) noexcept;
+		[[nodiscard]] uint8_t& R(int r, MemoryMapping::AccessLevel access = MemoryMapping::AccessLevel::ReadOnly) noexcept;
+		void R(int r, uint8_t value, int ticks = 1) noexcept;
 		void R2(int r, uint8_t value) noexcept;
 
 		[[nodiscard]] static constexpr auto zeroTest(uint8_t data) noexcept { return data & ZF; }
@@ -341,7 +339,7 @@ namespace EightBit {
 			return adjustOverflowSub(input, signTest(before), signTest(value), signTest(calculation));
 		}
 
-		[[nodiscard]] constexpr bool convertCondition(int flag) noexcept {
+		[[nodiscard]] bool convertCondition(int flag) noexcept override {
 			switch (flag) {
 			case 0:
 				return zero() == 0;
@@ -407,10 +405,7 @@ namespace EightBit {
 		void retn() noexcept;
 		void reti() noexcept;
 
-		void returnConditionalFlag(int flag) noexcept;
-		void jrConditionalFlag(int flag) noexcept;
-		void callConditionalFlag(int flag) noexcept;
-		void jumpConditionalFlag(int flag) noexcept;
+		void returnConditionalFlag(int flag) noexcept final;
 
 		[[nodiscard]] register16_t sbc(register16_t operand, register16_t value) noexcept;
 		[[nodiscard]] register16_t adc(register16_t operand, register16_t value) noexcept;
@@ -583,9 +578,10 @@ namespace EightBit {
 			adjustXY(((Q() ^ F()) | A()));
 		}
 
-		void cpl() noexcept {
+		void cpl() noexcept final {
 			setBit(HC | NF);
-			adjustXY(A() = ~A());
+			IntelProcessor::cpl();
+			adjustXY(A());
 		}
 
 		void xhtl(register16_t& exchange) noexcept;

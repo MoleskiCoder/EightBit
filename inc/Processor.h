@@ -70,7 +70,13 @@ namespace EightBit {
 		virtual uint8_t memoryRead();
 		virtual uint8_t busRead();
 
+		virtual register16_t& incrementPC();
+		virtual register16_t& decrementPC();
+
+		virtual void immediateAddress();
+
 		uint8_t fetchByte();
+		virtual uint8_t fetchInstruction();
 
 		[[nodiscard]] virtual register16_t getWord() = 0;
 		virtual void setWord(register16_t value) = 0;

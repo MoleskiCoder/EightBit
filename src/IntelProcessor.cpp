@@ -9,9 +9,6 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus)
 	for (int i = 0; i < 0x100; ++i)
 		m_decodedOpcodes.at(i) = i;
 
-	LoweredHALT.connect([this](EventArgs) noexcept { --PC(); });
-	RaisedHALT.connect([this](EventArgs) noexcept { ++PC(); });
-
 	RaisedPOWER.connect([this](EventArgs) {
 		PC() = SP() = Mask16;
 		resetWorkingRegisters();
@@ -37,7 +34,7 @@ DEFINE_PIN_LEVEL_CHANGERS(HALT, IntelProcessor);
 void EightBit::IntelProcessor::handleRESET() {
 	Processor::handleRESET();
 	disableInterrupts();
-	jump(0);
+	Processor::jump(0);
 }
 
 void EightBit::IntelProcessor::handleINT() {
@@ -54,6 +51,18 @@ uint8_t EightBit::IntelProcessor::pop() {
 	return memoryRead(SP()++);
 }
 
+
+EightBit::register16_t& EightBit::IntelProcessor::incrementPC() {
+	if (raised(HALT()))
+		Processor::incrementPC();
+	return PC();
+}
+
+uint8_t EightBit::IntelProcessor::fetchInstruction() {
+	fetchByte();
+	return lowered(HALT()) ? (uint8_t)0 : BUS().DATA();
+}
+
 EightBit::register16_t EightBit::IntelProcessor::getWord() {
 	const auto returned = LittleEndianProcessor::getWord();
 	MEMPTR() = BUS().ADDRESS();
@@ -66,41 +75,38 @@ void EightBit::IntelProcessor::setWord(const register16_t value) {
 }
 
 void EightBit::IntelProcessor::restart(const uint8_t address) {
-	call(MEMPTR() = { address, 0 });
+	MEMPTR() = { address, 0 };
+	call();
 }
 
-int EightBit::IntelProcessor::callConditional(const int condition) {
+void EightBit::IntelProcessor::callConditional(bool condition) {
 	fetchWordMEMPTR();
 	if (condition)
-		call(MEMPTR());
-	return condition;
+		call();
 }
 
-int EightBit::IntelProcessor::jumpConditional(const int condition) {
+void EightBit::IntelProcessor::jumpConditional(bool condition) {
 	fetchWordMEMPTR();
 	if (condition)
-		jump(MEMPTR());
-	return condition;
+		jump();
 }
 
-int EightBit::IntelProcessor::returnConditional(const int condition) {
+void EightBit::IntelProcessor::jumpRelativeConditional(bool condition) {
+	const auto offset = fetchByte();
+	if (condition)
+		jumpRelative(offset);
+}
+
+void EightBit::IntelProcessor::returnConditional(bool condition) {
 	if (condition)
 		ret();
-	return condition;
 }
 
-void EightBit::IntelProcessor::jr(const int8_t offset) noexcept {
-	jump(MEMPTR() = PC() + offset);
+void EightBit::IntelProcessor::jumpRelative(const int8_t offset) noexcept {
+	MEMPTR() = PC() + offset;
+	jump();
 }
 
-int EightBit::IntelProcessor::jrConditional(const int condition) {
-	const auto offsetAddress = PC()++;
-	if (condition) {
-		const auto offset = memoryRead(offsetAddress);
-		jr(offset);
-	}
-	return condition;
-}
 
 void EightBit::IntelProcessor::ret() {
 	LittleEndianProcessor::ret();
@@ -114,12 +120,20 @@ void EightBit::IntelProcessor::fetchWordMEMPTR() {
 
 void EightBit::IntelProcessor::jumpIndirect() {
 	fetchWordMEMPTR();
-	jump(MEMPTR());
+	jump();
+}
+
+void EightBit::IntelProcessor::jump() {
+	Processor::jump(MEMPTR());
 }
 
 void EightBit::IntelProcessor::callIndirect() {
 	fetchWordMEMPTR();
-	call(MEMPTR());
+	call();
+}
+
+void EightBit::IntelProcessor::call() {
+	Processor::call(MEMPTR());
 }
 
 bool EightBit::IntelProcessor::operator==(const EightBit::IntelProcessor& rhs) const noexcept {

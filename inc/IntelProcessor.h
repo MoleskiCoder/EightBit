@@ -150,25 +150,54 @@ namespace EightBit {
 
 		//
 
+		register16_t& incrementPC() override;
+		uint8_t fetchInstruction() override;
+
+		//
+
 		[[nodiscard]] register16_t getWord() final;
 		void setWord(register16_t value) final;
 
 		//
 
 		virtual void restart(uint8_t address);
-		virtual int callConditional(int condition);
-		virtual int jumpConditional(int condition);
-		virtual int returnConditional(int condition);
-		virtual void jr(int8_t offset) noexcept;
-		virtual int jrConditional(int condition);
+		virtual void callConditional(bool condition);
+		virtual void jumpConditional(bool condition);
+		virtual void jumpRelativeConditional(bool condition);
+		virtual void returnConditional(bool condition);
+		virtual void jumpIndirect();
+		virtual void jump();
+		void callIndirect();
+		void call();
+		virtual void jumpRelative(int8_t offset) noexcept;
+		void jumpRelative(uint8_t offset) noexcept { jumpRelative((int8_t)offset); }
 		void ret() override;
 
 		virtual void fetchWordMEMPTR();
 
-		void jumpIndirect();
-		void callIndirect();
-
 		void resetWorkingRegisters() noexcept;
+
+		[[nodiscard]] virtual bool convertCondition(int flag) noexcept = 0;
+
+		virtual void jumpConditionalFlag(int flag) {
+			jumpConditional(convertCondition(flag));
+		}
+
+		virtual void jumpRelativeConditionalFlag(int flag) {
+			jumpRelativeConditional(convertCondition(flag));
+		}
+
+		virtual void returnConditionalFlag(int flag) {
+			returnConditional(convertCondition(flag));
+		}
+
+		virtual void callConditionalFlag(int flag) {
+			callConditional(convertCondition(flag));
+		}
+
+		virtual void cpl() noexcept {
+			A() = ~A();
+		}
 
 	private:
 		static std::array<int, 8> m_halfCarryTableAdd;
