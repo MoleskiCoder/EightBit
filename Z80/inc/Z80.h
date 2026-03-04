@@ -142,7 +142,7 @@ namespace EightBit {
 
 		void jumpRelative(int8_t offset) noexcept final;
 
-		void call(register16_t destination) override;
+		void call(register16_t destination) final;
 
 	private:
 		bool m_interruptPending = false;

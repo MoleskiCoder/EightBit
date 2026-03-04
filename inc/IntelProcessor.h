@@ -169,6 +169,7 @@ namespace EightBit {
 		virtual void jump();
 		void callIndirect();
 		void call();
+		virtual void call(register16_t destination);
 		virtual void jumpRelative(int8_t offset) noexcept;
 		void jumpRelative(uint8_t offset) noexcept { jumpRelative((int8_t)offset); }
 		void ret() override;

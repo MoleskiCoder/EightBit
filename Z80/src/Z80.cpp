@@ -300,7 +300,6 @@ EightBit::register16_t EightBit::Z80::sbc(const register16_t operand, const regi
 
 	MEMPTR() = operand + 1;
 
-	tick(7);
 	return intermediate();
 }
 
@@ -455,7 +454,7 @@ void EightBit::Z80::adjustBlockRepeatFlagsIO() {
 
 void EightBit::Z80::adjustBlockInputOutputFlags(int basis) noexcept {
 	setBit(HC | CF, basis > 0xff);
-	adjustParity(((basis & (int)Mask::Mask3) ^ B()));
+	adjustParity(((basis & Mask::Mask3) ^ B()));
 }
 
 void EightBit::Z80::adjustBlockInFlagsIncrement() noexcept {
@@ -476,19 +475,21 @@ void EightBit::Z80::blockIn() noexcept {
 	tick();
 	readPort(BC());
 	BUS().ADDRESS() = HL();
-	memoryWrite();
+	memoryUpdate(1);
 	adjustSZXY(--B());
-	F() = setBit(F(), NF);
+	setBit(NF, BUS().DATA() & SF);
 }
 
 void EightBit::Z80::ini() noexcept {
 	blockIn();
+	adjustBlockInFlagsIncrement();
 	++HL();
 	++MEMPTR();
 }
 
 void EightBit::Z80::ind() noexcept {
 	blockIn();
+	adjustBlockInFlagsDecrement();
 	--HL();
 	--MEMPTR();
 }
@@ -607,7 +608,6 @@ void EightBit::Z80::readPort(const uint8_t port) noexcept {
 void EightBit::Z80::readPort() noexcept {
 	MEMPTR() = BUS().ADDRESS();
 	tick(2);
-	tick();
 	lowerIORQ();
 		lowerRD();
 			BUS().DATA() = m_ports.read(BUS().ADDRESS());
@@ -674,7 +674,6 @@ void EightBit::Z80::readInternalRegister(reader_t reader) noexcept {
 	adjustSZXY(A() = reader());
 	clearBit(NF | HC);
 	setBit(PF, IFF2());
-	tick();
 }
 
 EightBit::register16_t& EightBit::Z80::HL2() noexcept {
@@ -905,7 +904,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) noexcept {
 			if (!memoryZ)
 				R2(z, operand);
 		} else {
-			R(z, operand);
+			R(z, operand, 2);
 		}
 	}
 }
@@ -1002,6 +1001,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				break;
 			case 2:	// LD A,I
 				readInternalRegister([this]() { return IV(); });
+				tick();
 				break;
 			case 3:	// LD A,R
 				readInternalRegister([this]() { return REFRESH(); });

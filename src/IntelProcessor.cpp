@@ -133,7 +133,11 @@ void EightBit::IntelProcessor::callIndirect() {
 }
 
 void EightBit::IntelProcessor::call() {
-	Processor::call(MEMPTR());
+	call(MEMPTR());
+}
+
+void EightBit::IntelProcessor::call(register16_t destination) {
+	Processor::call(destination);
 }
 
 bool EightBit::IntelProcessor::operator==(const EightBit::IntelProcessor& rhs) const noexcept {
