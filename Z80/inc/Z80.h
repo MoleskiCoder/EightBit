@@ -362,7 +362,9 @@ namespace EightBit {
 			}
 		}
 
-		auto subtract(uint8_t operand, uint8_t value, int carry = 0) noexcept {
+		auto subtract(uint8_t value, int carry = 0) noexcept {
+
+			const auto operand = A();
 
 			const register16_t subtraction = operand - value - carry;
 			const auto result = subtraction.low;
@@ -407,11 +409,13 @@ namespace EightBit {
 
 		void returnConditionalFlag(int flag) noexcept final;
 
-		[[nodiscard]] register16_t sbc(register16_t operand, register16_t value) noexcept;
-		[[nodiscard]] register16_t adc(register16_t operand, register16_t value) noexcept;
-		[[nodiscard]] register16_t add(register16_t operand, register16_t value, int carry = 0) noexcept;
+		void sbc(register16_t value) noexcept;
+		void adc(register16_t value) noexcept;
+		void add(register16_t value, int carry = 0) noexcept;
 
-		[[nodiscard]] auto add(uint8_t operand, uint8_t value, int carry = 0) noexcept {
+		void add(uint8_t value, int carry = 0) noexcept {
+
+			const auto operand = A();
 
 			intermediate() = operand + value + carry;
 			const auto result = intermediate().low;
@@ -423,21 +427,19 @@ namespace EightBit {
 			setBit(CF, carryTest(intermediate().high));
 			adjustSZXY(result);
 
-			return result;
+			A() = result;
 		}
 
-		[[nodiscard]] auto adc(uint8_t operand, uint8_t value) noexcept {
-			return add(operand, value, carry());
+		void adc(uint8_t value) noexcept {
+			add(value, carry());
 		}
 
-		[[nodiscard]] auto sub(uint8_t operand, uint8_t value, int carry = 0) noexcept {
-			const auto subtraction = subtract(operand, value, carry);
-			adjustSZXY(subtraction);
-			return subtraction;
+		void sub(uint8_t value, int carry = 0) noexcept {
+			adjustSZXY(A() = subtract(value, carry));
 		}
 
-		[[nodiscard]] auto sbc(uint8_t operand, uint8_t value) noexcept {
-			return sub(operand, value, carry());
+		void sbc(uint8_t value) noexcept {
+			sub(value, carry());
 		}
 
 		[[nodiscard]] void andr(uint8_t value) noexcept {
@@ -457,7 +459,7 @@ namespace EightBit {
 		}
 
 		void compare(uint8_t value) noexcept {
-			subtract(A(), value);
+			subtract(value);
 			adjustXY(value);
 		}
 
@@ -564,13 +566,13 @@ namespace EightBit {
 			adjustSZPXY(A() = updated);
 		}
 
-		void scf(uint8_t operand) noexcept {
+		void scf() noexcept {
 			setBit(CF);
 			clearBit(HC | NF);
 			adjustXY((Q() ^ F()) | A());
 		}
 
-		void ccf(uint8_t operand) noexcept {
+		void ccf() noexcept {
 			clearBit(NF);
 			const auto carrying = carry();
 			setBit(HC, carrying);

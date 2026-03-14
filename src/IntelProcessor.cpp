@@ -59,8 +59,8 @@ EightBit::register16_t& EightBit::IntelProcessor::incrementPC() {
 }
 
 uint8_t EightBit::IntelProcessor::fetchInstruction() {
-	fetchByte();
-	return lowered(HALT()) ? (uint8_t)0 : BUS().DATA();
+	const auto data = fetchByte();
+	return lowered(HALT()) ? (uint8_t)0 : data;
 }
 
 EightBit::register16_t EightBit::IntelProcessor::getWord() {
@@ -80,13 +80,13 @@ void EightBit::IntelProcessor::restart(const uint8_t address) {
 }
 
 void EightBit::IntelProcessor::callConditional(bool condition) {
-	fetchWordMEMPTR();
+	MEMPTR() = fetchWord();
 	if (condition)
 		call();
 }
 
 void EightBit::IntelProcessor::jumpConditional(bool condition) {
-	fetchWordMEMPTR();
+	MEMPTR() = fetchWord();
 	if (condition)
 		jump();
 }
@@ -113,13 +113,8 @@ void EightBit::IntelProcessor::ret() {
 	MEMPTR() = PC();
 }
 
-void EightBit::IntelProcessor::fetchWordMEMPTR() {
-	const auto _ = fetchWord();
-	MEMPTR() = intermediate();
-}
-
 void EightBit::IntelProcessor::jumpIndirect() {
-	fetchWordMEMPTR();
+	MEMPTR() = fetchWord();
 	jump();
 }
 
@@ -128,7 +123,7 @@ void EightBit::IntelProcessor::jump() {
 }
 
 void EightBit::IntelProcessor::callIndirect() {
-	fetchWordMEMPTR();
+	MEMPTR() = fetchWord();
 	call();
 }
 

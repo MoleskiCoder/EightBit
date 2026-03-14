@@ -175,14 +175,14 @@ uint8_t EightBit::Z80::memoryRead() noexcept {
 	lowerMREQ();
 		lowerRD();
 			tick();
-			IntelProcessor::memoryRead();
+			const auto data = IntelProcessor::memoryRead();
 		raiseRD();
 	raiseMREQ();
 	if (lowered(M1()))
 		refreshMemory();
 	tick();
 	ReadMemory.fire();
-	return BUS().DATA();
+	return data;
 }
 
 void EightBit::Z80::handleRESET() noexcept {
@@ -280,7 +280,9 @@ void EightBit::Z80::jumpRelative(int8_t offset) noexcept {
 	tick(5);
 }
 
-EightBit::register16_t EightBit::Z80::sbc(const register16_t operand, const register16_t value) noexcept {
+void EightBit::Z80::sbc(const register16_t value) noexcept {
+
+	const auto operand = HL2();
 
 	const auto subtraction = operand.word - value.word - carry();
 	intermediate() = subtraction;
@@ -300,25 +302,26 @@ EightBit::register16_t EightBit::Z80::sbc(const register16_t operand, const regi
 
 	MEMPTR() = operand + 1;
 
-	return intermediate();
+	HL2() = intermediate();
 }
 
-EightBit::register16_t EightBit::Z80::adc(const register16_t operand, const register16_t value) noexcept {
+void EightBit::Z80::adc(const register16_t value) noexcept {
 
-	auto _ = add(operand, value, carry());
+	const auto beforeNegative = signTest(HL2().high);
+	const auto valueNegative = signTest(value.high);
+
+	add(value, carry());
 	setBit(ZF, intermediate().zero());
 
-	const auto beforeNegative = signTest(operand.high);
-	const auto valueNegative = signTest(value.high);
 	const auto afterNegative = signTest(intermediate().high);
 
 	setBit(SF, afterNegative);
 	adjustOverflowAdd(beforeNegative, valueNegative, afterNegative);
-
-	return intermediate();
 }
 
-EightBit::register16_t EightBit::Z80::add(const register16_t operand, const register16_t value, int carry) noexcept {
+void EightBit::Z80::add(const register16_t value, int carry) noexcept {
+
+	const auto operand = HL2();
 
 	const auto addition = operand.word + value.word + carry;
 	intermediate().word = addition;
@@ -330,7 +333,7 @@ EightBit::register16_t EightBit::Z80::add(const register16_t operand, const regi
 
 	MEMPTR() = operand + 1;
 
-	return intermediate();
+	HL2() = intermediate();
 }
 
 void EightBit::Z80::xhtl(register16_t& exchange) noexcept {
@@ -349,13 +352,13 @@ void EightBit::Z80::xhtl(register16_t& exchange) noexcept {
 
 void EightBit::Z80::blockCompare() noexcept {
 
-	IntelProcessor::memoryRead(HL());
-	uint8_t result = A() - BUS().DATA();
+	const auto data = IntelProcessor::memoryRead(HL());
+	uint8_t result = A() - data;
 
 	setBit(PF, --BC().word);
 
 	adjustSZ(result);
-	adjustHalfCarrySub(A(), BUS().DATA(), result);
+	adjustHalfCarrySub(A(), data, result);
 	setBit(NF);
 
 	result -= (halfCarry() >> 4);
@@ -398,9 +401,9 @@ void EightBit::Z80::cpdr() noexcept {
 }
 
 void EightBit::Z80::blockLoad() noexcept {
-	IntelProcessor::memoryRead(HL());
+	const auto data = IntelProcessor::memoryRead(HL());
 	IntelProcessor::memoryWrite(DE());
-	const auto xy = A() + BUS().DATA();
+	const auto xy = A() + data;
 	setBit(XF, xy & Bit3);
 	setBit(YF, xy & Bit1);
 	clearBit(NF | HC);
@@ -654,9 +657,9 @@ void EightBit::Z80::fetchDisplacement() noexcept {
 // is in the HALT state
 uint8_t EightBit::Z80::fetchInstruction() noexcept {
 	lowerM1();
-		IntelProcessor::fetchInstruction();
+		const auto data = IntelProcessor::fetchInstruction();
 	raiseM1();
-	return BUS().DATA();
+	return data;
 }
 
 void EightBit::Z80::loadAccumulatorIndirect(addresser_t addresser) noexcept {
@@ -933,10 +936,10 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 		case 2:	// 16-bit add/subtract with carry
 			switch (q) {
 			case 0:	// SBC HL, rp[p]
-				HL2() = sbc(HL2(), RP(p));
+				sbc(RP(p));
 				break;
 			case 1:	// ADC HL, rp[p]
-				HL2() = adc(HL2(), RP(p));
+				adc(RP(p));
 				break;
 			default:
 				UNREACHABLE;
@@ -1131,7 +1134,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				RP(p) = fetchWord();
 				break;
 			case 1:	// ADD HL,rp
-				HL2() = add(HL2(), RP(p));
+				add(RP(p));
 				tick(7);
 				break;
 			default:
@@ -1243,10 +1246,10 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				cpl();
 				break;
 			case 6:
-				scf(A());
+				scf();
 				break;
 			case 7:
-				ccf(A());
+				ccf();
 				break;
 			default:
 				UNREACHABLE;
@@ -1303,16 +1306,16 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		const auto value = R(z);
 		switch (y) {
 		case 0:	// ADD A,r
-			A() = add(A(), value);
+			add(value);
 			break;
 		case 1:	// ADC A,r
-			A() = adc(A(), value);
+			adc(value);
 			break;
 		case 2:	// SUB r
-			A() = sub(A(), value);
+			sub(value);
 			break;
 		case 3:	// SBC A,r
-			A() = sbc(A(), value);
+			sbc(value);
 			break;
 		case 4:	// AND r
 			andr(value);
@@ -1442,16 +1445,16 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			const auto operand = fetchByte();
 			switch (y) {
 			case 0:	// ADD A,n
-				A() = add(A(), operand);
+				add(operand);
 				break;
 			case 1:	// ADC A,n
-				A() = adc(A(), operand);
+				adc(operand);
 				break;
 			case 2:	// SUB n
-				A() = sub(A(), operand);
+				sub(operand);
 				break;
 			case 3:	// SBC A,n
-				A() = sbc(A(), operand);
+				sbc(operand);
 				break;
 			case 4:	// AND n
 				andr(operand);

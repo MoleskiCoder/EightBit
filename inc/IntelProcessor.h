@@ -160,21 +160,19 @@ namespace EightBit {
 
 		//
 
-		virtual void restart(uint8_t address);
-		virtual void callConditional(bool condition);
+		void restart(uint8_t address);
+		void callConditional(bool condition);
 		virtual void jumpConditional(bool condition);
-		virtual void jumpRelativeConditional(bool condition);
+		void jumpRelativeConditional(bool condition);
 		virtual void returnConditional(bool condition);
-		virtual void jumpIndirect();
-		virtual void jump();
+		void jumpIndirect();
+		void jump();
 		void callIndirect();
 		void call();
 		virtual void call(register16_t destination);
 		virtual void jumpRelative(int8_t offset) noexcept;
 		void jumpRelative(uint8_t offset) noexcept { jumpRelative((int8_t)offset); }
 		void ret() override;
-
-		virtual void fetchWordMEMPTR();
 
 		void resetWorkingRegisters() noexcept;
 
