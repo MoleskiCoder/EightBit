@@ -8,7 +8,7 @@
 
 #include "../inc/Z80.h"
 
-EightBit::Disassembler::Disassembler(Bus& bus) noexcept
+EightBit::Disassembler::Disassembler(Bus& bus)
 : m_bus(bus) {
 	// Disable exceptions where too many format arguments are available
 	m_formatter.exceptions(boost::io::all_error_bits ^ boost::io::too_many_args_bit);

@@ -26,20 +26,20 @@ namespace EightBit {
 		[[nodiscard]] constexpr auto DATA() const noexcept { return m_data; }
 		[[nodiscard]] constexpr auto& DATA() noexcept { return m_data; }
 
-		[[nodiscard]] virtual uint8_t peek(const uint16_t address) noexcept { return reference(address); }
+		[[nodiscard]] uint8_t peek(const uint16_t address) noexcept { return reference(address); }
 		[[nodiscard]] auto peek(const register16_t address) noexcept { return peek(address.word); }
 
 		void poke(const uint8_t value) noexcept { reference() = value; }
-		virtual void poke(const uint16_t address, const uint8_t value) noexcept { reference(address) = value; }
+		void poke(const uint16_t address, const uint8_t value) noexcept { reference(address) = value; }
 		void poke(const register16_t address, const uint8_t value) noexcept { poke(address.word, value); }
 
-		[[nodiscard]] uint8_t read();
-		void write();
+		[[nodiscard]] uint8_t read() noexcept;
+		void write() noexcept;
 
 		virtual void raisePOWER() noexcept;
 		virtual void lowerPOWER() noexcept;
 
-		virtual void initialise() = 0;
+		virtual void initialise() noexcept = 0;
 
 	protected:
 		[[nodiscard]] uint8_t& reference(uint16_t address) noexcept;

@@ -3,7 +3,7 @@
 
 // based on http://www.z80.info/decoding.htm
 
-EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
+EightBit::Z80::Z80(Bus& bus, InputOutput& ports) noexcept
 : IntelProcessor(bus),
   m_ports(ports) {
 	RaisedPOWER.connect([this](EventArgs) {
@@ -45,24 +45,19 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports)
 	});
 }
 
-EightBit::Z80::Z80(const Z80& rhs)
+EightBit::Z80::Z80(const Z80& rhs) noexcept
 : IntelProcessor(rhs),
-  m_ports(rhs.m_ports) {
-
-	m_registers = rhs.m_registers;
-	m_registerSet = rhs.m_registerSet;
-
-	m_accumulatorFlags = rhs.m_accumulatorFlags;
-	m_accumulatorFlagsSet = rhs.m_accumulatorFlagsSet;
-
-	m_ix = rhs.m_ix;
-	m_iy = rhs.m_iy;
-
-	iv = rhs.iv;
-	m_interruptMode = rhs.m_interruptMode;
-	m_iff1 = rhs.m_iff1;
-	m_iff2 = rhs.m_iff2;
-
+  m_ports(rhs.m_ports),
+  m_registers(rhs.m_registers),
+  m_registerSet(rhs.m_registerSet),
+  m_accumulatorFlags(rhs.m_accumulatorFlags),
+  m_accumulatorFlagsSet(rhs.m_accumulatorFlagsSet),
+  m_ix(rhs.m_ix),
+  m_iy(rhs.m_iy),
+  iv(rhs.iv),
+  m_interruptMode(rhs.m_interruptMode),
+  m_iff1(rhs.m_iff1),
+  m_iff2(rhs.m_iff2) {
 	RFSH() = rhs.RFSH();
 	NMI() = rhs.NMI();
 	M1() = rhs.M1();
@@ -72,47 +67,47 @@ EightBit::Z80::Z80(const Z80& rhs)
 	WR() = rhs.WR();
 }
 
-bool EightBit::Z80::operator==(const EightBit::Z80& rhs) const {
+bool EightBit::Z80::operator==(const EightBit::Z80& rhs) const noexcept {
 
 	const auto base = IntelProcessor::operator==(rhs);
 
+	auto& left = const_cast<Z80&>(*this);
+	auto& right = const_cast<Z80&>(rhs);
+
 	const auto pins =
-		RFSH() == rhs.RFSH()
-		&& NMI() == rhs.NMI()
-		&& M1() == rhs.M1()
-		&& MREQ() == rhs.MREQ()
-		&& IORQ() == rhs.IORQ()
-		&& RD() == rhs.RD()
-		&& WR() == rhs.WR();
+		left.RFSH() == right.RFSH()
+		&& left.NMI() == right.NMI()
+		&& left.M1() == right.M1()
+		&& left.MREQ() == right.MREQ()
+		&& left.IORQ() == right.IORQ()
+		&& left.RD() == right.RD()
+		&& left.WR() == right.WR();
 
-	auto* z80 = const_cast<Z80*>(this);
-	auto& z80_rhs = const_cast<Z80&>(rhs);
+	left.exxAF();
+	right.exxAF();
+	const auto af = left.AF() == right.AF();
+	left.exxAF();
+	right.exxAF();
 
-	z80->exxAF();
-	z80_rhs.exxAF();
-	const auto af = AF() == rhs.AF();
-	z80->exxAF();
-	z80_rhs.exxAF();
-
-	z80->exx();
-	z80_rhs.exx();
+	left.exx();
+	right.exx();
 	const auto pairs =
-		BC() == rhs.BC()
-		&& DE() == rhs.DE()
-		&& HL() == rhs.HL();
-	z80->exx();
-	z80_rhs.exx();
+		left.BC() == right.BC()
+		&& left.DE() == right.DE()
+		&& left.HL() == right.HL();
+	left.exx();
+	right.exx();
 
 	const auto indices =
-		IX() == rhs.IX()
-		&& IY() == rhs.IY();
+		left.IX() == right.IX()
+		&& left.IY() == right.IY();
 
 	const auto miscellaneous =
-		REFRESH() == rhs.REFRESH()
-		&& IV() == rhs.IV()
-		&& IM() == rhs.IM()
-		&& IFF1() == rhs.IFF1()
-		&& IFF2() == rhs.IFF2();
+		left.REFRESH() == right.REFRESH()
+		&& left.IV() == right.IV()
+		&& left.IM() == right.IM()
+		&& left.IFF1() == right.IFF1()
+		&& left.IFF2() == right.IFF2();
 
 	return base && pins && af && pairs && indices && miscellaneous;
 }
@@ -125,19 +120,19 @@ DEFINE_PIN_LEVEL_CHANGERS(IORQ, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(RD, Z80);
 DEFINE_PIN_LEVEL_CHANGERS(WR, Z80);
 
-const EightBit::register16_t& EightBit::Z80::AF() const noexcept {
+EightBit::register16_t& EightBit::Z80::AF() noexcept {
 	return m_accumulatorFlags[m_accumulatorFlagsSet];
 }
 
-const EightBit::register16_t& EightBit::Z80::BC() const noexcept {
+EightBit::register16_t& EightBit::Z80::BC() noexcept {
 	return m_registers[m_registerSet][BC_IDX];
 }
 
-const EightBit::register16_t& EightBit::Z80::DE() const noexcept {
+EightBit::register16_t& EightBit::Z80::DE() noexcept {
 	return m_registers[m_registerSet][DE_IDX];
 }
 
-const EightBit::register16_t& EightBit::Z80::HL() const noexcept {
+EightBit::register16_t& EightBit::Z80::HL() noexcept {
 	return m_registers[m_registerSet][HL_IDX];
 }
 
@@ -156,11 +151,11 @@ void EightBit::Z80::memoryUpdate(int ticks) noexcept {
 }
 
 void EightBit::Z80::memoryWrite() noexcept {
-	memoryUpdate(1);
+	memoryUpdate();
 }
 
 void EightBit::Z80::refreshMemory() noexcept {
-	assert(lowered(M1()) && "M1 must be lowered to refresh memory");
+	assert(fetchingOpCode() && "M1 must be lowered to refresh memory");
 	BUS().ADDRESS() = { REFRESH(), IV() };
 	lowerRFSH();
 		tick();
@@ -175,14 +170,14 @@ uint8_t EightBit::Z80::memoryRead() noexcept {
 	lowerMREQ();
 		lowerRD();
 			tick();
-			const auto data = IntelProcessor::memoryRead();
+			IntelProcessor::memoryRead();
 		raiseRD();
 	raiseMREQ();
-	if (lowered(M1()))
+	if (fetchingOpCode())
 		refreshMemory();
 	tick();
 	ReadMemory.fire();
-	return data;
+	return BUS().DATA();
 }
 
 void EightBit::Z80::handleRESET() noexcept {
@@ -204,9 +199,9 @@ void EightBit::Z80::handleNMI() noexcept {
 	restart(0x66);
 }
 
-uint8_t EightBit::Z80::readDataUnderInterrupt() {
+uint8_t EightBit::Z80::readDataUnderInterrupt() noexcept {
 	lowerM1();
-		tick(3);
+		tick(2);
 		lowerIORQ();
 			tick();
 			const auto data = BUS().DATA();
@@ -215,6 +210,7 @@ uint8_t EightBit::Z80::readDataUnderInterrupt() {
 		refreshMemory();
 		assert(cycles() == 5);
 	raiseM1();
+	tick();
 	return data;
 }
 
@@ -222,8 +218,9 @@ void EightBit::Z80::handleINT() noexcept {
 
 	IntelProcessor::handleINT();
 
-	const auto data = readDataUnderInterrupt();
 	tick();
+
+	const auto data = readDataUnderInterrupt();
 	assert(cycles() == 6);
 
 	switch (IM()) {
@@ -235,22 +232,44 @@ void EightBit::Z80::handleINT() noexcept {
 		assert(cycles() == 13);
 		break;
 	case 2:
-		tick();
 		MEMPTR() = Processor::getWordPaged(IV(), data);
 		call(MEMPTR());
-		assert(cycles() == 13);
+		assert(cycles() == 19);
 		break;
 	default:
 		UNREACHABLE;
 	}
 }
 
-void EightBit::Z80::disableInterrupts() {
+void EightBit::Z80::disableInterrupts() noexcept {
 	IFF1() = IFF2() = false;
 }
 
-void EightBit::Z80::enableInterrupts() {
+void EightBit::Z80::enableInterrupts() noexcept {
 	IFF1() = IFF2() = true;
+}
+
+bool EightBit::Z80::convertCondition(int flag) noexcept {
+	switch (flag) {
+	case 0:
+		return zero() == 0;
+	case 1:
+		return zero() != 0;
+	case 2:
+		return carry() == 0;
+	case 3:
+		return carry() != 0;
+	case 4:
+		return parity() == 0;
+	case 5:
+		return parity() != 0;
+	case 6:
+		return sign() == 0;
+	case 7:
+		return sign() != 0;
+	default:
+		UNREACHABLE;
+	}
 }
 
 void EightBit::Z80::returnConditionalFlag(const int flag) noexcept {
@@ -269,8 +288,7 @@ void EightBit::Z80::reti() noexcept {
 	retn();
 }
 
-
-void EightBit::Z80::call(register16_t destination) {
+void EightBit::Z80::call(register16_t destination) noexcept {
 	tick();
 	Processor::call(destination);
 }
@@ -278,6 +296,70 @@ void EightBit::Z80::call(register16_t destination) {
 void EightBit::Z80::jumpRelative(int8_t offset) noexcept {
 	IntelProcessor::jumpRelative(offset);
 	tick(5);
+}
+
+uint8_t EightBit::Z80::increment(uint8_t operand) noexcept {
+	clearBit(NF);
+	const uint8_t result = operand + 1;
+	adjustSZXY(result);
+	setBit(VF, result == Bit7);
+	clearBit(HC, lowNibble(result));
+	return result;
+}
+
+uint8_t EightBit::Z80::decrement(uint8_t operand) noexcept {
+	setBit(NF);
+	clearBit(HC, lowNibble(operand));
+	const uint8_t result = operand - 1;
+	adjustSZXY(result);
+	setBit(VF, result == Mask7);
+	return result;
+}
+
+void EightBit::Z80::add(uint8_t value, int carry) noexcept {
+
+	const auto operand = A();
+
+	intermediate() = operand + value + carry;
+	const auto result = intermediate().low;
+
+	adjustHalfCarryAdd(operand, value, result);
+	adjustOverflowAdd(operand, value, result);
+
+	clearBit(NF);
+	setBit(CF, carryTest(intermediate().high));
+	adjustSZXY(result);
+
+	A() = result;
+}
+
+void EightBit::Z80::adc(uint8_t value) noexcept {
+	add(value, carry());
+}
+
+void EightBit::Z80::sub(uint8_t value, int carry) noexcept {
+	adjustSZXY(A() = subtract(value, carry));
+}
+
+void EightBit::Z80::sbc(uint8_t value) noexcept {
+	sub(value, carry());
+}
+
+uint8_t EightBit::Z80::subtract(uint8_t value, int carry) noexcept {
+
+	const auto operand = A();
+
+	const register16_t subtraction = operand - value - carry;
+	const auto result = subtraction.low;
+
+	adjustHalfCarrySub(operand, value, result);
+	adjustOverflowSub(operand, value, result);
+
+	setBit(NF);
+	setBit(CF, carryTest(subtraction.high));
+	adjustSZ(result);
+
+	return result;
 }
 
 void EightBit::Z80::sbc(const register16_t value) noexcept {
@@ -303,6 +385,7 @@ void EightBit::Z80::sbc(const register16_t value) noexcept {
 	MEMPTR() = operand + 1;
 
 	HL2() = intermediate();
+	tick(7);
 }
 
 void EightBit::Z80::adc(const register16_t value) noexcept {
@@ -324,7 +407,7 @@ void EightBit::Z80::add(const register16_t value, int carry) noexcept {
 	const auto operand = HL2();
 
 	const auto addition = operand.word + value.word + carry;
-	intermediate().word = addition;
+	intermediate() = addition;
 
 	clearBit(NF);
 	setBit(CF, addition & Bit16);
@@ -334,6 +417,7 @@ void EightBit::Z80::add(const register16_t value, int carry) noexcept {
 	MEMPTR() = operand + 1;
 
 	HL2() = intermediate();
+	tick(7);
 }
 
 void EightBit::Z80::xhtl(register16_t& exchange) noexcept {
@@ -346,19 +430,177 @@ void EightBit::Z80::xhtl(register16_t& exchange) noexcept {
 	--BUS().ADDRESS();
 	BUS().DATA() = exchange.low;
 	exchange.low = MEMPTR().low;
-	memoryUpdate(1);
+	memoryUpdate();
 	tick(2);
 }
 
+void EightBit::Z80::andr(uint8_t value) noexcept {
+	setBit(HC);
+	clearBit(CF | NF);
+	adjustSZPXY(A() &= value);
+}
+
+void EightBit::Z80::xorr(uint8_t value) noexcept {
+	clearBit(HC | CF | NF);
+	adjustSZPXY(A() ^= value);
+}
+
+void EightBit::Z80::orr(uint8_t value) noexcept {
+	clearBit(HC | CF | NF);
+	adjustSZPXY(A() |= value);
+}
+
+void EightBit::Z80::compare(uint8_t value) noexcept {
+	subtract(value);
+	adjustXY(value);
+}
+
+uint8_t EightBit::Z80::rlc(uint8_t operand) noexcept {
+	clearBit(NF | HC);
+	const auto carry = operand & Bit7;
+	setBit(CF, carry);
+	const uint8_t result = (operand << 1) | (carry >> 7);
+	adjustXY(result);
+	return result;
+}
+
+uint8_t EightBit::Z80::rrc(uint8_t operand) noexcept {
+	clearBit(NF | HC);
+	const auto carry = operand & Bit0;
+	setBit(CF, carry);
+	const uint8_t result = (operand >> 1) | (carry << 7);
+	adjustXY(result);
+	return result;
+}
+
+uint8_t EightBit::Z80::rl(uint8_t operand) noexcept {
+	clearBit(NF | HC);
+	const auto carrying = carry();
+	setBit(CF, operand & Bit7);
+	const uint8_t result = (operand << 1) | carrying;
+	adjustXY(result);
+	return result;
+}
+
+uint8_t EightBit::Z80::rr(uint8_t operand) noexcept {
+	clearBit(NF | HC);
+	const auto carrying = carry();
+	setBit(CF, operand & Bit0);
+	const uint8_t result = (operand >> 1) | (carrying << 7);
+	adjustXY(result);
+	return result;
+}
+
+uint8_t EightBit::Z80::sla(uint8_t operand) noexcept {
+	clearBit(NF | HC);
+	setBit(CF, operand & Bit7);
+	const uint8_t result = operand << 1;
+	adjustXY(result);
+	return result;
+}
+
+uint8_t EightBit::Z80::sra(uint8_t operand) noexcept {
+	clearBit(NF | HC);
+	setBit(CF, operand & Bit0);
+	const uint8_t result = (operand >> 1) | (operand & Bit7);
+	adjustXY(result);
+	return result;
+}
+
+uint8_t EightBit::Z80::sll(uint8_t operand) noexcept {
+	clearBit(NF | HC);
+	setBit(CF, operand & Bit7);
+	const uint8_t result = (operand << 1) | Bit0;
+	adjustXY(result);
+	return result;
+}
+
+uint8_t EightBit::Z80::srl(uint8_t operand) noexcept {
+	clearBit(NF | HC);
+	setBit(CF, operand & Bit0);
+	const uint8_t result = (operand >> 1) & ~Bit7;
+	adjustXY(result);
+	setBit(ZF, result);
+	return result;
+}
+
+void EightBit::Z80::bit(int n, uint8_t operand) noexcept {
+	setBit(HC);
+	clearBit(NF);
+	const auto discarded = operand & Chip::bit(n);
+	adjustSZ(discarded);
+	clearBit(PF, discarded);
+}
+
+void EightBit::Z80::daa() noexcept {
+
+	auto updated = A();
+
+	const auto lowAdjust = halfCarry() || (lowNibble(A()) > 9);
+	const auto highAdjust = carry() || (A() > 0x99);
+
+	if (subtracting()) {
+		if (lowAdjust)
+			updated -= 6;
+		if (highAdjust)
+			updated -= 0x60;
+	} else {
+		if (lowAdjust)
+			updated += 6;
+		if (highAdjust)
+			updated += 0x60;
+	}
+
+	adjustStatusFlags((F() & (CF | NF) | (A() > 0x99 ? CF : 0) | halfCarryTest(A() ^ updated)));
+	adjustSZPXY(A() = updated);
+}
+
+void EightBit::Z80::scf() noexcept {
+	setBit(CF);
+	clearBit(HC | NF);
+	adjustXY((Q() ^ F()) | A());
+}
+
+void EightBit::Z80::ccf() noexcept {
+	clearBit(NF);
+	const auto carrying = carry();
+	setBit(HC, carrying);
+	clearBit(CF, carrying);
+	adjustXY(((Q() ^ F()) | A()));
+}
+
+void EightBit::Z80::cpl() noexcept {
+	setBit(HC | NF);
+	IntelProcessor::cpl();
+	adjustXY(A());
+}
+
+void EightBit::Z80::neg() noexcept {
+
+	setBit(PF, A() == Bit7);
+	setBit(CF, A());
+	setBit(NF);
+
+	auto original = A();
+
+	A() = (~A() + 1);	// two's complement
+
+	adjustHalfCarrySub(0U, original, A());
+	adjustOverflowSub(0U, original, A());
+
+	adjustSZXY(A());
+}
+
+
 void EightBit::Z80::blockCompare() noexcept {
 
-	const auto data = IntelProcessor::memoryRead(HL());
-	uint8_t result = A() - data;
+	IntelProcessor::memoryRead(HL());
+	uint8_t result = A() - BUS().DATA();
 
 	setBit(PF, --BC().word);
 
 	adjustSZ(result);
-	adjustHalfCarrySub(A(), data, result);
+	adjustHalfCarrySub(A(), BUS().DATA(), result);
 	setBit(NF);
 
 	result -= (halfCarry() >> 4);
@@ -395,15 +637,15 @@ void EightBit::Z80::cpdr() noexcept {
 		repeatBlockInstruction();
 		tick(5);
 	} else {
-		MEMPTR().word = PC().word - 2;
+		MEMPTR() = PC().word - 2;
 		tick(2);
 	}
 }
 
 void EightBit::Z80::blockLoad() noexcept {
-	const auto data = IntelProcessor::memoryRead(HL());
+	IntelProcessor::memoryRead(HL());
 	IntelProcessor::memoryWrite(DE());
-	const auto xy = A() + data;
+	const auto xy = A() + BUS().DATA();
 	setBit(XF, xy & Bit3);
 	setBit(YF, xy & Bit1);
 	clearBit(NF | HC);
@@ -443,7 +685,7 @@ void EightBit::Z80::repeatBlockInstruction() noexcept {
 	adjustXY(PC().high);
 }
 
-void EightBit::Z80::adjustBlockRepeatFlagsIO() {
+void EightBit::Z80::adjustBlockRepeatFlagsIO() noexcept {
 	if (carry() != 0) {
 		const auto negative = signTest(BUS().DATA()) != 0;
 		const uint8_t direction = B() + (negative ? -1 : +1);
@@ -461,11 +703,11 @@ void EightBit::Z80::adjustBlockInputOutputFlags(int basis) noexcept {
 }
 
 void EightBit::Z80::adjustBlockInFlagsIncrement() noexcept {
-	adjustBlockInputOutputFlags((C() + 1) + BUS().DATA());
+	adjustBlockInputOutputFlags((uint8_t)(C() + 1) + BUS().DATA());
 }
 
 void EightBit::Z80::adjustBlockInFlagsDecrement() noexcept {
-	adjustBlockInputOutputFlags((C() - 1) + BUS().DATA());
+	adjustBlockInputOutputFlags((uint8_t)(C() - 1) + BUS().DATA());
 }
 
 void EightBit::Z80::adjustBlockOutFlags() noexcept {
@@ -478,7 +720,7 @@ void EightBit::Z80::blockIn() noexcept {
 	tick();
 	readPort(BC());
 	BUS().ADDRESS() = HL();
-	memoryUpdate(1);
+	memoryUpdate();
 	adjustSZXY(--B());
 	setBit(NF, BUS().DATA() & SF);
 }
@@ -555,7 +797,8 @@ void EightBit::Z80::otdr() noexcept {
 }
 
 void EightBit::Z80::rrd(register16_t address, uint8_t& update) noexcept {
-	(MEMPTR() = BUS().ADDRESS() = address)++;
+	MEMPTR() = BUS().ADDRESS() = address;
+	++MEMPTR();
 	const auto memory = memoryRead();
 	tick(4);
 	IntelProcessor::memoryWrite(promoteNibble(update) | highNibble(memory));
@@ -565,7 +808,8 @@ void EightBit::Z80::rrd(register16_t address, uint8_t& update) noexcept {
 }
 
 void EightBit::Z80::rld(register16_t address, uint8_t& update) noexcept {
-	(MEMPTR() = BUS().ADDRESS() = address)++;
+	MEMPTR() = BUS().ADDRESS() = address;
+	++MEMPTR();
 	const auto memory = memoryRead();
 	tick(4);
 	IntelProcessor::memoryWrite(promoteNibble(memory) | lowNibble(update));
@@ -663,12 +907,14 @@ uint8_t EightBit::Z80::fetchInstruction() noexcept {
 }
 
 void EightBit::Z80::loadAccumulatorIndirect(addresser_t addresser) noexcept {
-	(MEMPTR() = BUS().ADDRESS() = addresser())++;
+	MEMPTR() = BUS().ADDRESS() = addresser();
+	++MEMPTR();
 	A() = memoryRead();
 }
 
 void EightBit::Z80::storeAccumulatorIndirect(addresser_t addresser) noexcept {
-	(MEMPTR() = BUS().ADDRESS() = addresser())++;
+	MEMPTR() = BUS().ADDRESS() = addresser();
+	++MEMPTR();
 	MEMPTR().high = BUS().DATA() = A();
 	memoryWrite();
 }
@@ -677,12 +923,13 @@ void EightBit::Z80::readInternalRegister(reader_t reader) noexcept {
 	adjustSZXY(A() = reader());
 	clearBit(NF | HC);
 	setBit(PF, IFF2());
+	tick();
 }
 
 EightBit::register16_t& EightBit::Z80::HL2() noexcept {
-	if (UNLIKELY(m_prefixDD))
+	if (m_prefixDD)
 		return IX();
-	if (UNLIKELY(m_prefixFD))
+	if (m_prefixFD)
 		return IY();
 	return HL();
 }
@@ -755,7 +1002,6 @@ uint8_t& EightBit::Z80::R(const int r, MemoryMapping::AccessLevel access) noexce
 }
 
 void EightBit::Z80::R(const int r, const uint8_t value, const int ticks) noexcept {
-
 	R(r, MemoryMapping::AccessLevel::WriteOnly) = value;
 	if (r == 6)
 		memoryUpdate(ticks);
@@ -944,7 +1190,6 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			default:
 				UNREACHABLE;
 			}
-			tick(7);
 			break;
 		case 3:	// Retrieve/store register pair from/to immediate address
 			BUS().ADDRESS() = fetchWord();
@@ -1004,11 +1249,9 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 				break;
 			case 2:	// LD A,I
 				readInternalRegister([this]() { return IV(); });
-				tick();
 				break;
 			case 3:	// LD A,R
 				readInternalRegister([this]() { return REFRESH(); });
-				tick();
 				break;
 			case 4:	// RRD
 				rrd(HL(), A());
@@ -1135,7 +1378,6 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				break;
 			case 1:	// ADD HL,rp
 				add(RP(p));
-				tick(7);
 				break;
 			default:
 				UNREACHABLE;

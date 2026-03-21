@@ -10,17 +10,17 @@
 	Signal<EventArgs> Lowered ## name;
 
 #define DECLARE_PIN_LEVEL_RAISE(name) \
-	virtual void raise ## name();
+	virtual void raise ## name() noexcept;
 
 #define DECLARE_PIN_LEVEL_LOWER(name) \
-	virtual void lower ## name();
+	virtual void lower ## name() noexcept;
 
 #define DECLARE_PIN_LEVEL_CHANGERS(name) \
 	DECLARE_PIN_LEVEL_RAISE(name) \
 	DECLARE_PIN_LEVEL_LOWER(name)
 
 #define DEFINE_PIN_LEVEL_RAISE(name, within) \
-	void EightBit:: within ::raise ## name() { \
+	void EightBit:: within ::raise ## name() noexcept { \
 		if (lowered( name ())) { \
 			Raising ## name.fire(); \
 			raise( name ()); \
@@ -29,7 +29,7 @@
 	}
 
 #define DEFINE_PIN_LEVEL_LOWER(name, within) \
-	void EightBit:: within ::lower ## name() { \
+	void EightBit:: within ::lower ## name() noexcept { \
 		if (raised( name ())) { \
 			Lowering ## name.fire(); \
 			lower( name ()); \
@@ -43,25 +43,6 @@
 
 #define DECLARE_PIN_MEMBER(name) \
 	PinLevel m_## name ## _Line = PinLevel::Low;
-
-#define DEFINE_PIN_ACTIVATOR(name, on, off) \
-	template <class T> class _Activate ## name final { \
-		T& m_parent; \
-	public: \
-		_Activate ## name(T& parent) noexcept \
-		: m_parent(parent) { \
-			m_parent. on ## name(); \
-		 } \
-		~_Activate ## name() noexcept { \
-			m_parent. off ## name(); \
-		} \
-	};
-
-#define DEFINE_PIN_ACTIVATOR_LOW(name) \
-	DEFINE_PIN_ACTIVATOR(name, lower, raise)
-
-#define DEFINE_PIN_ACTIVATOR_HIGH(name) \
-	DEFINE_PIN_ACTIVATOR(name, raise, lower)
 
 #define DECLARE_PIN(name, visibility) \
 	public: \
@@ -114,6 +95,6 @@ namespace EightBit {
 		[[nodiscard]] constexpr bool powered() const noexcept { return raised(POWER()); }
 
 	protected:
-		Device() noexcept {};
+		Device() noexcept = default;
 	};
 }

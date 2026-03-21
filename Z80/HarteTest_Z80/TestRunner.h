@@ -19,7 +19,7 @@ public:
     void raisePOWER() noexcept final;
     void lowerPOWER() noexcept final;
 
-    void initialise() final;
+    void initialise() noexcept final;
 
     [[nodiscard]] constexpr auto& RAM() noexcept { return m_ram; }
     [[nodiscard]] constexpr auto& ports() noexcept { return m_ports; }

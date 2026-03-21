@@ -10,7 +10,7 @@ namespace EightBit {
 
 	class Disassembler final {
 	public:
-		Disassembler(Bus& bus) noexcept;
+		Disassembler(Bus& bus);
 
 		static std::string state(Z80& cpu);
 		std::string disassemble(Z80& cpu);

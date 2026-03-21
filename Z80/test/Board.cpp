@@ -17,7 +17,7 @@ void Board::lowerPOWER() noexcept {
 	EightBit::Bus::lowerPOWER();
 }
 
-void Board::initialise() {
+void Board::initialise() noexcept {
 
 	auto romDirectory = m_configuration.getRomDirectory();
 	m_ram.load(romDirectory + "/zexall.com", 0x100);	// Cringle/Bartholomew

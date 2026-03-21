@@ -16,12 +16,12 @@ class Board : public EightBit::Bus {
 public:
 	Board(const Configuration& configuration);
 
-	EightBit::Z80& CPU() noexcept { return m_cpu; }
+	EightBit::Z80& CPU() { return m_cpu; }
 
 	void raisePOWER() noexcept final;
 	void lowerPOWER() noexcept final;
 
-	void initialise() final;
+	void initialise() noexcept final;
 
 protected:
 	EightBit::MemoryMapping mapping(uint16_t address) noexcept final {

@@ -8,14 +8,14 @@ void EightBit::Bus::raisePOWER() noexcept {}
 
 void EightBit::Bus::lowerPOWER() noexcept {}
 
-uint8_t EightBit::Bus::read() {
+uint8_t EightBit::Bus::read() noexcept {
 	ReadingByte.fire();
 	const auto returned = DATA() = reference();
 	ReadByte.fire();
 	return returned;
 }
 
-void EightBit::Bus::write() {
+void EightBit::Bus::write() noexcept {
 	WritingByte.fire();
 	reference() = DATA();
 	WrittenByte.fire();

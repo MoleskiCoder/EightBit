@@ -9,16 +9,6 @@
 #include "Signal.h"
 #include "EightBitCompilerDefinitions.h"
 
-#define NON_CONST_ACCESSOR(accessor, type) \
-	[[nodiscard]] constexpr auto& accessor() noexcept { \
-		const auto& consted = *this; \
-		const auto& reference = consted.accessor(); \
-		return const_cast<type&>(reference); \
-	}
-
-#define NON_CONST_REGISTOR_ACCESSOR(accessor) \
-	NON_CONST_ACCESSOR(accessor, register16_t)
-
 namespace EightBit {
 
 	class Bus;
@@ -52,35 +42,32 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] constexpr auto& MEMPTR() noexcept { return m_memptr; }
-		[[nodiscard]] constexpr auto MEMPTR() const noexcept { return m_memptr; }
-
 		[[nodiscard]] constexpr auto& SP() noexcept { return m_sp; }
-		[[nodiscard]] register16_t SP() const noexcept { return m_sp; }
 
-		[[nodiscard]] virtual const register16_t& AF() const noexcept = 0;
-		NON_CONST_REGISTOR_ACCESSOR(AF);
+		[[nodiscard]] virtual register16_t& AF() noexcept = 0;
 		[[nodiscard]] auto& A() noexcept { return AF().high; }
 		[[nodiscard]] auto& F() noexcept { return AF().low; }
 
-		[[nodiscard]] virtual const register16_t& BC() const noexcept = 0;
-		NON_CONST_REGISTOR_ACCESSOR(BC);
+		[[nodiscard]] virtual register16_t& BC() noexcept = 0;
 		[[nodiscard]] auto& B() noexcept { return BC().high; }
 		[[nodiscard]] auto& C() noexcept { return BC().low; }
 
-		[[nodiscard]] virtual const register16_t& DE() const noexcept = 0;
-		NON_CONST_REGISTOR_ACCESSOR(DE);
+		[[nodiscard]] virtual register16_t& DE() noexcept = 0;
 		[[nodiscard]] auto& D() noexcept { return DE().high; }
 		[[nodiscard]] auto& E() noexcept { return DE().low; }
 
-		[[nodiscard]] virtual const register16_t& HL() const noexcept = 0;
-		NON_CONST_REGISTOR_ACCESSOR(HL);
+		[[nodiscard]] virtual register16_t& HL() noexcept = 0;
 		[[nodiscard]] auto& H() noexcept { return HL().high; }
 		[[nodiscard]] auto& L() noexcept { return HL().low; }
 
 		DECLARE_PIN_OUTPUT(HALT)
 
+	public:
+		[[nodiscard]] constexpr bool halted() const noexcept { return lowered(HALT()); }
+		[[nodiscard]] constexpr bool proceeding() const noexcept { return !halted(); }
+
 	protected:
-		IntelProcessor(Bus& bus);
+		IntelProcessor(Bus& bus) noexcept;
 
 		template<class T> [[nodiscard]] static constexpr uint8_t adjustSign(uint8_t f, const uint8_t value) noexcept {
 			return setBit(f, T::SF, value & T::SF);
@@ -138,65 +125,51 @@ namespace EightBit {
 			return calculateHalfCarry(m_halfCarryTableSub, before, value, calculation);
 		}
 
-		virtual void disableInterrupts() = 0;
+		virtual void disableInterrupts() noexcept = 0;
+		virtual void enableInterrupts() noexcept = 0;
 
-		virtual void enableInterrupts() = 0;
+		void handleRESET() noexcept override;
+		void handleINT() noexcept override;
 
-		void handleRESET() override;
-		void handleINT() override;
-
-		void push(uint8_t value) final;
-		[[nodiscard]] uint8_t pop() final;
-
-		//
-
-		register16_t& incrementPC() override;
-		uint8_t fetchInstruction() override;
+		void push(uint8_t value) noexcept final;
+		[[nodiscard]] uint8_t pop() noexcept final;
 
 		//
 
-		[[nodiscard]] register16_t getWord() final;
-		void setWord(register16_t value) final;
+		register16_t& incrementPC() noexcept override;
+		uint8_t fetchInstruction() noexcept override;
 
 		//
 
-		void restart(uint8_t address);
-		void callConditional(bool condition);
-		virtual void jumpConditional(bool condition);
-		void jumpRelativeConditional(bool condition);
-		virtual void returnConditional(bool condition);
-		void jumpIndirect();
-		void jump();
-		void callIndirect();
-		void call();
-		virtual void call(register16_t destination);
+		[[nodiscard]] register16_t getWord() noexcept final;
+		void setWord(register16_t value) noexcept final;
+
+		//
+
+		void restart(uint8_t address) noexcept;
+		void callConditional(bool condition) noexcept;
+		virtual void jumpConditional(bool condition) noexcept;
+		void jumpRelativeConditional(bool condition) noexcept;
+		virtual void returnConditional(bool condition) noexcept;
+		void jumpIndirect() noexcept;
+		void jump() noexcept;
+		void callIndirect() noexcept;
+		void call() noexcept;
+		virtual void call(register16_t destination) noexcept;
 		virtual void jumpRelative(int8_t offset) noexcept;
-		void jumpRelative(uint8_t offset) noexcept { jumpRelative((int8_t)offset); }
-		void ret() override;
+		void jumpRelative(uint8_t offset) noexcept { jumpRelative(static_cast<int8_t>(offset)); }
+		void ret() noexcept override;
 
 		void resetWorkingRegisters() noexcept;
 
 		[[nodiscard]] virtual bool convertCondition(int flag) noexcept = 0;
 
-		virtual void jumpConditionalFlag(int flag) {
-			jumpConditional(convertCondition(flag));
-		}
+		virtual void jumpConditionalFlag(int flag) noexcept;
+		virtual void jumpRelativeConditionalFlag(int flag) noexcept;
+		virtual void returnConditionalFlag(int flag) noexcept;
+		virtual void callConditionalFlag(int flag) noexcept;
 
-		virtual void jumpRelativeConditionalFlag(int flag) {
-			jumpRelativeConditional(convertCondition(flag));
-		}
-
-		virtual void returnConditionalFlag(int flag) {
-			returnConditional(convertCondition(flag));
-		}
-
-		virtual void callConditionalFlag(int flag) {
-			callConditional(convertCondition(flag));
-		}
-
-		virtual void cpl() noexcept {
-			A() = ~A();
-		}
+		virtual void cpl() noexcept;
 
 	private:
 		static std::array<int, 8> m_halfCarryTableAdd;

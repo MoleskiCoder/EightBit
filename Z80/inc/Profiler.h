@@ -27,21 +27,21 @@ namespace EightBit {
 		[[nodiscard]] constexpr const auto& instructions() const { return m_instructions; }
 		[[nodiscard]] constexpr const auto& addresses() const { return m_addresses; }
 
-		[[nodiscard]] constexpr auto instructions_available() const noexcept {
+		[[nodiscard]] constexpr auto instructions_available() const {
 			const auto found = std::find_if(
 				instructions().begin(), instructions().end(),
 				[](const auto& value) { return value != 0; });
 			return found != instructions().end();
 		}
 
-		[[nodiscard]] constexpr auto addresses_available() const noexcept {
+		[[nodiscard]] constexpr auto addresses_available() const {
 			const auto found = std::find_if(
 				addresses().begin(), addresses().end(),
 				[](const auto& value) { return value != 0; });
 			return found != addresses().end();
 		}
 
-		[[nodiscard]] constexpr auto available() const noexcept {
+		[[nodiscard]] constexpr auto available() const {
 			return instructions_available() || addresses_available();
 		}
 

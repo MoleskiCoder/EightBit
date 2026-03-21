@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-bool EightBit::Rom::operator==(const Rom& rhs) const {
+bool EightBit::Rom::operator==(const Rom& rhs) const noexcept {
 	return BYTES() == rhs.BYTES();
 }
 
@@ -48,10 +48,10 @@ void EightBit::Rom::poke(const uint16_t address, const uint8_t value) noexcept {
 EightBit::Rom::Rom(const size_t size) noexcept
 : m_bytes(size) {}
 
-EightBit::Rom::Rom(const Rom& rhs)
+EightBit::Rom::Rom(const Rom& rhs) noexcept
 : m_bytes(rhs.m_bytes) {}
 
-EightBit::Rom& EightBit::Rom::operator=(const Rom& rhs) {
+EightBit::Rom& EightBit::Rom::operator=(const Rom& rhs) noexcept {
 	if (this != &rhs)
 		m_bytes = rhs.m_bytes;
 	return *this;

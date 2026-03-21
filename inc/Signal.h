@@ -17,9 +17,11 @@ namespace EightBit {
 			m_delegates.push_back(functor);
 		}
 
-		void fire(T& e = EventArgs::empty()) const {
-			for (auto& delegate : m_delegates)
-				delegate(e);
+		void fire(T& e = EventArgs::empty()) const noexcept {
+			const auto firing = !m_delegates.empty();
+			if (firing)
+				for (auto& delegate : m_delegates)
+					delegate(e);
 		}
 	};
 }
