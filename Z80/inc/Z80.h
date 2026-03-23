@@ -32,16 +32,16 @@ namespace EightBit {
 	public:
 		struct refresh_t {
 
-			bool high : 1;
 			uint8_t variable : 7;
+			bool high : 1;
 
 			constexpr refresh_t(const uint8_t value) noexcept
-			: high(!!(value & Bit7)),
-			  variable(value & Mask7)
+			: variable(value & Mask7),
+			  high(!!(value & Bit7))
 			{ }
 
 			constexpr operator uint8_t() const noexcept {
-				return (high << 7) | variable;
+				return *(uint8_t*)this;
 			}
 
 			constexpr auto& operator++() noexcept {
