@@ -13,14 +13,14 @@
 
 class Board : public EightBit::Bus {
 public:
-	Board(const Configuration& configuration);
+	Board(const Configuration& configuration) noexcept;
 
-	EightBit::MOS6502& CPU() { return m_cpu; }
+	EightBit::MOS6502& CPU() noexcept { return m_cpu; }
 
 	void raisePOWER() noexcept final;
 	void lowerPOWER() noexcept final;
 
-	void initialise() final;
+	void initialise() noexcept final;
 
 protected:
 	virtual constexpr EightBit::MemoryMapping mapping(uint16_t address) noexcept final {

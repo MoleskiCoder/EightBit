@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <assert.h>
 
-Board::Board(const Configuration& configuration)
+Board::Board(const Configuration& configuration) noexcept
 : m_configuration(configuration) {}
 
 void Board::raisePOWER() noexcept {
@@ -25,7 +25,7 @@ void Board::lowerPOWER() noexcept {
 	EightBit::Bus::lowerPOWER();
 }
 
-void Board::initialise() {
+void Board::initialise() noexcept {
 
 	auto programFilename = m_configuration.getProgram();
 	auto programPath = m_configuration.getRomDirectory() + "/" + m_configuration.getProgram();
