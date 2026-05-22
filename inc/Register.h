@@ -31,19 +31,19 @@ namespace EightBit {
 			uint8_t low;
 #endif
 		};
-		uint16_t word;
+		uint16_t joined;
 
-		constexpr register16_t() noexcept : word(0) {}
-		constexpr register16_t(const uint16_t w) noexcept : word(w) {}
+		constexpr register16_t() noexcept : joined(0) {}
+		constexpr register16_t(const uint16_t w) noexcept : joined(w) {}
 		constexpr register16_t(const uint8_t l, const uint8_t h) noexcept : low(l), high(h) {}
 
 		constexpr auto& operator++() noexcept {
-			++word;
+			++joined;
 			return *this;
 		}
 
 		constexpr auto& operator--() noexcept {
-			--word;
+			--joined;
 			return *this;
 		}
 
@@ -60,24 +60,24 @@ namespace EightBit {
 		}
 
 		constexpr auto& operator+=(const register16_t rhs) noexcept {
-			this->word += rhs.word;
+			this->joined += rhs.joined;
 			return *this;
 		}
 
 		constexpr auto& operator-=(const register16_t rhs) noexcept {
-			this->word -= rhs.word;
+			this->joined -= rhs.joined;
 			return *this;
 		}
 
-		[[nodiscard]] constexpr auto operator==(const register16_t& rhs) const noexcept { return word == rhs.word; }
-		[[nodiscard]] constexpr auto operator!=(const register16_t& rhs) const noexcept { return word != rhs.word; }
-		[[nodiscard]] constexpr auto operator<(const register16_t& rhs) const noexcept { return word < rhs.word; }
-		[[nodiscard]] constexpr auto operator<=(const register16_t& rhs) const noexcept { return word <= rhs.word; }
-		[[nodiscard]] constexpr auto operator>(const register16_t& rhs) const noexcept { return word > rhs.word; }
-		[[nodiscard]] constexpr auto operator>=(const register16_t& rhs) const noexcept { return word >= rhs.word; }
+		[[nodiscard]] constexpr auto operator==(const register16_t& rhs) const noexcept { return joined == rhs.joined; }
+		[[nodiscard]] constexpr auto operator!=(const register16_t& rhs) const noexcept { return joined != rhs.joined; }
+		[[nodiscard]] constexpr auto operator<(const register16_t& rhs) const noexcept { return joined < rhs.joined; }
+		[[nodiscard]] constexpr auto operator<=(const register16_t& rhs) const noexcept { return joined <= rhs.joined; }
+		[[nodiscard]] constexpr auto operator>(const register16_t& rhs) const noexcept { return joined > rhs.joined; }
+		[[nodiscard]] constexpr auto operator>=(const register16_t& rhs) const noexcept { return joined >= rhs.joined; }
 
-		[[nodiscard]] constexpr auto zero() const noexcept { return word == 0; }
-		[[nodiscard]] constexpr auto nonzero() const noexcept { return word != 0; }
+		[[nodiscard]] constexpr auto zero() const noexcept { return joined == 0; }
+		[[nodiscard]] constexpr auto nonzero() const noexcept { return joined != 0; }
 	};
 
 	[[nodiscard]] constexpr inline auto operator+(register16_t lhs, const register16_t rhs) noexcept {
@@ -91,6 +91,6 @@ namespace EightBit {
 	}
 
 	inline auto& operator<<(std::ostream& output, const register16_t value) {  
-		return output << std::hex << std::setw(4) << std::setfill('0') << value.word;
+		return output << std::hex << std::setw(4) << std::setfill('0') << value.joined;
 	}
 }

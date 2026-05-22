@@ -46,7 +46,7 @@ namespace EightBit {
 		[[nodiscard]] Bus& BUS() { return m_bus; }
 
 		[[nodiscard]] uint8_t getByte(uint16_t address);
-		[[nodiscard]] uint16_t getWord(uint16_t address);
+		[[nodiscard]] uint16_t getShort(uint16_t address);
 
 		[[nodiscard]] std::string disassembleUnprefixed();
 		[[nodiscard]] std::string disassemble10();

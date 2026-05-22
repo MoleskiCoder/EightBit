@@ -7,7 +7,7 @@
 
 #include <Processor.h>
 
-EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram) noexcept
+EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram)
 : m_bus(bus),
   m_oam(oam),
   m_vram(vram),
@@ -15,7 +15,7 @@ EightBit::GameBoy::Display::Display(const AbstractColourPalette* colours, Bus& b
 }
 
 #pragma optimize ("t", off)
-void EightBit::GameBoy::Display::renderCurrentScanline() noexcept {
+void EightBit::GameBoy::Display::renderCurrentScanline() {
 	m_scanLine = m_bus.IO().peek(IoRegisters::LY);
 	if (m_scanLine < RasterHeight) {
 		m_control = m_bus.IO().peek(IoRegisters::LCDC);
@@ -28,7 +28,7 @@ void EightBit::GameBoy::Display::renderCurrentScanline() noexcept {
 }
 #pragma optimize ("t", on)
 
-std::array<int, 4> EightBit::GameBoy::Display::createPalette(const int address) noexcept {
+std::array<int, 4> EightBit::GameBoy::Display::createPalette(const int address) {
 	const auto raw = m_bus.IO().peek(address);
 	const std::array<int, 4> palette = {
 		raw & 0b11,
@@ -39,12 +39,12 @@ std::array<int, 4> EightBit::GameBoy::Display::createPalette(const int address) 
 	return palette;
 }
 
-void EightBit::GameBoy::Display::loadObjectAttributes() noexcept {
+void EightBit::GameBoy::Display::loadObjectAttributes() {
 	for (int i = 0; i < 40; ++i)
 		m_objectAttributes[i] = ObjectAttribute(m_oam, 4 * i);
 }
 
-void EightBit::GameBoy::Display::renderObjects() noexcept {
+void EightBit::GameBoy::Display::renderObjects() {
 	
 	const auto objBlockHeight = (m_control & IoRegisters::OBJ_SIZE) ? 16 : 8;
 
@@ -84,7 +84,7 @@ void EightBit::GameBoy::Display::renderObjects() noexcept {
 }
 
 #pragma optimize ("t", off)
-void EightBit::GameBoy::Display::renderBackground() noexcept {
+void EightBit::GameBoy::Display::renderBackground() {
 
 	const auto palette = createPalette(IoRegisters::BGP);
 
@@ -109,7 +109,7 @@ void EightBit::GameBoy::Display::renderBackground() noexcept {
 void EightBit::GameBoy::Display::renderBackground(
 	int bgArea, int bgCharacters, tile_offset_t offsetType,
 	int offsetX, int offsetY,
-	const std::array<int, 4>& palette) noexcept {
+	const std::array<int, 4>& palette) {
 
 	const int row = (m_scanLine - offsetY) / 8;
 	const auto address = bgArea + (row * BufferCharacterWidth);
@@ -131,7 +131,7 @@ void EightBit::GameBoy::Display::renderSpriteTile(
 	const int drawX, const int drawY,
 	const bool flipX, const bool flipY,
 	const std::array<int, 4>& palette,
-	const CharacterDefinition& definition) noexcept {
+	const CharacterDefinition& definition) {
 	renderTile(
 		height,
 		drawX, drawY,
@@ -145,7 +145,7 @@ void EightBit::GameBoy::Display::renderBackgroundTile(
 		int row, int column,
 		int bgCharacters, tile_offset_t offsetType,
 		int offsetX, int offsetY,
-		const std::array<int, 4>& palette) noexcept {
+		const std::array<int, 4>& palette) {
 
 	const auto definition = CharacterDefinition(m_vram, bgCharacters + definitionOffset);
 	const auto drawX = (column * 8) + offsetX;
@@ -160,7 +160,7 @@ void EightBit::GameBoy::Display::renderBackgroundTile(
 void EightBit::GameBoy::Display::renderBackgroundTile(
 		const int drawX, const int drawY,
 		const std::array<int, 4>& palette,
-		const CharacterDefinition& definition) noexcept {
+		const CharacterDefinition& definition) {
 	renderTile(
 		8,
 		drawX, drawY,
@@ -174,7 +174,7 @@ void EightBit::GameBoy::Display::renderTile(
 		const int drawX, const int drawY,
 		const bool flipX, const bool flipY, const bool allowTransparencies,
 		const std::array<int, 4>& palette,
-		const CharacterDefinition& definition) noexcept {
+		const CharacterDefinition& definition) {
 
 	const auto width = 8;
 

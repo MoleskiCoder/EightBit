@@ -34,8 +34,8 @@ void Board::initialise() noexcept {
 
 	// Disassembly output
 	if (m_configuration.isDebugMode())
-		CPU().ExecutingInstruction.connect([this] (EightBit::MOS6502& cpu) {
-			const auto address = cpu.PC();
+		CPU().ExecutingInstruction.connect([this] (EightBit::EventArgs&) {
+			const auto address = CPU().PC();
 			const auto cell = peek(address);
 
 			std::cout << std::hex;
@@ -53,8 +53,8 @@ void Board::initialise() noexcept {
 		});
 
 	// Loop detected stop condition
-	CPU().ExecutedInstruction.connect([this] (EightBit::MOS6502& cpu) {
-		const auto pc = cpu.PC();
+	CPU().ExecutedInstruction.connect([this] (EightBit::EventArgs&) {
+		const auto pc = CPU().PC();
 		if (m_oldPC != pc) {
 			m_oldPC = pc;
 		} else {
@@ -65,5 +65,5 @@ void Board::initialise() noexcept {
 	});
 
 	poke(0x00, 0x4c);
-	CPU().pokeWord(1, m_configuration.getStartAddress());
+	CPU().pokeShort(1, m_configuration.getStartAddress());
 }

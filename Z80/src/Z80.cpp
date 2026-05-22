@@ -25,7 +25,7 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports) noexcept
 		exx();
 
 		IX() = IY() = Mask16;
-		resetWorkingRegisters();
+		resetRegisterSet();
 	});
 
 	RaisedM1.connect([this](EventArgs) {
@@ -186,7 +186,7 @@ void EightBit::Z80::handleRESET() noexcept {
 	IM() = 0;
 	IV() = 0;
 	REFRESH() = 0;
-	SP().word = AF().word = Mask16;
+	SP().joined = AF().joined = Mask16;
 }
 
 void EightBit::Z80::handleNMI() noexcept {
@@ -218,9 +218,8 @@ void EightBit::Z80::handleINT() noexcept {
 
 	IntelProcessor::handleINT();
 
-	tick();
-
 	const auto data = readDataUnderInterrupt();
+	tick();
 	assert(cycles() == 6);
 
 	switch (IM()) {
@@ -232,8 +231,8 @@ void EightBit::Z80::handleINT() noexcept {
 		assert(cycles() == 13);
 		break;
 	case 2:
-		MEMPTR() = Processor::getWordPaged(IV(), data);
-		call(MEMPTR());
+		Processor::getPagedInto(IV(), data, MEMPTR());
+		IntelProcessor::call();
 		assert(cycles() == 19);
 		break;
 	default:
@@ -366,7 +365,7 @@ void EightBit::Z80::sbc(const register16_t value) noexcept {
 
 	const auto operand = HL2();
 
-	const auto subtraction = operand.word - value.word - carry();
+	const auto subtraction = operand.joined - value.joined - carry();
 	intermediate() = subtraction;
 
 	setBit(NF);
@@ -406,7 +405,7 @@ void EightBit::Z80::add(const register16_t value, int carry) noexcept {
 
 	const auto operand = HL2();
 
-	const auto addition = operand.word + value.word + carry;
+	const auto addition = operand.joined + value.joined + carry;
 	intermediate() = addition;
 
 	clearBit(NF);
@@ -597,7 +596,7 @@ void EightBit::Z80::blockCompare() noexcept {
 	IntelProcessor::memoryRead(HL());
 	uint8_t result = A() - BUS().DATA();
 
-	setBit(PF, --BC().word);
+	setBit(PF, --BC().joined);
 
 	adjustSZ(result);
 	adjustHalfCarrySub(A(), BUS().DATA(), result);
@@ -637,7 +636,7 @@ void EightBit::Z80::cpdr() noexcept {
 		repeatBlockInstruction();
 		tick(5);
 	} else {
-		MEMPTR() = PC().word - 2;
+		MEMPTR() = PC().joined - 2;
 		tick(2);
 	}
 }
@@ -649,7 +648,7 @@ void EightBit::Z80::blockLoad() noexcept {
 	setBit(XF, xy & Bit3);
 	setBit(YF, xy & Bit1);
 	clearBit(NF | HC);
-	setBit(PF, --BC().word);
+	setBit(PF, --BC().joined);
 	tick(2);
 }
 
@@ -867,7 +866,8 @@ void EightBit::Z80::readPort() noexcept {
 //
 
 void EightBit::Z80::fetchDisplacement() noexcept {
-	m_displacement = fetchByte();
+	fetchByte();
+	m_displacement = BUS().DATA();
 }
 
 //
@@ -906,18 +906,18 @@ uint8_t EightBit::Z80::fetchInstruction() noexcept {
 	return data;
 }
 
-void EightBit::Z80::loadAccumulatorIndirect(addresser_t addresser) noexcept {
-	MEMPTR() = BUS().ADDRESS() = addresser();
-	++MEMPTR();
-	A() = memoryRead();
-}
-
-void EightBit::Z80::storeAccumulatorIndirect(addresser_t addresser) noexcept {
-	MEMPTR() = BUS().ADDRESS() = addresser();
-	++MEMPTR();
-	MEMPTR().high = BUS().DATA() = A();
-	memoryWrite();
-}
+//void EightBit::Z80::loadAccumulatorIndirect(addresser_t addresser) noexcept {
+//	MEMPTR() = BUS().ADDRESS() = addresser();
+//	++MEMPTR();
+//	A() = memoryRead();
+//}
+//
+//void EightBit::Z80::storeAccumulatorIndirect(addresser_t addresser) noexcept {
+//	MEMPTR() = BUS().ADDRESS() = addresser();
+//	++MEMPTR();
+//	MEMPTR().high = BUS().DATA() = A();
+//	memoryWrite();
+//}
 
 void EightBit::Z80::readInternalRegister(reader_t reader) noexcept {
 	adjustSZXY(A() = reader());
@@ -1192,13 +1192,14 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			}
 			break;
 		case 3:	// Retrieve/store register pair from/to immediate address
-			BUS().ADDRESS() = fetchWord();
+			fetchShortAddress();
 			switch (q) {
 			case 0: // LD (nn), rp[p]
-				setWord(RP(p));
+				setShort(RP(p));
 				break;
 			case 1:	// LD rp[p], (nn)
-				RP(p) = getWord();
+				getShort();
+				RP(p) = intermediate();
 				break;
 			default:
 				UNREACHABLE;
@@ -1359,7 +1360,8 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				jumpRelativeConditional(--B());
 				break;
 			case 3:	// JR d
-				jumpRelative(fetchByte());
+				fetchByte();
+				jumpRelative(BUS().DATA());
 				break;
 			case 4: // JR cc,d
 			case 5:
@@ -1374,7 +1376,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0: // LD rp,nn
-				RP(p) = fetchWord();
+				fetchInto(RP(p));
 				break;
 			case 1:	// ADD HL,rp
 				add(RP(p));
@@ -1388,17 +1390,18 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			case 0:
 				switch (p) {
 				case 0:	// LD (BC),A
-					storeAccumulatorIndirect([this]() { return BC(); });
+					writeMemoryIndirect(BC(), A());
 					break;
 				case 1:	// LD (DE),A
-					storeAccumulatorIndirect([this]() { return DE(); });
+					writeMemoryIndirect(DE(), A());
 					break;
 				case 2:	// LD (nn),HL
-					BUS().ADDRESS() = fetchWord();
-					setWord(HL2());
+					fetchShortAddress();
+					setShort(HL2());
 					break;
 				case 3: // LD (nn),A
-					storeAccumulatorIndirect([this]() { return fetchWord(); });
+					fetchInto(MEMPTR());
+					writeMemoryIndirect(A());
 					break;
 				default:
 					UNREACHABLE;
@@ -1407,17 +1410,23 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					loadAccumulatorIndirect([this]() { return BC(); });
+					readMemoryIndirect(BC());
+					A() = BUS().DATA();
 					break;
 				case 1:	// LD A,(DE)
-					loadAccumulatorIndirect([this]() { return DE(); });
+					readMemoryIndirect(DE());
+					A() = BUS().DATA();
 					break;
 				case 2:	// LD HL,(nn)
-					BUS().ADDRESS() = fetchWord();
-					HL2() = getWord();
+
+					fetchShortAddress();
+					getShort();
+					HL2() = intermediate();
 					break;
 				case 3:	// LD A,(nn)
-					loadAccumulatorIndirect([this]() { return fetchWord(); });
+					fetchInto(MEMPTR());
+					readMemoryIndirect();
+					A() = BUS().DATA();
 					break;
 				default:
 					UNREACHABLE;
@@ -1459,12 +1468,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			break;
 		}
 		case 6: { // 8-bit load immediate
-			if (memoryY && displaced())
-				fetchDisplacement();
-			const auto value = fetchByte();
-			if (memoryY)
-				tick(2);
-			R(y, value);	// LD r,n
+			loadImmediate(y);
 			break;
 		}
 		case 7:	// Assorted operations on accumulator/flags
@@ -1584,7 +1588,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 1:	// POP & various ops
 			switch (q) {
 			case 0:	// POP rp2[p]
-				RP2(p) = popWord();
+				popRegisterPair(p);
 				break;
 			case 1:
 				switch (p) {
@@ -1618,19 +1622,15 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				jumpIndirect();
 				break;
 			case 1:	// CB prefix
-				m_prefixCB = true;
-				if (displaced()) {
-					fetchDisplacement();
-					IntelProcessor::execute(fetchByte());
-				} else {
-					IntelProcessor::execute(fetchInstruction());
-				}
+				prefixCB();
 				break;
 			case 2:	// OUT (n),A
-				writePort(fetchByte());
+				fetchByte();
+				writePort(BUS().DATA());
 				break;
 			case 3:	// IN A,(n)
-				readPort(fetchByte());
+				fetchByte();
+				readPort(BUS().DATA());
 				A() = BUS().DATA();
 				break;
 			case 4:	// EX (SP),HL
@@ -1655,8 +1655,9 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 5:	// PUSH & various ops
 			switch (q) {
 			case 0:	// PUSH rp2[p]
-				tick();
-				pushWord(RP2(p));
+				//tick();
+				//pushWord(RP2(p));
+				pushRegisterPair(p);
 				break;
 			case 1:
 				switch (p) {
@@ -1684,7 +1685,8 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			}
 			break;
 		case 6: { // Operate on accumulator and immediate operand: alu[y] n
-			const auto operand = fetchByte();
+			fetchByte();
+			auto operand = BUS().DATA();
 			switch (y) {
 			case 0:	// ADD A,n
 				add(operand);
@@ -1722,5 +1724,35 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 			UNREACHABLE;
 		}
 		break;
+	}
+}
+
+void EightBit::Z80::loadImmediate(int y) {
+	auto memoryY = y == 6;
+	if (memoryY && displaced())
+		fetchDisplacement();
+	fetchByte();  // LD r,n
+	if (memoryY)
+		tick(2);
+	R(y, BUS().DATA());
+}
+
+void EightBit::Z80::popRegisterPair(int p) {
+	popInto(RP2(p));
+}
+
+void EightBit::Z80::pushRegisterPair(int p) {
+	tick();
+	pushShort(RP2(p));
+}
+
+void EightBit::Z80::prefixCB() {
+	m_prefixCB = true;
+	if (displaced()) {
+		fetchDisplacement();
+		fetchByte();
+		Processor::execute(BUS().DATA());
+	} else {
+		Processor::execute(fetchInstruction());
 	}
 }

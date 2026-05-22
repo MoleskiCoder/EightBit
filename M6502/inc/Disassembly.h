@@ -415,7 +415,7 @@ namespace EightBit {
 		static void dump(std::ostream& out, int value, int width);
 
 		uint8_t getByte(uint16_t address);
-		uint16_t getWord(uint16_t address);
+		uint16_t getShort(uint16_t address);
 
 		std::string dump_Byte(uint16_t address);
 		std::string dump_DByte(uint16_t address);

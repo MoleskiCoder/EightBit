@@ -3,7 +3,7 @@
 
 Board::Board() {}
 
-void Board::raisePOWER() noexcept {
+void Board::raisePOWER() {
 	EightBit::Bus::raisePOWER();
 
 	CPU().raisePOWER();
@@ -16,7 +16,7 @@ void Board::raisePOWER() noexcept {
 	CPU().raiseHALT();
 }
 
-void Board::lowerPOWER() noexcept {
+void Board::lowerPOWER() {
 	CPU().lowerPOWER();
 	EightBit::Bus::lowerPOWER();
 }
@@ -33,6 +33,6 @@ void Board::initialise() {
 	});
 }
 
-EightBit::MemoryMapping Board::mapping(uint16_t) noexcept {
+EightBit::MemoryMapping Board::mapping(uint16_t) {
 	return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 }

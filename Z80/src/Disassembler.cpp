@@ -165,7 +165,7 @@ std::string EightBit::Disassembler::alu(int which) {
 }
 
 std::string EightBit::Disassembler::disassemble(Z80& cpu) {
-	return disassemble(cpu, cpu.PC().word);
+	return disassemble(cpu, cpu.PC().joined);
 }
 
 std::string EightBit::Disassembler::disassemble(Z80& cpu, uint16_t address) {
@@ -189,7 +189,7 @@ void EightBit::Disassembler::disassemble(std::ostringstream& output, Z80& cpu, u
 	auto q = decoded.q;
 
 	auto immediate = BUS().peek(pc + 1);
-	auto absolute = cpu.peekWord(pc + 1).word;
+	auto absolute = cpu.peekShort(pc + 1).joined;
 	auto displacement = (int8_t)immediate;
 	auto relative = pc + displacement + 2;
 	auto indexedImmediate = BUS().peek(pc + 1);

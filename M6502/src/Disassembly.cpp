@@ -474,8 +474,8 @@ uint8_t EightBit::Disassembly::getByte(uint16_t address) {
 	return BUS().peek(address);
 }
 
-uint16_t EightBit::Disassembly::getWord(uint16_t address) {
-	return processor.peekWord(address).word;
+uint16_t EightBit::Disassembly::getShort(uint16_t address) {
+	return processor.peekShort(address).word;
 }
 
 ////
@@ -489,7 +489,7 @@ std::string EightBit::Disassembly::dump_DByte(uint16_t address) {
 }
 
 std::string EightBit::Disassembly::dump_Word(uint16_t address) {
-	return dump_WordValue(getWord(address));
+	return dump_WordValue(getShort(address));
 }
 
 ////

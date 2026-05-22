@@ -132,7 +132,7 @@ namespace EightBit {
 		void handleINT() noexcept override;
 
 		void push(uint8_t value) noexcept final;
-		[[nodiscard]] uint8_t pop() noexcept final;
+		void pop() noexcept final;
 
 		//
 
@@ -141,26 +141,25 @@ namespace EightBit {
 
 		//
 
-		[[nodiscard]] register16_t getWord() noexcept final;
-		void setWord(register16_t value) noexcept final;
+		void getShort() noexcept final;
+		void setShort(register16_t value) noexcept final;
 
 		//
 
 		void restart(uint8_t address) noexcept;
 		void callConditional(bool condition) noexcept;
 		virtual void jumpConditional(bool condition) noexcept;
-		void jumpRelativeConditional(bool condition) noexcept;
+		virtual void jumpRelativeConditional(bool condition) noexcept;
 		virtual void returnConditional(bool condition) noexcept;
-		void jumpIndirect() noexcept;
+		virtual void jumpIndirect() noexcept;
 		void jump() noexcept;
 		void callIndirect() noexcept;
 		void call() noexcept;
-		virtual void call(register16_t destination) noexcept;
 		virtual void jumpRelative(int8_t offset) noexcept;
 		void jumpRelative(uint8_t offset) noexcept { jumpRelative(static_cast<int8_t>(offset)); }
 		void ret() noexcept override;
 
-		void resetWorkingRegisters() noexcept;
+		void resetRegisterSet() noexcept;
 
 		[[nodiscard]] virtual bool convertCondition(int flag) noexcept = 0;
 
@@ -170,6 +169,17 @@ namespace EightBit {
 		virtual void callConditionalFlag(int flag) noexcept;
 
 		virtual void cpl() noexcept;
+
+		void readMemoryIndirect(register16_t via) noexcept;
+		void readMemoryIndirect() noexcept;
+
+		void writeMemoryIndirect(register16_t via, uint8_t data) noexcept;
+		void writeMemoryIndirect(uint8_t data) noexcept;
+
+		virtual void memoryUpdate(int ticks) noexcept = 0;
+
+		virtual uint8_t& R(int r, MemoryMapping::AccessLevel access) noexcept = 0;
+		void R(int r, uint8_t value, int ticks = 1) noexcept;
 
 	private:
 		static std::array<int, 8> m_halfCarryTableAdd;

@@ -22,7 +22,7 @@ void Board::lowerPOWER() noexcept {
 	EightBit::Bus::lowerPOWER();
 }
 
-void Board::initialise() {
+void Board::initialise() noexcept {
 
 	auto romDirectory = m_configuration.getRomDirectory();
 
@@ -46,13 +46,13 @@ void Board::initialise() {
 	}
 
 	poke(0, 0xc3);	// JMP
-	CPU().pokeWord(1, m_configuration.getStartAddress());
+	CPU().pokeShort(1, m_configuration.getStartAddress());
 
 	poke(5, 0xc9); // ret
 }
 
-void Board::Cpu_ExecutingInstruction_Cpm(EightBit::Intel8080& cpu) {
-	switch (cpu.PC().word) {
+void Board::Cpu_ExecutingInstruction_Cpm(EightBit::EventArgs&) {
+	switch (CPU().PC().word) {
 	case 0x0:	// CP/M warm start
 		if (++m_warmstartCount == 2) {
 			lowerPOWER();
@@ -84,15 +84,15 @@ void Board::bdos() {
 	}
 }
 
-void Board::Cpu_ExecutingInstruction_Profile(EightBit::Intel8080& cpu) {
+void Board::Cpu_ExecutingInstruction_Profile(EightBit::EventArgs&) {
 
-	const auto pc = cpu.PC();
+	const auto pc = CPU().PC();
 
 	m_profiler.addAddress(pc.word);
 	m_profiler.addInstruction(peek(pc.word));
 }
 
-void Board::Cpu_ExecutingInstruction_Debug(const EightBit::Intel8080& cpu) {
+void Board::Cpu_ExecutingInstruction_Debug(const EightBit::EventArgs&) {
 	const std::string disassembled = 
 		EightBit::Disassembler::state(CPU()) + '\t' + m_disassembler.disassemble(CPU()) + '\n';
 	std::cerr << disassembled;

@@ -4,55 +4,80 @@
 
 // based on http://www.z80.info/decoding.htm
 
+DEFINE_PIN_LEVEL_CHANGERS(MWR, GameBoy::LR35902);
+DEFINE_PIN_LEVEL_CHANGERS(RD, GameBoy::LR35902);
+DEFINE_PIN_LEVEL_CHANGERS(WR, GameBoy::LR35902);
+
 EightBit::GameBoy::LR35902::LR35902(Bus& memory)
 : IntelProcessor(memory),
   m_bus(memory) {
+
+	RaisedPOWER.connect([this](EventArgs) {
+		raiseWR();
+		raiseRD();
+		raiseMWR();
+		EI() = false;
+	});
+
+	RaisingHALT.connect([this](EventArgs) {
+		++PC();
+	});
+
 	MachineTicked.connect([this](EventArgs) {
 		m_bus.IO().incrementTimers();
 		m_bus.IO().transferDma();
 	});
 }
 
-const EightBit::register16_t& EightBit::GameBoy::LR35902::AF() const noexcept {
-	auto* gb = const_cast<LR35902*>(this);
-	gb->af.low = higherNibble(af.low);
-	return af;
+EightBit::register16_t& EightBit::GameBoy::LR35902::AF() noexcept {
+	m_af.low = higherNibble(m_af.low);
+	return m_af;
 }
 
-const EightBit::register16_t& EightBit::GameBoy::LR35902::BC() const noexcept {
-	return bc;
+EightBit::register16_t& EightBit::GameBoy::LR35902::BC() noexcept {
+	return m_bc;
 }
 
-const EightBit::register16_t& EightBit::GameBoy::LR35902::DE() const noexcept {
-	return de;
+EightBit::register16_t& EightBit::GameBoy::LR35902::DE() noexcept {
+	return m_de;
 }
 
-const EightBit::register16_t& EightBit::GameBoy::LR35902::HL() const noexcept {
-	return hl;
+EightBit::register16_t& EightBit::GameBoy::LR35902::HL() noexcept {
+	return m_hl;
 }
 
 void EightBit::GameBoy::LR35902::handleRESET() noexcept {
 	IntelProcessor::handleRESET();
-	di();
 	SP() = Mask16 - 1;
 	tickMachine(4);
 }
 
 void EightBit::GameBoy::LR35902::handleINT() noexcept {
 	IntelProcessor::handleINT();
-	raiseHALT();
-	di();
 	restart(BUS().DATA());
 }
 
+void EightBit::GameBoy::LR35902::memoryUpdate(int ticks) noexcept {
+	lowerMWR();
+		lowerWR();
+			IntelProcessor::memoryWrite();
+			tickMachine(ticks);
+		raiseWR();
+	raiseMWR();
+}
+
 void EightBit::GameBoy::LR35902::memoryWrite() noexcept {
-	tickMachine();
-	IntelProcessor::memoryWrite();
+	memoryUpdate(1);
 }
 
 uint8_t EightBit::GameBoy::LR35902::memoryRead() noexcept {
-	tickMachine();
-	return IntelProcessor::memoryRead();
+	lowerMWR();
+		lowerRD();
+			IntelProcessor::memoryRead();
+			tickMachine();
+		raiseRD();
+	raiseMWR();
+	return BUS().DATA();
 }
 
 void EightBit::GameBoy::LR35902::pushWord(register16_t value) noexcept {
@@ -60,43 +85,42 @@ void EightBit::GameBoy::LR35902::pushWord(register16_t value) noexcept {
 	IntelProcessor::pushWord(value);
 }
 
-void EightBit::GameBoy::LR35902::jr(int8_t offset) noexcept {
-	IntelProcessor::jr(offset);
+void EightBit::GameBoy::LR35902::jumpRelative(int8_t offset) noexcept {
+	IntelProcessor::jumpRelative(offset);
 	tickMachine();
 }
 
-int EightBit::GameBoy::LR35902::jumpConditional(const int condition) noexcept {
-	if (IntelProcessor::jumpConditional(condition))
+void EightBit::GameBoy::LR35902::jumpConditional(bool condition) noexcept {
+	IntelProcessor::jumpConditional(condition);
+	if (condition)
 		tickMachine();
-	return condition;
 }
 
-int EightBit::GameBoy::LR35902::returnConditional(const int condition) noexcept {
+void EightBit::GameBoy::LR35902::returnConditional(bool condition) noexcept {
+	tickMachine();
 	IntelProcessor::returnConditional(condition);
-	tickMachine();
-	return condition;
 }
 
-int EightBit::GameBoy::LR35902::jrConditional(const int condition) noexcept {
-	if (!IntelProcessor::jrConditional(condition))
-		tickMachine();
-	return condition;
-}
 
 void EightBit::GameBoy::LR35902::ret() noexcept {
 	IntelProcessor::ret();
 	tickMachine();
 }
 
-void EightBit::GameBoy::LR35902::di() noexcept {
+void EightBit::GameBoy::LR35902::jumpIndirect() noexcept {
+	IntelProcessor::jumpIndirect();
+	tickMachine();
+}
+
+void EightBit::GameBoy::LR35902::disableInterrupts() noexcept {
 	IME() = false;
 }
 
-void EightBit::GameBoy::LR35902::ei() noexcept {
+void EightBit::GameBoy::LR35902::enableInterrupts() noexcept {
 	IME() = true;
 }
 
-uint8_t EightBit::GameBoy::LR35902::increment(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::increment(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, NF);
 	const uint8_t result = operand + 1;
 	f = adjustZero<LR35902>(f, result);
@@ -104,7 +128,7 @@ uint8_t EightBit::GameBoy::LR35902::increment(uint8_t& f, const uint8_t operand)
 	return result;
 }
 
-uint8_t EightBit::GameBoy::LR35902::decrement(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::decrement(uint8_t& f, const uint8_t operand) {
 	f = setBit(f, NF);
 	f = clearBit(f, HC, lowNibble(operand));
 	const uint8_t result = operand - 1;
@@ -166,7 +190,7 @@ void EightBit::GameBoy::LR35902::R(const int r, const uint8_t value) {
 	}
 }
 
-EightBit::register16_t& EightBit::GameBoy::LR35902::RP(const int rp) noexcept {
+EightBit::register16_t& EightBit::GameBoy::LR35902::RP(const int rp) {
 	switch (rp) {
 	case 0b00:
 		return BC();
@@ -181,7 +205,7 @@ EightBit::register16_t& EightBit::GameBoy::LR35902::RP(const int rp) noexcept {
 	}
 }
 
-EightBit::register16_t& EightBit::GameBoy::LR35902::RP2(const int rp) noexcept {
+EightBit::register16_t& EightBit::GameBoy::LR35902::RP2(const int rp) {
 	switch (rp) {
 	case 0b00:
 		return BC();
@@ -196,42 +220,26 @@ EightBit::register16_t& EightBit::GameBoy::LR35902::RP2(const int rp) noexcept {
 	}
 }
 
-bool EightBit::GameBoy::LR35902::convertCondition(const uint8_t f, int flag) noexcept {
+bool EightBit::GameBoy::LR35902::convertCondition(int flag) noexcept {
 	ASSUME(flag >= 0);
 	ASSUME(flag <= 7);
 	switch (flag) {
 	case 0:
-		return !(f & ZF);
+		return !(F() & ZF);
 	case 1:
-		return f & ZF;
+		return F() & ZF;
 	case 2:
-		return !(f & CF);
+		return !(F() & CF);
 	case 3:
-		return f & CF;
+		return F() & CF;
 	default:
 		UNREACHABLE;
 	}
 }
 
-void EightBit::GameBoy::LR35902::returnConditionalFlag(const uint8_t f, const int flag) {
-	returnConditional(convertCondition(f, flag));
-}
-
-void EightBit::GameBoy::LR35902::jrConditionalFlag(const uint8_t f, const int flag) {
-	jrConditional(convertCondition(f, flag));
-}
-
-void EightBit::GameBoy::LR35902::jumpConditionalFlag(uint8_t f, const int flag) {
-	jumpConditional(convertCondition(f, flag));
-}
-
-void EightBit::GameBoy::LR35902::callConditionalFlag(uint8_t f, const int flag) {
-	callConditional(convertCondition(f, flag));
-}
-
 void EightBit::GameBoy::LR35902::reti() {
 	ret();
-	ei();
+	enableInterrupts();
 }
 
 EightBit::register16_t EightBit::GameBoy::LR35902::add(uint8_t& f, const register16_t operand, const register16_t value) {
@@ -250,7 +258,7 @@ EightBit::register16_t EightBit::GameBoy::LR35902::add(uint8_t& f, const registe
 	return result;
 }
 
-uint8_t EightBit::GameBoy::LR35902::add(uint8_t& f, const uint8_t operand, const uint8_t value, const int carry) noexcept {
+uint8_t EightBit::GameBoy::LR35902::add(uint8_t& f, const uint8_t operand, const uint8_t value, const int carry) {
 
 	const register16_t addition = operand + value + carry;
 	const auto result = addition.low;
@@ -264,11 +272,11 @@ uint8_t EightBit::GameBoy::LR35902::add(uint8_t& f, const uint8_t operand, const
 	return result;
 }
 
-uint8_t EightBit::GameBoy::LR35902::adc(uint8_t& f, const uint8_t operand, const uint8_t value) noexcept {
+uint8_t EightBit::GameBoy::LR35902::adc(uint8_t& f, const uint8_t operand, const uint8_t value) {
 	return add(f, operand, value, (f & CF) >> 4);
 }
 
-uint8_t EightBit::GameBoy::LR35902::subtract(uint8_t& f, const uint8_t operand, const uint8_t value, const int carry) noexcept {
+uint8_t EightBit::GameBoy::LR35902::subtract(uint8_t& f, const uint8_t operand, const uint8_t value, const int carry) {
 
 	const register16_t subtraction = operand - value - carry;
 	const auto result = subtraction.low;
@@ -282,11 +290,11 @@ uint8_t EightBit::GameBoy::LR35902::subtract(uint8_t& f, const uint8_t operand, 
 	return result;
 }
 
-uint8_t EightBit::GameBoy::LR35902::sbc(uint8_t& f, const uint8_t operand, const uint8_t value) noexcept {
+uint8_t EightBit::GameBoy::LR35902::sbc(uint8_t& f, const uint8_t operand, const uint8_t value) {
 	 return subtract(f, operand, value, (f & CF) >> 4);
 }
 
-uint8_t EightBit::GameBoy::LR35902::andr(uint8_t& f, const uint8_t operand, const uint8_t value) noexcept {
+uint8_t EightBit::GameBoy::LR35902::andr(uint8_t& f, const uint8_t operand, const uint8_t value) {
 	f = setBit(f, HC);
 	f = clearBit(f, CF | NF);
 	const uint8_t result = operand & value;
@@ -294,76 +302,76 @@ uint8_t EightBit::GameBoy::LR35902::andr(uint8_t& f, const uint8_t operand, cons
 	return result;
 }
 
-uint8_t EightBit::GameBoy::LR35902::xorr(uint8_t& f, const uint8_t operand, const uint8_t value) noexcept {
+uint8_t EightBit::GameBoy::LR35902::xorr(uint8_t& f, const uint8_t operand, const uint8_t value) {
 	f = clearBit(f, HC | CF | NF);
 	const uint8_t result = operand ^ value;
 	f = adjustZero<LR35902>(f, result);
 	return result;
 }
 
-uint8_t EightBit::GameBoy::LR35902::orr(uint8_t& f, const uint8_t operand, const uint8_t value) noexcept {
+uint8_t EightBit::GameBoy::LR35902::orr(uint8_t& f, const uint8_t operand, const uint8_t value) {
 	f = clearBit(f, HC | CF | NF);
 	const uint8_t result = operand | value;
 	f = adjustZero<LR35902>(f, result);
 	return result;
 }
 
-void EightBit::GameBoy::LR35902::compare(uint8_t& f, uint8_t operand, const uint8_t value) noexcept {
+void EightBit::GameBoy::LR35902::compare(uint8_t& f, uint8_t operand, const uint8_t value) {
 	subtract(f, operand, value);
 }
 
-uint8_t EightBit::GameBoy::LR35902::rlc(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::rlc(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, NF | HC | ZF);
 	const auto carry = operand & Bit7;
 	f = setBit(f, CF, carry);
 	return (operand << 1) | (carry >> 7);
 }
 
-uint8_t EightBit::GameBoy::LR35902::rrc(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::rrc(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, NF | HC | ZF);
 	const auto carry = operand & Bit0;
 	f = setBit(f, CF, carry);
 	return (operand >> 1) | (carry << 7);
 }
 
-uint8_t EightBit::GameBoy::LR35902::rl(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::rl(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, NF | HC | ZF);
 	const auto carry = f & CF;
 	f = setBit(f, CF, operand & Bit7);
 	return (operand << 1) | (carry >> 4);	// CF at Bit4
 }
 
-uint8_t EightBit::GameBoy::LR35902::rr(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::rr(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, NF | HC | ZF);
 	const auto carry = f & CF;
 	f = setBit(f, CF, operand & Bit0);
 	return (operand >> 1) | (carry << 3);	// CF at Bit4
 }
 
-uint8_t EightBit::GameBoy::LR35902::sla(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::sla(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, NF | HC | ZF);
 	f = setBit(f, CF, operand & Bit7);
 	return operand << 1;
 }
 
-uint8_t EightBit::GameBoy::LR35902::sra(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::sra(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, NF | HC | ZF);
 	f = setBit(f, CF, operand & Bit0);
 	return (operand >> 1) | (operand & Bit7);
 }
 
-uint8_t EightBit::GameBoy::LR35902::swap(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::swap(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, NF | HC | CF);
 	return promoteNibble(operand) | demoteNibble(operand);
 }
 
-uint8_t EightBit::GameBoy::LR35902::srl(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::srl(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, NF | HC | ZF);
 	f = setBit(f, CF, operand & Bit0);
 	return (operand >> 1) & ~Bit7;
 }
 
-void EightBit::GameBoy::LR35902::bit(uint8_t& f, const int n, const uint8_t operand) noexcept {
+void EightBit::GameBoy::LR35902::bit(uint8_t& f, const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
 	const auto carry = f & CF;
@@ -371,19 +379,19 @@ void EightBit::GameBoy::LR35902::bit(uint8_t& f, const int n, const uint8_t oper
 	f = setBit(f, CF, carry);
 }
 
-uint8_t EightBit::GameBoy::LR35902::res(const int n, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::res(const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
 	return clearBit(operand, Chip::bit(n));
 }
 
-uint8_t EightBit::GameBoy::LR35902::set(const int n, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::set(const int n, const uint8_t operand) {
 	ASSUME(n >= 0);
 	ASSUME(n <= 7);
 	return setBit(operand, Chip::bit(n));
 }
 
-uint8_t EightBit::GameBoy::LR35902::daa(uint8_t& f, uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::daa(uint8_t& f, uint8_t operand) {
 
 	int updated = operand;
 
@@ -408,67 +416,61 @@ uint8_t EightBit::GameBoy::LR35902::daa(uint8_t& f, uint8_t operand) noexcept {
 	return result;
 }
 
-uint8_t EightBit::GameBoy::LR35902::cpl(uint8_t& f, const uint8_t operand) noexcept {
+uint8_t EightBit::GameBoy::LR35902::cpl(uint8_t& f, const uint8_t operand) {
 	f = setBit(f, HC | NF);
 	return ~operand;
 }
 
-void EightBit::GameBoy::LR35902::scf(uint8_t& f, const uint8_t operand) noexcept {
+void EightBit::GameBoy::LR35902::scf(uint8_t& f, const uint8_t operand) {
 	f = setBit(f, CF);
 	f = clearBit(f, HC | NF);
 }
 
-void EightBit::GameBoy::LR35902::ccf(uint8_t& f, const uint8_t operand) noexcept {
+void EightBit::GameBoy::LR35902::ccf(uint8_t& f, const uint8_t operand) {
 	f = clearBit(f, NF | HC);
 	f = clearBit(f, CF, f & CF);
 }
 
-uint8_t EightBit::GameBoy::LR35902::enabledInterrupts() noexcept {
+uint8_t EightBit::GameBoy::LR35902::enabledInterrupts() {
 	return BUS().peek(IoRegisters::BASE + IoRegisters::IE);
 }
 
-uint8_t EightBit::GameBoy::LR35902::flaggedInterrupts() noexcept {
+uint8_t EightBit::GameBoy::LR35902::flaggedInterrupts() {
 	return m_bus.IO().peek(IoRegisters::IF);
 }
 
-uint8_t EightBit::GameBoy::LR35902::maskedInterrupts() noexcept {
+uint8_t EightBit::GameBoy::LR35902::maskedInterrupts() {
 	return enabledInterrupts() & flaggedInterrupts();
 }
 
-int EightBit::GameBoy::LR35902::step() noexcept {
+void EightBit::GameBoy::LR35902::poweredStep() noexcept {
 
-	ExecutingInstruction.fire(*this);
 	m_prefixCB = false;
-	resetCycles();
-	if (LIKELY(powered())) {
 
-		const auto masked = maskedInterrupts();
-		if (masked) {
-			if (IME()) {
-				m_bus.IO().poke(IoRegisters::IF, 0);
-				lowerINT();
-				const int index = findFirstSet(masked);
-				BUS().DATA() = 0x38 + (index << 3);
-			} else {
-				raiseHALT();
-			}
-		}
-
-		if (UNLIKELY(lowered(RESET()))) {
-			handleRESET();
-		} else if (UNLIKELY(lowered(INT()))) {
-			handleINT();
-		} else if (UNLIKELY(lowered(HALT()))) {
-			IntelProcessor::memoryRead(PC());
-			//Processor::execute(0);	// NOP
+	if (EI()) {
+		enableInterrupts();
+		EI() = false;
+	}
+	
+	const auto masked = maskedInterrupts();
+	if (masked) {
+		if (IME()) {
+			m_bus.IO().poke(IoRegisters::IF, 0);
+			lowerINT();
+			const int index = findFirstSet(masked);
+			BUS().DATA() = 0x38 + (index << 3);
 		} else {
-			Processor::execute(fetchByte());
+			raiseHALT();
 		}
 	}
-	ExecutedInstruction.fire(*this);
-	assert(cycles() > 0);
-	assert(cycles() % 4 == 0);
-	return cycles();
+
+	if (UNLIKELY(lowered(RESET()))) {
+		handleRESET();
+	} else if (UNLIKELY(lowered(INT()))) {
+		handleINT();
+	} else {
+		Processor::execute(fetchByte());
+	}
 }
 
 void EightBit::GameBoy::LR35902::execute() noexcept {
@@ -551,15 +553,16 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 				break;
 			case 2:	// GB: STOP
 				stop();
+				tickMachine(2);
 				break;
 			case 3:	// JR d
-				jr(fetchByte());
+				jumpRelative(fetchByte());
 				break;
 			case 4: // JR cc,d
 			case 5:
 			case 6:
 			case 7:
-				jrConditionalFlag(F(), y - 4);
+				jumpRelativeConditionalFlag(y - 4);
 				break;
 			default:
 				UNREACHABLE;
@@ -722,7 +725,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			case 1:
 			case 2:
 			case 3:
-				returnConditionalFlag(F(), y);
+				returnConditionalFlag(y);
 				break;
 			case 4:	// GB: LD (FF00 + n),A
 				IntelProcessor::memoryWrite(IoRegisters::BASE + fetchByte(), A());
@@ -772,7 +775,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 					reti();
 					break;
 				case 2:	// JP HL
-					jump(HL());
+					Processor::jump(HL());
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL();
@@ -792,7 +795,7 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 			case 1:
 			case 2:
 			case 3:
-				jumpConditionalFlag(F(), y);
+				jumpConditionalFlag(y);
 				break;
 			case 4:	// GB: LD (FF00 + C),A
 				IntelProcessor::memoryWrite(IoRegisters::BASE + C(), A());
@@ -815,23 +818,22 @@ void EightBit::GameBoy::LR35902::executeOther(const int x, const int y, const in
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0:	// JP nn
-				jump(MEMPTR() = fetchWord());
-				tickMachine();
+				jumpIndirect();
 				break;
 			case 1:	// CB prefix
 				m_prefixCB = true;
 				Processor::execute(fetchByte());
 				break;
 			case 6:	// DI
-				di();
+				disableInterrupts();
 				break;
 			case 7:	// EI
-				ei();
+				EI() = true;
 				break;
 			}
 			break;
 		case 4:	// Conditional call: CALL cc[y], nn
-			callConditionalFlag(F(), y);
+			callConditionalFlag(y);
 			break;
 		case 5:	// PUSH & various ops
 			switch (q) {

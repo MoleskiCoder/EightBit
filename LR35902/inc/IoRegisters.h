@@ -133,35 +133,35 @@ namespace EightBit {
 
 			void updateLcdStatusMode(int mode);
 
-			void disableBootRom() noexcept { m_disableBootRom = true; }
-			void enableBootRom() noexcept { m_disableBootRom = false; }
+			void disableBootRom() { m_disableBootRom = true; }
+			void enableBootRom() { m_disableBootRom = false; }
 
-			auto bootRomDisabled() const noexcept { return m_disableBootRom; }
-			auto bootRomEnabled() const noexcept { return !bootRomDisabled(); }
+			auto bootRomDisabled() const { return m_disableBootRom; }
+			auto bootRomEnabled() const { return !bootRomDisabled(); }
 
 			void pressRight() { m_p14 = m_p10 = false; triggerKeypadInterrupt(); }
-			void releaseRight() noexcept { m_p14 = m_p10 = true; }
+			void releaseRight() { m_p14 = m_p10 = true; }
 
 			void pressLeft() { m_p14 = m_p11 = false, triggerKeypadInterrupt(); }
-			void releaseLeft() noexcept { m_p14 = m_p11 = true; }
+			void releaseLeft() { m_p14 = m_p11 = true; }
 
 			void pressUp() { m_p14 = m_p12 = false, triggerKeypadInterrupt(); }
-			void releaseUp() noexcept { m_p14 = m_p12 = true; }
+			void releaseUp() { m_p14 = m_p12 = true; }
 
 			void pressDown() { m_p14 = m_p13 = false, triggerKeypadInterrupt(); }
-			void releaseDown() noexcept { m_p14 = m_p13 = true; }
+			void releaseDown() { m_p14 = m_p13 = true; }
 
 			void pressA() { m_p15 = m_p10 = false, triggerKeypadInterrupt(); }
-			void releaseA() noexcept { m_p15 = m_p10 = true; }
+			void releaseA() { m_p15 = m_p10 = true; }
 
 			void pressB() { m_p15 = m_p11 = false, triggerKeypadInterrupt(); }
-			void releaseB() noexcept { m_p15 = m_p11 = true; }
+			void releaseB() { m_p15 = m_p11 = true; }
 
 			void pressSelect() { m_p15 = m_p12 = false, triggerKeypadInterrupt(); }
-			void releaseSelect() noexcept { m_p15 = m_p12 = true; }
+			void releaseSelect() { m_p15 = m_p12 = true; }
 
 			void pressStart() { m_p15 = m_p13 = false, triggerKeypadInterrupt(); }
-			void releaseStart() noexcept { m_p15 = m_p13 = true; }
+			void releaseStart() { m_p15 = m_p13 = true; }
 
 		private:
 			Bus& m_bus;

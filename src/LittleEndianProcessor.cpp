@@ -7,56 +7,60 @@ EightBit::LittleEndianProcessor::LittleEndianProcessor(Bus& memory) noexcept
 EightBit::LittleEndianProcessor::LittleEndianProcessor(const LittleEndianProcessor& rhs) noexcept
 : Processor(rhs) {}
 
-EightBit::register16_t EightBit::LittleEndianProcessor::getWord() noexcept {
-	const auto low = memoryRead();
-	++BUS().ADDRESS();
-	const auto high = memoryRead();
+EightBit::register16_t EightBit::LittleEndianProcessor::peekShort(uint16_t address) noexcept {
+	const auto low = BUS().peek(address);
+	const auto high = BUS().peek(++address);
 	return { low, high };
 }
 
-void EightBit::LittleEndianProcessor::setWord(const register16_t value) noexcept {
-	memoryWrite(value.low);
+void EightBit::LittleEndianProcessor::pokeShort(uint16_t address, const register16_t value) noexcept {
+	BUS().poke(address, value.low);
+	BUS().poke(++address, value.high);
+}
+
+void EightBit::LittleEndianProcessor::fetchInto(register16_t& into) noexcept {
+	fetchByte();
+	into.low = BUS().DATA();
+	fetchByte();
+	into.high = BUS().DATA();
+}
+
+void EightBit::LittleEndianProcessor::getInto(register16_t& into) noexcept {
+	memoryRead();
+	into.low = BUS().DATA();
 	++BUS().ADDRESS();
-	memoryWrite(value.high);
+	memoryRead();
+	into.high = BUS().DATA();
 }
 
-EightBit::register16_t EightBit::LittleEndianProcessor::getWordPaged() noexcept {
-	const auto low = memoryRead();
+void EightBit::LittleEndianProcessor::getPagedInto(register16_t& into) noexcept {
+	memoryRead();
+	into.low = BUS().DATA();
 	++BUS().ADDRESS().low;
-	const auto high = memoryRead();
-	return { low, high };
+	memoryRead();
+	into.high = BUS().DATA();
 }
 
-void EightBit::LittleEndianProcessor::setWordPaged(register16_t value) noexcept {
-	memoryWrite(value.low);
-	++BUS().ADDRESS().low;
-	memoryWrite(value.high);
+void EightBit::LittleEndianProcessor::popInto(register16_t& into) noexcept {
+	pop();
+	into.low = BUS().DATA();
+	pop();
+	into.high = BUS().DATA();
 }
 
-EightBit::register16_t EightBit::LittleEndianProcessor::fetchWord() noexcept {
-	intermediate().low = fetchByte();
-	intermediate().high = fetchByte();
-	return intermediate();
-}
-
-void EightBit::LittleEndianProcessor::pushWord(const register16_t value) noexcept {
+void EightBit::LittleEndianProcessor::pushShort(register16_t value) noexcept {
 	push(value.high);
 	push(value.low);
 }
 
-EightBit::register16_t EightBit::LittleEndianProcessor::popWord() noexcept {
-	const auto low = pop();
-	const auto high = pop();
-	return { low, high };
+void EightBit::LittleEndianProcessor::setShort(register16_t value) noexcept {
+	memoryWrite(value.low);
+	++BUS().ADDRESS();
+	memoryWrite(value.high);
 }
 
-EightBit::register16_t EightBit::LittleEndianProcessor::peekWord(const register16_t address) noexcept {
-	const auto low = BUS().peek(address);
-	const auto high = BUS().peek(address + 1);
-	return { low, high };
-}
-
-void EightBit::LittleEndianProcessor::pokeWord(const register16_t address, const register16_t value) noexcept {
-	BUS().poke(address, value.low);
-	BUS().poke(address + 1, value.high);
+void EightBit::LittleEndianProcessor::setPaged(register16_t value) noexcept {
+	memoryWrite(value.low);
+	++BUS().ADDRESS().low;
+	memoryWrite(value.high);
 }

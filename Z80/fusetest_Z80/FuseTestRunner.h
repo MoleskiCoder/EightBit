@@ -42,7 +42,7 @@ namespace Fuse {
 		void dumpActualEvents() const;
 
 	protected:
-		virtual EightBit::MemoryMapping mapping(uint16_t address) noexcept final;
+		virtual EightBit::MemoryMapping mapping(uint16_t address) final;
 
 	public:
 		TestRunner(const Test& test, const ExpectedTestResult& expected);
@@ -51,8 +51,8 @@ namespace Fuse {
 		bool failed() const { return m_failed; }
 		bool unimplemented() const { return m_unimplemented; }
 
-		void raisePOWER() noexcept final;
-		void lowerPOWER() noexcept final;
+		void raisePOWER() final;
+		void lowerPOWER() final;
 
 		void initialise() final;
 	};

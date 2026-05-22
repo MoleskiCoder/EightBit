@@ -15,7 +15,7 @@ namespace EightBit {
 
 		class Disassembler {
 		public:
-			Disassembler(Bus& bus) noexcept;
+			Disassembler(Bus& bus);
 
 			static std::string state(LR35902& cpu);
 			std::string disassemble(LR35902& cpu);
@@ -71,7 +71,7 @@ namespace EightBit {
 			static std::string cc(int flag);
 			static std::string alu(int which);
 
-			Bus& BUS() noexcept { return m_bus; }
+			Bus& BUS() { return m_bus; }
 		};
 	}
 }

@@ -22,4 +22,4 @@ void TestRunner::lowerPOWER() noexcept {
     EightBit::Bus::lowerPOWER();
 }
 
-void TestRunner::initialise() {}
+void TestRunner::initialise() noexcept {}

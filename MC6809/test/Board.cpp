@@ -4,7 +4,7 @@
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration) {}
 
-void Board::raisePOWER() noexcept {
+void Board::raisePOWER() {
 
 	EightBit::Bus::raisePOWER();
 
@@ -26,7 +26,7 @@ void Board::raisePOWER() noexcept {
 	accessAcia();
 }
 
-void Board::lowerPOWER() noexcept {
+void Board::lowerPOWER() {
 
 	if (m_configuration.isProfileMode()) {
 		m_profiler.EmitLine.connect([this](EightBit::ProfileLineEventArgs line) {
@@ -111,7 +111,7 @@ void Board::initialise() {
 	}
 }
 
-EightBit::MemoryMapping Board::mapping(uint16_t address) noexcept {
+EightBit::MemoryMapping Board::mapping(uint16_t address) {
 
 	if (address < 0x8000)
 		return { m_ram, 0x0000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };

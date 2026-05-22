@@ -20,37 +20,27 @@ DEFINE_PIN_LEVEL_CHANGERS(SYNC, MOS6502)
 DEFINE_PIN_LEVEL_CHANGERS(RDY, MOS6502)
 DEFINE_PIN_LEVEL_CHANGERS(RW, MOS6502)
 
-int EightBit::MOS6502::step() noexcept {
+void EightBit::MOS6502::poweredStep() noexcept {
 
-	resetCycles();
+	tick();	// A cycle is used, whether RDY is high or not
 
-	ExecutingInstruction.fire(*this);
-	if (LIKELY(powered())) {
+	if (UNLIKELY(lowered(SO())))
+		handleSO();
 
-		tick();	// A cycle is used, whether RDY is high or not
+	if (LIKELY(raised(RDY()))) {
 
-		if (UNLIKELY(lowered(SO())))
-			handleSO();
+		fetchInstruction();
 
-		if (LIKELY(raised(RDY()))) {
-
-			fetchInstruction();
-
-			// Priority: RESET > NMI > INT
-			if (UNLIKELY(lowered(RESET())))
-				handleRESET();
-			else if (UNLIKELY(lowered(NMI())))
-				handleNMI();
-			else if (UNLIKELY(lowered(INT()) && !interruptMasked()))
-				handleINT();
-			else
-				execute();
-		}
+		// Priority: RESET > NMI > INT
+		if (UNLIKELY(lowered(RESET())))
+			handleRESET();
+		else if (UNLIKELY(lowered(NMI())))
+			handleNMI();
+		else if (UNLIKELY(lowered(INT()) && !interruptMasked()))
+			handleINT();
+		else
+			execute();
 	}
-	ExecutedInstruction.fire(*this);
-
-	ASSUME(cycles() > 0);
-	return cycles();
 }
 
 // Interrupt (etc.) handlers

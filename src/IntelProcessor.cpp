@@ -11,7 +11,7 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus) noexcept
 
 	RaisedPOWER.connect([this](EventArgs) {
 		PC() = SP() = Mask16;
-		resetWorkingRegisters();
+		resetRegisterSet();
 		raiseHALT();
 	});
 }
@@ -23,7 +23,7 @@ EightBit::IntelProcessor::IntelProcessor(const IntelProcessor& rhs) noexcept
 	HALT() = rhs.HALT();
 }
 
-void EightBit::IntelProcessor::resetWorkingRegisters() noexcept {
+void EightBit::IntelProcessor::resetRegisterSet() noexcept {
 	AF() = BC() = DE() = HL() = Mask16;
 }
 
@@ -45,8 +45,8 @@ void EightBit::IntelProcessor::push(const uint8_t value) noexcept {
 	memoryWrite(--SP(), value);
 }
 
-uint8_t EightBit::IntelProcessor::pop() noexcept {
-	return memoryRead(SP()++);
+void EightBit::IntelProcessor::pop() noexcept {
+	memoryRead(SP()++);
 }
 
 EightBit::register16_t& EightBit::IntelProcessor::incrementPC() noexcept {
@@ -56,18 +56,17 @@ EightBit::register16_t& EightBit::IntelProcessor::incrementPC() noexcept {
 }
 
 uint8_t EightBit::IntelProcessor::fetchInstruction() noexcept {
-	const auto data = fetchByte();
-	return proceeding() ? data : (uint8_t)0;
+	fetchByte();
+	return proceeding() ? BUS().DATA() : (uint8_t)0;
 }
 
-EightBit::register16_t EightBit::IntelProcessor::getWord() noexcept {
-	const auto returned = LittleEndianProcessor::getWord();
+void EightBit::IntelProcessor::getShort() noexcept {
+	LittleEndianProcessor::getShort();
 	MEMPTR() = BUS().ADDRESS();
-	return returned;
 }
 
-void EightBit::IntelProcessor::setWord(const register16_t value) noexcept {
-	LittleEndianProcessor::setWord(value);
+void EightBit::IntelProcessor::setShort(const register16_t value) noexcept {
+	LittleEndianProcessor::setShort(value);
 	MEMPTR() = BUS().ADDRESS();
 }
 
@@ -77,21 +76,21 @@ void EightBit::IntelProcessor::restart(const uint8_t address) noexcept {
 }
 
 void EightBit::IntelProcessor::callConditional(bool condition) noexcept {
-	MEMPTR() = fetchWord();
+	fetchInto(MEMPTR());
 	if (condition)
 		call();
 }
 
 void EightBit::IntelProcessor::jumpConditional(bool condition) noexcept {
-	MEMPTR() = fetchWord();
+	fetchInto(MEMPTR());
 	if (condition)
 		jump();
 }
 
 void EightBit::IntelProcessor::jumpRelativeConditional(bool condition) noexcept {
-	const auto offset = fetchByte();
+	fetchByte();
 	if (condition)
-		jumpRelative(offset);
+		jumpRelative(BUS().DATA());
 }
 
 void EightBit::IntelProcessor::returnConditional(bool condition) noexcept {
@@ -110,7 +109,7 @@ void EightBit::IntelProcessor::ret() noexcept {
 }
 
 void EightBit::IntelProcessor::jumpIndirect() noexcept {
-	MEMPTR() = fetchWord();
+	fetchInto(MEMPTR());
 	jump();
 }
 
@@ -119,16 +118,12 @@ void EightBit::IntelProcessor::jump() noexcept {
 }
 
 void EightBit::IntelProcessor::callIndirect() noexcept {
-	MEMPTR() = fetchWord();
+	fetchInto(MEMPTR());
 	call();
 }
 
 void EightBit::IntelProcessor::call() noexcept {
-	call(MEMPTR());
-}
-
-void EightBit::IntelProcessor::call(register16_t destination) noexcept {
-	Processor::call(destination);
+	LittleEndianProcessor::call(MEMPTR());
 }
 
 void EightBit::IntelProcessor::jumpConditionalFlag(int flag) noexcept {
@@ -163,4 +158,33 @@ bool EightBit::IntelProcessor::operator==(const EightBit::IntelProcessor& rhs) c
 		&& left.BC() == right.BC()
 		&& left.DE() == right.DE()
 		&& left.HL() == right.HL();
+}
+
+void EightBit::IntelProcessor::readMemoryIndirect(register16_t via) noexcept {
+	MEMPTR() = via;
+	readMemoryIndirect();
+}
+
+void EightBit::IntelProcessor::readMemoryIndirect() noexcept {
+	BUS().ADDRESS() = MEMPTR();
+	++MEMPTR();
+	memoryRead();
+}
+
+void EightBit::IntelProcessor::writeMemoryIndirect(register16_t via, uint8_t data) noexcept {
+	MEMPTR() = via;
+	writeMemoryIndirect(data);
+}
+
+void EightBit::IntelProcessor::writeMemoryIndirect(uint8_t data) noexcept {
+	BUS().ADDRESS() = MEMPTR();
+	++MEMPTR();
+	MEMPTR().high = BUS().DATA() = data;
+	memoryWrite();
+}
+
+void EightBit::IntelProcessor::R(int r, uint8_t value, int ticks) noexcept {
+	R(r, MemoryMapping::AccessLevel::WriteOnly) = value;
+	if (r == 6)
+		memoryUpdate(ticks);
 }

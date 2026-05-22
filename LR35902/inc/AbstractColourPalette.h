@@ -17,7 +17,7 @@ namespace EightBit {
 
 			AbstractColourPalette() = default;
 
-			[[nodiscard]] auto colour(size_t index) const noexcept {
+			[[nodiscard]] auto colour(size_t index) const {
 				assert(index < m_colours.size());
 				return m_colours[index];
 			}

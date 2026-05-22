@@ -15,7 +15,7 @@
 namespace EightBit {
 	class Intel8080 final : public IntelProcessor {
 	public:
-		DECLARE_PIN_OUTPUT(DBIN)		// Active high
+		DECLARE_PIN_OUTPUT(DBIN)	// Active high
 		DECLARE_PIN_OUTPUT(WR)		// Active low
 
 	public:
@@ -29,36 +29,30 @@ namespace EightBit {
 
 		Intel8080(Bus& bus);
 
-		Signal<Intel8080> ExecutingInstruction;
-		Signal<Intel8080> ExecutedInstruction;
-
 		void execute() noexcept final;
-		int step() noexcept final;
+		void poweredStep() noexcept final;
 
-		[[nodiscard]] const register16_t& AF() const noexcept final;
-		[[nodiscard]] auto& AF() noexcept { return IntelProcessor::AF(); }
-		[[nodiscard]] const register16_t& BC() const noexcept final;
-		[[nodiscard]] auto& BC() noexcept { return IntelProcessor::BC(); }
-		[[nodiscard]] const register16_t& DE() const noexcept final;
-		[[nodiscard]] auto& DE() noexcept { return IntelProcessor::DE(); }
-		[[nodiscard]] const register16_t& HL() const noexcept final;
-		[[nodiscard]] auto& HL() noexcept { return IntelProcessor::HL(); }
+		[[nodiscard]] register16_t& AF() noexcept final;
+		[[nodiscard]] register16_t& BC() noexcept final;
+		[[nodiscard]] register16_t& DE() noexcept final;
+		[[nodiscard]] register16_t& HL() noexcept final;
 
-		[[nodiscard]] bool requestingIO() noexcept { return m_requestIO; }
-		[[nodiscard]] bool requestingMemory() noexcept { return m_requestMemory; }
+		[[nodiscard]] constexpr bool requestingIO() const noexcept { return m_requestIO; }
+		[[nodiscard]] constexpr bool requestingMemory() const noexcept { return m_requestMemory; }
 
-		[[nodiscard]] bool requestingRead() noexcept { return raised(DBIN()); }
-		[[nodiscard]] bool requestingWrite() noexcept { return lowered(WR()); }
+		[[nodiscard]] constexpr bool requestingRead() const noexcept { return raised(DBIN()); }
+		[[nodiscard]] constexpr bool requestingWrite() const noexcept { return lowered(WR()); }
 
 	protected:
 		void handleRESET() noexcept final;
 		void handleINT() noexcept final;
 
+		void memoryUpdate(int ticks = 1) noexcept;
 		void memoryWrite() noexcept final;
 		uint8_t memoryRead() noexcept final;
 
-		void busWrite() noexcept final;
-		uint8_t busRead() noexcept final;
+		//void busWrite() noexcept final;
+		//uint8_t busRead() noexcept final;
 
 	private:
 		bool m_requestIO = false;
@@ -66,122 +60,100 @@ namespace EightBit {
 
 		bool m_interruptEnable = false;
 
-		register16_t af;
-		register16_t bc = Mask16;
-		register16_t de = Mask16;
-		register16_t hl = Mask16;
+		register16_t m_af;
+		register16_t m_bc = Mask16;
+		register16_t m_de = Mask16;
+		register16_t m_hl = Mask16;
 
-		auto R(const int r) {
-			switch (r) {
-			case 0b000:
-				return B();
-			case 0b001:
-				return C();
-			case 0b010:
-				return D();
-			case 0b011:
-				return E();
-			case 0b100:
-				return H();
-			case 0b101:
-				return L();
-			case 0b110:
-				return IntelProcessor::memoryRead(HL());
-			case 0b111:
-				return A();
-			default:
-				UNREACHABLE;
-			}
+		uint8_t R(int r);
+		void R(int r, uint8_t value);
+		register16_t& RP(int rp);
+		register16_t& RP2(int rp);
+
+		[[nodiscard]] static constexpr auto zeroTest(uint8_t data) noexcept { return data & ZF; }
+		[[nodiscard]] static constexpr auto carryTest(uint8_t data) noexcept { return data & CF; }
+		[[nodiscard]] static constexpr auto parityTest(uint8_t data) noexcept { return data & PF; }
+		[[nodiscard]] static constexpr auto signTest(uint8_t data) noexcept { return data & SF; }
+		[[nodiscard]] static constexpr auto auxiliaryCarryTest(uint8_t data) noexcept { return data & AC; }
+
+		[[nodiscard]] constexpr auto zero() noexcept { return zeroTest(F()); }
+		[[nodiscard]] constexpr auto carry() noexcept { return carryTest(F()); }
+		[[nodiscard]] constexpr auto parity() noexcept { return parityTest(F()); }
+		[[nodiscard]] constexpr auto sign() noexcept { return signTest(F()); }
+		[[nodiscard]] constexpr auto auxiliaryCarry() noexcept { return auxiliaryCarryTest(F()); }
+
+		void adjustStatusFlags(uint8_t value) noexcept { F() = value; }
+
+		void setBit(StatusBits flag) noexcept { return adjustStatusFlags(setBit(F(), flag)); }
+		void setBit(int flag) noexcept { return setBit((StatusBits)flag); }
+		[[nodiscard]] static constexpr uint8_t setBit(uint8_t f, StatusBits flag) noexcept { return Chip::setBit(f, (uint8_t)flag); }
+		void setBit(StatusBits flag, int condition) noexcept { adjustStatusFlags(Chip::setBit(F(), flag, condition)); }
+		[[nodiscard]] static constexpr uint8_t setBit(uint8_t f, StatusBits flag, int condition) noexcept { return Chip::setBit(f, (uint8_t)flag, condition); }
+		void setBit(StatusBits flag, bool condition) noexcept { adjustStatusFlags(setBit(F(), flag, condition)); }
+		void setBit(int flag, bool condition) noexcept { setBit((StatusBits)flag, condition); }
+		[[nodiscard]] static constexpr uint8_t setBit(uint8_t f, StatusBits flag, bool condition) noexcept { return Chip::setBit(f, (uint8_t)flag, condition); }
+
+		void clearBit(StatusBits flag) noexcept { adjustStatusFlags(clearBit(F(), flag)); }
+		void clearBit(int flag) noexcept { clearBit((StatusBits)flag); }
+		[[nodiscard]] static constexpr uint8_t clearBit(uint8_t f, StatusBits flag) noexcept { return Chip::clearBit(f, (uint8_t)flag); }
+		void clearBit(StatusBits flag, int condition) noexcept { adjustStatusFlags(clearBit(F(), flag, condition)); }
+		[[nodiscard]] static constexpr uint8_t clearBit(uint8_t f, StatusBits flag, int condition) noexcept { return Chip::clearBit(f, (uint8_t)flag, condition); }
+
+		void adjustSign(uint8_t value) noexcept { adjustStatusFlags(adjustSign(F(), value)); }
+		[[nodiscard]] static constexpr uint8_t adjustSign(uint8_t input, uint8_t value) noexcept { return setBit(input, SF, signTest(value)); }
+
+		void adjustZero(uint8_t value) noexcept { adjustStatusFlags(adjustZero(F(), value)); }
+		[[nodiscard]] static constexpr uint8_t adjustZero(uint8_t input, uint8_t value) noexcept { return clearBit(input, ZF, value); }
+
+		void adjustParity(uint8_t value) noexcept { adjustStatusFlags(adjustParity(F(), value)); }
+		[[nodiscard]] static constexpr uint8_t adjustParity(uint8_t input, uint8_t value) noexcept { return setBit(input, PF, evenParity(value)); }
+
+		void adjustSZ(uint8_t value) noexcept { adjustStatusFlags(adjustSZ(F(), value)); }
+		[[nodiscard]] static constexpr uint8_t adjustSZ(uint8_t input, uint8_t value) noexcept {
+			input = adjustSign(input, value);
+			return adjustZero(input, value);
 		}
 
-		void R(int r, const uint8_t value) {
-			switch (r) {
-			case 0b000:
-				B() = value;
-				break;
-			case 0b001:
-				C() = value;
-				break;
-			case 0b010:
-				D() = value;
-				break;
-			case 0b011:
-				E() = value;
-				break;
-			case 0b100:
-				H() = value;
-				break;
-			case 0b101:
-				L() = value;
-				break;
-			case 0b110:
-				IntelProcessor::memoryWrite(HL(), value);
-				break;
-			case 0b111:
-				A() = value;
-				break;
-			default:
-				UNREACHABLE;
-			}
+		void adjustSZP(uint8_t value) noexcept { adjustStatusFlags(adjustSZP(F(), value)); }
+		[[nodiscard]] static constexpr uint8_t adjustSZP(uint8_t input, uint8_t value) noexcept {
+			input = adjustSZ(input, value);
+			return adjustParity(input, value);
 		}
 
-		auto& RP(const int rp) {
-			switch (rp) {
-			case 0b00:
-				return BC();
-			case 0b01:
-				return DE();
-			case 0b10:
-				return HL();
-			case 0b11:
-				return SP();
-			default:
-				UNREACHABLE;
-			}
+		[[nodiscard]] static constexpr auto adjustAuxilliaryCarryAdd(uint8_t f, uint8_t before, uint8_t value, int calculation) noexcept {
+			return setBit(f, AC, calculateHalfCarryAdd(before, value, calculation));
 		}
 
-		auto& RP2(const int rp) {
-			switch (rp) {
-			case 0b00:
-				return BC();
-			case 0b01:
-				return DE();
-			case 0b10:
-				return HL();
-			case 0b11:
-				return AF();
-			default:
-				UNREACHABLE;
-			}
+		void adjustAuxiliaryCarryAdd(uint8_t before, uint8_t value, int calculation) noexcept {
+			adjustStatusFlags(adjustAuxilliaryCarryAdd(F(), before, value, calculation));
 		}
 
-		static void adjustAuxiliaryCarryAdd(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
-			f = setBit(f, AC, calculateHalfCarryAdd(before, value, calculation));
+		[[nodiscard]] static constexpr auto adjustAuxiliaryCarrySub(uint8_t f, uint8_t before, uint8_t value, int calculation) noexcept {
+			return setBit(f, AC, calculateHalfCarrySub(before, value, calculation));
 		}
 
-		static void adjustAuxiliaryCarrySub(uint8_t& f, uint8_t before, uint8_t value, int calculation) {
-			f = clearBit(f, AC, calculateHalfCarrySub(before, value, calculation));
+		void adjustAuxiliaryCarrySub(uint8_t before, uint8_t value, int calculation) noexcept {
+			adjustStatusFlags(adjustAuxiliaryCarrySub(F(), before, value, calculation));
 		}
 
-		void subtract(uint8_t& operand, uint8_t value, int carry = 0);
+		[[nodiscard]] bool convertCondition(int flag) noexcept final;
 
 		void execute(int x, int y, int z, int p, int q);
 
-		void increment(uint8_t& operand);
-		void decrement(uint8_t& operand);
+		[[nodiscard]] uint8_t increment(uint8_t operand);
+		[[nodiscard]] uint8_t decrement(uint8_t operand);
 
-		void di();
-		void ei();
-
-		int returnConditionalFlag(int flag);
-		int jumpConditionalFlag(int flag);
-		int callConditionalFlag(int flag);
+		void disableInterrupts() noexcept final;
+		void enableInterrupts() noexcept final;
 
 		void add(register16_t value);
 
 		void add(uint8_t value, int carry = 0);
 		void adc(uint8_t value);
+		void sub(uint8_t value, int carry = 0) noexcept;
+		uint8_t subtract(uint8_t value, int carry = 0);
 		void sbb(uint8_t value);
+
 		void andr(uint8_t value);
 		void xorr(uint8_t value);
 		void orr(uint8_t value);
@@ -206,14 +178,14 @@ namespace EightBit {
 		uint8_t portRead(uint8_t port);
 		uint8_t portRead();
 
-		void requestIO() noexcept { assert(!requestingMemory());  m_requestIO = true; }
-		void releaseIO() noexcept { m_requestIO = false; }
-		void requestMemory() noexcept { assert(!requestingIO()); m_requestMemory = true; }
-		void releaseMemory() noexcept { m_requestMemory = false; }
+		constexpr void requestIO() noexcept { assert(!requestingMemory());  m_requestIO = true; }
+		constexpr void releaseIO() noexcept { m_requestIO = false; }
+		constexpr void requestMemory() noexcept { assert(!requestingIO()); m_requestMemory = true; }
+		constexpr void releaseMemory() noexcept { m_requestMemory = false; }
 
-		void requestRead() { raise(DBIN()); }
-		void releaseRead() { lower(DBIN()); }
-		void requestWrite() { lower(WR()); }
-		void releaseWrite() { raise(WR()); }
+		constexpr void requestRead() noexcept { raise(DBIN()); }
+		constexpr void releaseRead() noexcept { lower(DBIN()); }
+		constexpr void requestWrite() noexcept { lower(WR()); }
+		constexpr void releaseWrite() noexcept { raise(WR()); }
 	};
 }

@@ -45,8 +45,8 @@ namespace EightBit {
 		virtual void execute() noexcept = 0;
 		void execute(uint8_t value) noexcept;
 
-		[[nodiscard]] virtual register16_t peekWord(register16_t address) noexcept = 0;
-		virtual void pokeWord(register16_t address, register16_t value) noexcept = 0;
+		[[nodiscard]] virtual register16_t peekShort(uint16_t address) noexcept = 0;
+		virtual void pokeShort(uint16_t address, register16_t value) noexcept = 0;
 
 		DECLARE_PIN_INPUT(RESET)
 		DECLARE_PIN_INPUT(INT)
@@ -71,33 +71,37 @@ namespace EightBit {
 		virtual uint8_t busRead() noexcept;
 
 		virtual register16_t& incrementPC() noexcept;
-		virtual register16_t& decrementPC() noexcept;
 
 		virtual void immediateAddress() noexcept;
 
-		uint8_t fetchByte() noexcept;
+		void fetchByte() noexcept;
 		virtual uint8_t fetchInstruction() noexcept;
 
-		[[nodiscard]] virtual register16_t getWord() noexcept = 0;
-		virtual void setWord(register16_t value) noexcept = 0;
+		virtual void getInto(register16_t& into) noexcept = 0;
+		virtual void getShort() noexcept { getInto(m_intermediate); }
+		virtual void setShort(register16_t value) noexcept = 0;
 
-		[[nodiscard]] register16_t getWordPaged(register16_t address) noexcept;
-		[[nodiscard]] register16_t getWordPaged(uint8_t page, uint8_t offset) noexcept;
-		[[nodiscard]] virtual register16_t getWordPaged() noexcept = 0;
-		void setWordPaged(register16_t address, register16_t value) noexcept;
-		void setWordPaged(uint8_t page, uint8_t offset, register16_t value) noexcept;
-		virtual void setWordPaged(register16_t value) noexcept = 0;
+		void getShortPaged(register16_t address) noexcept;
+		void getShortPaged(uint8_t page, uint8_t offset) noexcept;
+		void getPagedInto(uint8_t page, uint8_t offset, register16_t& into);
+		void getShortPaged() noexcept { getPagedInto(m_intermediate); }
+		virtual void getPagedInto(register16_t& into) noexcept = 0;
+		void setPaged(register16_t address, register16_t value) noexcept;
+		void setPaged(uint8_t page, uint8_t offset, register16_t value) noexcept;
+		virtual void setPaged(register16_t value) noexcept = 0;
 
-		[[nodiscard]] virtual register16_t fetchWord() noexcept = 0;
+		virtual void fetchInto(register16_t& into) noexcept = 0;
+		void fetchShort() noexcept { fetchInto(m_intermediate); }
+		void fetchShortAddress() noexcept;
 
 		virtual void push(uint8_t value) noexcept = 0;
-		[[nodiscard]] virtual uint8_t pop() noexcept = 0;
+		virtual void pop() noexcept = 0;
 
-		virtual void pushWord(register16_t value) noexcept = 0;
-		[[nodiscard]] virtual register16_t popWord() noexcept = 0;
+		virtual void pushShort(register16_t value) noexcept = 0;
+		virtual void popInto(register16_t& into) noexcept = 0;
 
-		[[nodiscard]] register16_t getWord(register16_t address) noexcept;
-		void setWord(register16_t address, register16_t value) noexcept;
+		void getShort(register16_t address) noexcept;
+		void setShort(register16_t address, register16_t value) noexcept;
 
 		void jump(const register16_t destination) noexcept;
 		void jump(uint16_t destination) noexcept;

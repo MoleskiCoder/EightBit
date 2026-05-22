@@ -35,11 +35,11 @@ namespace EightBit {
 
 		MOS6502(Bus& bus) noexcept;
 
-		Signal<MOS6502> ExecutingInstruction;
-		Signal<MOS6502> ExecutedInstruction;
+		//Signal<MOS6502> ExecutingInstruction;
+		//Signal<MOS6502> ExecutedInstruction;
 
 		void execute() noexcept final;
-		[[nodiscard]] int step() noexcept final;
+		void poweredStep() noexcept final;
 
 		[[nodiscard]] constexpr auto& X() noexcept { return m_x; }
 		[[nodiscard]] constexpr auto& Y() noexcept { return m_y; }
@@ -106,7 +106,7 @@ namespace EightBit {
 		}
 
 		// Read the opcode within the existing cycle
-		void fetchInstruction() noexcept {
+		uint8_t fetchInstruction() noexcept final {
 
 			// Instruction fetch beginning
 			lowerSYNC();
@@ -121,6 +121,8 @@ namespace EightBit {
 
 			// Instruction fetch has now completed
 			raiseSYNC();
+
+			return opcode();
 		}
 
 		// Addressing modes

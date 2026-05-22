@@ -168,7 +168,7 @@ namespace EightBit {
 
 		[[nodiscard]] constexpr void displaceAddress() noexcept {
 			const auto& index_register = m_prefixDD ? IX() : IY();
-			BUS().ADDRESS() = MEMPTR() = index_register.word + m_displacement;
+			BUS().ADDRESS() = MEMPTR() = index_register.joined + m_displacement;
 		}
 
 		void fetchDisplacement() noexcept;
@@ -177,8 +177,8 @@ namespace EightBit {
 		uint8_t readDataUnderInterrupt() noexcept;
 
 		typedef std::function<register16_t(void)> addresser_t;
-		void loadAccumulatorIndirect(addresser_t addresser) noexcept;
-		void storeAccumulatorIndirect(addresser_t addresser) noexcept;
+		//void loadAccumulatorIndirect(addresser_t addresser) noexcept;
+		//void storeAccumulatorIndirect(addresser_t addresser) noexcept;
 
 		typedef std::function<uint8_t(void)> reader_t;
 		void readInternalRegister(reader_t reader) noexcept;
@@ -420,5 +420,11 @@ namespace EightBit {
 		void readPort(register16_t port) noexcept;
 		void readPort(uint8_t port) noexcept;
 		void readPort() noexcept;
+
+		void loadImmediate(int y);
+		void popRegisterPair(int p);
+		void pushRegisterPair(int p);
+
+		void prefixCB();
 	};
 }

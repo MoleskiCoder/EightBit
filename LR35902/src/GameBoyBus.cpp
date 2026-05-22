@@ -2,7 +2,7 @@
 #include "../inc/GameBoyBus.h"
 #include "../inc/Display.h"
 
-EightBit::GameBoy::Bus::Bus() noexcept
+EightBit::GameBoy::Bus::Bus()
 : m_cpu(*this),
   m_ioPorts(*this) {
 	WrittenByte.connect(std::bind(&GameBoy::Bus::Bus_WrittenByte, this, std::placeholders::_1));
@@ -40,7 +40,7 @@ void EightBit::GameBoy::Bus::loadGameRom(const std::string path) {
 	validateCartridgeType();
 }
 
-void EightBit::GameBoy::Bus::Bus_WrittenByte(EightBit::EventArgs) noexcept {
+void EightBit::GameBoy::Bus::Bus_WrittenByte(EightBit::EventArgs) {
 
 	const auto address = ADDRESS().word;
 	const auto value = DATA();

@@ -8,7 +8,7 @@
 #include "../inc/LR35902.h"
 #include "../inc/IoRegisters.h"
 
-EightBit::GameBoy::Disassembler::Disassembler(Bus& bus) noexcept
+EightBit::GameBoy::Disassembler::Disassembler(Bus& bus)
 : m_bus(bus) {
 	// Disable exceptions where too many format arguments are available
 	m_formatter.exceptions(boost::io::all_error_bits ^ boost::io::too_many_args_bit);
@@ -170,7 +170,7 @@ void EightBit::GameBoy::Disassembler::disassemble(std::ostringstream& output, LR
 	auto q = (y & 1);
 
 	auto immediate = BUS().peek(pc + 1);
-	auto absolute = cpu.peekWord(pc + 1).word;
+	auto absolute = cpu.peekShort(pc + 1).word;
 	auto displacement = (int8_t)immediate;
 	auto relative = pc + displacement + 2;
 	auto indexedImmediate = BUS().peek(pc + 1);

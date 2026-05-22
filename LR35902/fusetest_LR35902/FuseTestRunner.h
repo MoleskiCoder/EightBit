@@ -49,6 +49,6 @@ namespace Fuse {
 		void raisePOWER() noexcept final;
 		void lowerPOWER() noexcept final;
 
-		void initialise();
+		void initialise() noexcept;
 	};
 }

@@ -34,23 +34,23 @@ namespace EightBit {
 				RomPageSize = 0x4000
 			};
 
-			Bus() noexcept;
+			Bus();
 
 			void raisePOWER() noexcept override;
 			void lowerPOWER() noexcept override;
 
-			[[nodiscard]] auto& CPU() noexcept { return m_cpu; }
-			[[nodiscard]] auto& VRAM() noexcept { return m_videoRam; }
-			[[nodiscard]] auto& OAMRAM() noexcept { return m_oamRam; }
-			[[nodiscard]] auto& IO() noexcept { return m_ioPorts; }
+			[[nodiscard]] auto& CPU() { return m_cpu; }
+			[[nodiscard]] auto& VRAM() { return m_videoRam; }
+			[[nodiscard]] auto& OAMRAM() { return m_oamRam; }
+			[[nodiscard]] auto& IO() { return m_ioPorts; }
 
 			void reset();
 
-			void disableGameRom() noexcept { m_disableGameRom = true; }
-			void enableGameRom() noexcept { m_disableGameRom = false; }
+			void disableGameRom() { m_disableGameRom = true; }
+			void enableGameRom() { m_disableGameRom = false; }
 
-			[[nodiscard]] bool gameRomDisabled() const noexcept { return m_disableGameRom; }
-			[[nodiscard]] bool gameRomEnabled() const noexcept { return !gameRomDisabled(); }
+			[[nodiscard]] bool gameRomDisabled() const { return m_disableGameRom; }
+			[[nodiscard]] bool gameRomEnabled() const { return !gameRomDisabled(); }
 
 			void loadBootRom(std::string path);
 			void loadGameRom(std::string path);
@@ -94,7 +94,7 @@ namespace EightBit {
 
 			void validateCartridgeType();
 
-			void Bus_WrittenByte(EightBit::EventArgs) noexcept;
+			void Bus_WrittenByte(EightBit::EventArgs);
 
 			void runRasterLines(int lines);
 			void runVerticalBlankLines(int lines);

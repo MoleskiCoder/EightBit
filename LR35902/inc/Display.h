@@ -27,12 +27,12 @@ namespace EightBit {
 				PixelCount = RasterWidth * RasterHeight,
 			};
 
-			Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram) noexcept;
+			Display(const AbstractColourPalette* colours, Bus& bus, Ram& oam, Ram& vram);
 
-			[[nodiscard]] const auto& pixels() const noexcept { return m_pixels; }
+			[[nodiscard]] const auto& pixels() const { return m_pixels; }
 
-			void renderCurrentScanline() noexcept;
-			void loadObjectAttributes() noexcept;
+			void renderCurrentScanline();
+			void loadObjectAttributes();
 
 		private:
 			enum class tile_offset_t  {
@@ -48,42 +48,42 @@ namespace EightBit {
 			uint8_t m_control = 0;
 			uint8_t m_scanLine = 0;
 
-			[[nodiscard]] std::array<int, 4> createPalette(int address) noexcept;
+			[[nodiscard]] std::array<int, 4> createPalette(int address);
 
-			void renderBackground() noexcept;
+			void renderBackground();
 			void renderBackground(
 				int bgArea, int bgCharacters,
 				tile_offset_t offsetType,
 				int offsetX, int offsetY,
-				const std::array<int, 4>& palette) noexcept;
+				const std::array<int, 4>& palette);
 
 			void renderBackgroundTile(
 				int definitionOffset,
 				int row, int column,
 				int bgCharacters, tile_offset_t offsetType,
 				int offsetX, int offsetY,
-				const std::array<int, 4>& palette) noexcept;
+				const std::array<int, 4>& palette);
 
-			void renderObjects() noexcept;
+			void renderObjects();
 
 			void renderSpriteTile(
 				int height,
 				int drawX, int drawY,
 				bool flipX, bool flipY,
 				const std::array<int, 4>& palette,
-				const CharacterDefinition& definition) noexcept;
+				const CharacterDefinition& definition);
 
 			void renderBackgroundTile(
 				int drawX, int drawY,
 				const std::array<int, 4>& palette,
-				const CharacterDefinition& definition) noexcept;
+				const CharacterDefinition& definition);
 
 			void renderTile(
 				int height,
 				int drawX, int drawY,
 				bool flipX, bool flipY, bool allowTransparencies,
 				const std::array<int, 4>& palette,
-				const CharacterDefinition& definition) noexcept;
+				const CharacterDefinition& definition);
 		};
 	}
 }

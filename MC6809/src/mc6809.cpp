@@ -20,10 +20,10 @@ DEFINE_PIN_LEVEL_CHANGERS(BA, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(BS, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(RW, mc6809);
 
-int EightBit::mc6809::step() noexcept {
-	resetCycles();
-	ExecutingInstruction.fire(*this);
-	if (LIKELY(powered())) {
+void EightBit::mc6809::poweredStep() noexcept {
+	//resetCycles();
+	//ExecutingInstruction.fire(*this);
+	//if (LIKELY(powered())) {
 		m_prefix10 = m_prefix11 = false;
 		if (UNLIKELY(halted()))
 			handleHALT();
@@ -37,15 +37,15 @@ int EightBit::mc6809::step() noexcept {
 			handleINT();
 		else
 			BigEndianProcessor::execute(fetchByte());
-	}
-	ExecutedInstruction.fire(*this);
-	assert(cycles() > 0);
-	return cycles();
+	//}
+	//ExecutedInstruction.fire(*this);
+	//assert(cycles() > 0);
+	//return cycles();
 }
 
 // Interrupt (etc.) handlers
 
-void EightBit::mc6809::handleHALT() {
+void EightBit::mc6809::handleHALT() noexcept {
 	raiseBA();
 	raiseBS();
 }
@@ -62,11 +62,11 @@ void EightBit::mc6809::handleRESET() noexcept {
 	memoryRead();
 	memoryRead();
 	memoryRead();
-	jump(getWord());
+	jump(getShort());
 	eat();
 }
 
-void EightBit::mc6809::handleNMI() {
+void EightBit::mc6809::handleNMI() noexcept {
 	raiseNMI();
 	lowerBA();
 	raiseBS();
@@ -95,7 +95,7 @@ void EightBit::mc6809::handleINT() noexcept {
 	eat();
 }
 
-void EightBit::mc6809::handleFIRQ() {
+void EightBit::mc6809::handleFIRQ() noexcept {
 	raiseFIRQ();
 	lowerBA();
 	raiseBS();
@@ -635,11 +635,11 @@ uint8_t EightBit::mc6809::pop() noexcept {
 	return popS();
 }
 
-void EightBit::mc6809::push(register16_t& stack, const uint8_t value) {
+void EightBit::mc6809::push(register16_t& stack, const uint8_t value) noexcept {
 	memoryWrite(--stack, value);
 }
 
-uint8_t EightBit::mc6809::pop(register16_t& stack) {
+uint8_t EightBit::mc6809::pop(register16_t& stack) noexcept {
 	return memoryRead(stack++);
 }
 
@@ -757,7 +757,7 @@ EightBit::register16_t EightBit::mc6809::Address_indexed() {
 			UNREACHABLE;
 		}
 		if (indirect) {
-			address = Processor::getWord(address);
+			address = Processor::getShort(address);
 			eat();
 		}
 	} else {
@@ -800,15 +800,15 @@ EightBit::register16_t EightBit::mc6809::AM_immediate_word() {
 }
 
 EightBit::register16_t EightBit::mc6809::AM_direct_word() {
-	return Processor::getWord(Address_direct());
+	return Processor::getShort(Address_direct());
 }
 
 EightBit::register16_t EightBit::mc6809::AM_indexed_word() {
-	return Processor::getWord(Address_indexed());
+	return Processor::getShort(Address_indexed());
 }
 
 EightBit::register16_t EightBit::mc6809::AM_extended_word() {
-	return Processor::getWord(Address_extended());
+	return Processor::getShort(Address_extended());
 }
 
 //
@@ -922,11 +922,11 @@ uint8_t EightBit::mc6809::dec(const uint8_t operand) {
 	return result;
 }
 
-uint8_t EightBit::mc6809::eorr(const uint8_t operand, const uint8_t data) noexcept {
+uint8_t EightBit::mc6809::eorr(const uint8_t operand, const uint8_t data) {
 	return through((uint8_t)(operand ^ data));
 }
 
-uint8_t& EightBit::mc6809::referenceTransfer8(const int specifier) noexcept {
+uint8_t& EightBit::mc6809::referenceTransfer8(const int specifier) {
 	switch (specifier) {
 	case 0b1000:
 		return A();

@@ -3,7 +3,7 @@
 
 #include <cassert>
 
-EightBit::M6532::M6532() noexcept {
+EightBit::M6532::M6532() {
 	Ticked.connect([this](EightBit::EventArgs&) {
 		step();
 	});

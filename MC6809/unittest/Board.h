@@ -9,15 +9,15 @@ class Board final : public EightBit::Bus {
 public:
 	Board();
 
-	constexpr EightBit::mc6809& CPU() noexcept { return m_cpu; }
+	constexpr EightBit::mc6809& CPU() { return m_cpu; }
 
-	void raisePOWER() noexcept final;
-	void lowerPOWER() noexcept final;
+	void raisePOWER() final;
+	void lowerPOWER() final;
 
 protected:
 	void initialise() final;
 
-	EightBit::MemoryMapping mapping(uint16_t address) noexcept final;
+	EightBit::MemoryMapping mapping(uint16_t address) final;
 
 private:
 	EightBit::Ram m_ram = 0x10000;	// 0000 - FFFF, 64K RAM

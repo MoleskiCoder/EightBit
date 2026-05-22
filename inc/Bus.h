@@ -27,11 +27,11 @@ namespace EightBit {
 		[[nodiscard]] constexpr auto& DATA() noexcept { return m_data; }
 
 		[[nodiscard]] uint8_t peek(const uint16_t address) noexcept { return reference(address); }
-		[[nodiscard]] auto peek(const register16_t address) noexcept { return peek(address.word); }
+		[[nodiscard]] auto peek(const register16_t address) noexcept { return peek(address.joined); }
 
 		void poke(const uint8_t value) noexcept { reference() = value; }
 		void poke(const uint16_t address, const uint8_t value) noexcept { reference(address) = value; }
-		void poke(const register16_t address, const uint8_t value) noexcept { poke(address.word, value); }
+		void poke(const register16_t address, const uint8_t value) noexcept { poke(address.joined, value); }
 
 		[[nodiscard]] uint8_t read() noexcept;
 		void write() noexcept;
@@ -43,7 +43,7 @@ namespace EightBit {
 
 	protected:
 		[[nodiscard]] uint8_t& reference(uint16_t address) noexcept;
-		[[nodiscard]] uint8_t& reference() noexcept { return reference(ADDRESS().word); }
+		[[nodiscard]] uint8_t& reference() noexcept { return reference(ADDRESS().joined); }
 
 		void loadHexFile(const std::string& path);
 

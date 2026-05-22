@@ -710,7 +710,7 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 				<< wrapIndirect(dump_ByteValue(byte) + "," + r, indirect);
 			break;
 		case 0b1001:	// n,R (sixteen-bit)
-			word = getWord(++m_address);
+			word = getShort(++m_address);
 			output
 				<< dump_WordValue(word)
 				<< "\t" << mnemomic << "\t"
@@ -729,7 +729,7 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 				<< wrapIndirect(dump_RelativeValue((int8_t)byte) + ",PCR", indirect);
 			break;
 		case 0b1101:	// n,PCR (sixteen-bit)
-			word = getWord(++m_address);
+			word = getShort(++m_address);
 			output
 				<< dump_WordValue(word)
 				<< "\t" << mnemomic << "\t"
@@ -737,7 +737,7 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 			break;
 		case 0b1111:	// [n]
 			assert(indirect);
-			word = getWord(++m_address);
+			word = getShort(++m_address);
 			output
 				<< dump_WordValue(word)
 				<< "\t" << mnemomic << "\t"
@@ -759,7 +759,7 @@ std::string EightBit::Disassembly::Address_indexed(std::string mnemomic) {
 
 std::string EightBit::Disassembly::Address_extended(std::string mnemomic) {
 	std::ostringstream output;
-	const auto word = getWord(++m_address);
+	const auto word = getShort(++m_address);
 	output
 		<< dump_WordValue(word)
 		<< "\t" << mnemomic << "\t"
@@ -779,7 +779,7 @@ std::string EightBit::Disassembly::Address_relative_byte(std::string mnemomic) {
 
 std::string EightBit::Disassembly::Address_relative_word(std::string mnemomic) {
 	std::ostringstream output;
-	const auto word = getWord(++m_address);
+	const auto word = getShort(++m_address);
 	output
 		<< dump_WordValue(word)
 		<< "\t" << mnemomic << "\t"
@@ -801,7 +801,7 @@ std::string EightBit::Disassembly::AM_immediate_byte(std::string mnemomic) {
 
 std::string EightBit::Disassembly::AM_immediate_word(std::string mnemomic) {
 	std::ostringstream output;
-	const auto word = getWord(++m_address);
+	const auto word = getShort(++m_address);
 	output
 		<< dump_WordValue(word)
 		<< "\t" << mnemomic << "\t"
@@ -882,8 +882,8 @@ uint8_t EightBit::Disassembly::getByte(uint16_t address) {
 	return BUS().peek(address);
 }
 
-uint16_t EightBit::Disassembly::getWord(uint16_t address) {
-	return CPU().peekWord(address).word;
+uint16_t EightBit::Disassembly::getShort(uint16_t address) {
+	return CPU().peekShort(address).word;
 }
 
 //

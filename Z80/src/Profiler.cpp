@@ -43,7 +43,7 @@ void EightBit::Profiler::dumpAddressProfiles() const {
 		for (int i = 0; i < 0x10000; ++i) {
 			auto count = m_addresses[i];
 
-			m_cpu.PC().word = i;
+			m_cpu.PC().joined = i;
 
 			if (count > 0)
 				std::cout

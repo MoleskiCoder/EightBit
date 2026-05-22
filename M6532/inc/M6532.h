@@ -181,7 +181,7 @@
 namespace EightBit {
 	class M6532 final : public ClockedChip {
 	public:
-		M6532() noexcept;
+		M6532();
 		virtual ~M6532() = default;
 
 		/*     ___

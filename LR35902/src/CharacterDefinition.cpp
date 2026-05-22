@@ -3,12 +3,12 @@
 
 #include <Ram.h>
 
-EightBit::GameBoy::CharacterDefinition::CharacterDefinition(Ram& vram, const uint16_t address) noexcept
+EightBit::GameBoy::CharacterDefinition::CharacterDefinition(Ram& vram, const uint16_t address)
 : m_vram(vram),
   m_address(address) {
 }
 
-std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) const noexcept {
+std::array<int, 8> EightBit::GameBoy::CharacterDefinition::get(int row) const {
 
 	std::array<int, 8> returned {};
 

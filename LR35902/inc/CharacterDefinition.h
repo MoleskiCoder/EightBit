@@ -10,9 +10,9 @@ namespace EightBit {
 	namespace GameBoy {
 		class CharacterDefinition final {
 		public:
-			CharacterDefinition(Ram& vram, uint16_t address) noexcept;
+			CharacterDefinition(Ram& vram, uint16_t address);
 
-			[[nodiscard]] std::array<int, 8> get(int row) const noexcept;
+			[[nodiscard]] std::array<int, 8> get(int row) const;
 
 		private:
 			Ram& m_vram;

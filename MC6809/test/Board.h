@@ -20,13 +20,13 @@ public:
 	auto& CPU() { return m_cpu; }
 	auto& ACIA() { return m_acia; }
 
-	void raisePOWER() noexcept final;
-	void lowerPOWER() noexcept final;
+	void raisePOWER() final;
+	void lowerPOWER() final;
 
 	virtual void initialise() final;
 
 protected:
-	EightBit::MemoryMapping mapping(uint16_t address) noexcept final;
+	EightBit::MemoryMapping mapping(uint16_t address) final;
 
 private:
 	const Configuration& m_configuration;

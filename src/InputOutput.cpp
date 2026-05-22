@@ -11,13 +11,13 @@ uint8_t InputOutput::read(register16_t port) {
 
 uint8_t InputOutput::readInputPort(register16_t port) {
 	ReadingPort.fire(port);
-	const auto value = _input[port.word];
+	const auto value = _input[port.joined];
 	ReadPort.fire(port);
 	return value;
 }
 
 void InputOutput::writeInputPort(register16_t port, uint8_t value) {
-	_input[port.word] = value;
+	_input[port.joined] = value;
 }
 
 // Output port actions
@@ -28,12 +28,12 @@ void InputOutput::write(register16_t port, uint8_t value) {
 
 void InputOutput::writeOutputPort(register16_t port, uint8_t value) {
 	WritingPort.fire(port);
-	_output[port.word] = value;
+	_output[port.joined] = value;
 	WrittenPort.fire(port);
 }
 
 uint8_t InputOutput::readOutputPort(register16_t port) {
-	return _output[port.word];
+	return _output[port.joined];
 }
 
 }

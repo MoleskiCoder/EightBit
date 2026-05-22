@@ -998,7 +998,7 @@ TEST_CASE("Subroutines", "[JSR][RTS]") {
 	SECTION("JSR") {
 
 		// Set up a word to test at address 0x205
-		cpu.pokeWord(0x205, 0x03ff);
+		cpu.pokeShort(0x205, 0x03ff);
 
 		// Set register D
 		cpu.D() = 0x105;
@@ -1044,7 +1044,7 @@ TEST_CASE("Subroutines", "[JSR][RTS]") {
 
 		cpu.S().word = 0x300;
 
-		cpu.pokeWord(0x300, 0x102C); // Write return address
+		cpu.pokeShort(0x300, 0x102C); // Write return address
 		board.poke(0xB00, 0x39); // RTS
 
 		cpu.PC().word = 0xB00;

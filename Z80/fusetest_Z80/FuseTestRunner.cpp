@@ -49,7 +49,7 @@ void Fuse::TestRunner::addActualEvent(const std::string& specifier) {
 
 //
 
-void Fuse::TestRunner::raisePOWER() noexcept {
+void Fuse::TestRunner::raisePOWER() {
 	EightBit::Bus::raisePOWER();
 	m_cpu.raisePOWER();
 	m_cpu.raiseRESET();
@@ -58,12 +58,12 @@ void Fuse::TestRunner::raisePOWER() noexcept {
 	m_test.transferRegisters(m_cpu);
 }
 
-void Fuse::TestRunner::lowerPOWER() noexcept {
+void Fuse::TestRunner::lowerPOWER() {
 	m_cpu.lowerPOWER();
 	EightBit::Bus::lowerPOWER();
 }
 
-EightBit::MemoryMapping Fuse::TestRunner::mapping(uint16_t address) noexcept {
+EightBit::MemoryMapping Fuse::TestRunner::mapping(uint16_t address) {
 	return {
 		m_ram,
 		0x0000,

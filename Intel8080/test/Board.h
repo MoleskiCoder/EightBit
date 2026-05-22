@@ -20,7 +20,7 @@ public:
 	void raisePOWER() noexcept final;
 	void lowerPOWER() noexcept final;
 
-	virtual void initialise() final;
+	virtual void initialise() noexcept final;
 
 protected:
 	virtual EightBit::MemoryMapping mapping(uint16_t address) noexcept final {
@@ -36,10 +36,10 @@ private:
 	EightBit::Profiler m_profiler;
 	int m_warmstartCount = 0;
 
-	void Cpu_ExecutingInstruction_Cpm(EightBit::Intel8080& cpu);
+	void Cpu_ExecutingInstruction_Cpm(EightBit::EventArgs&);
 
-	void Cpu_ExecutingInstruction_Debug(const EightBit::Intel8080& cpu);
-	void Cpu_ExecutingInstruction_Profile(EightBit::Intel8080& cpu);
+	void Cpu_ExecutingInstruction_Debug(const EightBit::EventArgs&);
+	void Cpu_ExecutingInstruction_Profile(EightBit::EventArgs&);
 
 	void bdos();
 };

@@ -27,7 +27,7 @@ void Board::initialise() noexcept {
 	});
 	
 	m_cpu.ExecutingInstruction.connect([this] (EightBit::EventArgs) {
-		switch (m_cpu.PC().word) {
+		switch (m_cpu.PC().joined) {
 		case 0x0:	// CP/M warm start
 			if (++m_warmstartCount == 2) {
 				lowerPOWER();
@@ -46,7 +46,7 @@ void Board::initialise() noexcept {
 	if (m_configuration.isProfileMode())
 		m_cpu.ExecutingInstruction.connect([this] (EightBit::EventArgs) {
 			const auto pc = m_cpu.PC();
-			m_profiler.addAddress(pc.word);
+			m_profiler.addAddress(pc.joined);
 			m_profiler.addInstruction(peek(pc));
 		});
 
@@ -60,7 +60,7 @@ void Board::initialise() noexcept {
 		});
 
 	poke(0, 0xc3);	// JMP
-	CPU().pokeWord(1, m_configuration.getStartAddress());
+	CPU().pokeShort(1, m_configuration.getStartAddress());
 	poke(5, 0xc9);	// ret
 }
 
@@ -70,7 +70,7 @@ void Board::bdos() {
 		std::cout << CPU().E();
 		break;
 	case 0x9:
-		for (uint16_t i = CPU().DE().word; peek(i) != '$'; ++i)
+		for (uint16_t i = CPU().DE().joined; peek(i) != '$'; ++i)
 			std::cout << peek(i);
 		break;
 	}

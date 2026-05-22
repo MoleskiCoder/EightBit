@@ -11,21 +11,21 @@ namespace EightBit {
 		virtual ~BigEndianProcessor() noexcept = default;
 		BigEndianProcessor(const BigEndianProcessor& rhs) noexcept;
 
-		[[nodiscard]] register16_t peekWord(register16_t address) noexcept final;
-		void pokeWord(register16_t address, register16_t value) noexcept final;
+		[[nodiscard]] register16_t peekShort(uint16_t address) noexcept final;
+		void pokeShort(uint16_t address, register16_t value) noexcept final;
 
 	protected:
 		BigEndianProcessor(Bus& memory) noexcept;
 
-		[[nodiscard]] register16_t getWord() noexcept override;
-		void setWord(register16_t value) noexcept override;
+		void getInto(register16_t& into) noexcept override;
+		void setShort(register16_t value) noexcept override;
+		
+		void getPagedInto(register16_t& into) noexcept override;
+		void setPaged(register16_t value) noexcept override;
 
-		[[nodiscard]] register16_t getWordPaged() noexcept override;
-		void setWordPaged(register16_t value) noexcept override;
+		void fetchInto(register16_t& into) noexcept override;
 
-		[[nodiscard]] register16_t fetchWord() noexcept override;
-
-		void pushWord(register16_t value) noexcept override;
-		[[nodiscard]] register16_t popWord() noexcept override;
+		void pushShort(register16_t value) noexcept override;
+		void popInto(register16_t& into) noexcept override;
 	};
 }

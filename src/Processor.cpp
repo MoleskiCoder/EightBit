@@ -62,32 +62,33 @@ uint8_t EightBit::Processor::busRead() noexcept {
 	return BUS().read();
 }
 
-EightBit::register16_t EightBit::Processor::getWordPaged(register16_t address) noexcept {
+void EightBit::Processor::getShortPaged(register16_t address) noexcept {
 	BUS().ADDRESS() = address;
-	return getWordPaged();
+	getShortPaged();
 }
 
-EightBit::register16_t EightBit::Processor::getWordPaged(const uint8_t page, const uint8_t offset) noexcept {
+void EightBit::Processor::getShortPaged(const uint8_t page, const uint8_t offset) noexcept {
 	BUS().ADDRESS() = { offset, page };
-	return getWordPaged();
+	getShortPaged();
 }
 
-void EightBit::Processor::setWordPaged(register16_t address, const register16_t value) noexcept {
+void EightBit::Processor::getPagedInto(uint8_t page, uint8_t offset, register16_t& into) {
+	BUS().ADDRESS() = { offset, page };
+	getPagedInto(into);
+}
+
+void EightBit::Processor::setPaged(register16_t address, const register16_t value) noexcept {
 	BUS().ADDRESS() = address;
-	setWordPaged(value);
+	setPaged(value);
 }
 
-void EightBit::Processor::setWordPaged(const uint8_t page, const uint8_t offset, const register16_t value) noexcept {
+void EightBit::Processor::setPaged(const uint8_t page, const uint8_t offset, const register16_t value) noexcept {
 	BUS().ADDRESS() = { offset, page };
-	setWordPaged(value);
+	setPaged(value);
 }
 
 EightBit::register16_t& EightBit::Processor::incrementPC() noexcept {
 	return ++PC();
-}
-
-EightBit::register16_t& EightBit::Processor::decrementPC() noexcept {
-	return --PC();
 }
 
 void EightBit::Processor::immediateAddress() noexcept {
@@ -95,32 +96,37 @@ void EightBit::Processor::immediateAddress() noexcept {
 	incrementPC();
 }
 
-uint8_t EightBit::Processor::fetchByte() noexcept {
+void EightBit::Processor::fetchByte() noexcept {
 	immediateAddress();
-	return memoryRead();
+	memoryRead();
 }
 
 uint8_t EightBit::Processor::fetchInstruction() noexcept {
-	return fetchByte();
+	fetchByte();
+	return BUS().DATA();
 }
 
-EightBit::register16_t EightBit::Processor::getWord(const register16_t address) noexcept {
-	BUS().ADDRESS() = address;
-	return getWord();
+void EightBit::Processor::fetchShortAddress() noexcept {
+	fetchShort();
+	BUS().ADDRESS() = m_intermediate;
 }
 
-void EightBit::Processor::setWord(const register16_t address, const register16_t value) noexcept {
+void EightBit::Processor::getShort(const register16_t address) noexcept {
 	BUS().ADDRESS() = address;
-	setWord(value);
+	getShort();
+}
+
+void EightBit::Processor::setShort(const register16_t address, const register16_t value) noexcept {
+	BUS().ADDRESS() = address;
+	setShort(value);
 }
 
 int EightBit::Processor::step() noexcept {
 	resetCycles();
 	ExecutingInstruction.fire();
-	if (LIKELY(powered()))
+	if (powered())
 		poweredStep();
 	ExecutedInstruction.fire();
-	// ASSUME(cycles() > 0); Not if unpowered!!
 	return cycles();
 }
 
@@ -145,12 +151,12 @@ void EightBit::Processor::jump(const uint16_t destination) noexcept {
 }
 
 void EightBit::Processor::call(const register16_t destination) noexcept {
-	pushWord(PC());
+	pushShort(PC());
 	jump(destination);
 }
 
 void EightBit::Processor::ret() noexcept {
-	jump(popWord());
+	popInto(PC());
 }
 
 bool EightBit::Processor::operator==(const EightBit::Processor& rhs) const noexcept {

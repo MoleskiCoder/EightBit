@@ -23,7 +23,7 @@ void Fuse::TestRunner::lowerPOWER() noexcept {
 	EightBit::Bus::lowerPOWER();
 }
 
-void Fuse::TestRunner::initialise() {
+void Fuse::TestRunner::initialise() noexcept {
 	disableGameRom();
 }
 
