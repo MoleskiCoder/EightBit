@@ -14,14 +14,11 @@ namespace EightBit {
 
 		[[nodiscard]] constexpr auto cycles() const noexcept { return m_cycles; }
 
-		void tick() noexcept {
-			++m_cycles;
-			Ticked.fire();
-		}
-
-		void tick(int extra) noexcept {
-			for (int i = 0; i < extra; ++i)
-				tick();
+		void tick(int extra = 1) noexcept {
+			m_cycles += extra;
+			if (Ticked.active())
+				for (int i = 0; i < extra; ++i)
+					Ticked.fire();
 		}
 
 	protected:
