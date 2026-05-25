@@ -123,7 +123,7 @@ void EightBit::IntelProcessor::callIndirect() noexcept {
 }
 
 void EightBit::IntelProcessor::call() noexcept {
-	LittleEndianProcessor::call(MEMPTR());
+	call(MEMPTR());
 }
 
 void EightBit::IntelProcessor::jumpConditionalFlag(int flag) noexcept {

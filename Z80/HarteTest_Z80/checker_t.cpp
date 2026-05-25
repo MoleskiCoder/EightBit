@@ -7,7 +7,7 @@ void checker_t::addActualCycle(const uint16_t address, const uint8_t value, cons
 }
 
 void checker_t::addActualCycle(const EightBit::register16_t address, const uint8_t value, const std::string& action) {
-    addActualCycle(address.word, value, action);
+    addActualCycle(address.joined, value, action);
 }
 
 void checker_t::dumpCycles(const std::string which, const actual_cycles_t& events) {
@@ -226,8 +226,8 @@ bool checker_t::checkState(test_t test) {
 
     const auto final = test.final();
 
-    const auto pc_good = check("PC", final.pc(), cpu.PC().word);
-    const auto sp_good = check("SP", final.sp(), cpu.SP().word);
+    const auto pc_good = check("PC", final.pc(), cpu.PC().joined);
+    const auto sp_good = check("SP", final.sp(), cpu.SP().joined);
 
     const auto a_good = check("A", final.a(), cpu.A());
     const auto f_good = check("F", final.f(), cpu.F());
@@ -248,26 +248,29 @@ bool checker_t::checkState(test_t test) {
     cpu.exxAF();
 	cpu.exx();
 
-    const auto af_alt_good = check("AF'", final.af_(), cpu.AF().word);
-    const auto bc_alt_good = check("BC'", final.bc_(), cpu.BC().word);
-    const auto de_alt_good = check("DE'", final.de_(), cpu.DE().word);
-    const auto hl_alt_good = check("DE'", final.de_(), cpu.DE().word);
+    const auto af_alt_good = check("AF'", final.af_(), cpu.AF().joined);
+    const auto bc_alt_good = check("BC'", final.bc_(), cpu.BC().joined);
+    const auto de_alt_good = check("DE'", final.de_(), cpu.DE().joined);
+    const auto hl_alt_good = check("HL'", final.hl_(), cpu.HL().joined);
+
+    cpu.exx();
+    cpu.exxAF();
 
 	const auto i_good = check("I", final.i(), cpu.IV());
 	const auto r_good = check("R", final.r(), (uint8_t)cpu.REFRESH());
 
 	const auto im_good = check("IM", final.im(), (uint8_t)cpu.IM());
 
-    const auto q_good = check("Q", final.im(), (uint8_t)cpu.IM());
+    const auto q_good = check("Q", final.q(), (uint8_t)cpu.Q());
 
     const auto iff1_good = check("IFF1", final.iff1(), (uint8_t)cpu.IFF1());
     const auto iff2_good = check("IFF2", final.iff2(), (uint8_t)cpu.IFF2());
 	const auto iff_good = iff1_good && iff2_good;
 
-    const auto memptr_good = check("MEMPTR", final.wz(), cpu.MEMPTR().word);
+    const auto memptr_good = check("MEMPTR", final.wz(), cpu.MEMPTR().joined);
 
-    const auto ix_good = check("IX", final.ix(), cpu.IX().word);
-    const auto iy_good = check("IY", final.iy(), cpu.IY().word);
+    const auto ix_good = check("IX", final.ix(), cpu.IX().joined);
+    const auto iy_good = check("IY", final.iy(), cpu.IY().joined);
 
     bool ram_problem = false;
     for (const auto entry : final.ram()) {
@@ -319,7 +322,7 @@ void checker_t::check(test_t test) {
 
     runner().raisePOWER();
     initialiseState(test);
-    const auto pc = cpu.PC().word;
+    const auto pc = cpu.PC().joined;
 
     m_cycles = cpu.step();
     runner().lowerPOWER();
@@ -336,11 +339,11 @@ void checker_t::check(test_t test) {
         add_disassembly(pc);
 
         const auto final = test.final();
-        raise("PC", final.pc(), cpu.PC().word);
-        raise("SP", final.sp(), cpu.SP().word);
+        raise("PC", final.pc(), cpu.PC().joined);
+        raise("SP", final.sp(), cpu.SP().joined);
 
         raise("A", final.a(), cpu.A());
-        raiseFlags("F", final.a(), cpu.A());
+        raiseFlags("F", final.f(), cpu.F());
         raise("B", final.b(), cpu.B());
         raise("C", final.c(), cpu.C());
         raise("D", final.d(), cpu.D());
@@ -351,10 +354,10 @@ void checker_t::check(test_t test) {
         cpu.exx();
         cpu.exxAF();
 
-        raise("'AF", final.af_(), cpu.AF().word);
-        raise("'BC", final.bc_(), cpu.BC().word);
-        raise("'DE", final.de_(), cpu.DE().word);
-        raise("'HL", final.hl_(), cpu.HL().word);
+        raise("'AF", final.af_(), cpu.AF().joined);
+        raise("'BC", final.bc_(), cpu.BC().joined);
+        raise("'DE", final.de_(), cpu.DE().joined);
+        raise("'HL", final.hl_(), cpu.HL().joined);
 
         raise("I", final.i(), cpu.IV());
         raise("R", final.r(), cpu.REFRESH());
@@ -366,10 +369,10 @@ void checker_t::check(test_t test) {
         raise("IFF1", final.iff1(), (uint8_t)cpu.IFF1());
         raise("IFF2", final.iff2(), (uint8_t)cpu.IFF2());
 
-        raise("WZ", final.wz(), cpu.MEMPTR().word);
+        raise("WZ", final.wz(), cpu.MEMPTR().joined);
 
-        raise("IX", final.ix(), cpu.IX().word);
-        raise("IY", final.iy(), cpu.IY().word);
+        raise("IX", final.ix(), cpu.IX().joined);
+        raise("IY", final.iy(), cpu.IY().joined);
 
         os()
             << std::dec << std::setfill(' ')

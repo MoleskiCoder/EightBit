@@ -154,6 +154,7 @@ namespace EightBit {
 		virtual void jumpIndirect() noexcept;
 		void jump() noexcept;
 		void callIndirect() noexcept;
+		using Processor::call;
 		void call() noexcept;
 		virtual void jumpRelative(int8_t offset) noexcept;
 		void jumpRelative(uint8_t offset) noexcept { jumpRelative(static_cast<int8_t>(offset)); }

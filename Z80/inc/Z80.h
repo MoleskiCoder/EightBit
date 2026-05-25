@@ -18,7 +18,7 @@ namespace EightBit {
 	public:
 		// ** From the Z80 CPU User Manual
 		// RFSH.Refresh(output, active Low). RFSH, together with MREQ, indicates that the lower
-		// seven bits of the system’s address bus can be used as a refresh address to the system’s
+		// seven bits of the systemâ€™s address bus can be used as a refresh address to the systemâ€™s
 		// dynamic memories.
 		DECLARE_PIN_OUTPUT(RFSH)
 
@@ -208,8 +208,7 @@ namespace EightBit {
 		[[nodiscard]] constexpr auto subtracting() noexcept { return subtractingTest(F()); }
 
 		void adjustStatusFlags(uint8_t value) noexcept {
-			m_modifiedF = F();
-			F() = value;
+			F() = m_modifiedF = value;
 		}
 
 		void setBit(StatusBits flag) noexcept { return adjustStatusFlags(setBit(F(), flag)); }
@@ -386,6 +385,7 @@ namespace EightBit {
 		void lddr() noexcept;
 
 		void repeatBlockInstruction() noexcept;
+		void loadRepeat() noexcept;
 		void adjustBlockRepeatFlagsIO() noexcept;
 		void adjustBlockInputOutputFlags(int basis) noexcept;
 		void adjustBlockInFlagsIncrement() noexcept;
@@ -410,8 +410,8 @@ namespace EightBit {
 
 		void neg() noexcept;
 
-		void rrd(register16_t address, uint8_t& update) noexcept;
-		void rld(register16_t address, uint8_t& update) noexcept;
+		void rrd() noexcept;
+		void rld() noexcept;
 
 		void writePort(register16_t port) noexcept;
 		void writePort(uint8_t port) noexcept;
@@ -426,5 +426,8 @@ namespace EightBit {
 		void pushRegisterPair(int p);
 
 		void prefixCB();
+		void prefixDD();
+		void prefixED();
+		void prefixFD();
 	};
 }
