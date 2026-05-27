@@ -33,7 +33,7 @@ namespace EightBit {
 		void poke(const uint16_t address, const uint8_t value) noexcept { reference(address) = value; }
 		void poke(const register16_t address, const uint8_t value) noexcept { poke(address.joined, value); }
 
-		[[nodiscard]] uint8_t read() noexcept;
+		void read() noexcept;
 		void write() noexcept;
 
 		virtual void raisePOWER() noexcept;

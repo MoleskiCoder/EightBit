@@ -49,17 +49,17 @@ void EightBit::Processor::busWrite() noexcept {
 	BUS().write();
 }
 
-uint8_t EightBit::Processor::memoryRead(const register16_t address) noexcept {
+void EightBit::Processor::memoryRead(const register16_t address) noexcept {
 	BUS().ADDRESS() = address;
-	return memoryRead();
+	memoryRead();
 }
 
-uint8_t EightBit::Processor::memoryRead() noexcept {
-	return busRead();
+void EightBit::Processor::memoryRead() noexcept {
+	busRead();
 }
 
-uint8_t EightBit::Processor::busRead() noexcept {
-	return BUS().read();
+void EightBit::Processor::busRead() noexcept {
+	BUS().read();
 }
 
 void EightBit::Processor::getShortPaged(register16_t address) noexcept {

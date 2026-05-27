@@ -66,9 +66,9 @@ namespace EightBit {
 		virtual void memoryWrite() noexcept;
 		void busWrite() noexcept;
 
-		uint8_t memoryRead(register16_t address) noexcept;
-		virtual uint8_t memoryRead() noexcept;
-		uint8_t busRead() noexcept;
+		void memoryRead(register16_t address) noexcept;
+		virtual void memoryRead() noexcept;
+		void busRead() noexcept;
 
 		virtual register16_t& incrementPC() noexcept;
 

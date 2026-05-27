@@ -120,7 +120,7 @@ namespace EightBit {
 
 		void memoryUpdate(int ticks = 1) noexcept;
 		void memoryWrite() noexcept final;
-		uint8_t memoryRead() noexcept final;
+		void memoryRead() noexcept final;
 		void refreshMemory() noexcept;
 
 		void jumpRelative(int8_t offset) noexcept final;

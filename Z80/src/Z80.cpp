@@ -23,6 +23,9 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports) noexcept
 
 		IX() = IY() = Mask16;
 
+		// One of the register sets has been initialised
+		// (by the IntelProcessor base class)
+		// so now lets initialise the other register set.
 		exx();
 		exxAF();
 
@@ -169,7 +172,7 @@ void EightBit::Z80::refreshMemory() noexcept {
 	raiseRFSH();
 }
 
-uint8_t EightBit::Z80::memoryRead() noexcept {
+void EightBit::Z80::memoryRead() noexcept {
 	ReadingMemory.fire();
 	tick();
 	lowerMREQ();
@@ -182,7 +185,6 @@ uint8_t EightBit::Z80::memoryRead() noexcept {
 		refreshMemory();
 	tick();
 	ReadMemory.fire();
-	return BUS().DATA();
 }
 
 void EightBit::Z80::handleRESET() noexcept {
@@ -423,9 +425,8 @@ void EightBit::Z80::add(const register16_t value, int carry) noexcept {
 }
 
 void EightBit::Z80::xhtl(register16_t& exchange) noexcept {
-	MEMPTR().low = IntelProcessor::memoryRead(SP());
-	++BUS().ADDRESS();
-	MEMPTR().high = memoryRead();
+	BUS().ADDRESS() = SP();
+	getInto(MEMPTR());
 	BUS().DATA() = exchange.high;
 	exchange.high = MEMPTR().high;
 	memoryUpdate(2);
@@ -905,19 +906,6 @@ uint8_t EightBit::Z80::fetchInstruction() noexcept {
 	return data;
 }
 
-//void EightBit::Z80::loadAccumulatorIndirect(addresser_t addresser) noexcept {
-//	MEMPTR() = BUS().ADDRESS() = addresser();
-//	++MEMPTR();
-//	A() = memoryRead();
-//}
-//
-//void EightBit::Z80::storeAccumulatorIndirect(addresser_t addresser) noexcept {
-//	MEMPTR() = BUS().ADDRESS() = addresser();
-//	++MEMPTR();
-//	MEMPTR().high = BUS().DATA() = A();
-//	memoryWrite();
-//}
-
 void EightBit::Z80::readInternalRegister(reader_t reader) noexcept {
 	adjustSZXY(A() = reader());
 	clearBit(NF | HC);
@@ -1092,7 +1080,8 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) noexcept {
 	if (displaced()) {
 		tick(2);
 		displaceAddress();
-		operand = memoryRead();
+		memoryRead();
+		operand = BUS().DATA();
 	} else {
 		operand = R(z);
 	}
