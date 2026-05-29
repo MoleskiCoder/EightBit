@@ -17,15 +17,15 @@ namespace EightBit {
 	protected:
 		BigEndianProcessor(Bus& memory) noexcept;
 
-		void getInto(register16_t& into) noexcept override;
+		void getInto(register16_t& into) noexcept final;
 		void setShort(register16_t value) noexcept override;
 		
-		void getPagedInto(register16_t& into) noexcept override;
-		void setPaged(register16_t value) noexcept override;
+		void getPagedInto(register16_t& into) noexcept final;
+		void setPaged(register16_t value) noexcept final;
 
-		void fetchInto(register16_t& into) noexcept override;
+		void fetchInto(register16_t& into) noexcept final;
 
-		void pushShort(register16_t value) noexcept override;
-		void popInto(register16_t& into) noexcept override;
+		void pushShort(register16_t value) noexcept final;
+		void popInto(register16_t& into) noexcept final;
 	};
 }

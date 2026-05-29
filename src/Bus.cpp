@@ -9,15 +9,11 @@ void EightBit::Bus::raisePOWER() noexcept {}
 void EightBit::Bus::lowerPOWER() noexcept {}
 
 void EightBit::Bus::read() noexcept {
-	ReadingByte.fire();
 	DATA() = reference();
-	ReadByte.fire();
 }
 
 void EightBit::Bus::write() noexcept {
-	WritingByte.fire();
 	reference() = DATA();
-	WrittenByte.fire();
 }
 
 void EightBit::Bus::loadHexFile(const std::string& path) {

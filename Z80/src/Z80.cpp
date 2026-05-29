@@ -594,7 +594,6 @@ void EightBit::Z80::neg() noexcept {
 	adjustSZXY(A());
 }
 
-
 void EightBit::Z80::blockCompare() noexcept {
 
 	IntelProcessor::memoryRead(HL());
@@ -1406,7 +1405,6 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 					A() = BUS().DATA();
 					break;
 				case 2:	// LD HL,(nn)
-
 					fetchShortAddress();
 					getShort();
 					HL2() = intermediate();
@@ -1643,8 +1641,6 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 		case 5:	// PUSH & various ops
 			switch (q) {
 			case 0:	// PUSH rp2[p]
-				//tick();
-				//pushWord(RP2(p));
 				pushRegisterPair(p);
 				break;
 			case 1:

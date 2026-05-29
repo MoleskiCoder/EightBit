@@ -10,7 +10,7 @@ namespace EightBit {
 		Ram(size_t size = 0) noexcept;
 		virtual ~Ram() noexcept = default;
 
-		[[nodiscard]] uint8_t& reference(uint16_t address) noexcept final;
+		[[nodiscard]] uint8_t& reference(uint16_t address) noexcept final { return BYTES()[address]; }
 		void poke(uint16_t address, uint8_t value) noexcept final;
 	};
 }

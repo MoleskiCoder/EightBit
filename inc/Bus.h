@@ -14,12 +14,6 @@ namespace EightBit {
 	public:
 		virtual ~Bus() noexcept = default;
 
-		Signal<EventArgs> WritingByte;
-		Signal<EventArgs> WrittenByte;
-
-		Signal<EventArgs> ReadingByte;
-		Signal<EventArgs> ReadByte;
-
 		[[nodiscard]] constexpr auto ADDRESS() const noexcept { return m_address; }
 		[[nodiscard]] constexpr auto& ADDRESS() noexcept { return m_address; }
 
