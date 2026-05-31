@@ -6,7 +6,7 @@ void checker_t::addActualCycle(const uint16_t address, const uint8_t value, cons
 }
 
 void checker_t::addActualCycle(const EightBit::register16_t address, const uint8_t value, const std::string_view action) {
-    addActualCycle(address.word, value, action);
+    addActualCycle(address.joined, value, action);
 }
 
 void checker_t::addActualReadCycle(const EightBit::register16_t address, const uint8_t value) {
@@ -95,7 +95,7 @@ void checker_t::initialiseState(const test_t test) {
 
     const auto initial = test.initial();
 
-    cpu.PC().word = initial.pc();
+    cpu.PC().joined = initial.pc();
     cpu.S() = initial.s();
     cpu.A() = initial.a();
     cpu.X() = initial.x();
@@ -113,11 +113,11 @@ void checker_t::initialise() {
 
     auto& bus = runner();
 
-    bus.ReadByte.connect([this](EightBit::EventArgs&) {
+    bus.CPU().ReadMemory.connect([this](EightBit::EventArgs&) {
         addActualReadCycle(runner().ADDRESS(), runner().DATA());
     });
 
-    bus.WrittenByte.connect([this](EightBit::EventArgs&) {
+    bus.CPU().WrittenMemory.connect([this](EightBit::EventArgs&) {
         addActualWriteCycle(runner().ADDRESS(), runner().DATA());
     });
 
@@ -166,7 +166,7 @@ bool checker_t::checkState(test_t test) {
         return false;
 
     const auto final = test.final();
-    const auto pc_good = check("PC", final.pc(), cpu.PC().word);
+    const auto pc_good = check("PC", final.pc(), cpu.PC().joined);
     const auto s_good = check("S", final.s(), cpu.S());
     const auto a_good = check("A", final.a(), cpu.A());
     const auto x_good = check("X", final.x(), cpu.X());
@@ -218,7 +218,7 @@ void checker_t::check(test_t test) {
 
     runner().raisePOWER();
     initialiseState(test);
-    const auto pc = cpu.PC().word;
+    const auto pc = cpu.PC().joined;
 
     m_cycles = cpu.step();
     runner().lowerPOWER();
@@ -235,7 +235,7 @@ void checker_t::check(test_t test) {
         add_disassembly(pc);
 
         const auto final = test.final();
-        raise("PC", final.pc(), cpu.PC().word);
+        raise("PC", final.pc(), cpu.PC().joined);
         raise("S", final.s(), cpu.S());
         raise("A", final.a(), cpu.A());
         raise("X", final.x(), cpu.X());

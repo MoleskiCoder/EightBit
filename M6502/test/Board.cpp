@@ -30,7 +30,7 @@ void Board::initialise() noexcept {
 	auto programFilename = m_configuration.getProgram();
 	auto programPath = m_configuration.getRomDirectory() + "/" + m_configuration.getProgram();
 	auto loadAddress = m_configuration.getLoadAddress();
-	m_ram.load(programPath, loadAddress.word);
+	m_ram.load(programPath, loadAddress.joined);
 
 	// Disassembly output
 	if (m_configuration.isDebugMode())
@@ -47,7 +47,7 @@ void Board::initialise() noexcept {
 			std::cout << "Y=" << (int)CPU().Y() << ", ";
 			std::cout << "S=" << (int)CPU().S() << "\t";
 
-			std::cout << m_disassembler.disassemble(address.word);
+			std::cout << m_disassembler.disassemble(address.joined);
 
 			std::cout << "\n";
 		});

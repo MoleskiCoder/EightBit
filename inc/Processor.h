@@ -66,6 +66,11 @@ namespace EightBit {
 		virtual void memoryWrite() noexcept;
 		void busWrite() noexcept;
 
+		void memoryRead(uint8_t low, uint8_t high) noexcept {
+			BUS().ADDRESS() = { low, high };
+			memoryRead();
+		}
+
 		void memoryRead(register16_t address) noexcept;
 		virtual void memoryRead() noexcept;
 		void busRead() noexcept;

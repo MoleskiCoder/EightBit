@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <utility>
 
-#include <EightBitCompilerDefinitions.h>
 #include <LittleEndianProcessor.h>
 #include <Register.h>
 #include <Signal.h>
@@ -14,6 +13,23 @@ namespace EightBit {
 	class Bus;
 
 	class MOS6502 : public LittleEndianProcessor {
+	private:
+		using base = LittleEndianProcessor;
+
+	private:
+		uint8_t m_x = 0;		// index register X
+		uint8_t m_y = 0;		// index register Y
+		uint8_t m_a = 0;		// accumulator
+		uint8_t m_s = 0;		// stack pointer
+		uint8_t m_p = 0;		// processor status
+
+		register16_t m_intermediate;
+
+		uint8_t m_fixedPage = 0;
+		uint8_t m_unfixedPage = 0;
+
+		bool m_immediateInstruction = false;
+
 	public:
 		DECLARE_PIN_INPUT(NMI)
 		DECLARE_PIN_INPUT(SO)
@@ -35,9 +51,6 @@ namespace EightBit {
 
 		MOS6502(Bus& bus) noexcept;
 
-		//Signal<MOS6502> ExecutingInstruction;
-		//Signal<MOS6502> ExecutedInstruction;
-
 		void execute() noexcept final;
 		void poweredStep() noexcept final;
 
@@ -53,150 +66,130 @@ namespace EightBit {
 		void handleRESET() noexcept final;
 		void handleINT() noexcept final;
 
-		void busWrite() noexcept final;
-		[[nodiscard]] uint8_t busRead() noexcept final;
+		void memoryWrite() noexcept final;
+		void memoryRead() noexcept final;
 
-		// Instructions with BCD effects
-
-		void sbc() noexcept;
-		[[nodiscard]] virtual uint8_t sub(uint8_t operand, int borrow = 0) noexcept;
-		[[nodiscard]] uint8_t sub_b(uint8_t operand, int borrow = 0) noexcept;
-		[[nodiscard]] uint8_t sub_d(uint8_t operand, int borrow = 0) noexcept;
-
-		virtual void adc() noexcept;
-		void adc_b() noexcept;
-		void adc_d() noexcept;
-
-		// Undocumented compound instructions (with BCD effects)
-
-		virtual void arr() noexcept;
-		void arr_b(uint8_t value) noexcept;
-		void arr_d(uint8_t value) noexcept;
+		void getPagedInto(uint8_t page, uint8_t offset, register16_t& into) { Processor::getPagedInto(page, offset, into); }
 
 	private:
-		const uint8_t IRQvector = 0xfe;		// IRQ vector
-		const uint8_t RSTvector = 0xfc;		// RST vector
-		const uint8_t NMIvector = 0xfa;		// NMI vector
+		const uint8_t _vectorIRQ = 0xfe;		// IRQ vector
+		const uint8_t _vectorRST = 0xfc;		// RST vector
+		const uint8_t _vectorNMI = 0xfa;		// NMI vector
 
 		void handleNMI() noexcept;
 		void handleSO() noexcept;
 
-		enum interrupt_source_t { hardware, software };
-		enum interrupt_type_t { reset, non_reset };
-		void interrupt(uint8_t vector, interrupt_source_t source = hardware, interrupt_type_t type = non_reset) noexcept;
+		void adjustInterruptFlags();
+
+		void reset();
+		void interruptMaskable();
+		void interruptNonMaskable();
+		void BRK() noexcept;
 
 		constexpr void updateStack(uint8_t position) noexcept { BUS().ADDRESS() = { position, 1 }; }
 		constexpr void lowerStack() noexcept { updateStack(S()--); }
 		constexpr void raiseStack() noexcept { updateStack(++S()); }
 
 		void push(uint8_t value) noexcept final;
-		[[nodiscard]] uint8_t pop() noexcept final;
+		void pop() noexcept final;
 
 		// Dummy stack push, used during RESET
 		void dummyPush() noexcept;
 
-		uint8_t readFromBus() noexcept {
-			raiseRW();
-			return LittleEndianProcessor::busRead();
-		}
+		void readFromMemory() noexcept;
+		void writeToMemory() noexcept;
 
-		void writeToBus() noexcept {
-			lowerRW();
-			LittleEndianProcessor::busWrite();
-		}
+		void modifyWrite(uint8_t data) noexcept;
 
 		// Read the opcode within the existing cycle
-		uint8_t fetchInstruction() noexcept final {
+		[[nodiscard]] uint8_t fetchInstruction() noexcept final;
 
-			// Instruction fetch beginning
-			lowerSYNC();
+		#pragma region Addressing modes
 
-			assert(cycles() == 1 && "An extra cycle has occurred");
+		#pragma region Address page fixup
 
-			// Can't use fetchByte, since that would add an extra tick.
-			Address_Immediate();
-			opcode() = readFromBus();
+		[[nodiscard]] constexpr auto fixedPage() const noexcept { return m_fixedPage; }
+		[[nodiscard]] constexpr auto unfixedPage() const noexcept { return m_unfixedPage; }
+		[[nodiscard]] constexpr auto fixed() const noexcept { return fixedPage() != unfixedPage(); }
 
-			assert(cycles() == 1 && "BUS read has introduced stray cycles");
+		void maybeFixup() noexcept;
+		void fixup() noexcept;
+		void maybeFixupRead() noexcept;
+		void fixupRead() noexcept;
 
-			// Instruction fetch has now completed
-			raiseSYNC();
-
-			return opcode();
+		constexpr void noteFixedAddress(int address) noexcept {
+			noteFixedAddress((uint16_t)address);
 		}
 
-		// Addressing modes
+		constexpr void noteFixedAddress(uint16_t address) noexcept {
+			m_unfixedPage = BUS().ADDRESS().high;
+			intermediate() = address;
+			m_fixedPage = intermediate().high;
+			BUS().ADDRESS().low = intermediate().low;
+		}
 
-		constexpr void noteFixedAddress(register16_t fixed) noexcept { m_fixed_page = fixed.high; BUS().ADDRESS().low = fixed.low; }
+		#pragma endregion
 
-		constexpr void Address_Immediate() noexcept { BUS().ADDRESS() = PC()++; }
-		void Address_Absolute() noexcept { BUS().ADDRESS() = fetchWord(); }
-		void Address_ZeroPage() noexcept { BUS().ADDRESS() = { fetchByte(), 0 }; }
-		void Address_ZeroPageIndirect() noexcept { Address_ZeroPage(); BUS().ADDRESS() = getWordPaged(); }
-		void Address_Indirect() noexcept { Address_Absolute(); BUS().ADDRESS() = getWordPaged(); }
-		void Address_ZeroPageWithIndex(uint8_t index) noexcept { AM_ZeroPage(); BUS().ADDRESS().low += index; }
-		void Address_ZeroPageX() noexcept { Address_ZeroPageWithIndex(X()); }
-		void Address_ZeroPageY() noexcept { Address_ZeroPageWithIndex(Y()); }
-		void Address_AbsoluteWithIndex(uint8_t index) noexcept { Address_Absolute(); noteFixedAddress(BUS().ADDRESS() + index); }
-		void Address_AbsoluteX() noexcept { Address_AbsoluteWithIndex(X()); }
-		void Address_AbsoluteY() noexcept { Address_AbsoluteWithIndex(Y()); }
-		void Address_IndexedIndirectX() noexcept { Address_ZeroPageX(); BUS().ADDRESS() = getWordPaged(); }
-		void Address_IndirectIndexedY() noexcept { Address_ZeroPageIndirect(); noteFixedAddress(BUS().ADDRESS() + Y()); }
+		#pragma region Address resolution
 
-		// Addressing modes, with read
+		void getAddressPaged() noexcept;
+		void absoluteAddress() noexcept;
+		void zeroPageAddress() noexcept;
+		void zeroPageIndirectAddress() noexcept;
+		void indirectAddress() noexcept;
+		void zeroPageWithIndexAddress(uint8_t index) noexcept;
+		void zeroPageXAddress() noexcept;
+		void zeroPageYAddress() noexcept;
+		void absoluteWithIndexAddress(uint8_t index) noexcept;
+		void absoluteXAddress() noexcept;
+		void absoluteYAddress() noexcept;
+		void indexedIndirectXAddress() noexcept;
+		void indirectIndexedYAddress() noexcept;
 
-		void AM_Immediate() noexcept { Address_Immediate(); memoryRead(); }
-		void AM_Absolute() noexcept { Address_Absolute(); memoryRead(); }
-		void AM_ZeroPage() noexcept { Address_ZeroPage(); memoryRead(); }
-		void AM_ZeroPageX() noexcept { Address_ZeroPageX(); memoryRead(); }
-		void AM_ZeroPageY() noexcept { Address_ZeroPageY(); memoryRead(); }
-		void AM_IndexedIndirectX() noexcept { Address_IndexedIndirectX(); memoryRead(); }
-		void AM_AbsoluteX() noexcept { Address_AbsoluteX(); maybe_fixupR(); }
-		void AM_AbsoluteY() noexcept { Address_AbsoluteY(); maybe_fixupR(); }
-		void AM_IndirectIndexedY() noexcept { Address_IndirectIndexedY(); maybe_fixupR(); }
+		#pragma endregion
+
+		#pragma region Address and read
+
+		void immediate() noexcept;
+		void absolute() noexcept;
+		void zeroPage() noexcept;
+		void zeroPageX() noexcept;
+		void zeroPageY() noexcept;
+		void indexedIndirectX() noexcept;
+		void absoluteX() noexcept;
+		void absoluteY() noexcept;
+		void indirectIndexedY() noexcept;
+
+		#pragma endregion
+
+		#pragma endregion
 
 		// Flag checking
 
 		[[nodiscard]] constexpr auto interruptMasked() const noexcept { return P() & IF; }
-		[[nodiscard]] constexpr auto decimal() const noexcept { return P() & DF; }
+		[[nodiscard]] constexpr auto denary() const noexcept { return P() & DF; }
 
-		[[nodiscard]] static constexpr auto negative(uint8_t data) noexcept { return data & NF; }
-		[[nodiscard]] constexpr auto negative() const noexcept { return negative(P()); }
+		[[nodiscard]] static constexpr auto negativeTest(uint8_t data) noexcept { return data & NF; }
+		[[nodiscard]] static constexpr auto zeroTest(uint8_t data) noexcept { return data & ZF; }
+		[[nodiscard]] static constexpr auto carryTest(uint8_t data) noexcept { return data & CF; }
+		[[nodiscard]] static constexpr auto overflowTest(uint8_t data) noexcept { return data & VF; }
 
-		[[nodiscard]] static constexpr auto zero(uint8_t data) noexcept { return data & ZF; }
-		[[nodiscard]] constexpr auto zero() const noexcept { return zero(P()); }
-
-		[[nodiscard]] static constexpr auto overflow(uint8_t data) noexcept { return data & VF; }
-		[[nodiscard]] constexpr auto overflow() const noexcept { return overflow(P()); }
-
-		[[nodiscard]] static constexpr auto carry(uint8_t data) noexcept { return data & CF; }
-		[[nodiscard]] constexpr auto carry() const noexcept { return carry(P()); }
+		[[nodiscard]] constexpr auto negative() const noexcept { return negativeTest(P()); }
+		[[nodiscard]] constexpr auto zero() const noexcept { return zeroTest(P()); }
+		[[nodiscard]] constexpr auto overflow() const noexcept { return overflowTest(P()); }
+		[[nodiscard]] constexpr auto carry() const noexcept { return carryTest(P()); }
 
 		// Flag adjustment
 
-		constexpr void adjustZero(const uint8_t datum) noexcept { reset_flag(ZF, datum); }
-		constexpr void adjustNegative(const uint8_t datum) noexcept { set_flag(NF, negative(datum)); }
+		constexpr void adjustZero(const uint8_t datum) noexcept { resetFlag(ZF, datum); }
+		constexpr void adjustNegative(const uint8_t datum) noexcept { setFlag(NF, negativeTest(datum)); }
 
 		constexpr void adjustNZ(const uint8_t datum) noexcept {
 			adjustZero(datum);
 			adjustNegative(datum);
 		}
 
-		constexpr void adjustOverflow_add(uint8_t operand) noexcept {
-			const auto data = BUS().DATA();
-			const auto intermediate = m_intermediate.low;
-			set_flag(VF, negative(~(operand ^ data) & (operand ^ intermediate)));
-		}
-
-		constexpr void adjustOverflow_subtract(uint8_t operand) noexcept {
-			const auto data = BUS().DATA();
-			const auto intermediate = m_intermediate.low;
-			set_flag(VF, negative((operand ^ data) & (operand ^ intermediate)));
-		}
-
 		// Miscellaneous
-
-		void branch(int condition) noexcept;
 
 		[[nodiscard]] constexpr auto through(const uint8_t data) noexcept {
 			adjustNZ(data);
@@ -207,107 +200,348 @@ namespace EightBit {
 			return through(BUS().DATA());
 		}
 
-		#define MW(OPERATION) { \
-			const auto result = OPERATION(BUS().DATA()); \
-			memoryWrite(); \
-			memoryWrite(result); \
-		}
-
-		void maybe_fixup() noexcept {
-			if (BUS().ADDRESS().high != m_fixed_page)
-				fixup();
-		}
-
-		void fixup() noexcept {
-			memoryRead();
-			BUS().ADDRESS().high = m_fixed_page;
-		}
-
-		void maybe_fixupR() noexcept { maybe_fixup(); memoryRead(); }
-		void fixupR() noexcept { fixup(); memoryRead(); }
-
 		// Status flag operations
 
-		constexpr static void set_flag(uint8_t& f, int which, int condition) noexcept { f = setBit(f, which, condition); }
-		constexpr void set_flag(int which, int condition) noexcept { set_flag(P(), which, condition); }
-		constexpr void set_flag(int which) noexcept { P() = setBit(P(), which); }
+		constexpr static void setFlag(uint8_t& f, int which, int condition) noexcept { f = setBit(f, which, condition); }
+		constexpr void setFlag(int which, int condition) noexcept { setFlag(P(), which, condition); }
+		constexpr void setFlag(int which) noexcept { P() = setBit(P(), which); }
 
-		constexpr static void reset_flag(uint8_t& f, int which, int condition) noexcept { f = clearBit(f, which, condition); }
-		constexpr void reset_flag(int which, int condition) noexcept { reset_flag(P(), which, condition); }
-		constexpr void reset_flag(int which) noexcept { P() = clearBit(P(), which); }
+		constexpr static void resetFlag(uint8_t& f, int which, int condition) noexcept { f = clearBit(f, which, condition); }
+		constexpr void resetFlag(int which, int condition) noexcept { resetFlag(P(), which, condition); }
+		constexpr void resetFlag(int which) noexcept { P() = clearBit(P(), which); }
 
 		// Chew up a cycle
-		void swallow() noexcept { memoryRead(PC()); }
-		void swallow_stack() noexcept { memoryRead({ S(), 1 }); }
-		void swallow_fetch() noexcept { fetchByte(); }
+		void swallowRead() noexcept;
+		void swallowPop() noexcept;
+		void swallowFetch() noexcept;
 
-		// Instruction implementations
+		#pragma region Instruction implementations
 
-		void andr() noexcept;
-		void bit() noexcept;
-		void cmp(uint8_t first) noexcept;
-		[[nodiscard]] uint8_t dec(uint8_t value) noexcept;
-		void eorr() noexcept;
-		[[nodiscard]] uint8_t inc(uint8_t value) noexcept;
-		void jsr() noexcept;
-		void orr() noexcept;
-		void php() noexcept;
-		void plp() noexcept;
-		void rti() noexcept;
-		void rts() noexcept;
+		#pragma region Miscellaneous
 
-		[[nodiscard]] constexpr uint8_t asl(uint8_t value) noexcept {
-			set_flag(CF, value & NF);
+		static constexpr void NOP() noexcept {
+			// No operation!
+		}
+
+		void JMP() noexcept;
+
+		#pragma endregion
+
+		#pragma region Register to register transfer
+
+		constexpr void TAX() noexcept { X() = through(A()); }
+		constexpr void TXA() noexcept { A() = through(X()); }
+		constexpr void TAY() noexcept { Y() = through(A()); }
+		constexpr void TYA() noexcept { A() = through(Y()); }
+		constexpr void TXS() noexcept { S() = X(); }
+		constexpr void TSX() noexcept { X() = through(S()); }
+
+		#pragma endregion
+
+		#pragma region Load and store
+
+		constexpr void LDA() noexcept { A() = through(); }
+		void STA() noexcept;
+
+		constexpr void LDX() noexcept { X() = through(); }
+		void STX() noexcept;
+
+		void LDY() noexcept { Y() = through(); }
+		void STY() noexcept;
+
+		#pragma endregion
+
+		#pragma region Branching
+
+		void fixupBranch(int8_t relative) noexcept;
+		void branch(bool condition) noexcept;
+
+		void branchNot(int condition) noexcept;
+		void branch(int condition) noexcept;
+			
+		void BCS() noexcept;
+		void BCC() noexcept;
+		void BVC() noexcept;
+		void BMI() noexcept;
+		void BPL() noexcept;
+		void BVS() noexcept;
+		void BEQ() noexcept;
+		void BNE() noexcept;
+
+		#pragma endregion
+
+		#pragma region Status flag operations
+
+		constexpr void SEI() noexcept { setFlag(IF); }
+		constexpr void CLI() noexcept { resetFlag(IF); }
+		constexpr void SEV() noexcept { setFlag(VF); }
+		constexpr void CLV() noexcept { resetFlag(VF); }
+		constexpr void SEC() noexcept { setFlag(CF); }
+		constexpr void CLC() noexcept { resetFlag(CF); }
+		constexpr void SED() noexcept { setFlag(DF); }
+		constexpr void CLD() noexcept { resetFlag(DF); }
+
+		#pragma endregion
+
+		#pragma region Instructions with BCD effects
+
+		#pragma region Addition / subtraction
+
+		#pragma region Subtraction
+
+		constexpr void adjustOverflowSubtract(uint8_t operand) noexcept {
+			const auto data = BUS().DATA();
+			const auto result = intermediate().low;
+			setFlag(VF, negativeTest((operand ^ data) & (operand ^ result)));
+		}
+
+		constexpr void SBC() noexcept {
+			const auto operand = A();
+			A() = SUB(operand, carryTest(~P()));
+			PostSUB(operand);
+		}
+
+		constexpr uint8_t SUB(uint8_t operand, int borrow) noexcept {
+			return denary() != 0 ? decimalSUB(operand, borrow) : binarySUB(operand, borrow);
+		}
+
+		constexpr uint8_t binarySUB(uint8_t operand, int borrow = 0) noexcept {
+			const auto data = BUS().DATA();
+			intermediate() = operand - data - borrow;
+
+			const auto result = intermediate().low;
+			adjustNZ(result);
+
+			return result;
+		}
+
+		constexpr uint8_t decimalSUB(uint8_t operand, int borrow) noexcept {
+
+			binarySUB(operand, borrow);
+
+			const auto data = BUS().DATA();
+			auto low = lowNibble(operand) - lowNibble(data) - borrow;
+			const auto lowNegative = negativeTest(low);
+			if (lowNegative != 0)
+				low -= 6;
+
+			auto high = highNibble(operand) - highNibble(data) - (lowNegative >> 7);
+			const auto highNegative = negativeTest(high);
+			if (highNegative != 0)
+				high -= 6;
+
+			return promoteNibble(high) | lowNibble(low);
+		}
+
+		constexpr void PostSUB(uint8_t operand) noexcept {
+			adjustOverflowSubtract(operand);
+			resetFlag(CF, intermediate().high);
+		}
+
+		#pragma endregion
+
+		#pragma region Addition
+
+		constexpr void adjustOverflowAdd(uint8_t operand) noexcept {
+			const auto data = BUS().DATA();
+			const auto result = intermediate().low;
+			setFlag(VF, negativeTest(~(operand ^ data) & (operand ^ result)));
+		}
+
+		constexpr void ADC() noexcept { ADC(BUS().DATA()); }
+
+		constexpr void ADC(uint8_t data) noexcept { A() = denary() != 0 ? decimalADC(data) : binaryADC(data); }
+
+		[[nodiscard]] constexpr uint8_t binaryADC(uint8_t data) noexcept {
+			const auto operand = A();
+			intermediate() = operand + data + carry();
+			adjustOverflowAdd(operand);
+			setFlag(CF, carryTest(intermediate().high));
+
+			const auto result = intermediate().low;
+			adjustNZ(result);
+
+			return result;
+		}
+
+		[[nodiscard]] constexpr uint8_t decimalADC(uint8_t data) noexcept {
+
+			const auto operand = A();
+
+			auto low = (uint16_t)(lowerNibble(operand) + lowerNibble(data) + carry());
+			intermediate() = higherNibble(operand) + higherNibble(data);
+
+			adjustZero(lowByte((uint16_t)(low + intermediate().joined)));
+
+			if (low > 0x09)
+			{
+				intermediate() += 0x10;
+				low += 0x06;
+			}
+
+			adjustNegative(intermediate().low);
+			adjustOverflowAdd(operand);
+
+			if (intermediate().joined > 0x90)
+				intermediate() += 0x60;
+
+			setFlag(CF, intermediate().high);
+
+			return (uint8_t)(lowerNibble(lowByte((uint16_t)(low + intermediate().joined))) | higherNibble(intermediate().low));
+		}
+
+		#pragma endregion
+
+		#pragma endregion
+
+		#pragma endregion
+
+		#pragma region Bitwise operations
+
+		constexpr void ORA() noexcept { ORA(BUS().DATA()); }
+		constexpr void ORA(uint8_t data) noexcept { A() = through(A() | data); }
+
+		constexpr void AND() noexcept { AND(BUS().DATA()); }
+		constexpr void AND(uint8_t data) noexcept { A() = through(A() & data); }
+
+		constexpr void EOR() noexcept { EOR(BUS().DATA()); }
+		constexpr void EOR(uint8_t data) noexcept { A() = through(A() ^ data); }
+
+		constexpr void bitSet(uint8_t mask) noexcept { adjustZero(A() & mask); }
+
+		constexpr void BIT() noexcept {
+			const auto data = BUS().DATA();
+			setFlag(VF, overflowTest(data));
+			bitSet(data);
+			adjustNegative(data);
+		}
+
+		#pragma endregion
+
+		#pragma region Comparison operations
+
+		constexpr void CMP(uint8_t first, uint8_t second) noexcept {
+			intermediate() = first - second;
+			adjustNZ(intermediate().low);
+			resetFlag(CF, intermediate().high);
+		}
+
+		constexpr void CMP() noexcept { CMP(A(), BUS().DATA()); }
+
+		constexpr void CPX() noexcept { CMP(X(), BUS().DATA()); }
+
+		constexpr void CPY() noexcept { CMP(Y(), BUS().DATA()); }
+
+		#pragma endregion
+
+		#pragma region Increment/decrement
+
+		[[nodiscard]] constexpr auto DEC(uint8_t value) noexcept { return through(value - 1); }
+		constexpr void DEX() noexcept { X() = DEC(X()); }
+		constexpr void DEY() noexcept { Y() = DEC(Y()); }
+		void DEC();
+
+		[[nodiscard]] constexpr auto INC(uint8_t value) noexcept { return through(value + 1); }
+		constexpr void INX() noexcept { X() = INC(X()); }
+		constexpr void INY() noexcept { Y() = INC(Y()); }
+		void INC();
+
+		#pragma endregion
+
+		#pragma region Stack operations
+
+		void JSR();
+
+		void PHA();
+		void PLA();
+		void PHP();
+		void PLP();
+
+		void RTI();
+		void RTS();
+
+		#pragma endregion
+
+		#pragma region Shift/rotate operations
+
+		#pragma region Shift
+
+		void ASL();
+		constexpr void ASLA() noexcept { A() = ASL(A()); }
+		constexpr uint8_t ASL(uint8_t value) noexcept {
+			setFlag(CF, negativeTest(value));
 			return through(value << 1);
 		}
 
-		[[nodiscard]] constexpr uint8_t rol(uint8_t operand) noexcept {
-			const auto carryIn = carry();
-			return through(asl(operand) | carryIn);
-		}
-
-		[[nodiscard]] constexpr uint8_t lsr(uint8_t value) noexcept {
-			set_flag(CF, value & CF);
+		void LSR();
+		constexpr void LSRA() noexcept { A() = LSR(A()); }
+		constexpr uint8_t LSR(uint8_t value) noexcept {
+			setFlag(CF, carryTest(value));
 			return through(value >> 1);
 		}
 
-		[[nodiscard]] constexpr uint8_t ror(uint8_t operand) noexcept {
+		#pragma endregion
+
+		#pragma region Rotate
+
+		void ROL();
+		constexpr void ROLA() noexcept { A() = ROL(A()); }
+		constexpr uint8_t ROL(uint8_t value) noexcept {
 			const auto carryIn = carry();
-			return through(lsr(operand) | (carryIn << 7));
+			return through(ASL(value) | carryIn);
 		}
 
-		// Undocumented compound instructions
+		void ROR();
+		constexpr void RORA() noexcept { A() = ROR(A()); }
+		constexpr uint8_t ROR(uint8_t value) noexcept {
+			const auto carryIn = carry();
+			return through(LSR(value) | (carryIn << 7));
+		}
 
-		void anc() noexcept;
-		void axs() noexcept;
-		void jam() noexcept;
+		#pragma endregion
 
-		void storeFixupEffect(uint8_t data) noexcept { memoryWrite(data & (BUS().ADDRESS().high + 1)); }
+		#pragma endregion
 
-		void sha() noexcept { storeFixupEffect(A() & X()); }
-		void sya() noexcept { storeFixupEffect(Y()); }
-		void sxa() noexcept { storeFixupEffect(X()); }
-		void tas() noexcept { S() = A() & X(); sha(); }
-		void las() noexcept { A() = X() = S() = through(memoryRead() & S()); }
-		void ane() noexcept { A() = through((A() | 0xee) & X() & BUS().DATA()); }
-		void atx() noexcept { A() = X() = through((A() | 0xee) & BUS().DATA()); }
-		void asr() noexcept { andr(); A() = lsr(A()); }
+		#pragma region Undocumented instructions
 
-		void isb() noexcept { MW(inc); sbc(); }
-		void slo() noexcept { MW(asl); orr(); }
-		void rla() noexcept { MW(rol); andr(); }
-		void sre() noexcept { MW(lsr); eorr(); }
-		void rra() noexcept { MW(ror); adc(); }
-		void dcp() noexcept { MW(dec); cmp(A()); }
+		#pragma region Undocumented instructions with BCD effects
 
-		uint8_t m_x = 0;		// index register X
-		uint8_t m_y = 0;		// index register Y
-		uint8_t m_a = 0;		// accumulator
-		uint8_t m_s = 0;		// stack pointer
-		uint8_t m_p = 0;		// processor status
+		void ARR();
+		uint8_t coreARR();
+		void decimalARR();
+		void binaryARR();
 
-		register16_t m_intermediate;
+		#pragma endregion
 
-		uint8_t m_fixed_page = 0;
+		#pragma region Undocumented instructions with fixup effects
+
+		void storeFixupEffect(uint8_t data);
+
+		void SHA();
+		void SYA();
+		void SXA();
+
+		#pragma endregion
+
+		void SAX();
+		void LAX();
+		void ANC();
+		void AXS();
+		void JAM();
+		void TAS();
+		void LAS();
+		void ANE();
+		void ATX();
+		void ASR();
+		void ISB();
+		void RLA();
+		void RRA();
+		void SLO();
+		void SRE();
+		void DCP();
+
+		#pragma endregion
+
+		#pragma endregion
 	};
 }

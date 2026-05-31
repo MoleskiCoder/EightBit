@@ -56,7 +56,7 @@ std::string EightBit::Disassembly::disassemble(uint16_t current) {
 	output << dump_ByteValue(cell) << " ";
 
 	auto byte = BUS().peek(current + 1);
-	uint16_t relative = processor.PC().word + 2 + (int8_t)byte;
+	uint16_t relative = processor.PC().joined + 2 + (int8_t)byte;
 
 	auto aaa = (cell & 0b11100000) >> 5;
 	auto bbb = (cell & 0b00011100) >> 2;
@@ -475,7 +475,7 @@ uint8_t EightBit::Disassembly::getByte(uint16_t address) {
 }
 
 uint16_t EightBit::Disassembly::getShort(uint16_t address) {
-	return processor.peekShort(address).word;
+	return processor.peekShort(address).joined;
 }
 
 ////

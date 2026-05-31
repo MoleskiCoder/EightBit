@@ -2,7 +2,7 @@
 #include "../inc/mos6502.h"
 
 EightBit::MOS6502::MOS6502(Bus& bus) noexcept
-: LittleEndianProcessor(bus) {
+: base(bus) {
 	RaisedPOWER.connect([this](EventArgs) {
 		X() = Bit7;
 		Y() = 0;
@@ -22,73 +22,286 @@ DEFINE_PIN_LEVEL_CHANGERS(RW, MOS6502)
 
 void EightBit::MOS6502::poweredStep() noexcept {
 
-	tick();	// A cycle is used, whether RDY is high or not
+	// A cycle is used, whether RDY is high or not
+	tick();
 
-	if (UNLIKELY(lowered(SO())))
+	if (lowered(SO()))
 		handleSO();
 
-	if (LIKELY(raised(RDY()))) {
+	if (raised(RDY())) {
 
-		fetchInstruction();
+		m_immediateInstruction = false;
+		opcode() = fetchInstruction();
 
 		// Priority: RESET > NMI > INT
-		if (UNLIKELY(lowered(RESET())))
+		if (lowered(RESET()))
 			handleRESET();
-		else if (UNLIKELY(lowered(NMI())))
+		else if (lowered(NMI()))
 			handleNMI();
-		else if (UNLIKELY(lowered(INT()) && !interruptMasked()))
+		else if (lowered(INT()) && !interruptMasked())
 			handleINT();
 		else
 			execute();
 	}
 }
 
-// Interrupt (etc.) handlers
+uint8_t EightBit::MOS6502::fetchInstruction() noexcept {
 
-void EightBit::MOS6502::handleSO() noexcept {
-	raiseSO();
-	P() |= VF;
+	// Instruction fetch beginning
+	lowerSYNC();
+
+	assert(cycles() == 1 && "An extra cycle has occurred");
+
+	// Can't use fetchByte, since that would add an extra tick.
+	immediateAddress();
+
+	ReadingMemory.fire();
+		readFromMemory();
+	ReadMemory.fire();
+
+	assert(cycles() == 1 && "BUS read has introduced stray cycles");
+
+	// Instruction fetch has now completed
+	raiseSYNC();
+
+	return BUS().DATA();
 }
+
+// Interrupt (etc.) handlers
 
 void EightBit::MOS6502::handleRESET() noexcept {
 	raiseRESET();
-	interrupt(RSTvector, hardware, reset);
-}
-
-void EightBit::MOS6502::handleNMI() noexcept {
-	raiseNMI();
-	interrupt(NMIvector);
+	reset();
 }
 
 void EightBit::MOS6502::handleINT() noexcept {
 	raiseINT();
-	interrupt(IRQvector);
+	interruptMaskable();
 }
 
-void EightBit::MOS6502::interrupt(uint8_t vector, interrupt_source_t source, interrupt_type_t type) noexcept {
-	if (type == reset) {
-		dummyPush();
-		dummyPush();
-		dummyPush();
-	} else {
-		pushWord(PC());
-		push(P() | (source == hardware ? 0 : BF));
-	}
-	set_flag(IF);	// Disable IRQ
-	jump(Processor::getWordPaged(0xff, vector));
+void EightBit::MOS6502::handleNMI() noexcept {
+	raiseNMI();
+	interruptNonMaskable();
+}
+
+void EightBit::MOS6502::handleSO() noexcept {
+	raiseSO();
+	SEV();
+}
+
+void EightBit::MOS6502::adjustInterruptFlags() {
+	SEI();   // Disable IRQ
+}
+
+void EightBit::MOS6502::reset() {
+	dummyPush();
+	dummyPush();
+	dummyPush();
+	getPagedInto(0xff, _vectorRST, PC());
+	adjustInterruptFlags();
+}
+
+void EightBit::MOS6502::interruptMaskable() {
+	pushShort(PC());
+	push(P());
+	getPagedInto(0xff, _vectorIRQ, PC());
+	adjustInterruptFlags();
+}
+
+void EightBit::MOS6502::interruptNonMaskable() {
+	pushShort(PC());
+	push(P());
+	getPagedInto(0xff, _vectorNMI, PC());
+	adjustInterruptFlags();
+}
+
+void EightBit::MOS6502::BRK() noexcept {
+	pushShort(PC());
+	push(P() | BF);
+	getPagedInto(0xff, _vectorIRQ, PC());
+	adjustInterruptFlags();
+}
+
+void EightBit::MOS6502::swallowRead() noexcept {
+	base::memoryRead(PC());
+}
+
+void EightBit::MOS6502::swallowPop() noexcept {
+	base::memoryRead({ S(), 1 });
+}
+
+void EightBit::MOS6502::swallowFetch() noexcept {
+	fetchByte();
+}
+
+void EightBit::MOS6502::memoryWrite() noexcept {
+	WritingMemory.fire();
+		tick();
+		writeToMemory();
+	WrittenMemory.fire();
+}
+
+void EightBit::MOS6502::memoryRead() noexcept {
+	ReadingMemory.fire();
+		tick();
+		readFromMemory();
+	ReadMemory.fire();
+}
+
+void EightBit::MOS6502::readFromMemory() noexcept {
+	raiseRW();
+	base::memoryRead();
+}
+
+void EightBit::MOS6502::writeToMemory() noexcept {
+	lowerRW();
+	base::memoryWrite();
+}
+
+void EightBit::MOS6502::modifyWrite(uint8_t data) noexcept {
+	// The read will have already taken place...
+	memoryWrite();					// Modify cycle
+	Processor::memoryWrite(data);	// Write cycle
 }
 
 //
 
-void EightBit::MOS6502::busWrite() noexcept {
-	tick();
-	writeToBus();
+#pragma region Address page fixup
+
+void EightBit::MOS6502::maybeFixup() noexcept {
+	if (BUS().ADDRESS().high != fixedPage())
+		fixup();
 }
 
-uint8_t EightBit::MOS6502::busRead() noexcept {
-	tick();
-	return readFromBus();
+void EightBit::MOS6502::fixup() noexcept {
+	memoryRead();
+	BUS().ADDRESS().high = fixedPage();
 }
+
+void EightBit::MOS6502::maybeFixupRead() noexcept {
+	maybeFixup();
+	memoryRead();
+}
+
+void EightBit::MOS6502::fixupRead() noexcept {
+	fixup();
+	memoryRead();
+}
+
+#pragma endregion
+
+#pragma region Address resolution
+
+void EightBit::MOS6502::getAddressPaged() noexcept {
+	getShortPaged();
+	BUS().ADDRESS() = intermediate();
+}
+
+void EightBit::MOS6502::absoluteAddress() noexcept {
+	fetchShortAddress();
+}
+
+void EightBit::MOS6502::zeroPageAddress() noexcept {
+	fetchByte();
+	BUS().ADDRESS() = BUS().DATA();
+}
+
+void EightBit::MOS6502::zeroPageIndirectAddress() noexcept {
+	zeroPageAddress();
+	getAddressPaged();
+}
+
+void EightBit::MOS6502::indirectAddress() noexcept {
+	absoluteAddress();
+	getAddressPaged();
+}
+
+void EightBit::MOS6502::zeroPageWithIndexAddress(uint8_t index) noexcept {
+	zeroPage();
+	BUS().ADDRESS().low += index;
+}
+
+void EightBit::MOS6502::zeroPageXAddress() noexcept {
+	zeroPageWithIndexAddress(X());
+}
+
+void EightBit::MOS6502::zeroPageYAddress() noexcept {
+	zeroPageWithIndexAddress(Y());
+}
+
+void EightBit::MOS6502::absoluteWithIndexAddress(uint8_t index) noexcept {
+	absoluteAddress();
+	noteFixedAddress(BUS().ADDRESS().joined + index);
+}
+
+void EightBit::MOS6502::absoluteXAddress() noexcept {
+	absoluteWithIndexAddress(X());
+}
+
+void EightBit::MOS6502::absoluteYAddress() noexcept {
+	absoluteWithIndexAddress(Y());
+}
+
+void EightBit::MOS6502::indexedIndirectXAddress() noexcept {
+	zeroPageXAddress();
+	getAddressPaged();
+}
+
+void EightBit::MOS6502::indirectIndexedYAddress() noexcept {
+	zeroPageIndirectAddress();
+	noteFixedAddress(BUS().ADDRESS().joined + Y());
+}
+
+#pragma endregion
+
+#pragma region Address and read
+
+void EightBit::MOS6502::immediate() noexcept {
+	m_immediateInstruction = true;
+	fetchByte();
+}
+
+void EightBit::MOS6502::absolute() noexcept {
+	absoluteAddress();
+	memoryRead();
+}
+
+void EightBit::MOS6502::zeroPage() noexcept {
+	zeroPageAddress();
+	memoryRead();
+}
+
+void EightBit::MOS6502::zeroPageX() noexcept {
+	zeroPageXAddress();
+	memoryRead();
+}
+
+void EightBit::MOS6502::zeroPageY() noexcept {
+	zeroPageYAddress();
+	memoryRead();
+}
+
+void EightBit::MOS6502::indexedIndirectX() noexcept {
+	indexedIndirectXAddress();
+	memoryRead();
+}
+
+void EightBit::MOS6502::absoluteX() noexcept {
+	absoluteXAddress();
+	maybeFixupRead();
+}
+
+void EightBit::MOS6502::absoluteY() noexcept {
+	absoluteYAddress();
+	maybeFixupRead();
+}
+
+void EightBit::MOS6502::indirectIndexedY() noexcept {
+	indirectIndexedYAddress();
+	maybeFixupRead();
+}
+
+#pragma endregion
 
 //
 
@@ -96,290 +309,288 @@ void EightBit::MOS6502::execute() noexcept {
 
 	switch (opcode()) {
 
-	case 0x00:	swallow_fetch(); interrupt(IRQvector, software);			break;	// BRK (implied)
-	case 0x01:	AM_IndexedIndirectX(); orr();								break;	// ORA (indexed indirect X)
-	case 0x02:	jam();														break;	// *JAM
-	case 0x03:	AM_IndexedIndirectX(); slo();								break;	// *SLO (indexed indirect X)
-	case 0x04:	AM_ZeroPage();												break;	// *NOP (zero page)
-	case 0x05:	AM_ZeroPage(); orr();										break;	// ORA (zero page)
-	case 0x06:	AM_ZeroPage(); MW(asl);										break;	// ASL (zero page)
-	case 0x07:	AM_ZeroPage(); slo();										break;	// *SLO (zero page)
-	case 0x08:	swallow(); php();											break;	// PHP (implied)
-	case 0x09:	AM_Immediate(); orr();										break;	// ORA (immediate)
-	case 0x0a:	swallow(); A() = asl(A());									break;	// ASL A (implied)
-	case 0x0b:	AM_Immediate(); anc();										break;	// *ANC (immediate)
-	case 0x0c:	AM_Absolute();  											break;	// *NOP (absolute)
-	case 0x0d:	AM_Absolute(); orr();										break;	// ORA (absolute)
-	case 0x0e:	AM_Absolute(); MW(asl);										break;	// ASL (absolute)
-	case 0x0f:	AM_Absolute(); slo();										break;	// *SLO (absolute)
+	case 0x00:	swallowFetch(); BRK();							break;	// BRK (implied)
+	case 0x01:	indexedIndirectX(); ORA();						break;	// ORA (indexed indirect X)
+	case 0x02:	swallowRead(); JAM();							break;	// *JAM
+	case 0x03:	indexedIndirectX(); SLO();						break;	// *SLO (indexed indirect X)
+	case 0x04:	zeroPage();	NOP();								break;	// *NOP (zero page)
+	case 0x05:	zeroPage(); ORA();								break;	// ORA (zero page)
+	case 0x06:	zeroPage(); ASL();								break;	// ASL (zero page)
+	case 0x07:	zeroPage(); SLO();								break;	// *SLO (zero page)
+	case 0x08:	swallowRead(); PHP();							break;	// PHP (implied)
+	case 0x09:	immediate(); ORA();								break;	// ORA (immediate)
+	case 0x0a:	swallowRead(); ASLA();							break;	// ASL A (implied)
+	case 0x0b:	immediate(); ANC();								break;	// *ANC (immediate)
+	case 0x0c:	absolute(); NOP(); 								break;	// *NOP (absolute)
+	case 0x0d:	absolute(); ORA();								break;	// ORA (absolute)
+	case 0x0e:	absolute(); ASL();								break;	// ASL (absolute)
+	case 0x0f:	absolute(); SLO();								break;	// *SLO (absolute)
 
-	case 0x10:	branch(negative() == 0);									break;	// BPL (relative)
-	case 0x11:	AM_IndirectIndexedY(); orr();								break;	// ORA (indirect indexed Y)
-	case 0x12:	jam();														break;	// *JAM
-	case 0x13:	Address_IndirectIndexedY(); fixupR(); slo();				break;	// *SLO (indirect indexed Y)
-	case 0x14:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
-	case 0x15:	AM_ZeroPageX(); orr();										break;	// ORA (zero page, X)
-	case 0x16:	AM_ZeroPageX(); MW(asl);									break;	// ASL (zero page, X)
-	case 0x17:	AM_ZeroPageX(); slo();										break;	// *SLO (zero page, X)
-	case 0x18:	swallow(); reset_flag(CF);									break;	// CLC (implied)
-	case 0x19:	AM_AbsoluteY(); orr();										break;	// ORA (absolute, Y)
-	case 0x1a:	swallow();													break;	// *NOP (implied)
-	case 0x1b:	Address_AbsoluteY(); fixupR(); slo();						break;	// *SLO (absolute, Y)
-	case 0x1c:	Address_AbsoluteX(); maybe_fixupR();						break;	// *NOP (absolute, X)
-	case 0x1d:	AM_AbsoluteX(); orr();										break;	// ORA (absolute, X)
-	case 0x1e:	Address_AbsoluteX(); fixupR(); MW(asl);						break;	// ASL (absolute, X)
-	case 0x1f:	Address_AbsoluteX(); fixupR(); slo();						break;	// *SLO (absolute, X)
+	case 0x10:	immediate(); BPL();								break;	// BPL (relative)
+	case 0x11:	indirectIndexedY(); ORA();						break;	// ORA (indirect indexed Y)
+	case 0x12:	swallowRead(); JAM();							break;	// *JAM
+	case 0x13:	indirectIndexedYAddress(); fixupRead(); SLO();	break;	// *SLO (indirect indexed Y)
+	case 0x14:	zeroPageX(); NOP();								break;	// *NOP (zero page, X)
+	case 0x15:	zeroPageX(); ORA();								break;	// ORA (zero page, X)
+	case 0x16:	zeroPageX(); ASL();								break;	// ASL (zero page, X)
+	case 0x17:	zeroPageX(); SLO();								break;	// *SLO (zero page, X)
+	case 0x18:	swallowRead(); resetFlag(CF);					break;	// CLC (implied)
+	case 0x19:	absoluteY(); ORA();								break;	// ORA (absolute, Y)
+	case 0x1a:	swallowRead(); NOP();							break;	// *NOP (implied)
+	case 0x1b:	absoluteYAddress(); fixupRead(); SLO();			break;	// *SLO (absolute, Y)
+	case 0x1c:	absoluteXAddress(); maybeFixupRead();			break;	// *NOP (absolute, X)
+	case 0x1d:	absoluteX(); ORA();								break;	// ORA (absolute, X)
+	case 0x1e:	absoluteXAddress(); fixupRead(); ASL();			break;	// ASL (absolute, X)
+	case 0x1f:	absoluteXAddress(); fixupRead(); SLO();			break;	// *SLO (absolute, X)
 
-	case 0x20:	jsr();														break;	// JSR (absolute)
-	case 0x21:	AM_IndexedIndirectX(); andr();								break;	// AND (indexed indirect X)
-	case 0x22:	jam();														break;	// *JAM
-	case 0x23:	AM_IndexedIndirectX(); rla();;								break;	// *RLA (indexed indirect X)
-	case 0x24:	AM_ZeroPage(); bit();										break;	// BIT (zero page)
-	case 0x25:	AM_ZeroPage(); andr();										break;	// AND (zero page)
-	case 0x26:	AM_ZeroPage(); MW(rol);										break;	// ROL (zero page)
-	case 0x27:	AM_ZeroPage(); rla();;										break;	// *RLA (zero page)
-	case 0x28:	swallow(); plp();											break;	// PLP (implied)
-	case 0x29:	AM_Immediate(); andr();										break;	// AND (immediate)
-	case 0x2a:	swallow(); A() = rol(A());									break;	// ROL A (implied)
-	case 0x2b:	AM_Immediate(); anc();										break;	// *ANC (immediate)
-	case 0x2c:	AM_Absolute(); bit();										break;	// BIT (absolute)
-	case 0x2d:	AM_Absolute(); andr();										break;	// AND (absolute)
-	case 0x2e:	AM_Absolute(); MW(rol);										break;	// ROL (absolute)
-	case 0x2f:	AM_Absolute(); rla();;										break;	// *RLA (absolute)
+	case 0x20:	JSR();											break;	// JSR (absolute)
+	case 0x21:	indexedIndirectX(); AND();						break;	// AND (indexed indirect X)
+	case 0x22:	swallowRead(); JAM();							break;	// *JAM
+	case 0x23:	indexedIndirectX(); RLA();;						break;	// *RLA (indexed indirect X)
+	case 0x24:	zeroPage(); BIT();								break;	// BIT (zero page)
+	case 0x25:	zeroPage(); AND();								break;	// AND (zero page)
+	case 0x26:	zeroPage(); ROL();								break;	// ROL (zero page)
+	case 0x27:	zeroPage(); RLA();;								break;	// *RLA (zero page)
+	case 0x28:	swallowRead(); PLP();							break;	// PLP (implied)
+	case 0x29:	immediate(); AND();								break;	// AND (immediate)
+	case 0x2a:	swallowRead(); ROLA();							break;	// ROL A (implied)
+	case 0x2b:	immediate(); ANC();								break;	// *ANC (immediate)
+	case 0x2c:	absolute(); BIT();								break;	// BIT (absolute)
+	case 0x2d:	absolute(); AND();								break;	// AND (absolute)
+	case 0x2e:	absolute(); ROL();								break;	// ROL (absolute)
+	case 0x2f:	absolute(); RLA();;								break;	// *RLA (absolute)
 
-	case 0x30:	branch(negative());											break;	// BMI (relative)
-	case 0x31:	AM_IndirectIndexedY(); andr();								break;	// AND (indirect indexed Y)
-	case 0x32:	jam();														break;	// *JAM
-	case 0x33:	Address_IndirectIndexedY(); fixupR(); rla();;				break;	// *RLA (indirect indexed Y)
-	case 0x34:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
-	case 0x35:	AM_ZeroPageX(); andr();										break;	// AND (zero page, X)
-	case 0x36:	AM_ZeroPageX(); MW(rol);									break;	// ROL (zero page, X)
-	case 0x37:	AM_ZeroPageX(); rla();;										break;	// *RLA (zero page, X)
-	case 0x38:	swallow(); set_flag(CF);									break;	// SEC (implied)
-	case 0x39:	AM_AbsoluteY(); andr();										break;	// AND (absolute, Y)
-	case 0x3a:	swallow();													break;	// *NOP (implied)
-	case 0x3b:	Address_AbsoluteY(); fixupR(); rla();;						break;	// *RLA (absolute, Y)
-	case 0x3c:	Address_AbsoluteX(); maybe_fixupR();						break;	// *NOP (absolute, X)
-	case 0x3d:	AM_AbsoluteX(); andr();										break;	// AND (absolute, X)
-	case 0x3e:	Address_AbsoluteX(); fixupR(); MW(rol);						break;	// ROL (absolute, X)
-	case 0x3f:	Address_AbsoluteX(); fixupR(); rla();;						break;	// *RLA (absolute, X)
+	case 0x30:	immediate(); BMI();								break;	// BMI (relative)
+	case 0x31:	indirectIndexedY(); AND();						break;	// AND (indirect indexed Y)
+	case 0x32:	swallowRead(); JAM();							break;	// *JAM
+	case 0x33:	indirectIndexedYAddress(); fixupRead(); RLA();	break;	// *RLA (indirect indexed Y)
+	case 0x34:	zeroPageX(); NOP();								break;	// *NOP (zero page, X)
+	case 0x35:	zeroPageX(); AND();								break;	// AND (zero page, X)
+	case 0x36:	zeroPageX(); ROL();								break;	// ROL (zero page, X)
+	case 0x37:	zeroPageX(); RLA();;							break;	// *RLA (zero page, X)
+	case 0x38:	swallowRead(); SEC();							break;	// SEC (implied)
+	case 0x39:	absoluteY(); AND();								break;	// AND (absolute, Y)
+	case 0x3a:	swallowRead(); NOP();							break;	// *NOP (implied)
+	case 0x3b:	absoluteYAddress(); fixupRead(); RLA();			break;	// *RLA (absolute, Y)
+	case 0x3c:	absoluteXAddress(); maybeFixupRead(); NOP();	break;	// *NOP (absolute, X)
+	case 0x3d:	absoluteX(); AND();								break;	// AND (absolute, X)
+	case 0x3e:	absoluteXAddress(); fixupRead(); ROL();			break;	// ROL (absolute, X)
+	case 0x3f:	absoluteXAddress(); fixupRead(); RLA();         break;	// *RLA (absolute, X)
 
-	case 0x40:	swallow(); rti();											break;	// RTI (implied)
-	case 0x41:	AM_IndexedIndirectX(); eorr();								break;	// EOR (indexed indirect X)
-	case 0x42:	jam();														break;	// *JAM
-	case 0x43:	AM_IndexedIndirectX(); sre();								break;	// *SRE (indexed indirect X)
-	case 0x44:	AM_ZeroPage();												break;	// *NOP (zero page)
-	case 0x45:	AM_ZeroPage(); eorr();										break;	// EOR (zero page)
-	case 0x46:	AM_ZeroPage(); MW(lsr);										break;	// LSR (zero page)
-	case 0x47:	AM_ZeroPage(); sre();										break;	// *SRE (zero page)
-	case 0x48:	swallow(); push(A());										break;	// PHA (implied)
-	case 0x49:	AM_Immediate(); eorr();										break;	// EOR (immediate)
-	case 0x4a:	swallow(); A() = lsr(A());									break;	// LSR A (implied)
-	case 0x4b:	AM_Immediate(); asr();										break;	// *ASR (immediate)
-	case 0x4c:	Address_Absolute(); jump(BUS().ADDRESS());					break;	// JMP (absolute)
-	case 0x4d:	AM_Absolute(); eorr();										break;	// EOR (absolute)
-	case 0x4e:	AM_Absolute(); MW(lsr); 									break;	// LSR (absolute)
-	case 0x4f:	AM_Absolute(); sre();										break;	// *SRE (absolute)
+	case 0x40:	swallowRead(); RTI();							break;	// RTI (implied)
+	case 0x41:	indexedIndirectX(); EOR();						break;	// EOR (indexed indirect X)
+	case 0x42:	swallowRead(); JAM();							break;	// *JAM
+	case 0x43:	indexedIndirectX(); SRE();						break;	// *SRE (indexed indirect X)
+	case 0x44:	zeroPage();	NOP();								break;	// *NOP (zero page)
+	case 0x45:	zeroPage(); EOR();								break;	// EOR (zero page)
+	case 0x46:	zeroPage(); LSR();								break;	// LSR (zero page)
+	case 0x47:	zeroPage(); SRE();								break;	// *SRE (zero page)
+	case 0x48:	swallowRead(); PHA();							break;	// PHA (implied)
+	case 0x49:	immediate(); EOR();								break;	// EOR (immediate)
+	case 0x4a:	swallowRead(); LSRA();							break;	// LSR A (implied)
+	case 0x4b:	immediate(); ASR();								break;	// *ASR (immediate)
+	case 0x4c:	absoluteAddress(); JMP();						break;	// JMP (absolute)
+	case 0x4d:	absolute(); EOR();								break;	// EOR (absolute)
+	case 0x4e:	absolute(); LSR(); 								break;	// LSR (absolute)
+	case 0x4f:	absolute(); SRE();								break;	// *SRE (absolute)
 
-	case 0x50:	branch(overflow() == 0);									break;	// BVC (relative)
-	case 0x51:	AM_IndirectIndexedY(); eorr();								break;	// EOR (indirect indexed Y)
-	case 0x52:	jam();														break;	// *JAM
-	case 0x53:	Address_IndirectIndexedY(); fixupR(); sre();				break;	// *SRE (indirect indexed Y)
-	case 0x54:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
-	case 0x55:	AM_ZeroPageX(); eorr();										break;	// EOR (zero page, X)
-	case 0x56:	AM_ZeroPageX(); MW(lsr); 									break;	// LSR (zero page, X)
-	case 0x57:	AM_ZeroPageX(); sre();										break;	// *SRE (zero page, X)
-	case 0x58:	swallow(); reset_flag(IF);									break;	// CLI (implied)
-	case 0x59:	AM_AbsoluteY(); eorr();										break;	// EOR (absolute, Y)
-	case 0x5a:	swallow();													break;	// *NOP (implied)
-	case 0x5b:	Address_AbsoluteY(); fixupR(); sre();						break;	// *SRE (absolute, Y)
-	case 0x5c:	Address_AbsoluteX(); maybe_fixupR();						break;	// *NOP (absolute, X)
-	case 0x5d:	AM_AbsoluteX(); eorr();										break;	// EOR (absolute, X)
-	case 0x5e:	Address_AbsoluteX(); fixupR(); MW(lsr);						break;	// LSR (absolute, X)
-	case 0x5f:	Address_AbsoluteX(); fixupR(); sre();						break;	// *SRE (absolute, X)
+	case 0x50:	immediate(); BVC();								break;	// BVC (relative)
+	case 0x51:	indirectIndexedY(); EOR();						break;	// EOR (indirect indexed Y)
+	case 0x52:	swallowRead(); JAM();							break;	// *JAM
+	case 0x53:	indirectIndexedYAddress(); fixupRead(); SRE();	break;	// *SRE (indirect indexed Y)
+	case 0x54:	zeroPageX(); NOP();								break;	// *NOP (zero page, X)
+	case 0x55:	zeroPageX(); EOR();								break;	// EOR (zero page, X)
+	case 0x56:	zeroPageX(); LSR(); 							break;	// LSR (zero page, X)
+	case 0x57:	zeroPageX(); SRE();								break;	// *SRE (zero page, X)
+	case 0x58:	swallowRead(); CLI();							break;	// CLI (implied)
+	case 0x59:	absoluteY(); EOR();								break;	// EOR (absolute, Y)
+	case 0x5a:	swallowRead(); NOP();							break;	// *NOP (implied)
+	case 0x5b:	absoluteYAddress(); fixupRead(); SRE();			break;	// *SRE (absolute, Y)
+	case 0x5c:	absoluteXAddress(); maybeFixupRead(); NOP();	break;	// *NOP (absolute, X)
+	case 0x5d:	absoluteX(); EOR();								break;	// EOR (absolute, X)
+	case 0x5e:	absoluteXAddress(); fixupRead(); LSR();			break;	// LSR (absolute, X)
+	case 0x5f:	absoluteXAddress(); fixupRead(); SRE();			break;	// *SRE (absolute, X)
 
-	case 0x60:	swallow(); rts();											break;	// RTS (implied)
-	case 0x61:	AM_IndexedIndirectX(); adc();								break;	// ADC (indexed indirect X)
-	case 0x62:	jam();														break;	// *JAM
-	case 0x63:	AM_IndexedIndirectX(); rra();								break;	// *RRA (indexed indirect X)
-	case 0x64:	AM_ZeroPage();												break;	// *NOP (zero page)
-	case 0x65:	AM_ZeroPage(); adc();										break;	// ADC (zero page)
-	case 0x66:	AM_ZeroPage(); MW(ror);										break;	// ROR (zero page)
-	case 0x67:	AM_ZeroPage(); rra();										break;	// *RRA (zero page)
-	case 0x68:	swallow(); swallow_stack(); A() = through(pop());			break;	// PLA (implied)
-	case 0x69:	AM_Immediate(); adc();										break;	// ADC (immediate)
-	case 0x6a:	swallow(); A() = ror(A());									break;	// ROR A (implied)
-	case 0x6b:	AM_Immediate(); arr();										break;	// *ARR (immediate)
-	case 0x6c:	Address_Indirect(); jump(BUS().ADDRESS());					break;	// JMP (indirect)
-	case 0x6d:	AM_Absolute(); adc();										break;	// ADC (absolute)
-	case 0x6e:	AM_Absolute(); MW(ror); 									break;	// ROR (absolute)
-	case 0x6f:	AM_Absolute(); rra();										break;	// *RRA (absolute)
+	case 0x60:	swallowRead(); RTS();							break;	// RTS (implied)
+	case 0x61:	indexedIndirectX(); ADC();						break;	// ADC (indexed indirect X)
+	case 0x62:	swallowRead(); JAM();							break;	// *JAM
+	case 0x63:	indexedIndirectX(); RRA();						break;	// *RRA (indexed indirect X)
+	case 0x64:	zeroPage();	NOP();								break;	// *NOP (zero page)
+	case 0x65:	zeroPage(); ADC();								break;	// ADC (zero page)
+	case 0x66:	zeroPage(); ROR();								break;	// ROR (zero page)
+	case 0x67:	zeroPage(); RRA();								break;	// *RRA (zero page)
+	case 0x68:	swallowRead(); PLA();							break;	// PLA (implied)
+	case 0x69:	immediate(); ADC();								break;	// ADC (immediate)
+	case 0x6a:	swallowRead(); RORA();							break;	// ROR A (implied)
+	case 0x6b:	immediate(); ARR();								break;	// *ARR (immediate)
+	case 0x6c:	indirectAddress(); JMP();						break;	// JMP (indirect)
+	case 0x6d:	absolute(); ADC();								break;	// ADC (absolute)
+	case 0x6e:	absolute(); ROR(); 								break;	// ROR (absolute)
+	case 0x6f:	absolute(); RRA();								break;	// *RRA (absolute)
 
-	case 0x70:	branch(overflow());											break;	// BVS (relative)
-	case 0x71:	AM_IndirectIndexedY(); adc();								break;	// ADC (indirect indexed Y)
-	case 0x72:	jam();														break;	// *JAM
-	case 0x73:	Address_IndirectIndexedY(); fixupR(); rra();				break;	// *RRA (indirect indexed Y)
-	case 0x74:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
-	case 0x75:	AM_ZeroPageX(); adc();										break;	// ADC (zero page, X)
-	case 0x76:	AM_ZeroPageX(); MW(ror); 									break;	// ROR (zero page, X)
-	case 0x77:	AM_ZeroPageX(); rra();										break;	// *RRA (zero page, X)
-	case 0x78:	swallow(); set_flag(IF);									break;	// SEI (implied)
-	case 0x79:	AM_AbsoluteY(); adc();										break;	// ADC (absolute, Y)
-	case 0x7a:	swallow();													break;	// *NOP (implied)
-	case 0x7b:	Address_AbsoluteY(); fixupR(); rra();						break;	// *RRA (absolute, Y)
-	case 0x7c:	Address_AbsoluteX(); maybe_fixupR();						break;	// *NOP (absolute, X)
-	case 0x7d:	AM_AbsoluteX(); adc();										break;	// ADC (absolute, X)
-	case 0x7e:	Address_AbsoluteX(); fixupR(); MW(ror);						break;	// ROR (absolute, X)
-	case 0x7f:	Address_AbsoluteX(); fixupR(); rra();						break;	// *RRA (absolute, X)
+	case 0x70:	immediate(); BVS();								break;	// BVS (relative)
+	case 0x71:	indirectIndexedY(); ADC();						break;	// ADC (indirect indexed Y)
+	case 0x72:	swallowRead(); JAM();							break;	// *JAM
+	case 0x73:	indirectIndexedYAddress(); fixupRead(); RRA();	break;	// *RRA (indirect indexed Y)
+	case 0x74:	zeroPageX(); NOP();								break;	// *NOP (zero page, X)
+	case 0x75:	zeroPageX(); ADC();								break;	// ADC (zero page, X)
+	case 0x76:	zeroPageX(); ROR(); 							break;	// ROR (zero page, X)
+	case 0x77:	zeroPageX(); RRA();								break;	// *RRA (zero page, X)
+	case 0x78:	swallowRead(); SEI();							break;	// SEI (implied)
+	case 0x79:	absoluteY(); ADC();								break;	// ADC (absolute, Y)
+	case 0x7a:	swallowRead(); NOP();							break;	// *NOP (implied)
+	case 0x7b:	absoluteYAddress(); fixupRead(); RRA();			break;	// *RRA (absolute, Y)
+	case 0x7c:	absoluteXAddress(); maybeFixupRead(); NOP();	break;	// *NOP (absolute, X)
+	case 0x7d:	absoluteX(); ADC();								break;	// ADC (absolute, X)
+	case 0x7e:	absoluteXAddress(); fixupRead(); ROR();			break;	// ROR (absolute, X)
+	case 0x7f:	absoluteXAddress(); fixupRead(); RRA();			break;	// *RRA (absolute, X)
 
-	case 0x80:	AM_Immediate();												break;	// *NOP (immediate)
-	case 0x81:	Address_IndexedIndirectX(); memoryWrite(A());				break;	// STA (indexed indirect X)
-	case 0x82:	AM_Immediate();												break;	// *NOP (immediate)
-	case 0x83:	Address_IndexedIndirectX(); memoryWrite(A() & X());			break;	// *SAX (indexed indirect X)
-	case 0x84:	Address_ZeroPage(); memoryWrite(Y());						break;	// STY (zero page)
-	case 0x85:	Address_ZeroPage(); memoryWrite(A());						break;	// STA (zero page)
-	case 0x86:	Address_ZeroPage(); memoryWrite(X());						break;	// STX (zero page)
-	case 0x87:	Address_ZeroPage(); memoryWrite(A() & X());					break;	// *SAX (zero page)
-	case 0x88:	swallow(); Y() = dec(Y());									break;	// DEY (implied)
-	case 0x89:	AM_Immediate();												break;	// *NOP (immediate)
-	case 0x8a:	swallow(); A() = through(X());								break;	// TXA (implied)
-	case 0x8b:	AM_Immediate(); ane();										break;	// *ANE (immediate)
-	case 0x8c:	Address_Absolute(); memoryWrite(Y());						break;	// STY (absolute)
-	case 0x8d:	Address_Absolute(); memoryWrite(A());						break;	// STA (absolute)
-	case 0x8e:	Address_Absolute(); memoryWrite(X());						break;	// STX (absolute)
-	case 0x8f:	Address_Absolute(); memoryWrite(A() & X());					break;	// *SAX (absolute)
+	case 0x80:	immediate(); NOP();								break;	// *NOP (immediate)
+	case 0x81:	indexedIndirectXAddress(); STA();				break;	// STA (indexed indirect X)
+	case 0x82:	immediate(); NOP();								break;	// *NOP (immediate)
+	case 0x83:	indexedIndirectXAddress(); SAX();				break;	// *SAX (indexed indirect X)
+	case 0x84:	zeroPageAddress(); STY();						break;	// STY (zero page)
+	case 0x85:	zeroPageAddress(); STA();						break;	// STA (zero page)
+	case 0x86:	zeroPageAddress(); STX();						break;	// STX (zero page)
+	case 0x87:	zeroPageAddress(); SAX();						break;	// *SAX (zero page)
+	case 0x88:	swallowRead(); DEY();							break;	// DEY (implied)
+	case 0x89:	immediate(); NOP();								break;	// *NOP (immediate)
+	case 0x8a:	swallowRead(); TXA();							break;	// TXA (implied)
+	case 0x8b:	immediate(); ANE();								break;	// *ANE (immediate)
+	case 0x8c:	absoluteAddress(); STY();						break;	// STY (absolute)
+	case 0x8d:	absoluteAddress(); STA();						break;	// STA (absolute)
+	case 0x8e:	absoluteAddress(); STX();						break;	// STX (absolute)
+	case 0x8f:	absoluteAddress(); SAX();						break;	// *SAX (absolute)
 
-	case 0x90:	branch(carry() == 0);										break;	// BCC (relative)
-	case 0x91:	Address_IndirectIndexedY(); fixup(); memoryWrite(A());		break;	// STA (indirect indexed Y)
-	case 0x92:	jam();														break;	// *JAM
-	case 0x93:	Address_IndirectIndexedY(); fixup(); sha();					break;	// *SHA (indirect indexed, Y)
-	case 0x94:	Address_ZeroPageX(); memoryWrite(Y());						break;	// STY (zero page, X)
-	case 0x95:	Address_ZeroPageX(); memoryWrite(A());						break;	// STA (zero page, X)
-	case 0x96:	Address_ZeroPageY(); memoryWrite(X());						break;	// STX (zero page, Y)
-	case 0x97:	Address_ZeroPageY(); memoryWrite(A() & X());				break;	// *SAX (zero page, Y)
-	case 0x98:	swallow(); A() = through(Y());								break;	// TYA (implied)
-	case 0x99:	Address_AbsoluteY(); fixup(); memoryWrite(A());				break;	// STA (absolute, Y)
-	case 0x9a:	swallow(); S() = X();										break;	// TXS (implied)
-	case 0x9b:	Address_AbsoluteY(); fixup(); tas();						break;	// *TAS (absolute, Y)
-	case 0x9c:	Address_AbsoluteX(); fixup(); sya();						break;	// *SYA (absolute, X)
-	case 0x9d:	Address_AbsoluteX(); fixup(); memoryWrite(A());				break;	// STA (absolute, X)
-	case 0x9e:	Address_AbsoluteY(); fixup(); sxa();						break;	// *SXA (absolute, Y)
-	case 0x9f:	Address_AbsoluteY(); fixup(); sha();						break;	// *SHA (absolute, Y)
+	case 0x90:	immediate(); BCC();								break;	// BCC (relative)
+	case 0x91:	indirectIndexedYAddress(); fixup(); STA();		break;	// STA (indirect indexed Y)
+	case 0x92:	swallowRead(); JAM();							break;	// *JAM
+	case 0x93:	indirectIndexedYAddress(); fixup(); SHA();		break;	// *SHA (indirect indexed, Y)
+	case 0x94:	zeroPageXAddress(); STY();						break;	// STY (zero page, X)
+	case 0x95:	zeroPageXAddress(); STA();						break;	// STA (zero page, X)
+	case 0x96:	zeroPageYAddress(); STX();						break;	// STX (zero page, Y)
+	case 0x97:	zeroPageYAddress(); SAX();						break;	// *SAX (zero page, Y)
+	case 0x98:	swallowRead(); TYA();							break;	// TYA (implied)
+	case 0x99:	absoluteYAddress(); fixup(); STA();				break;	// STA (absolute, Y)
+	case 0x9a:	swallowRead(); TXS();							break;	// TXS (implied)
+	case 0x9b:	absoluteYAddress(); fixup(); TAS();				break;	// *TAS (absolute, Y)
+	case 0x9c:	absoluteXAddress(); fixup(); SYA();				break;	// *SYA (absolute, X)
+	case 0x9d:	absoluteXAddress(); fixup(); STA();				break;	// STA (absolute, X)
+	case 0x9e:	absoluteYAddress(); fixup(); SXA();				break;	// *SXA (absolute, Y)
+	case 0x9f:	absoluteYAddress(); fixup(); SHA();				break;	// *SHA (absolute, Y)
 
-	case 0xa0:	AM_Immediate(); Y() = through();							break;	// LDY (immediate)
-	case 0xa1:	AM_IndexedIndirectX(); A() = through();						break;	// LDA (indexed indirect X)
-	case 0xa2:	AM_Immediate(); X() = through();							break;	// LDX (immediate)
-	case 0xa3:	AM_IndexedIndirectX(); A() = X() = through();				break;	// *LAX (indexed indirect X)
-	case 0xa4:	AM_ZeroPage(); Y() = through();								break;	// LDY (zero page)
-	case 0xa5:	AM_ZeroPage(); A() = through();								break;	// LDA (zero page)
-	case 0xa6:	AM_ZeroPage(); X() = through();								break;	// LDX (zero page)
-	case 0xa7:	AM_ZeroPage(); A() = X() = through();						break;	// *LAX (zero page)
-	case 0xa8:	swallow(); Y() = through(A());								break;	// TAY (implied)
-	case 0xa9:	AM_Immediate(); A() = through();							break;	// LDA (immediate)
-	case 0xaa:	swallow(); X() = through(A());								break;	// TAX (implied)
-	case 0xab:	AM_Immediate(); atx();										break;	// *ATX (immediate)
-	case 0xac:	AM_Absolute(); Y() = through();								break;	// LDY (absolute)
-	case 0xad:	AM_Absolute(); A() = through();								break;	// LDA (absolute)
-	case 0xae:	AM_Absolute(); X() = through();								break;	// LDX (absolute)
-	case 0xaf:	AM_Absolute(); A() = X() = through();						break;	// *LAX (absolute)
+	case 0xa0:	immediate(); LDY();								break;	// LDY (immediate)
+	case 0xa1:	indexedIndirectX(); LDA();						break;	// LDA (indexed indirect X)
+	case 0xa2:	immediate(); LDX();								break;	// LDX (immediate)
+	case 0xa3:	indexedIndirectX(); LAX();						break;	// *LAX (indexed indirect X)
+	case 0xa4:	zeroPage(); LDY();								break;	// LDY (zero page)
+	case 0xa5:	zeroPage(); LDA();								break;	// LDA (zero page)
+	case 0xa6:	zeroPage(); LDX();								break;	// LDX (zero page)
+	case 0xa7:	zeroPage(); LAX();								break;	// *LAX (zero page)
+	case 0xa8:	swallowRead(); TAY();							break;	// TAY (implied)
+	case 0xa9:	immediate(); LDA();								break;	// LDA (immediate)
+	case 0xaa:	swallowRead(); TAX();							break;	// TAX (implied)
+	case 0xab:	immediate(); ATX();								break;	// *ATX (immediate)
+	case 0xac:	absolute(); LDY();								break;	// LDY (absolute)
+	case 0xad:	absolute(); LDA();								break;	// LDA (absolute)
+	case 0xae:	absolute(); LDX();								break;	// LDX (absolute)
+	case 0xaf:	absolute(); LAX();								break;	// *LAX (absolute)
 
-	case 0xb0:	branch(carry());											break;	// BCS (relative)
-	case 0xb1:	AM_IndirectIndexedY(); A() = through();						break;	// LDA (indirect indexed Y)
-	case 0xb2:	jam();														break;	// *JAM
-	case 0xb3:	AM_IndirectIndexedY(); A() = X() = through();				break;	// *LAX (indirect indexed Y)
-	case 0xb4:	AM_ZeroPageX(); Y() = through();							break;	// LDY (zero page, X)
-	case 0xb5:	AM_ZeroPageX(); A() = through();							break;	// LDA (zero page, X)
-	case 0xb6:	AM_ZeroPageY(); X() = through();							break;	// LDX (zero page, Y)
-	case 0xb7:	AM_ZeroPageY(); A() = X() = through();						break;	// *LAX (zero page, Y)
-	case 0xb8:	swallow(); reset_flag(VF);									break;	// CLV (implied)
-	case 0xb9:	AM_AbsoluteY(); A() = through();							break;	// LDA (absolute, Y)
-	case 0xba:	swallow(); X() = through(S());								break;	// TSX (implied)
-	case 0xbb:	Address_AbsoluteY(); maybe_fixup(); las();					break;	// *LAS (absolute, Y)
-	case 0xbc:	AM_AbsoluteX(); Y() = through();							break;	// LDY (absolute, X)
-	case 0xbd:	AM_AbsoluteX(); A() = through();							break;	// LDA (absolute, X)
-	case 0xbe:	AM_AbsoluteY(); X() = through();							break;	// LDX (absolute, Y)
-	case 0xbf:	AM_AbsoluteY(); A() = X() = through();						break;	// *LAX (absolute, Y)
+	case 0xb0:	immediate(); BCS();								break;	// BCS (relative)
+	case 0xb1:	indirectIndexedY(); LDA();						break;	// LDA (indirect indexed Y)
+	case 0xb2:	swallowRead(); JAM();							break;	// *JAM
+	case 0xb3:	indirectIndexedY(); LAX();						break;	// *LAX (indirect indexed Y)
+	case 0xb4:	zeroPageX(); LDY();								break;	// LDY (zero page, X)
+	case 0xb5:	zeroPageX(); LDA();								break;	// LDA (zero page, X)
+	case 0xb6:	zeroPageY(); LDX();								break;	// LDX (zero page, Y)
+	case 0xb7:	zeroPageY(); LAX();								break;	// *LAX (zero page, Y)
+	case 0xb8:	swallowRead(); CLV();							break;	// CLV (implied)
+	case 0xb9:	absoluteY(); LDA();								break;	// LDA (absolute, Y)
+	case 0xba:	swallowRead(); TSX();							break;	// TSX (implied)
+	case 0xbb:	absoluteYAddress(); maybeFixupRead(); LAS();	break;	// *LAS (absolute, Y)
+	case 0xbc:	absoluteX(); LDY();								break;	// LDY (absolute, X)
+	case 0xbd:	absoluteX(); LDA();								break;	// LDA (absolute, X)
+	case 0xbe:	absoluteY(); LDX();								break;	// LDX (absolute, Y)
+	case 0xbf:	absoluteY(); LAX();								break;	// *LAX (absolute, Y)
 
-	case 0xc0:	AM_Immediate(); cmp(Y());									break;	// CPY (immediate)
-	case 0xc1:	AM_IndexedIndirectX(); cmp(A());							break;	// CMP (indexed indirect X)
-	case 0xc2:	AM_Immediate();												break;	// *NOP (immediate)
-	case 0xc3:	AM_IndexedIndirectX(); dcp();								break;	// *DCP (indexed indirect X)
-	case 0xc4:	AM_ZeroPage(); cmp(Y());									break;	// CPY (zero page)
-	case 0xc5:	AM_ZeroPage(); cmp(A());									break;	// CMP (zero page)
-	case 0xc6:	AM_ZeroPage(); MW(dec);										break;	// DEC (zero page)
-	case 0xc7:	AM_ZeroPage(); dcp();										break;	// *DCP (zero page)
-	case 0xc8:	swallow(); Y() = inc(Y());									break;	// INY (implied)
-	case 0xc9:	AM_Immediate(); cmp(A());									break;	// CMP (immediate)
-	case 0xca:	swallow(); X() = dec(X());									break;	// DEX (implied)
-	case 0xcb:	AM_Immediate(); axs();										break;	// *AXS (immediate)
-	case 0xcc:	AM_Absolute(); cmp(Y());									break;	// CPY (absolute)
-	case 0xcd:	AM_Absolute(); cmp(A());									break;	// CMP (absolute)
-	case 0xce:	AM_Absolute(); MW(dec);										break;	// DEC (absolute)
-	case 0xcf:	AM_Absolute(); dcp();										break;	// *DCP (absolute)
+	case 0xc0:	immediate(); CPY();								break;	// CPY (immediate)
+	case 0xc1:	indexedIndirectX(); CMP();						break;	// CMP (indexed indirect X)
+	case 0xc2:	immediate(); NOP();								break;	// *NOP (immediate)
+	case 0xc3:	indexedIndirectX(); DCP();						break;	// *DCP (indexed indirect X)
+	case 0xc4:	zeroPage(); CPY();								break;	// CPY (zero page)
+	case 0xc5:	zeroPage(); CMP();								break;	// CMP (zero page)
+	case 0xc6:	zeroPage(); DEC();								break;	// DEC (zero page)
+	case 0xc7:	zeroPage(); DCP();								break;	// *DCP (zero page)
+	case 0xc8:	swallowRead(); INY();							break;	// INY (implied)
+	case 0xc9:	immediate(); CMP();								break;	// CMP (immediate)
+	case 0xca:	swallowRead(); DEX();							break;	// DEX (implied)
+	case 0xcb:	immediate(); AXS();								break;	// *AXS (immediate)
+	case 0xcc:	absolute(); CPY();								break;	// CPY (absolute)
+	case 0xcd:	absolute(); CMP();								break;	// CMP (absolute)
+	case 0xce:	absolute(); DEC();								break;	// DEC (absolute)
+	case 0xcf:	absolute(); DCP();								break;	// *DCP (absolute)
 
-	case 0xd0:	branch(zero() == 0);										break;	// BNE (relative)
-	case 0xd1:	AM_IndirectIndexedY(); cmp(A());							break;	// CMP (indirect indexed Y)
-	case 0xd2:	jam();														break;	// *JAM
-	case 0xd3:	Address_IndirectIndexedY(); fixupR(); dcp();				break;	// *DCP (indirect indexed Y)
-	case 0xd4:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
-	case 0xd5:	AM_ZeroPageX(); cmp(A());									break;	// CMP (zero page, X)
-	case 0xd6:	AM_ZeroPageX(); MW(dec);									break;	// DEC (zero page, X)
-	case 0xd7:	AM_ZeroPageX(); dcp();										break;	// *DCP (zero page, X)
-	case 0xd8:	swallow(); reset_flag(DF);									break;	// CLD (implied)
-	case 0xd9:	AM_AbsoluteY(); cmp(A());									break;	// CMP (absolute, Y)
-	case 0xda:	swallow();													break;	// *NOP (implied)
-	case 0xdb:	Address_AbsoluteY(); fixupR(); dcp();						break;	// *DCP (absolute, Y)
-	case 0xdc:	Address_AbsoluteX(); maybe_fixupR();						break;	// *NOP (absolute, X)
-	case 0xdd:	AM_AbsoluteX(); cmp(A());									break;	// CMP (absolute, X)
-	case 0xde:	Address_AbsoluteX(); fixupR(); MW(dec);						break;	// DEC (absolute, X)
-	case 0xdf:	Address_AbsoluteX(); fixupR(); dcp();						break;	// *DCP (absolute, X)
+	case 0xd0:	immediate(); BNE();								break;	// BNE (relative)
+	case 0xd1:	indirectIndexedY(); CMP();						break;	// CMP (indirect indexed Y)
+	case 0xd2:	swallowRead(); JAM();							break;	// *JAM
+	case 0xd3:	indirectIndexedYAddress(); fixupRead(); DCP();	break;	// *DCP (indirect indexed Y)
+	case 0xd4:	zeroPageX(); NOP();								break;	// *NOP (zero page, X)
+	case 0xd5:	zeroPageX(); CMP();								break;	// CMP (zero page, X)
+	case 0xd6:	zeroPageX(); DEC();								break;	// DEC (zero page, X)
+	case 0xd7:	zeroPageX(); DCP();								break;	// *DCP (zero page, X)
+	case 0xd8:	swallowRead(); CLD();							break;	// CLD (implied)
+	case 0xd9:	absoluteY(); CMP();								break;	// CMP (absolute, Y)
+	case 0xda:	swallowRead(); NOP();							break;	// *NOP (implied)
+	case 0xdb:	absoluteYAddress(); fixupRead(); DCP();			break;	// *DCP (absolute, Y)
+	case 0xdc:	absoluteXAddress(); maybeFixupRead(); NOP();	break;	// *NOP (absolute, X)
+	case 0xdd:	absoluteX(); CMP();								break;	// CMP (absolute, X)
+	case 0xde:	absoluteXAddress(); fixupRead(); DEC();			break;	// DEC (absolute, X)
+	case 0xdf:	absoluteXAddress(); fixupRead(); DCP();			break;	// *DCP (absolute, X)
 
-	case 0xe0:	AM_Immediate(); cmp(X());									break;	// CPX (immediate)
-	case 0xe1:	AM_IndexedIndirectX(); sbc();								break;	// SBC (indexed indirect X)
-	case 0xe2:	AM_Immediate();												break;	// *NOP (immediate)
-	case 0xe3:	AM_IndexedIndirectX(); isb();								break;	// *ISB (indexed indirect X)
-	case 0xe4:	AM_ZeroPage(); cmp(X());									break;	// CPX (zero page)
-	case 0xe5:	AM_ZeroPage(); sbc();										break;	// SBC (zero page)
-	case 0xe6:	AM_ZeroPage(); MW(inc);										break;	// INC (zero page)
-	case 0xe7:	AM_ZeroPage(); isb();										break;	// *ISB (zero page)
-	case 0xe8:	swallow(); X() = inc(X());									break;	// INX (implied)
-	case 0xe9:	AM_Immediate(); sbc();										break;	// SBC (immediate)
-	case 0xea:	swallow();													break;	// NOP (implied)
-	case 0xeb:	AM_Immediate(); sbc();										break;	// *SBC (immediate)
-	case 0xec:	AM_Absolute(); cmp(X());									break;	// CPX (absolute)
-	case 0xed:	AM_Absolute(); sbc();										break;	// SBC (absolute)
-	case 0xee:	AM_Absolute(); MW(inc);										break;	// INC (absolute)
-	case 0xef:	AM_Absolute(); isb();										break;	// *ISB (absolute)
+	case 0xe0:	immediate(); CPX();								break;	// CPX (immediate)
+	case 0xe1:	indexedIndirectX(); SBC();						break;	// SBC (indexed indirect X)
+	case 0xe2:	immediate(); NOP();								break;	// *NOP (immediate)
+	case 0xe3:	indexedIndirectX(); ISB();						break;	// *ISB (indexed indirect X)
+	case 0xe4:	zeroPage(); CPX();								break;	// CPX (zero page)
+	case 0xe5:	zeroPage(); SBC();								break;	// SBC (zero page)
+	case 0xe6:	zeroPage(); INC();								break;	// INC (zero page)
+	case 0xe7:	zeroPage(); ISB();								break;	// *ISB (zero page)
+	case 0xe8:	swallowRead(); INX();							break;	// INX (implied)
+	case 0xe9:	immediate(); SBC();								break;	// SBC (immediate)
+	case 0xea:	swallowRead(); NOP();							break;	// NOP (implied)
+	case 0xeb:	immediate(); SBC();								break;	// *SBC (immediate)
+	case 0xec:	absolute(); CPX();								break;	// CPX (absolute)
+	case 0xed:	absolute(); SBC();								break;	// SBC (absolute)
+	case 0xee:	absolute(); INC();								break;	// INC (absolute)
+	case 0xef:	absolute(); ISB();								break;	// *ISB (absolute)
 
-	case 0xf0:	branch(zero());												break;	// BEQ (relative)
-	case 0xf1:	AM_IndirectIndexedY(); sbc();								break;	// SBC (indirect indexed Y)
-	case 0xf2:	jam();														break;	// *JAM
-	case 0xf3:	Address_IndirectIndexedY(); fixupR(); isb();				break;	// *ISB (indirect indexed Y)
-	case 0xf4:	AM_ZeroPageX();												break;	// *NOP (zero page, X)
-	case 0xf5:	AM_ZeroPageX(); sbc();										break;	// SBC (zero page, X)
-	case 0xf6:	AM_ZeroPageX(); MW(inc);									break;	// INC (zero page, X)
-	case 0xf7:	AM_ZeroPageX(); isb();										break;	// *ISB (zero page, X)
-	case 0xf8:	swallow(); set_flag(DF);									break;	// SED (implied)
-	case 0xf9:	AM_AbsoluteY(); sbc();										break;	// SBC (absolute, Y)
-	case 0xfa:	swallow();													break;	// *NOP (implied)
-	case 0xfb:	Address_AbsoluteY(); fixupR(); isb();						break;	// *ISB (absolute, Y)
-	case 0xfc:	Address_AbsoluteX(); maybe_fixupR();						break;	// *NOP (absolute, X)
-	case 0xfd:	AM_AbsoluteX(); sbc();										break;	// SBC (absolute, X)
-	case 0xfe:	Address_AbsoluteX(); fixupR(); MW(inc);						break;	// INC (absolute, X)
-	case 0xff:	Address_AbsoluteX(); fixupR(); isb();						break;	// *ISB (absolute, X)
+	case 0xf0:	immediate(); BEQ();								break;	// BEQ (relative)
+	case 0xf1:	indirectIndexedY(); SBC();						break;	// SBC (indirect indexed Y)
+	case 0xf2:	swallowRead(); JAM();							break;	// *JAM
+	case 0xf3:	indirectIndexedYAddress(); fixupRead(); ISB();	break;	// *ISB (indirect indexed Y)
+	case 0xf4:	zeroPageX(); NOP();								break;	// *NOP (zero page, X)
+	case 0xf5:	zeroPageX(); SBC();								break;	// SBC (zero page, X)
+	case 0xf6:	zeroPageX(); INC();								break;	// INC (zero page, X)
+	case 0xf7:	zeroPageX(); ISB();								break;	// *ISB (zero page, X)
+	case 0xf8:	swallowRead(); SED();							break;	// SED (implied)
+	case 0xf9:	absoluteY(); SBC();								break;	// SBC (absolute, Y)
+	case 0xfa:	swallowRead(); NOP();							break;	// *NOP (implied)
+	case 0xfb:	absoluteYAddress(); fixupRead(); ISB();			break;	// *ISB (absolute, Y)
+	case 0xfc:	absoluteXAddress(); maybeFixupRead(); NOP();	break;	// *NOP (absolute, X)
+	case 0xfd:	absoluteX(); SBC();								break;	// SBC (absolute, X)
+	case 0xfe:	absoluteXAddress(); fixupRead(); INC();			break;	// INC (absolute, X)
+	case 0xff:	absoluteXAddress(); fixupRead(); ISB();			break;	// *ISB (absolute, X)
 	}
 }
 
-////
-
 void EightBit::MOS6502::push(uint8_t value) noexcept {
 	lowerStack();
-	memoryWrite(value);
+	base::memoryWrite(value);
 }
 
-uint8_t EightBit::MOS6502::pop() noexcept {
+void EightBit::MOS6502::pop() noexcept {
 	raiseStack();
-	return memoryRead();
+	memoryRead();
 }
 
 void EightBit::MOS6502::dummyPush() noexcept {
@@ -387,214 +598,253 @@ void EightBit::MOS6502::dummyPush() noexcept {
 	tick();	// In place of the memory write
 }
 
-////
+#pragma region Instruction implementations
 
-void EightBit::MOS6502::branch(const int condition) noexcept {
-	AM_Immediate();
+#pragma region Miscellaneous
+
+void EightBit::MOS6502::JMP() noexcept {
+	jump(BUS().ADDRESS());
+}
+
+#pragma endregion
+
+#pragma region Load and store
+
+void EightBit::MOS6502::STA() noexcept {
+	base::memoryWrite(A());
+}
+
+void EightBit::MOS6502::STX() noexcept {
+	base::memoryWrite(X());
+}
+
+void EightBit::MOS6502::STY() noexcept {
+	base::memoryWrite(Y());
+}
+
+#pragma endregion
+
+#pragma region Branching
+
+void EightBit::MOS6502::fixupBranch(int8_t relative) noexcept {
+	noteFixedAddress(PC().joined + relative);
+	maybeFixup();
+}
+
+void EightBit::MOS6502::branch(bool condition) noexcept {
 	if (condition) {
-		const auto relative = int8_t(BUS().DATA());
-		swallow();
-		const auto address = PC() + relative;
-		noteFixedAddress(address);
-		jump(address);
-		maybe_fixup();
+		int8_t relative = BUS().DATA();
+		swallowRead();
+		fixupBranch(relative);
+		JMP();
 	}
 }
 
-////
-
-void EightBit::MOS6502::sbc() noexcept {
-
-	const auto operand = A();
-	A() = sub(operand, carry(~P()));
-
-	adjustOverflow_subtract(operand);
-	adjustNZ(m_intermediate.low);
-	reset_flag(CF, m_intermediate.high);
+void EightBit::MOS6502::branchNot(int condition) noexcept {
+	branch(condition == 0);
 }
 
-uint8_t EightBit::MOS6502::sub(const uint8_t operand, const int borrow) noexcept {
-	return decimal() ? sub_d(operand, borrow) : sub_b(operand, borrow);
+void EightBit::MOS6502::branch(int condition) noexcept {
+	branch(condition != 0);
 }
 
-uint8_t EightBit::MOS6502::sub_b(const uint8_t operand, const int borrow) noexcept {
-	const auto data = BUS().DATA();
-	m_intermediate.word = operand - data - borrow;
-	return m_intermediate.low;
+void EightBit::MOS6502::BCS() noexcept {
+	branch(carry());
 }
 
-uint8_t EightBit::MOS6502::sub_d(const uint8_t operand, const int borrow) noexcept {
-
-	const auto data = BUS().DATA();
-
-	m_intermediate.word = operand - data - borrow;
-
-	uint8_t low = lowNibble(operand) - lowNibble(data) - borrow;
-	const auto lowNegative = negative(low);
-	if (lowNegative)
-		low -= 6;
-
-	uint8_t high = highNibble(operand) - highNibble(data) - (lowNegative >> 7);
-	const auto highNegative = negative(high);
-	if (highNegative)
-		high -= 6;
-
-	return promoteNibble(high) | lowNibble(low);
+void EightBit::MOS6502::BCC() noexcept {
+	branchNot(carry());
 }
 
-void EightBit::MOS6502::adc() noexcept {
-	decimal() ? adc_d() : adc_b();
+void EightBit::MOS6502::BVC() noexcept {
+	branchNot(overflow());
 }
 
-void EightBit::MOS6502::adc_b() noexcept {
-
-	const auto operand = A();
-	const auto data = BUS().DATA();
-	m_intermediate.word = operand + data + carry();
-
-	adjustOverflow_add(operand);
-	set_flag(CF, carry(m_intermediate.high));
-
-	adjustNZ(m_intermediate.low);
-
-	A() = m_intermediate.low;
+void EightBit::MOS6502::BMI() noexcept {
+	branch(negative());
 }
 
-void EightBit::MOS6502::adc_d() noexcept {
-
-	const auto operand = A();
-	const auto data = BUS().DATA();
-
-	register16_t low = lowerNibble(operand) + lowerNibble(data) + carry();
-	m_intermediate = higherNibble(operand) + higherNibble(data);
-	auto& high = m_intermediate;
-
-	adjustZero((low + high).low);
-
-	if (low.word > 0x09) {
-		high += 0x10;
-		low += 0x06;
-	}
-
-	adjustNegative(high.low);
-	adjustOverflow_add(operand);
-
-	if (high.word > 0x90)
-		high += 0x60;
-
-	set_flag(CF, high.high);
-
-	A() = lowerNibble(low.low) | higherNibble(high.low);
+void EightBit::MOS6502::BPL() noexcept {
+	branchNot(negative());
 }
 
-void EightBit::MOS6502::andr() noexcept {
-	A() = through(A() & BUS().DATA());
+void EightBit::MOS6502::BVS() noexcept {
+	branch(overflow());
 }
 
-void EightBit::MOS6502::bit() noexcept {
-	const auto data = BUS().DATA();
-	set_flag(VF, overflow(data));
-	adjustZero(A() & data);
-	adjustNegative(data);
+void EightBit::MOS6502::BEQ() noexcept {
+	branch(zero());
+}
+void EightBit::MOS6502::BNE() noexcept {
+	branchNot(zero());
 }
 
-void EightBit::MOS6502::cmp(const uint8_t first) noexcept {
-	const auto second = BUS().DATA();
-	const register16_t result = first - second;
-	adjustNZ(result.low);
-	reset_flag(CF, result.high);
+#pragma endregion
+
+#pragma region Increment/decrement
+
+void EightBit::MOS6502::DEC() {
+	modifyWrite(DEC(BUS().DATA()));
 }
 
-uint8_t EightBit::MOS6502::dec(const uint8_t value) noexcept {
-	return through(value - 1);
+void EightBit::MOS6502::INC() {
+	modifyWrite(INC(BUS().DATA()));
 }
 
-void EightBit::MOS6502::eorr() noexcept {
-	A() = through(A() ^ BUS().DATA());
+#pragma endregion
+
+#pragma region Stack operations
+
+void EightBit::MOS6502::JSR() {
+	fetchByte();
+	auto low = BUS().DATA();
+	swallowPop();
+	pushShort(PC());
+	fetchByte();
+	auto high = BUS().DATA();
+	PC() = { low, high };
 }
 
-uint8_t EightBit::MOS6502::inc(const uint8_t value) noexcept {
-	return through(value + 1);
+void EightBit::MOS6502::PHA() {
+	push(A());
 }
 
-void EightBit::MOS6502::jsr() noexcept {
-	const auto low = fetchByte();
-	swallow_stack();
-	pushWord(PC());
-	PC() = { low, fetchByte() };
+void EightBit::MOS6502::PLA() {
+	swallowPop();
+	pop();
+	LDA();
 }
 
-void EightBit::MOS6502::orr() noexcept {
-	A() = through(A() | BUS().DATA());
+void EightBit::MOS6502::PHP() {
+	push(setBit(P(), BF));
 }
 
-void EightBit::MOS6502::php() noexcept {
-	push(P() | BF);
+void EightBit::MOS6502::PLP() {
+	swallowPop();
+	pop();
+	P() = clearBit(setBit(BUS().DATA(), RF), BF);
 }
 
-void EightBit::MOS6502::plp() noexcept {
-	swallow_stack();
-	P() = (pop() | RF) & ~BF;
+void EightBit::MOS6502::RTI() {
+	PLP();
+	base::ret();
 }
 
-void EightBit::MOS6502::rti() noexcept {
-	plp();
-	ret();
+void EightBit::MOS6502::RTS() {
+	swallowPop();
+	base::ret();
+	swallowFetch();
 }
 
-void EightBit::MOS6502::rts() noexcept {
-	swallow_stack();
-	ret();
-	swallow_fetch();
+#pragma endregion
+
+#pragma region Shift/rotate operations
+
+#pragma region Shift
+
+void EightBit::MOS6502::ASL() {
+	modifyWrite(ASL(BUS().DATA()));
 }
 
-// Undocumented compound instructions
-
-void EightBit::MOS6502::anc() noexcept {
-	andr();
-	set_flag(CF, A() & NF);
+void EightBit::MOS6502::LSR() {
+	modifyWrite(LSR(BUS().DATA()));
 }
 
-void EightBit::MOS6502::arr() noexcept {
-	const auto value = BUS().DATA();
-	decimal() ? arr_d(value) : arr_b(value);
+#pragma endregion
+
+#pragma region Rotate
+
+void EightBit::MOS6502::ROL() {
+	modifyWrite(ROL(BUS().DATA()));
 }
 
-void EightBit::MOS6502::arr_d(const uint8_t value) noexcept {
+void EightBit::MOS6502::ROR() {
+	modifyWrite(ROR(BUS().DATA()));
+}
 
+#pragma endregion
+
+#pragma endregion
+
+#pragma region Undocumented instructions
+
+#pragma region Undocumented instructions with BCD effects
+
+void EightBit::MOS6502::ARR() {
+	denary() != 0 ? decimalARR() : binaryARR();
+}
+
+uint8_t EightBit::MOS6502::coreARR() {
+	A() &= BUS().DATA();
+	const auto unshiftedA = A();
+	RORA();
+	setFlag(VF, overflowTest((A() ^ A() << 1)));
+	return unshiftedA;
+}
+
+void EightBit::MOS6502::decimalARR() {
 	// With thanks to https://github.com/TomHarte/CLK
 	// What a very strange instruction ARR is...
-
-	A() &= value;
-	auto unshiftedA = A();
-	A() = through((A() >> 1) | (carry() << 7));
-	set_flag(VF, overflow((A() ^ (A() << 1))));
-
+	const auto unshiftedA = coreARR();
 	if (lowerNibble(unshiftedA) + (unshiftedA & 0x1) > 5)
-		A() = lowerNibble(A() + 6) | higherNibble(A());
-
-	set_flag(CF, higherNibble(unshiftedA) + (unshiftedA & 0x10) > 0x50);
-	
-	if (carry())
+		A() = lowerNibble((A() + 6)) | higherNibble(A());
+	setFlag(CF, higherNibble(unshiftedA) + (unshiftedA & 0x10) > 0x50);
+	if (carry() != 0)
 		A() += 0x60;
 }
 
-void EightBit::MOS6502::arr_b(const uint8_t value) noexcept {
-	A() &= value;
-	A() = through((A() >> 1) | (carry() << 7));
-	set_flag(CF, A() & VF);
-	set_flag(VF, overflow((A() ^ (A() << 1))));
+void EightBit::MOS6502::binaryARR() {
+	coreARR();
+	setFlag(CF, overflowTest(A()));
 }
 
-void EightBit::MOS6502::axs() noexcept {
-	X() = through(sub_b(A() & X()));
-	reset_flag(CF, m_intermediate.high);
+#pragma endregion
+
+#pragma region Undocumented instructions with fixup effects
+
+void EightBit::MOS6502::storeFixupEffect(uint8_t data) {
+	const uint8_t mask = unfixedPage() + 1;   // base_hi + 1, always
+	const uint8_t updated = data & mask;
+	if (fixed())
+		BUS().ADDRESS().high = updated;
+	base::memoryWrite(updated);
 }
 
-void EightBit::MOS6502::jam() noexcept {
-	BUS().ADDRESS() = PC();
-	memoryRead();
-	memoryRead(0xffff);
+void EightBit::MOS6502::SHA() {
+	storeFixupEffect(A() & X());
+}
+
+void EightBit::MOS6502::SYA() {
+	storeFixupEffect(Y());
+}
+
+void EightBit::MOS6502::SXA() {
+	storeFixupEffect(X());
+}
+
+#pragma endregion
+
+void EightBit::MOS6502::SAX() {
+	base::memoryWrite(A() & X());
+}
+
+void EightBit::MOS6502::LAX() {
+	LDA();
+	LDX();
+}
+
+void EightBit::MOS6502::ANC() {
+	AND();
+	setFlag(CF, negativeTest(A()));
+}
+
+void EightBit::MOS6502::AXS() {
+	X() = through(binarySUB(A() & X()));
+	resetFlag(CF, intermediate().high);
+}
+
+void EightBit::MOS6502::JAM() {
+	base::memoryRead(0xff, 0xff);
 	BUS().ADDRESS().low = 0xfe;
 	memoryRead();
 	memoryRead();
@@ -606,3 +856,59 @@ void EightBit::MOS6502::jam() noexcept {
 	memoryRead();
 	memoryRead();
 }
+
+void EightBit::MOS6502::TAS() {
+	S() = A() & X();
+	SHA();
+}
+
+void EightBit::MOS6502::LAS() {
+	A() = X() = S() = through(BUS().DATA() & S());
+}
+
+void EightBit::MOS6502::ANE() {
+	A() = through((A() | 0xee) & X() & BUS().DATA());
+}
+
+void EightBit::MOS6502::ATX() {
+	A() = X() = through((A() | 0xee) & BUS().DATA());
+}
+
+void EightBit::MOS6502::ASR() {
+	AND();
+	LSRA();
+}
+
+void EightBit::MOS6502::ISB() {
+	INC();
+	SBC();
+}
+
+void EightBit::MOS6502::RLA() {
+	ROL();
+	AND();
+}
+
+void EightBit::MOS6502::RRA() {
+	ROR();
+	ADC();
+}
+
+void EightBit::MOS6502::SLO() {
+	ASL();
+	ORA();
+}
+
+void EightBit::MOS6502::SRE() {
+	LSR();
+	EOR();
+}
+
+void EightBit::MOS6502::DCP() {
+	DEC();
+	CMP();
+}
+
+#pragma endregion
+
+#pragma endregion
