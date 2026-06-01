@@ -139,6 +139,8 @@ namespace EightBit {
 		[[nodiscard]] uint8_t increment(uint8_t operand);
 		[[nodiscard]] uint8_t decrement(uint8_t operand);
 
+		void call(register16_t destination) noexcept final;
+
 		void disableInterrupts() noexcept final;
 		void enableInterrupts() noexcept final;
 
