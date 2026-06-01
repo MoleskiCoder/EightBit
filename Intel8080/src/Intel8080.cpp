@@ -60,6 +60,7 @@ void EightBit::Intel8080::memoryUpdate(int ticks) noexcept {
 void EightBit::Intel8080::handleRESET() noexcept {
 	IntelProcessor::handleRESET();
 	disableInterrupts();
+	SP() = AF() = Mask16;
 }
 
 void EightBit::Intel8080::handleINT() noexcept {
@@ -302,7 +303,7 @@ void EightBit::Intel8080::xhtl(register16_t& exchange) {
 	BUS().DATA() = exchange.low;
 	exchange.low = MEMPTR().low;
 	memoryUpdate();
-	tick(2);
+	tick(15);	// 2(memUpdate) + 1(memUpdate) + 15 = 18 total
 }
 
 void EightBit::Intel8080::writePort(const uint8_t port) noexcept {
@@ -454,21 +455,23 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 		case 4: { // 8-bit INC
 			auto operand = R(y);
 			IntelProcessor::R(y, increment(operand));
-			tick(4);
+			tick(5);
+			if (UNLIKELY(y == 6))	// INC M: memRead(0) + memUpdate(1) + 5 + 4 = 10
+				tick(4);
 			break;
 		} case 5: {	// 8-bit DEC
 			auto operand = R(y);
 			IntelProcessor::R(y, decrement(operand));
-			tick(4);
-			if (UNLIKELY(y == 6))
-				tick(7);
+			tick(5);
+			if (UNLIKELY(y == 6))	// DEC M: memRead(0) + memUpdate(1) + 5 + 4 = 10
+				tick(4);
 			break;
 		} case 6:	// 8-bit load immediate
 			fetchByte();
 			IntelProcessor::R(y, BUS().DATA());
 			tick(7);
-			if (UNLIKELY(y == 6))
-				tick(3);
+			if (UNLIKELY(y == 6))	// LD M,n: memUpdate(1) + 7 + 2 = 10
+				tick(2);
 			break;
 		case 7:	// Assorted operations on accumulator/flags
 			switch (y) {
@@ -508,12 +511,15 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 	case 1:	// 8-bit loading
 		if (UNLIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
 			lowerHALT();
+			tick(4);
 		} else {
 			IntelProcessor::R(y, R(z));
-			if (UNLIKELY((y == 6) || (z == 6)))	// M operations
-				tick(3);
+			tick(5);
+			if (UNLIKELY(y == 6))		// MOV M,r: memUpdate(1) + 5 + 1 = 7
+				tick(1);
+			else if (UNLIKELY(z == 6))	// MOV r,M: memRead(0) + 5 + 2 = 7
+				tick(2);
 		}
-		tick(4);
 		break;
 	case 2: { // Operate on accumulator and register/memory location
 		const auto value = R(z);
@@ -576,10 +582,11 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 					break;
 				case 2:	// JP HL
 					Processor::jump(HL());
+					tick(5);
 					break;
 				case 3:	// LD SP,HL
 					SP() = HL();
-					tick(4);
+					tick(5);
 					break;
 				}
 				break;
@@ -589,40 +596,54 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			break;
 		case 2:	// Conditional jump
 			jumpConditionalFlag(y);
+			tick(10);
 			break;
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0: // JP nn
 				fetchInto(MEMPTR());
 				jump();
+				tick(10);
 				break;
 			case 2:	// OUT (n),A
 				fetchByte();
 				writePort(BUS().DATA());
+				tick(10);
 				break;
 			case 3:	// IN A,(n)
 				fetchByte();
 				readPort(BUS().DATA());
 				A() = BUS().DATA();
-				tick(11);
+				tick(10);
 				break;
 			case 4:	// EX (SP),HL
 				xhtl(HL());
 				break;
 			case 5:	// EX DE,HL
 				std::swap(DE(), HL());
+				tick(5);
 				break;
 			case 6:	// DI
 				disableInterrupts();
+				tick(4);
 				break;
 			case 7:	// EI
 				enableInterrupts();
+				tick(4);
 				break;
 			}
 			break;
-		case 4:	// Conditional call: CALL cc[y], nn
-			callConditionalFlag(y);
+		case 4: {	// Conditional call: CALL cc[y], nn
+			const bool condition = convertCondition(y);
+			fetchInto(MEMPTR());
+			if (condition) {
+				call();
+				tick(17);
+			} else {
+				tick(11);
+			}
 			break;
+		}
 		case 5:	// PUSH & various ops
 			switch (q) {
 			case 0:	// PUSH rp2[p]
@@ -672,6 +693,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			default:
 				UNREACHABLE;
 			}
+			tick(7);
 			break;
 		}
 		case 7:	// Restart: RST y * 8

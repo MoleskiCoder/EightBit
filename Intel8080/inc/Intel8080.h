@@ -125,7 +125,7 @@ namespace EightBit {
 		}
 
 		[[nodiscard]] static constexpr auto adjustAuxiliaryCarrySub(uint8_t f, uint8_t before, uint8_t value, int calculation) noexcept {
-			return setBit(f, AC, calculateHalfCarrySub(before, value, calculation));
+			return clearBit(f, AC, calculateHalfCarrySub(before, value, calculation));
 		}
 
 		void adjustAuxiliaryCarrySub(uint8_t before, uint8_t value, int calculation) noexcept {
