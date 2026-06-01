@@ -23,8 +23,8 @@ public:
 	virtual void initialise() noexcept final;
 
 protected:
-	virtual EightBit::MemoryMapping mapping(uint16_t address) noexcept final {
-		return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
+	virtual const EightBit::MemoryMapping& mapping(uint16_t address) noexcept final {
+		return m_mapping;
 	}
 
 private:
@@ -32,6 +32,7 @@ private:
 	EightBit::Ram m_ram = 0x10000;
 	EightBit::InputOutput m_ports;
 	EightBit::Intel8080 m_cpu;
+	EightBit::MemoryMapping m_mapping = { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 	EightBit::Disassembler m_disassembler;
 	EightBit::Profiler m_profiler;
 	int m_warmstartCount = 0;

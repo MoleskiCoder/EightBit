@@ -32,8 +32,8 @@ std::string EightBit::Disassembler::state(Intel8080& cpu) {
 	std::string output;
 	output.reserve(80);
 	output =
-		"PC=" + hex(pc.word)
-		+ " SP=" + hex(sp.word)
+		"PC=" + hex(pc.joined)
+		+ " SP=" + hex(sp.joined)
 		+ " A=" + hex(a) + " F=" + flags(f)
 		+ " B=" + hex(b) + " C=" + hex(c)
 		+ " D=" + hex(d) + " E=" + hex(e)
@@ -158,7 +158,7 @@ std::string EightBit::Disassembler::alu2(int which) {
 }
 
 std::string EightBit::Disassembler::disassemble(Intel8080& cpu) {
-	return disassemble(cpu, cpu.PC().word);
+	return disassemble(cpu, cpu.PC().joined);
 }
 
 std::string EightBit::Disassembler::disassemble(Intel8080& cpu, uint16_t pc) {
@@ -177,7 +177,7 @@ std::string EightBit::Disassembler::disassemble(Intel8080& cpu, uint16_t pc) {
 	auto q = (y & 1);
 
 	auto immediate = BUS().peek(pc + 1);
-	auto absolute = cpu.peekShort(pc + 1).word;
+	auto absolute = cpu.peekShort(pc + 1).joined;
 	auto displacement = (int8_t)immediate;
 	auto relative = pc + displacement + 2;
 	auto indexedImmediate = BUS().peek(pc + 1);

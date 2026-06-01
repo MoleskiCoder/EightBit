@@ -52,7 +52,7 @@ void Board::initialise() noexcept {
 }
 
 void Board::Cpu_ExecutingInstruction_Cpm(EightBit::EventArgs&) {
-	switch (CPU().PC().word) {
+	switch (CPU().PC().joined) {
 	case 0x0:	// CP/M warm start
 		if (++m_warmstartCount == 2) {
 			lowerPOWER();
@@ -77,7 +77,7 @@ void Board::bdos() {
 		break;
 	}
 	case 0x9:
-		for (uint16_t i = CPU().DE().word; peek(i) != '$'; ++i) {
+		for (uint16_t i = CPU().DE().joined; peek(i) != '$'; ++i) {
 			std::cout << peek(i);
 		}
 		break;
@@ -88,8 +88,8 @@ void Board::Cpu_ExecutingInstruction_Profile(EightBit::EventArgs&) {
 
 	const auto pc = CPU().PC();
 
-	m_profiler.addAddress(pc.word);
-	m_profiler.addInstruction(peek(pc.word));
+	m_profiler.addAddress(pc.joined);
+	m_profiler.addInstruction(peek(pc.joined));
 }
 
 void Board::Cpu_ExecutingInstruction_Debug(const EightBit::EventArgs&) {

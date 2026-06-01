@@ -47,12 +47,9 @@ namespace EightBit {
 		void handleRESET() noexcept final;
 		void handleINT() noexcept final;
 
-		void memoryUpdate(int ticks = 1) noexcept;
+		void memoryUpdate(int ticks = 1) noexcept final;
 		void memoryWrite() noexcept final;
-		uint8_t memoryRead() noexcept final;
-
-		//void busWrite() noexcept final;
-		//uint8_t busRead() noexcept final;
+		void memoryRead() noexcept final;
 
 	private:
 		bool m_requestIO = false;
@@ -65,8 +62,7 @@ namespace EightBit {
 		register16_t m_de = Mask16;
 		register16_t m_hl = Mask16;
 
-		uint8_t R(int r);
-		void R(int r, uint8_t value);
+		[[nodiscard]] uint8_t& R(int r, MemoryMapping::AccessLevel access = MemoryMapping::AccessLevel::ReadOnly) noexcept final;
 		register16_t& RP(int rp);
 		register16_t& RP2(int rp);
 
@@ -172,11 +168,11 @@ namespace EightBit {
 
 		void xhtl(register16_t& exchange);
 
-		void portWrite(uint8_t port);
-		void portWrite();
+		void writePort(uint8_t port) noexcept;
+		void writePort() noexcept;
 
-		uint8_t portRead(uint8_t port);
-		uint8_t portRead();
+		void readPort(uint8_t port) noexcept;
+		void readPort() noexcept;
 
 		constexpr void requestIO() noexcept { assert(!requestingMemory());  m_requestIO = true; }
 		constexpr void releaseIO() noexcept { m_requestIO = false; }

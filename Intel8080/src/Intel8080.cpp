@@ -37,29 +37,24 @@ EightBit::register16_t& EightBit::Intel8080::HL() noexcept {
 }
 
 void EightBit::Intel8080::memoryWrite() noexcept {
-	requestMemory();
-	IntelProcessor::memoryWrite();
-	releaseMemory();
+	memoryUpdate();
 }
 
-uint8_t EightBit::Intel8080::memoryRead() noexcept {
-	requestMemory();
-	const auto returned = IntelProcessor::memoryRead();
-	releaseMemory();
-	return returned;
+void EightBit::Intel8080::memoryRead() noexcept {
+	ReadingMemory.fire();
+		requestMemory();
+			IntelProcessor::memoryRead();
+		releaseMemory();
+	ReadMemory.fire();
 }
 
-void EightBit::Intel8080::busWrite() noexcept {
-	requestWrite();
-	IntelProcessor::busWrite();
-	releaseWrite();
-}
-
-uint8_t EightBit::Intel8080::busRead() noexcept {
-	requestRead();
-	const auto returned = IntelProcessor::busRead();
-	releaseRead();
-	return returned;
+void EightBit::Intel8080::memoryUpdate(int ticks) noexcept {
+	WritingMemory.fire();
+		tick(ticks);
+		requestMemory();
+			IntelProcessor::memoryWrite();
+		releaseMemory();
+	WrittenMemory.fire();
 }
 
 void EightBit::Intel8080::handleRESET() noexcept {
@@ -80,7 +75,7 @@ void EightBit::Intel8080::enableInterrupts() noexcept {
 	m_interruptEnable = true;
 }
 
-uint8_t EightBit::Intel8080::R(const int r) {
+uint8_t& EightBit::Intel8080::R(const int r, MemoryMapping::AccessLevel access) noexcept {
 	switch (r) {
 	case 0b000:
 		return B();
@@ -95,40 +90,20 @@ uint8_t EightBit::Intel8080::R(const int r) {
 	case 0b101:
 		return L();
 	case 0b110:
-		return IntelProcessor::memoryRead(HL());
+		BUS().ADDRESS() = HL();
+		switch (access) {
+		case MemoryMapping::AccessLevel::ReadOnly:
+			memoryRead();
+			break;
+		case MemoryMapping::AccessLevel::WriteOnly:
+			break;
+		default:
+			UNREACHABLE;
+			break;
+		}
+		return BUS().DATA();
 	case 0b111:
 		return A();
-	default:
-		UNREACHABLE;
-	}
-}
-
-void EightBit::Intel8080::R(int r, const uint8_t value) {
-	switch (r) {
-	case 0b000:
-		B() = value;
-		break;
-	case 0b001:
-		C() = value;
-		break;
-	case 0b010:
-		D() = value;
-		break;
-	case 0b011:
-		E() = value;
-		break;
-	case 0b100:
-		H() = value;
-		break;
-	case 0b101:
-		L() = value;
-		break;
-	case 0b110:
-		IntelProcessor::memoryWrite(HL(), value);
-		break;
-	case 0b111:
-		A() = value;
-		break;
 	default:
 		UNREACHABLE;
 	}
@@ -202,7 +177,7 @@ bool EightBit::Intel8080::convertCondition(int flag) noexcept {
 }
 
 void EightBit::Intel8080::add(const register16_t value) {
-	const auto result = HL().word + value.word;
+	const auto result = HL().joined + value.joined;
 	HL() = result;
 	F() = setBit(F(), CF, result & Bit16);
 }
@@ -211,11 +186,11 @@ void EightBit::Intel8080::add(const uint8_t value, const int carry) {
 
 	const register16_t result = A() + value + carry;
 
-	adjustAuxiliaryCarryAdd(A(), value, result.word);
+	adjustAuxiliaryCarryAdd(A(), value, result.joined);
 
 	A() = result.low;
 
-	setBit(CF, result.word & Bit8);
+	setBit(CF, result.joined & Bit8);
 	adjustSZP(A());
 }
 
@@ -230,10 +205,10 @@ uint8_t EightBit::Intel8080::subtract(const uint8_t value, const int carry) {
 	const register16_t subtraction = operand - value - carry;
 	const auto result = subtraction.low;
 
-	adjustAuxiliaryCarrySub(operand, value, subtraction.word);
+	adjustAuxiliaryCarrySub(operand, value, subtraction.joined);
 
-	setBit(CF, subtraction.word & Bit8);
-	adjustSZP(operand);
+	setBit(CF, subtraction.joined & Bit8);
+	adjustSZP(result);
 
 	return result;
 }
@@ -318,9 +293,8 @@ void EightBit::Intel8080::cmc() {
 }
 
 void EightBit::Intel8080::xhtl(register16_t& exchange) {
-	MEMPTR().low = IntelProcessor::memoryRead(SP());
-	++BUS().ADDRESS();
-	MEMPTR().high = memoryRead();
+	BUS().ADDRESS() = SP();
+	getInto(MEMPTR());
 	BUS().DATA() = exchange.high;
 	exchange.high = MEMPTR().high;
 	memoryUpdate(2);
@@ -331,41 +305,38 @@ void EightBit::Intel8080::xhtl(register16_t& exchange) {
 	tick(2);
 }
 
-void EightBit::Intel8080::portWrite(const uint8_t port) {
+void EightBit::Intel8080::writePort(const uint8_t port) noexcept {
 	BUS().ADDRESS() = { port, port };
 	BUS().DATA() = A();
-	portWrite();
+	writePort();
 }
 
-void EightBit::Intel8080::portWrite() {
+void EightBit::Intel8080::writePort() noexcept {
 	requestIO();
 	busWrite();
 	releaseIO();;
 }
 
-uint8_t EightBit::Intel8080::portRead(const uint8_t port) {
+void EightBit::Intel8080::readPort(const uint8_t port) noexcept {
 	BUS().ADDRESS() = { port, port };
-	return portRead();
+	readPort();
 }
 
-uint8_t EightBit::Intel8080::portRead() {
+void EightBit::Intel8080::readPort() noexcept {
 	requestIO();
-	const auto returned = busRead();
-	releaseIO();;
-	return returned;
+	busRead();
+	releaseIO();
 }
 
 void EightBit::Intel8080::poweredStep() noexcept {
 	if (UNLIKELY(lowered(RESET()))) {
 		handleRESET();
-	} else if (UNLIKELY(lowered(INT()))) {
-		if (m_interruptEnable) {
-			handleINT();
-		}
+	} else if (UNLIKELY(lowered(INT()) && m_interruptEnable)) {
+		handleINT();
 	} else if (UNLIKELY(lowered(HALT()))) {
-		Processor::execute(0);	// NOP
+		IntelProcessor::execute(0);	// NOP
 	} else {
-		Processor::execute(fetchByte());
+		IntelProcessor::execute(fetchInstruction());
 	}
 }
 
@@ -397,7 +368,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 		case 1:	// 16-bit load immediate/add
 			switch (q) {
 			case 0: // LD rp,nn
-				RP(p) = fetchWord();
+				fetchInto(RP(p));
 				tick(10);
 				break;
 			case 1:	// ADD HL,rp
@@ -421,12 +392,13 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 					tick(7);
 					break;
 				case 2:	// LD (nn),HL
-					BUS().ADDRESS() = fetchWord();
-					setWord(HL());
+					fetchShortAddress();
+					setShort(HL());
 					tick(16);
 					break;
 				case 3: // LD (nn),A
-					BUS().ADDRESS() = fetchWord();
+					fetchInto(MEMPTR());
+					BUS().ADDRESS() = MEMPTR();
 					IntelProcessor::memoryWrite(A());
 					tick(13);
 					break;
@@ -437,21 +409,25 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			case 1:
 				switch (p) {
 				case 0:	// LD A,(BC)
-					A() = IntelProcessor::memoryRead(BC());
+					readMemoryIndirect(BC());
+					A() = BUS().DATA();
 					tick(7);
 					break;
 				case 1:	// LD A,(DE)
-					A() = IntelProcessor::memoryRead(DE());
+					readMemoryIndirect(DE());
+					A() = BUS().DATA();
 					tick(7);
 					break;
 				case 2:	// LD HL,(nn)
-					BUS().ADDRESS() = fetchWord();
-					HL() = getShort();
+					fetchShortAddress();
+					getShort();
+					HL() = intermediate();
 					tick(16);
 					break;
 				case 3:	// LD A,(nn)
-					BUS().ADDRESS() = fetchWord();
-					A() = memoryRead();
+					fetchInto(MEMPTR());
+					readMemoryIndirect();
+					A() = BUS().DATA();
 					tick(13);
 					break;
 				default:
@@ -477,18 +453,19 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			break;
 		case 4: { // 8-bit INC
 			auto operand = R(y);
-			R(y, increment(operand));
+			IntelProcessor::R(y, increment(operand));
 			tick(4);
 			break;
 		} case 5: {	// 8-bit DEC
 			auto operand = R(y);
-			R(y, decrement(operand));
+			IntelProcessor::R(y, decrement(operand));
 			tick(4);
 			if (UNLIKELY(y == 6))
 				tick(7);
 			break;
 		} case 6:	// 8-bit load immediate
-			R(y, fetchByte());
+			fetchByte();
+			IntelProcessor::R(y, BUS().DATA());
 			tick(7);
 			if (UNLIKELY(y == 6))
 				tick(3);
@@ -532,7 +509,7 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 		if (UNLIKELY(z == 6 && y == 6)) { 	// Exception (replaces LD (HL), (HL))
 			lowerHALT();
 		} else {
-			R(y, R(z));
+			IntelProcessor::R(y, R(z));
 			if (UNLIKELY((y == 6) || (z == 6)))	// M operations
 				tick(3);
 		}
@@ -568,17 +545,27 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 		default:
 			UNREACHABLE;
 		}
+		tick(4);
+		if (UNLIKELY(z == 6))	// M operations take 3 extra cycles
+			tick(3);
 		break;
 	}
 	case 3:
 		switch (z) {
-		case 0:	// Conditional return
-			returnConditionalFlag(y);
+		case 0: {	// Conditional return
+			const bool condition = convertCondition(y);
+			if (condition) {
+				ret();
+				tick(11);
+			} else {
+				tick(5);
+			}
 			break;
+		}
 		case 1:	// POP & various ops
 			switch (q) {
 			case 0:	// POP rp2[p]
-				RP2(p) = popWord();
+				popInto(RP2(p));
 				tick(10);
 				break;
 			case 1:
@@ -606,13 +593,17 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 		case 3:	// Assorted operations
 			switch (y) {
 			case 0: // JP nn
-				Processor::jump(fetchWord());
+				fetchInto(MEMPTR());
+				jump();
 				break;
 			case 2:	// OUT (n),A
-				portWrite(fetchByte());
+				fetchByte();
+				writePort(BUS().DATA());
 				break;
 			case 3:	// IN A,(n)
-				A() = portRead(fetchByte());
+				fetchByte();
+				readPort(BUS().DATA());
+				A() = BUS().DATA();
 				tick(11);
 				break;
 			case 4:	// EX (SP),HL
@@ -635,13 +626,13 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 		case 5:	// PUSH & various ops
 			switch (q) {
 			case 0:	// PUSH rp2[p]
-				pushWord(RP2(p));
+				pushShort(RP2(p));
 				tick(11);
 				break;
 			case 1:
 				switch (p) {
 				case 0:	// CALL nn
-					call(fetchWord());
+					callIndirect();
 					tick(17);
 					break;
 				}
@@ -651,7 +642,8 @@ void EightBit::Intel8080::execute(const int x, const int y, const int z, const i
 			}
 			break;
 		case 6: { // Operate on accumulator and immediate operand: alu[y] n
-			const auto operand = fetchByte();
+			fetchByte();
+			auto operand = BUS().DATA();
 			switch (y) {
 			case 0:	// ADD A,n
 				add(operand);
