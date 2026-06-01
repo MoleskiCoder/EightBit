@@ -9,9 +9,10 @@ private:
     EightBit::Ram m_ram = 0x10000;
 	EightBit::InputOutput m_ports;
     EightBit::Z80 m_cpu = { *this, m_ports };
+	EightBit::MemoryMapping m_mapping = { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 
 protected:
-    EightBit::MemoryMapping mapping(uint16_t address) noexcept final;
+	const EightBit::MemoryMapping& mapping(uint16_t address) noexcept final { return m_mapping; }
 
 public:
     TestRunner();

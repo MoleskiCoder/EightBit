@@ -23,7 +23,7 @@ public:
 	void initialise() noexcept final;
 
 protected:
-	virtual constexpr EightBit::MemoryMapping mapping(uint16_t address) noexcept final {
+	virtual constexpr const EightBit::MemoryMapping& mapping(uint16_t address) noexcept final {
 		return m_mapping;
 	}
 

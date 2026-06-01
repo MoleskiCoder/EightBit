@@ -84,14 +84,14 @@ namespace EightBit {
 
 		[[nodiscard]] static uint16_t constexpr makeWord(uint8_t low, uint8_t high) noexcept { return promoteByte(high) | low; }
 
-		[[nodiscard]] static constexpr auto highNibble(const int value) noexcept { return value >> 4; }
-		[[nodiscard]] static constexpr auto lowNibble(const int value) noexcept { return value & Mask4; }
+		[[nodiscard]] static constexpr auto highNibble(const uint8_t value) noexcept { return value >> 4; }
+		[[nodiscard]] static constexpr auto lowNibble(const uint8_t value) noexcept { return value & Mask4; }
 
-		[[nodiscard]] static constexpr auto higherNibble(const int value) noexcept { return value & 0xf0; }
-		[[nodiscard]] static constexpr auto lowerNibble(const int value) noexcept { return lowNibble(value); }
+		[[nodiscard]] static constexpr auto higherNibble(const uint8_t value) noexcept { return value & 0xf0; }
+		[[nodiscard]] static constexpr auto lowerNibble(const uint8_t value) noexcept { return lowNibble(value); }
 
-		[[nodiscard]] static constexpr auto promoteNibble(const int value) noexcept { return value << 4; }
-		[[nodiscard]] static constexpr auto demoteNibble(const int value) noexcept { return highNibble(value); }
+		[[nodiscard]] static constexpr auto promoteNibble(const uint8_t value) noexcept { return lowByte(value << 4); }
+		[[nodiscard]] static constexpr auto demoteNibble(const uint8_t value) noexcept { return highNibble(value); }
 
 		[[nodiscard]] static auto countBits(unsigned value) noexcept {
 #if defined(_MSC_VER)

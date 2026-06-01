@@ -3,10 +3,6 @@
 
 TestRunner::TestRunner() {}
 
-EightBit::MemoryMapping TestRunner::mapping(const uint16_t address) noexcept {
-    return { RAM(), 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
-}
-
 void TestRunner::raisePOWER() noexcept {
     EightBit::Bus::raisePOWER();
     CPU().raisePOWER();

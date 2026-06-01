@@ -44,5 +44,6 @@ namespace EightBit {
 	private:
 		uint8_t m_data = Chip::Mask8;
 		register16_t m_address = Chip::Mask16;
+		bool m_writing = false;
 	};
 }

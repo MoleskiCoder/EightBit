@@ -13,7 +13,11 @@ void EightBit::Bus::read() noexcept {
 }
 
 void EightBit::Bus::write() noexcept {
+	assert(!m_writing);
+	m_writing = true;
 	reference() = DATA();
+	m_writing = false;
+	assert(!m_writing);
 }
 
 void EightBit::Bus::loadHexFile(const std::string& path) {
@@ -28,9 +32,11 @@ void EightBit::Bus::loadHexFile(const std::string& path) {
 }
 
 uint8_t& EightBit::Bus::reference(const uint16_t address) noexcept {
-	const auto mapped = mapping(address);
+	const auto& mapped = mapping(address);
 	const auto offset = mapped.offset(address);
 	if (mapped.access != MemoryMapping::AccessLevel::ReadOnly)
 		return mapped.memory.reference(offset);
-	return DATA() = mapped.memory.peek(offset);
+	if (!m_writing)
+		DATA() = mapped.memory.peek(offset);
+	return DATA();
 }

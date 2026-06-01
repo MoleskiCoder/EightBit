@@ -24,7 +24,7 @@ public:
 	void initialise() noexcept final;
 
 protected:
-	EightBit::MemoryMapping mapping(uint16_t address) noexcept final {
+	const EightBit::MemoryMapping& mapping(uint16_t address) noexcept final {
 		return m_mapping;
 	}
 
