@@ -987,12 +987,6 @@ uint8_t& EightBit::Z80::R(const int r, MemoryMapping::AccessLevel access) noexce
 	}
 }
 
-void EightBit::Z80::R(const int r, const uint8_t value, const int ticks) noexcept {
-	R(r, MemoryMapping::AccessLevel::WriteOnly) = value;
-	if (r == 6)
-		memoryUpdate(ticks);
-}
-
 void EightBit::Z80::R2(const int r, const uint8_t value) noexcept {
 	switch (r) {
 	case 0:
@@ -1140,7 +1134,7 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) noexcept {
 			if (!memoryZ)
 				R2(z, operand);
 		} else {
-			R(z, operand, 2);
+			IntelProcessor::R(z, operand, 2);
 		}
 	}
 }
@@ -1157,7 +1151,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			readPort(BC());
 			++MEMPTR();
 			if (y != 6)	// IN r[y],(C)
-				R(y, BUS().DATA());
+				IntelProcessor::R(y, BUS().DATA());
 			adjustSZPXY(BUS().DATA());
 			clearBit(NF | HC);
 			break;
@@ -1441,7 +1435,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				tick(5);
 			}
 			const auto original = R(y);
-			R(y, increment(original), 2);
+			IntelProcessor::R(y, increment(original), 2);
 			break;
 		}
 		case 5: { // 8-bit DEC
@@ -1450,7 +1444,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				tick(5);
 			}
 			const auto original = R(y);
-			R(y, decrement(original), 2);
+			IntelProcessor::R(y, decrement(original), 2);
 			break;
 		}
 		case 6: { // 8-bit load immediate
@@ -1514,18 +1508,18 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				if (memoryY) {
 					switch (z) {
 					case 4:
-						R(y, H());
+						IntelProcessor::R(y, H());
 						normal = false;
 						break;
 					case 5:
-						R(y, L());
+						IntelProcessor::R(y, L());
 						normal = false;
 						break;
 					}
 				}
 			}
 			if (normal)
-				R(y, R(z));
+				IntelProcessor::R(y, R(z));
 		} else {
 			lowerHALT(); // Exception (replaces LD (HL), (HL))
 		}
@@ -1715,7 +1709,7 @@ void EightBit::Z80::loadImmediate(int y) {
 	fetchByte();  // LD r,n
 	if (memoryY)
 		tick(2);
-	R(y, BUS().DATA());
+	IntelProcessor::R(y, BUS().DATA());
 }
 
 void EightBit::Z80::popRegisterPair(int p) {

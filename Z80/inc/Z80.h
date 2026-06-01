@@ -187,8 +187,7 @@ namespace EightBit {
 		[[nodiscard]] register16_t& RP(int rp) noexcept;
 		[[nodiscard]] register16_t& RP2(int rp) noexcept;
 
-		[[nodiscard]] uint8_t& R(int r, MemoryMapping::AccessLevel access = MemoryMapping::AccessLevel::ReadOnly) noexcept;
-		void R(int r, uint8_t value, int ticks = 1) noexcept;
+		[[nodiscard]] uint8_t& R(int r, MemoryMapping::AccessLevel access = MemoryMapping::AccessLevel::ReadOnly) noexcept final;
 		void R2(int r, uint8_t value) noexcept;
 
 		[[nodiscard]] static constexpr auto zeroTest(uint8_t data) noexcept { return data & ZF; }
