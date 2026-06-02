@@ -72,7 +72,7 @@ void EightBit::Processor::getShortPaged(const uint8_t page, const uint8_t offset
 	getShortPaged();
 }
 
-void EightBit::Processor::getPagedInto(uint8_t page, uint8_t offset, register16_t& into) {
+void EightBit::Processor::getPagedInto(uint8_t page, uint8_t offset, register16_t& into) noexcept {
 	BUS().ADDRESS() = { offset, page };
 	getPagedInto(into);
 }

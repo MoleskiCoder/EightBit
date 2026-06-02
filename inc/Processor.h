@@ -88,7 +88,7 @@ namespace EightBit {
 
 		void getShortPaged(register16_t address) noexcept;
 		void getShortPaged(uint8_t page, uint8_t offset) noexcept;
-		void getPagedInto(uint8_t page, uint8_t offset, register16_t& into);
+		void getPagedInto(uint8_t page, uint8_t offset, register16_t& into) noexcept;
 		void getShortPaged() noexcept { getPagedInto(m_intermediate); }
 		virtual void getPagedInto(register16_t& into) noexcept = 0;
 		void setPaged(register16_t address, register16_t value) noexcept;
