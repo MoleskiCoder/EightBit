@@ -167,6 +167,7 @@ namespace EightBit {
 		[[nodiscard]] constexpr auto displaced() const noexcept { return m_prefixDD || m_prefixFD; }
 
 		[[nodiscard]] constexpr void displaceAddress() noexcept {
+			assert(displaced() && "Address can only be displaced if a prefix is active");
 			const auto& index_register = m_prefixDD ? IX() : IY();
 			BUS().ADDRESS() = MEMPTR() = index_register.joined + m_displacement;
 		}
@@ -175,10 +176,6 @@ namespace EightBit {
 		[[nodiscard]] uint8_t fetchInstruction() noexcept final;
 
 		uint8_t readDataUnderInterrupt() noexcept;
-
-		typedef std::function<register16_t(void)> addresser_t;
-		//void loadAccumulatorIndirect(addresser_t addresser) noexcept;
-		//void storeAccumulatorIndirect(addresser_t addresser) noexcept;
 
 		typedef std::function<uint8_t(void)> reader_t;
 		void readInternalRegister(reader_t reader) noexcept;
