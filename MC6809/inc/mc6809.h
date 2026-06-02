@@ -13,6 +13,9 @@
 
 namespace EightBit {
 	class mc6809 : public BigEndianProcessor {
+	private:
+		using base = BigEndianProcessor;
+
 	public:
 		DECLARE_PIN_INPUT(NMI)
 		DECLARE_PIN_INPUT(FIRQ)
@@ -109,6 +112,8 @@ namespace EightBit {
 		void proceed() { ++PC(); raiseHALT(); }
 
 	protected:
+		[[nodiscard]] constexpr auto& EA() { return m_ea; }
+
 		// Default push/pop handlers
 
 		void push(uint8_t value) noexcept final;
@@ -121,31 +126,38 @@ namespace EightBit {
 
 		// Bus reader/writers
 
-		using Processor::memoryRead;
-		using Processor::memoryWrite;
+		//using Processor::memoryRead;
+		//using Processor::memoryWrite;
 		void memoryRead() noexcept override;
 		void memoryWrite() noexcept override;
 
-		void busWrite() noexcept;
-		uint8_t busRead() noexcept;
+		//void busWrite() noexcept;
+		//uint8_t busRead() noexcept;
 
 		void call(register16_t destination) noexcept final;
 		void ret() noexcept final;
 
 	private:
-		const uint8_t RESETvector = 0xfe;		// RESET vector
-		const uint8_t NMIvector = 0xfc;			// NMI vector
-		const uint8_t SWIvector = 0xfa;			// SWI vector
-		const uint8_t IRQvector = 0xf8;			// IRQ vector
-		const uint8_t FIRQvector = 0xf6;		// FIRQ vector
-		const uint8_t SWI2vector = 0xf4;		// SWI2 vector
-		const uint8_t SWI3vector = 0xf2;		// SWI3 vector
-		const uint8_t RESERVEDvector = 0xf0;	// RESERVED vector
+		const uint8_t _vectorRESET = 0xfe;		// RESET vector
+		const uint8_t _vectorNMI = 0xfc;		// NMI vector
+		const uint8_t _vectorSWI = 0xfa;		// SWI vector
+		const uint8_t _vectorIRQ = 0xf8;		// IRQ vector
+		const uint8_t _vectorFIRQ = 0xf6;		// FIRQ vector
+		const uint8_t _vectorSWI2 = 0xf4;		// SWI2 vector
+		const uint8_t _vectorSWI3 = 0xf2;		// SWI3 vector
+		const uint8_t _vectorRESERVED = 0xf0;	// RESERVED vector
 
-		void eat(int cycles = 1) {
-			for (int cycle = 0; cycle < cycles; ++cycle)
-				memoryRead(Mask16);
-		}
+		//void eat(int cycles = 1) {
+		//	for (int cycle = 0; cycle < cycles; ++cycle)
+		//		memoryRead(Mask16);
+		//}
+
+
+		void swallowRead(int ticks = 1);
+		void swallowCurrent(int ticks = 1);
+		void swallowPop(register16_t stack);
+		void swallowEffectiveAddress();
+		void swallowSpin(int ticks = 1);
 
 		// Read/Modify/Write
 
@@ -158,8 +170,8 @@ namespace EightBit {
 			const auto data = accessor();
 			const auto address = BUS().ADDRESS();
 			const auto result = operation(data);
-			eat();
-			memoryWrite(address, result);
+			swallowRead();
+			Processor::memoryWrite(address, result);
 		}
 
 		// So define a helper macro
@@ -338,7 +350,7 @@ namespace EightBit {
 
 		void branchLong(const bool condition) {
 			if (branch(Address_relative_word(), condition))
-				eat();
+				swallowRead();
 		}
 
 		// Miscellaneous
@@ -398,6 +410,8 @@ namespace EightBit {
 		register16_t m_y;
 		register16_t m_u;
 		register16_t m_s;
+
+		register16_t m_ea;
 
 		uint8_t m_dp = 0;
 		uint8_t m_cc = 0;

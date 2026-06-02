@@ -20,131 +20,134 @@ DEFINE_PIN_LEVEL_CHANGERS(BA, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(BS, mc6809);
 DEFINE_PIN_LEVEL_CHANGERS(RW, mc6809);
 
+void EightBit::mc6809::swallowRead(int ticks) {
+	for (int i = 0; i < ticks; i++)
+		base::memoryRead(0xff, 0xff);
+}
+
+void EightBit::mc6809::swallowCurrent(int ticks) {
+	for (int i = 0; i < ticks; i++)
+		base::memoryRead(PC());
+}
+
+void EightBit::mc6809::swallowPop(register16_t stack) {
+	base::memoryRead(stack);
+}
+
+void EightBit::mc6809::swallowEffectiveAddress() {
+	base::memoryRead(EA());
+}
+
+void EightBit::mc6809::swallowSpin(int ticks) {
+	for (int i = 0; i < ticks; i++)
+		memoryRead();
+}
+
 void EightBit::mc6809::poweredStep() noexcept {
-	//resetCycles();
-	//ExecutingInstruction.fire(*this);
-	//if (LIKELY(powered())) {
-		m_prefix10 = m_prefix11 = false;
-		if (UNLIKELY(halted()))
-			handleHALT();
-		else if (UNLIKELY(lowered(RESET())))
-			handleRESET();
-		else if (UNLIKELY(lowered(NMI())))
-			handleNMI();
-		else if (UNLIKELY(lowered(FIRQ()) && !fastInterruptMasked()))
-			handleFIRQ();
-		else if (UNLIKELY(lowered(INT()) && !interruptMasked()))
-			handleINT();
-		else
-			BigEndianProcessor::execute(fetchInstruction());
-	//}
-	//ExecutedInstruction.fire(*this);
-	//assert(cycles() > 0);
-	//return cycles();
+	m_prefix10 = m_prefix11 = false;
+	if (halted())
+		handleHALT();
+	else if (lowered(RESET()))
+		handleRESET();
+	else if (lowered(NMI()))
+		handleNMI();
+	else if (lowered(FIRQ()) && !fastInterruptMasked())
+		handleFIRQ();
+	else if (lowered(INT()) && !interruptMasked())
+		handleINT();
+	else
+		base::execute(fetchInstruction());
 }
 
 // Interrupt (etc.) handlers
 
-void EightBit::mc6809::handleHALT() noexcept {
-	raiseBA();
-	raiseBS();
-}
-
 void EightBit::mc6809::handleRESET() noexcept {
-	BigEndianProcessor::handleRESET();
-	memoryRead({ RESETvector, 0xff });
+	base::handleRESET();
 	raiseNMI();
 	lowerBA();
 	raiseBS();
 	DP() = 0;
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	CC() = setBit(CC(), FF);	// Disable FIRQ
-	memoryRead();
-	memoryRead();
-	memoryRead();
-	getPagedInto(PC());
-	eat();
-}
-
-void EightBit::mc6809::handleNMI() noexcept {
-	raiseNMI();
-	lowerBA();
-	raiseBS();
-	memoryRead();
-	memoryRead();
-	eat();
-	saveEntireRegisterState();
-	eat();
-	CC() = setBit(CC(), IF);	// Disable IRQ
-	CC() = setBit(CC(), FF);	// Disable FIRQ
-	Processor::getPagedInto(0xff, NMIvector, PC());
-	eat();
+	BUS().ADDRESS() = { _vectorRESET, 0xff };
+	swallowSpin(3);
+	base::getPagedInto(PC());
+	swallowRead();
 }
 
 void EightBit::mc6809::handleINT() noexcept {
-	BigEndianProcessor::handleINT();
+	base::handleINT();
+	swallowCurrent(2);
 	lowerBA();
 	raiseBS();
-	memoryRead();
-	memoryRead();
-	eat();
 	saveEntireRegisterState();
-	eat();
 	CC() = setBit(CC(), IF);	// Disable IRQ
-	Processor::getPagedInto(0xff, IRQvector, PC());
-	eat();
+	swallowRead();
+	Processor::getPagedInto(0xff, _vectorIRQ, PC());
+	swallowRead();
+}
+
+void EightBit::mc6809::handleHALT() noexcept {
+	raiseBA();
+	raiseBS();
+}
+
+void EightBit::mc6809::handleNMI() noexcept {
+	swallowCurrent(2);
+	raiseNMI();
+	lowerBA();
+	raiseBS();
+	saveEntireRegisterState();
+	CC() = setBit(CC(), IF);	// Disable IRQ
+	CC() = setBit(CC(), FF);	// Disable FIRQ
+	swallowRead();
+	Processor::getPagedInto(0xff, _vectorNMI, PC());
+	swallowRead();
 }
 
 void EightBit::mc6809::handleFIRQ() noexcept {
+	swallowCurrent(2);
 	raiseFIRQ();
 	lowerBA();
 	raiseBS();
-	memoryRead();
-	memoryRead();
-	eat();
 	savePartialRegisterState();
-	eat();
+	swallowRead();
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	CC() = setBit(CC(), FF);	// Disable FIRQ
-	Processor::getPagedInto(0xff, FIRQvector, PC());
-	eat();
+	Processor::getPagedInto(0xff, _vectorFIRQ, PC());
+	swallowRead();
 }
 
 //
 
-void EightBit::mc6809::memoryRead() noexcept {
-	busRead();
-}
-
 void EightBit::mc6809::memoryWrite() noexcept {
-	busWrite();
+	WritingMemory.fire();
+		tick();
+		lowerRW();
+		base::memoryWrite();
+	WrittenMemory.fire();
 }
 
-void EightBit::mc6809::busWrite() noexcept {
-	tick();
-	lowerRW();
-	BigEndianProcessor::busWrite();
-}
-
-uint8_t EightBit::mc6809::busRead() noexcept {
-	tick();
-	raiseRW();
-	BigEndianProcessor::busRead();
-	return BUS().DATA();
+void EightBit::mc6809::memoryRead() noexcept {
+	ReadingMemory.fire();
+		tick();
+		raiseRW();
+		base::memoryRead();
+	ReadMemory.fire();
 }
 
 //
 
 void EightBit::mc6809::call(register16_t destination) noexcept {
-	memoryRead(destination);
-	eat();
+	base::memoryRead(destination);
+	swallowRead();
 	pushShort(PC());
 	jump(destination);
 }
 
 void EightBit::mc6809::ret() noexcept {
-	BigEndianProcessor::ret();
-	eat();
+	base::ret();
+	swallowRead();
 }
 
 //
@@ -152,30 +155,24 @@ void EightBit::mc6809::ret() noexcept {
 void EightBit::mc6809::execute() noexcept {
 	lowerBA();
 	lowerBS();
-	const bool prefixed = m_prefix10 || m_prefix11;
-	const bool unprefixed = !prefixed;
-	if (unprefixed) {
-		executeUnprefixed();
+	if (m_prefix10) {
+		execute10();
+	} else if (m_prefix11) {
+		execute11();
 	} else {
-		if (m_prefix10)
-			execute10();
-		else
-			execute11();
+		executeUnprefixed();
 	}
 }
 
 void EightBit::mc6809::executeUnprefixed() {
 
-	assert(!(m_prefix10 || m_prefix11));
-	assert(cycles() == 1);	// One fetch
-
 	switch (opcode()) {
 
-	case 0x10:	m_prefix10 = true;	Processor::execute(fetchInstruction());	break;
-	case 0x11:	m_prefix11 = true;	Processor::execute(fetchInstruction());	break;
+	case 0x10:	m_prefix10 = true;	base::execute(fetchInstruction());	break;
+	case 0x11:	m_prefix11 = true;	base::execute(fetchInstruction());	break;
 
 	// ABX
-	case 0x3a:	memoryRead(); X() += B(); eat();						break;		// ABX (inherent)
+	case 0x3a:	memoryRead(); X() += B(); swallowRead();						break;		// ABX (inherent)
 
 	// ADC
 	case 0x89:	A() = adc(A(), AM_immediate_byte());					break;		// ADC (ADCA immediate)
@@ -215,7 +212,7 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0xe4:	B() = andr(B(), AM_indexed_byte());						break;		// AND (ANDB indexed)
 	case 0xf4:	B() = andr(B(), AM_extended_byte());					break;		// AND (ANDB extended)
 
-	case 0x1c:	CC() &= AM_immediate_byte(); eat();						break;		// AND (ANDCC immediate)
+	case 0x1c:	CC() &= AM_immediate_byte(); swallowRead();						break;		// AND (ANDCC immediate)
 
 	// ASL/LSL
 	case 0x08:	RMW(AM_direct_byte, asl);								break;		// ASL (direct)
@@ -396,7 +393,7 @@ void EightBit::mc6809::executeUnprefixed() {
 	case 0xfa:	B() = orr(B(), AM_extended_byte());						break;		// OR (ORB extended)
 
 	// ORCC
-	case 0x1a:	CC() |= AM_immediate_byte(); eat();						break;		// OR (ORCC immediate)
+	case 0x1a:	CC() |= AM_immediate_byte(); swallowRead();						break;		// OR (ORCC immediate)
 
 	// PSH
 	case 0x34:	psh(S(), AM_immediate_byte());							break;		// PSH (PSHS immediate)
@@ -446,14 +443,14 @@ void EightBit::mc6809::executeUnprefixed() {
 	// ST
 
 	// STA
-	case 0x97:	memoryWrite(Address_direct(), through(A()));			break;		// ST (STA direct)
-	case 0xa7:	memoryWrite(Address_indexed(), through(A()));			break;		// ST (STA indexed)
-	case 0xb7:	memoryWrite(Address_extended(), through(A()));			break;		// ST (STA extended)
+	case 0x97:	base::memoryWrite(Address_direct(), through(A()));			break;		// ST (STA direct)
+	case 0xa7:	base::memoryWrite(Address_indexed(), through(A()));			break;		// ST (STA indexed)
+	case 0xb7:	base::memoryWrite(Address_extended(), through(A()));			break;		// ST (STA extended)
 
 	// STB
-	case 0xd7:	memoryWrite(Address_direct(), through(B()));			break;		// ST (STB direct)
-	case 0xe7:	memoryWrite(Address_indexed(), through(B()));			break;		// ST (STB indexed)
-	case 0xf7:	memoryWrite(Address_extended(), through(B()));			break;		// ST (STB extended)
+	case 0xd7:	base::memoryWrite(Address_direct(), through(B()));			break;		// ST (STB direct)
+	case 0xe7:	base::memoryWrite(Address_indexed(), through(B()));			break;		// ST (STB indexed)
+	case 0xf7:	base::memoryWrite(Address_extended(), through(B()));			break;		// ST (STB extended)
 
 	// STD
 	case 0xdd:	Processor::setShort(Address_direct(), through(D()));		break;		// ST (STD direct)
@@ -645,11 +642,11 @@ void EightBit::mc6809::pop() noexcept {
 }
 
 void EightBit::mc6809::push(register16_t& stack, const uint8_t value) noexcept {
-	memoryWrite(--stack, value);
+	base::memoryWrite(--stack, value);
 }
 
 uint8_t EightBit::mc6809::pop(register16_t& stack) noexcept {
-	memoryRead(stack++);
+	base::memoryRead(stack++);
 	return BUS().DATA();
 }
 
@@ -675,7 +672,7 @@ EightBit::register16_t& EightBit::mc6809::RR(const int which) {
 EightBit::register16_t EightBit::mc6809::Address_relative_byte() {
 	fetchByte();
 	const auto address = PC() + (int8_t)BUS().DATA();
-	eat();
+	swallowRead();
 	return address;
 }
 
@@ -687,7 +684,7 @@ EightBit::register16_t EightBit::mc6809::Address_relative_word() {
 EightBit::register16_t EightBit::mc6809::Address_direct() {
 	fetchByte();
 	const auto offset = BUS().DATA();
-	eat();
+	swallowRead();
 	return register16_t(offset, DP());
 }
 
@@ -703,26 +700,26 @@ EightBit::register16_t EightBit::mc6809::Address_indexed() {
 		case 0b0000:	// ,R+
 			ASSUME(!indirect);
 			address = r++;
-			memoryRead(PC());
-			eat(2);
+			base::memoryRead(PC());
+			swallowRead(2);
 			break;
 		case 0b0001:	// ,R++
 			address = r;
 			r += 2;
-			memoryRead(PC());
-			eat(3);
+			base::memoryRead(PC());
+			swallowRead(3);
 			break;
 		case 0b0010:	// ,-R
 			ASSUME(!indirect);
 			address = --r;
-			memoryRead(PC());
-			eat(2);
+			base::memoryRead(PC());
+			swallowRead(2);
 			break;
 		case 0b0011:	// ,--R
 			r -= 2;
 			address = r;
-			memoryRead(PC());
-			eat(3);
+			base::memoryRead(PC());
+			swallowRead(3);
 			break;
 		case 0b0100:	// ,R
 			address = r;
@@ -730,65 +727,65 @@ EightBit::register16_t EightBit::mc6809::Address_indexed() {
 			break;
 		case 0b0101:	// B,R
 			address = r + (int8_t)B();
-			memoryRead(PC());
-			eat();
+			base::memoryRead(PC());
+			swallowRead();
 			break;
 		case 0b0110:	// A,R
 			address = r + (int8_t)A();
-			memoryRead(PC());
-			eat();
+			base::memoryRead(PC());
+			swallowRead();
 			break;
 		case 0b1000:	// n,R (eight-bit)
 			fetchByte();
 			address = r + (int8_t)BUS().DATA();
-			eat();
+			swallowRead();
 			break;
 		case 0b1001:	// n,R (sixteen-bit)
 			fetchShort();
 			address = r + (int16_t)intermediate().joined;
-			memoryRead(PC());
-			eat(2);
+			base::memoryRead(PC());
+			swallowRead(2);
 			break;
 		case 0b1011:	// D,R
 			address = r + D();
-			memoryRead(PC());
-			memoryRead(PC() + 1);
-			memoryRead(PC() + 2);
-			eat(2);
+			base::memoryRead(PC());
+			base::memoryRead(PC() + 1);
+			base::memoryRead(PC() + 2);
+			swallowRead(2);
 			break;
 		case 0b1100:	// n,PCR (eight-bit)
 			address = Address_relative_byte();
 			break;
 		case 0b1101:	// n,PCR (sixteen-bit)
 			address = Address_relative_word();
-			memoryRead(PC());
-			eat(3);
+			base::memoryRead(PC());
+			swallowRead(3);
 			break;
 		case 0b1111:	// [n]
 			assert(indirect);
 			address = Address_extended();
-			memoryRead(PC());
+			base::memoryRead(PC());
 			break;
 		default:
 			UNREACHABLE;
 		}
 		if (indirect) {
-			getShort(address);
-			address = intermediate();
-			eat();
+			base::getShort(address);
+			address = base::intermediate();
+			swallowRead();
 		}
 	} else {
 		// EA = ,R + 5-bit offset
 		address = r + signExtend(5, type & Mask5);
-		memoryRead(PC());
-		eat();
+		base::memoryRead(PC());
+		swallowRead();
 	}
 	return address;
 }
 
 EightBit::register16_t EightBit::mc6809::Address_extended() {
 	fetchShort();
-	eat();
+	swallowRead();
 	return intermediate();
 }
 
@@ -800,17 +797,17 @@ uint8_t EightBit::mc6809::AM_immediate_byte() {
 }
 
 uint8_t EightBit::mc6809::AM_direct_byte() {
-	memoryRead(Address_direct());
+	base::memoryRead(Address_direct());
 	return BUS().DATA();
 }
 
 uint8_t EightBit::mc6809::AM_indexed_byte() {
-	memoryRead(Address_indexed());
+	base::memoryRead(Address_indexed());
 	return BUS().DATA();
 }
 
 uint8_t EightBit::mc6809::AM_extended_byte() {
-	memoryRead(Address_extended());
+	base::memoryRead(Address_extended());
 	return BUS().DATA();
 }
 
@@ -871,7 +868,7 @@ uint8_t EightBit::mc6809::add(const uint8_t operand, const uint8_t data, const u
 EightBit::register16_t EightBit::mc6809::add(const register16_t operand, const register16_t data) {
 	const uint32_t addition = operand.joined + data.joined;
 	adjustAddition(operand, data, addition);
-	eat();
+	swallowRead();
 	return addition & Mask16;
 }
 
@@ -918,8 +915,8 @@ uint8_t EightBit::mc6809::com(const uint8_t operand) {
 
 void EightBit::mc6809::cwai(const uint8_t data) {
 	CC() &= data;
-	memoryRead(PC());
-	eat();
+	base::memoryRead(PC());
+	swallowRead();
 	saveEntireRegisterState();
 	halt();
 }
@@ -998,7 +995,7 @@ void EightBit::mc6809::exg(const uint8_t data) {
 	else
 		std::swap(referenceTransfer16(reg1), referenceTransfer16(reg2));
 
-	eat(6);
+	swallowRead(6);
 }
 
 uint8_t EightBit::mc6809::inc(uint8_t operand) {
@@ -1024,7 +1021,7 @@ EightBit::register16_t EightBit::mc6809::mul(const uint8_t first, const uint8_t 
 	const register16_t result = first * second;
 	adjustZero(result);
 	CC() = setBit(CC(), CF, result.low & Bit7);
-	eat(9);
+	swallowRead(9);
 	return result;
 }
 
@@ -1042,8 +1039,8 @@ uint8_t EightBit::mc6809::orr(const uint8_t operand, const uint8_t data) {
 }
 
 void EightBit::mc6809::psh(register16_t& stack, const uint8_t data) {
-	eat(2);
-	memoryRead(stack);
+	swallowRead(2);
+	base::memoryRead(stack);
 	if (data & Bit7)
 		pushWord(stack, PC());
 	if (data & Bit6)
@@ -1064,7 +1061,7 @@ void EightBit::mc6809::psh(register16_t& stack, const uint8_t data) {
 }
 
 void EightBit::mc6809::pul(register16_t& stack, const uint8_t data) {
-	eat(2);
+	swallowRead(2);
 	if (data & Bit0)
 		CC() = pop(stack);
 	if (data & Bit1)
@@ -1082,7 +1079,7 @@ void EightBit::mc6809::pul(register16_t& stack, const uint8_t data) {
 		(&stack == &S() ? U() : S()) = popWord(stack);
 	if (data & Bit7)
 		PC() = popWord(stack);
-	memoryRead(stack);
+	base::memoryRead(stack);
 }
 
 uint8_t EightBit::mc6809::rol(const uint8_t operand) {
@@ -1104,30 +1101,30 @@ uint8_t EightBit::mc6809::ror(const uint8_t operand) {
 
 void EightBit::mc6809::rti() {
 	restoreRegisterState();
-	eat();
+	swallowRead();
 }
 
 void EightBit::mc6809::swi() {
-	eat();
+	swallowRead();
 	saveEntireRegisterState();
 	CC() = setBit(CC(), IF);	// Disable IRQ
 	CC() = setBit(CC(), FF);	// Disable FIRQ
-	Processor::getPagedInto(0xff, SWIvector, PC());
-	eat();
+	Processor::getPagedInto(0xff, _vectorSWI, PC());
+	swallowRead();
 }
 
 void EightBit::mc6809::swi2() {
-	eat();
+	swallowRead();
 	saveEntireRegisterState();
-	Processor::getPagedInto(0xff, SWI2vector, PC());
-	eat();
+	Processor::getPagedInto(0xff, _vectorSWI2, PC());
+	swallowRead();
 }
 
 void EightBit::mc6809::swi3() {
-	eat();
+	swallowRead();
 	saveEntireRegisterState();
-	Processor::getPagedInto(0xff, SWI3vector, PC());
-	eat();
+	Processor::getPagedInto(0xff, _vectorSWI3, PC());
+	swallowRead();
 }
 
 uint8_t EightBit::mc6809::sex(const uint8_t from) {
@@ -1148,7 +1145,7 @@ void EightBit::mc6809::tfr(const uint8_t data) {
 	else
 		referenceTransfer16(reg2) = referenceTransfer16(reg1);
 
-	eat(4);
+	swallowRead(4);
 }
 
 uint8_t EightBit::mc6809::sbc(const uint8_t operand, const uint8_t data) {
@@ -1164,7 +1161,7 @@ uint8_t EightBit::mc6809::sub(const uint8_t operand, const uint8_t data, const u
 EightBit::register16_t EightBit::mc6809::sub(const register16_t operand, const register16_t data) {
 	const uint32_t subtraction = operand.joined - data.joined;
 	adjustSubtraction(operand, data, subtraction);
-	eat();
+	swallowRead();
 	return subtraction & Mask16;
 }
 
