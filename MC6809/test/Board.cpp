@@ -4,7 +4,7 @@
 Board::Board(const Configuration& configuration)
 : m_configuration(configuration) {}
 
-void Board::raisePOWER() {
+void Board::raisePOWER() noexcept {
 
 	EightBit::Bus::raisePOWER();
 
@@ -26,7 +26,7 @@ void Board::raisePOWER() {
 	accessAcia();
 }
 
-void Board::lowerPOWER() {
+void Board::lowerPOWER() noexcept {
 
 	if (m_configuration.isProfileMode()) {
 		m_profiler.EmitLine.connect([this](EightBit::ProfileLineEventArgs line) {
@@ -40,7 +40,7 @@ void Board::lowerPOWER() {
 	EightBit::Bus::lowerPOWER();
 }
 
-void Board::initialise() {
+void Board::initialise() noexcept {
 
 	// Load our BASIC interpreter
 	const auto directory = m_configuration.getRomDirectory() + "\\";
@@ -53,14 +53,14 @@ void Board::initialise() {
 	});
 
 	// Marshal data from memory -> ACIA
-	WrittenByte.connect([this] (EightBit::EventArgs&) {
+	CPU().WrittenMemory.connect([this] (EightBit::EventArgs&) {
 		updateAciaPins();
 		if (ACIA().selected())
 			accessAcia();
 	});
 
 	// Marshal data from ACIA -> memory
-	ReadingByte.connect([this] (EightBit::EventArgs&) {
+	CPU().ReadingMemory.connect([this] (EightBit::EventArgs&) {
 		updateAciaPins();
 		if (accessAcia())
 			poke(ACIA().DATA());
@@ -84,7 +84,7 @@ void Board::initialise() {
 			m_profiler.addInstruction(peek(cpu.PC()));
 		});
 		m_cpu.ExecutedInstruction.connect([this](EightBit::mc6809& cpu) {
-			m_profiler.addAddress(cpu.PC().word, cpu.cycles());
+			m_profiler.addAddress(cpu.PC().joined, cpu.cycles());
 		});
 	}
 
@@ -111,27 +111,31 @@ void Board::initialise() {
 	}
 }
 
-EightBit::MemoryMapping Board::mapping(uint16_t address) {
+const EightBit::MemoryMapping& Board::mapping(uint16_t address) noexcept {
 
 	if (address < 0x8000)
-		return { m_ram, 0x0000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };
+		return m_ramMapping;
+		//return { m_ram, 0x0000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 
 	if (address < 0xa000)
-		return { m_unused2000, 0x8000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
+		return m_unused2000Mapping;
+		//return { m_unused2000, 0x8000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
 
 	if (address < 0xc000)
-		return { m_io, 0xa000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };
+		return m_ioMapping;
+		//return { m_io, 0xa000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 
-	return { m_rom, 0xc000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
+	return m_romMapping;
+	//return { m_rom, 0xc000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
 }
 
 void Board::updateAciaPins() {
 	ACIA().DATA() = DATA();
 	EightBit::Device::match(ACIA().RW(), CPU().RW());
-	EightBit::Device::match(ACIA().RS(), ADDRESS().word & EightBit::Chip::Bit0);
-	EightBit::Device::match(ACIA().CS0(), ADDRESS().word & EightBit::Chip::Bit15);
-	EightBit::Device::match(ACIA().CS1(), ADDRESS().word & EightBit::Chip::Bit13);
-	EightBit::Device::match(ACIA().CS2(), ADDRESS().word & EightBit::Chip::Bit14);
+	EightBit::Device::match(ACIA().RS(), ADDRESS().joined & EightBit::Chip::Bit0);
+	EightBit::Device::match(ACIA().CS0(), ADDRESS().joined & EightBit::Chip::Bit15);
+	EightBit::Device::match(ACIA().CS1(), ADDRESS().joined & EightBit::Chip::Bit13);
+	EightBit::Device::match(ACIA().CS2(), ADDRESS().joined & EightBit::Chip::Bit14);
 }
 
 bool Board::accessAcia() {

@@ -3,7 +3,7 @@
 
 Board::Board() {}
 
-void Board::raisePOWER() {
+void Board::raisePOWER() noexcept {
 	EightBit::Bus::raisePOWER();
 
 	CPU().raisePOWER();
@@ -16,12 +16,12 @@ void Board::raisePOWER() {
 	CPU().raiseHALT();
 }
 
-void Board::lowerPOWER() {
+void Board::lowerPOWER() noexcept {
 	CPU().lowerPOWER();
 	EightBit::Bus::lowerPOWER();
 }
 
-void Board::initialise() {
+void Board::initialise() noexcept {
 	CPU().ExecutingInstruction.connect([this](EightBit::mc6809& cpu) {
 		m_disassembleAt = CPU().PC();
 		m_ignoreDisassembly = m_disassembler.ignore();
@@ -33,6 +33,6 @@ void Board::initialise() {
 	});
 }
 
-EightBit::MemoryMapping Board::mapping(uint16_t) {
-	return { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
+const EightBit::MemoryMapping& Board::mapping(uint16_t) noexcept {
+	return m_mapping;
 }

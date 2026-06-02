@@ -20,13 +20,13 @@ public:
 	auto& CPU() { return m_cpu; }
 	auto& ACIA() { return m_acia; }
 
-	void raisePOWER() final;
-	void lowerPOWER() final;
+	void raisePOWER() noexcept final;
+	void lowerPOWER() noexcept final;
 
-	virtual void initialise() final;
+	virtual void initialise() noexcept final;
 
 protected:
-	EightBit::MemoryMapping mapping(uint16_t address) final;
+	const EightBit::MemoryMapping& mapping(uint16_t address) noexcept final;
 
 private:
 	const Configuration& m_configuration;
@@ -34,6 +34,11 @@ private:
 	EightBit::UnusedMemory m_unused2000 = { 0x2000, 0xff };	// 8000 - 9FFF, 8K unused
 	EightBit::Ram m_io = 0x2000;							// A000 - BFFF, 8K serial interface, minimally decoded
 	EightBit::Rom m_rom = 0x4000;							// C000 - FFFF, 16K ROM
+
+	EightBit::MemoryMapping m_ramMapping = { m_ram, 0x0000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };
+	EightBit::MemoryMapping m_unused2000Mapping = { m_unused2000, 0x8000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
+	EightBit::MemoryMapping m_ioMapping = { m_io, 0xa000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };
+	EightBit::MemoryMapping m_romMapping = { m_rom, 0xc000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
 
 	EightBit::mc6850 m_acia;
 

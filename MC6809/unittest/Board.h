@@ -11,16 +11,17 @@ public:
 
 	constexpr EightBit::mc6809& CPU() { return m_cpu; }
 
-	void raisePOWER() final;
-	void lowerPOWER() final;
+	void raisePOWER() noexcept final;
+	void lowerPOWER() noexcept final;
 
 protected:
-	void initialise() final;
+	void initialise() noexcept final;
 
-	EightBit::MemoryMapping mapping(uint16_t address) final;
+	const EightBit::MemoryMapping& mapping(uint16_t address) noexcept final;
 
 private:
 	EightBit::Ram m_ram = 0x10000;	// 0000 - FFFF, 64K RAM
+	EightBit::MemoryMapping m_mapping = { m_ram, 0x0000, 0xffff, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 	EightBit::mc6809 m_cpu = { *this };
 	EightBit::Disassembly m_disassembler = { *this, m_cpu };
 

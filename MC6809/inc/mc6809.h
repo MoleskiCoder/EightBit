@@ -112,7 +112,7 @@ namespace EightBit {
 		// Default push/pop handlers
 
 		void push(uint8_t value) noexcept final;
-		[[nodiscard]] uint8_t pop() noexcept final;
+		void pop() noexcept final;
 
 		// Interrupt (etc.) handlers
 
@@ -121,8 +121,13 @@ namespace EightBit {
 
 		// Bus reader/writers
 
-		void busWrite() noexcept final;
-		uint8_t busRead() noexcept final;
+		using Processor::memoryRead;
+		using Processor::memoryWrite;
+		void memoryRead() noexcept override;
+		void memoryWrite() noexcept override;
+
+		void busWrite() noexcept;
+		uint8_t busRead() noexcept;
 
 		void call(register16_t destination) noexcept final;
 		void ret() noexcept final;
@@ -236,7 +241,7 @@ namespace EightBit {
 		// Flag adjustment
 
 		template<class T> constexpr void adjustZero(const T datum) { CC() = clearBit(CC(), ZF, datum); }
-		constexpr void adjustZero(const register16_t datum) { CC() = clearBit(CC(), ZF, datum.word); }
+		constexpr void adjustZero(const register16_t datum) { CC() = clearBit(CC(), ZF, datum.joined); }
 		constexpr void adjustNegative(const uint8_t datum) { CC() = setBit(CC(), NF, datum & Bit7); }
 		constexpr void adjustNegative(const register16_t datum) { adjustNegative(datum.high); }
 		constexpr void adjustNegative(const uint16_t datum) { adjustNegative(register16_t(datum)); }
@@ -248,11 +253,11 @@ namespace EightBit {
 
 		constexpr void adjustCarry(const uint16_t datum) { CC() = setBit(CC(), CF, datum & Bit8); }		// 8-bit addition
 		constexpr void adjustCarry(const uint32_t datum) { CC() = setBit(CC(), CF, datum & Bit16); }		// 16-bit addition
-		constexpr void adjustCarry(const register16_t datum) { adjustCarry(datum.word); }
+		constexpr void adjustCarry(const register16_t datum) { adjustCarry(datum.joined); }
 
 		constexpr void adjustBorrow(const uint16_t datum) { CC() = clearBit(CC(), CF, datum & Bit8); }		// 8-bit subtraction
 		constexpr void adjustBorrow(const uint32_t datum) { CC() = clearBit(CC(), CF, datum & Bit16); }	// 16-bit subtraction
-		constexpr void adjustBorrow(const register16_t datum) { adjustBorrow(datum.word); }
+		constexpr void adjustBorrow(const register16_t datum) { adjustBorrow(datum.joined); }
 
 		constexpr void adjustOverflow(const uint8_t before, const uint8_t data, const register16_t after) {
 			const uint8_t lowAfter = after.low;
@@ -267,7 +272,7 @@ namespace EightBit {
 		}
 
 		constexpr void adjustOverflow(const register16_t before, const register16_t data, const register16_t after) {
-			adjustOverflow(before.word, data.word, after.word);
+			adjustOverflow(before.joined, data.joined, after.joined);
 		}
 
 		constexpr void adjustHalfCarry(const uint8_t before, const uint8_t data, const uint8_t after) {
@@ -290,7 +295,7 @@ namespace EightBit {
 		}
 
 		constexpr void adjustAddition(const register16_t before, const register16_t data, const uint32_t after) {
-			adjustAddition(before.word, data.word, after);
+			adjustAddition(before.joined, data.joined, after);
 		}
 
 		constexpr void adjustSubtraction(const uint8_t before, const uint8_t data, const register16_t after) {
@@ -308,7 +313,7 @@ namespace EightBit {
 		}
 
 		constexpr void adjustSubtraction(const register16_t before, const register16_t data, const uint32_t after) {
-			adjustSubtraction(before.word, data.word, after);
+			adjustSubtraction(before.joined, data.joined, after);
 		}
 
 

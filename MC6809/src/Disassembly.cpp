@@ -43,7 +43,7 @@ std::string EightBit::Disassembly::dump_RelativeValue(int8_t value) {
 }
 
 std::string EightBit::Disassembly::dump_WordValue(register16_t value) {
-	return dump_WordValue(value.word);
+	return dump_WordValue(value.joined);
 }
 
 std::string EightBit::Disassembly::dump_WordValue(uint16_t value) {
@@ -53,7 +53,7 @@ std::string EightBit::Disassembly::dump_WordValue(uint16_t value) {
 }
 
 std::string EightBit::Disassembly::dump_RelativeValue(register16_t value) {
-	return dump_RelativeValue((int16_t)value.word);
+	return dump_RelativeValue((int16_t)value.joined);
 }
 
 std::string EightBit::Disassembly::dump_RelativeValue(int16_t value) {
@@ -69,7 +69,7 @@ std::string EightBit::Disassembly::trace() {
 }
 
 std::string EightBit::Disassembly::trace(register16_t current) {
-	return trace(current.word);
+	return trace(current.joined);
 }
 
 std::string EightBit::Disassembly::trace(uint16_t current) {
@@ -99,7 +99,7 @@ std::string EightBit::Disassembly::disassemble() {
 }
 
 std::string EightBit::Disassembly::disassemble(register16_t current) {
-	return disassemble(current.word);
+	return disassemble(current.joined);
 }
 
 bool EightBit::Disassembly::ignore() {
@@ -883,7 +883,7 @@ uint8_t EightBit::Disassembly::getByte(uint16_t address) {
 }
 
 uint16_t EightBit::Disassembly::getShort(uint16_t address) {
-	return CPU().peekShort(address).word;
+	return CPU().peekShort(address).joined;
 }
 
 //

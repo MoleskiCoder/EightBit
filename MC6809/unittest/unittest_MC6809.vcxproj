@@ -66,19 +66,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;$(SolutionDir)modules\catch2\single_include\catch2;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;C:\Libraries\boost_1_88_0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;$(SolutionDir)modules\catch2\single_include\catch2;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;C:\Libraries\boost_1_88_0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;$(SolutionDir)modules\catch2\single_include\catch2;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;C:\Libraries\boost_1_88_0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;$(SolutionDir)modules\catch2\single_include\catch2;$(IncludePath)</IncludePath>
+    <IncludePath>..\inc;..\..\inc;..\..\MC6850\inc;C:\Libraries\boost_1_88_0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
