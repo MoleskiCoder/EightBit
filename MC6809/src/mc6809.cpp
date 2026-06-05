@@ -138,20 +138,6 @@ void EightBit::mc6809::memoryRead() noexcept {
 
 //
 
-void EightBit::mc6809::call(register16_t destination) noexcept {
-	base::memoryRead(destination);
-	swallowRead();
-	pushShort(PC());
-	jump(destination);
-}
-
-void EightBit::mc6809::ret() noexcept {
-	base::ret();
-	swallowRead();
-}
-
-//
-
 void EightBit::mc6809::execute() noexcept {
 	lowerBA();
 	lowerBS();
@@ -168,363 +154,362 @@ void EightBit::mc6809::executeUnprefixed() {
 
 	switch (opcode()) {
 
-	case 0x10:	m_prefix10 = true;	base::execute(fetchInstruction());	break;
-	case 0x11:	m_prefix11 = true;	base::execute(fetchInstruction());	break;
+	case 0x10:	prefix10();	break;
+	case 0x11:	prefix11();	break;
 
 	// ABX
-	case 0x3a:	memoryRead(); X() += B(); swallowRead();						break;		// ABX (inherent)
+	case 0x3a:	swallowCurrent(); ABX(); break;			// ABX (inherent)
 
 	// ADC
-	case 0x89:	A() = adc(A(), AM_immediate_byte());					break;		// ADC (ADCA immediate)
-	case 0x99:	A() = adc(A(), AM_direct_byte());						break;		// ADC (ADCA direct)
-	case 0xa9:	A() = adc(A(), AM_indexed_byte());						break;		// ADC (ADCA indexed)
-	case 0xb9:	A() = adc(A(), AM_extended_byte());						break;		// ADC (ADCA extended)
+	case 0x89:	immediateByte(); ADCA(); break;			// ADC (ADCA immediate)
+	case 0x99:	directByte(); ADCA(); break;			// ADC (ADCA direct)
+	case 0xa9:	indexedByte(); ADCA(); break;			// ADC (ADCA indexed)
+	case 0xb9:	extendedByte(); ADCA(); break;			// ADC (ADCA extended)
 
-	case 0xc9:	B() = adc(B(), AM_immediate_byte());					break;		// ADC (ADCB immediate)
-	case 0xd9:	B() = adc(B(), AM_direct_byte());						break;		// ADC (ADCB direct)
-	case 0xe9:	B() = adc(B(), AM_indexed_byte());						break;		// ADC (ADCB indexed)
-	case 0xf9:	B() = adc(B(), AM_extended_byte());						break;		// ADC (ADCB extended)
+	case 0xc9:	immediateByte(); ADCB(); break;			// ADC (ADCB immediate)
+	case 0xd9:	directByte(); ADCB(); break;			// ADC (ADCB direct)
+	case 0xe9:	indexedByte(); ADCB(); break;			// ADC (ADCB indexed)
+	case 0xf9:	extendedByte(); ADCB(); break;			// ADC (ADCB extended)
 
 	// ADD
-	case 0x8b:	A() = add(A(), AM_immediate_byte());					break;		// ADD (ADDA immediate)
-	case 0x9b:	A() = add(A(), AM_direct_byte());						break;		// ADD (ADDA direct)
-	case 0xab:	A() = add(A(), AM_indexed_byte());						break;		// ADD (ADDA indexed)
-	case 0xbb:	A() = add(A(), AM_extended_byte());						break;		// ADD (ADDA extended)
+	case 0x8b:	immediateByte(); ADDA(); break;			// ADD (ADDA immediate)
+	case 0x9b:	directByte(); ADDA(); break;			// ADD (ADDA direct)
+	case 0xab:	indexedByte(); ADDA(); break;			// ADD (ADDA indexed)
+	case 0xbb:	extendedByte(); ADDA(); break;			// ADD (ADDA extended)
 
-	case 0xcb:	B() = add(B(), AM_immediate_byte());					break;		// ADD (ADDB immediate)
-	case 0xdb:	B() = add(B(), AM_direct_byte());						break;		// ADD (ADDB direct)
-	case 0xeb:	B() = add(B(), AM_indexed_byte());						break;		// ADD (ADDB indexed)
-	case 0xfb:	B() = add(B(), AM_extended_byte());						break;		// ADD (ADDB extended)
+	case 0xcb:	immediateByte(); ADDB(); break;			// ADD (ADDB immediate)
+	case 0xdb:	directByte(); ADDB(); break;			// ADD (ADDB direct)
+	case 0xeb:	indexedByte(); ADDB(); break;			// ADD (ADDB indexed)
+	case 0xfb:	extendedByte(); ADDB(); break;			// ADD (ADDB extended)
 
-	case 0xc3:	D() = add(D(), AM_immediate_word());	 				break;		// ADD (ADDD immediate)
-	case 0xd3:	D() = add(D(), AM_direct_word());						break;		// ADD (ADDD direct)
-	case 0xe3:	D() = add(D(), AM_indexed_word());						break;		// ADD (ADDD indexed)
-	case 0xf3:	D() = add(D(), AM_extended_word());						break;		// ADD (ADDD extended)
+	case 0xc3:	immediateShort(); ADDD(); break;		// ADD (ADDD immediate)
+	case 0xd3:	directShort(); ADDD(); break;			// ADD (ADDD direct)
+	case 0xe3:	indexedShort(); ADDD(); break;			// ADD (ADDD indexed)
+	case 0xf3:	extendedShort(); ADDD();break;			// ADD (ADDD extended)
 
 	// AND
-	case 0x84:	A() = andr(A(), AM_immediate_byte());					break;		// AND (ANDA immediate)
-	case 0x94:	A() = andr(A(), AM_direct_byte());						break;		// AND (ANDA direct)
-	case 0xa4:	A() = andr(A(), AM_indexed_byte());						break;		// AND (ANDA indexed)
-	case 0xb4:	A() = andr(A(), AM_extended_byte());					break;		// AND (ANDA extended)
-			
-	case 0xc4:	B() = andr(B(), AM_immediate_byte());					break;		// AND (ANDB immediate)
-	case 0xd4:	B() = andr(B(), AM_direct_byte());						break;		// AND (ANDB direct)
-	case 0xe4:	B() = andr(B(), AM_indexed_byte());						break;		// AND (ANDB indexed)
-	case 0xf4:	B() = andr(B(), AM_extended_byte());					break;		// AND (ANDB extended)
+	case 0x84: immediateByte(); ANDA(); break;			// AND (ANDA immediate)
+	case 0x94: directByte(); ANDA(); break;				// AND (ANDA direct)
+	case 0xa4: indexedByte(); ANDA(); break;			// AND (ANDA indexed)
+	case 0xb4: extendedByte(); ANDA(); break;			// AND (ANDA extended)
 
-	case 0x1c:	CC() &= AM_immediate_byte(); swallowRead();						break;		// AND (ANDCC immediate)
+	case 0xc4: immediateByte(); ANDB(); break;			// AND (ANDB immediate)
+	case 0xd4: directByte(); ANDB(); break;				// AND (ANDB direct)
+	case 0xe4: indexedByte(); ANDB(); break;			// AND (ANDB indexed)
+	case 0xf4: extendedByte(); ANDB(); break;			// AND (ANDB extended)
+
+	case 0x1c: immediateByte(); ANDCC(); break;			// AND (ANDCC immediate)
 
 	// ASL/LSL
-	case 0x08:	RMW(AM_direct_byte, asl);								break;		// ASL (direct)
-	case 0x48:	memoryRead(); A() = asl(A());							break;		// ASL (ASLA inherent)
-	case 0x58:	memoryRead(); B() = asl(B());							break;		// ASL (ASLB inherent)
-	case 0x68:	RMW(AM_indexed_byte, asl);								break;		// ASL (indexed)
-	case 0x78:	RMW(AM_extended_byte, asl);								break;		// ASL (extended)
+	case 0x08: directByte(); ASL(); break;				// ASL (direct)
+	case 0x48: swallowCurrent(); ASLA(); break;			// ASL (ASLA inherent)
+	case 0x58: swallowCurrent(); ASLB(); break;			// ASL (ASLB inherent)
+	case 0x68: indexedByte(); ASL(); break;				// ASL (indexed)
+	case 0x78: extendedByte(); ASL(); break;			// ASL (extended)
 
 	// ASR
-	case 0x07:	RMW(AM_direct_byte, asr);								break;		// ASR (direct)
-	case 0x47:	memoryRead(); A() = asr(A());							break;		// ASR (ASRA inherent)
-	case 0x57:	memoryRead(); B() = asr(B());							break;		// ASR (ASRB inherent)
-	case 0x67:	RMW(AM_indexed_byte, asr);								break;		// ASR (indexed)
-	case 0x77:	RMW(AM_extended_byte, asr);								break;		// ASR (extended)
+	case 0x07: directByte(); ASR(); break;				// ASR (direct)
+	case 0x47: swallowCurrent(); ASRA(); break;			// ASR (ASRA inherent)
+	case 0x57: swallowCurrent(); ASRB(); break;			// ASR (ASRB inherent)
+	case 0x67: indexedByte(); ASR(); break;				// ASR (indexed)
+	case 0x77: extendedByte(); ASR(); break;			// ASR (extended)
 
 	// BIT
-	case 0x85:	bit(A(), AM_immediate_byte());							break;		// BIT (BITA immediate)
-	case 0x95:	bit(A(), AM_direct_byte());								break;		// BIT (BITA direct)
-	case 0xa5:	bit(A(), AM_indexed_byte());							break;		// BIT (BITA indexed)
-	case 0xb5:	bit(A(), AM_extended_byte());							break;		// BIT (BITA extended)
+	case 0x85: immediateByte(); BITA(); break;			// BIT (BITA immediate)
+	case 0x95: directByte(); BITA(); break;				// BIT (BITA direct)
+	case 0xa5: indexedByte(); BITA(); break;			// BIT (BITA indexed)
+	case 0xb5: extendedByte(); BITA(); break;			// BIT (BITA extended)
 
-	case 0xc5:	bit(B(), AM_immediate_byte());							break;		// BIT (BITB immediate)
-	case 0xd5:	bit(B(), AM_direct_byte());								break;		// BIT (BITB direct)
-	case 0xe5:	bit(B(), AM_indexed_byte());							break;		// BIT (BITB indexed)
-	case 0xf5:	bit(B(), AM_extended_byte());							break;		// BIT (BITB extended)
+	case 0xc5: immediateByte(); BITB(); break;			// BIT (BITB immediate)
+	case 0xd5: directByte(); BITB(); break;				// BIT (BITB direct)
+	case 0xe5: indexedByte(); BITB(); break;			// BIT (BITB indexed)
+	case 0xf5: extendedByte(); BITB(); break;			// BIT (BITB extended)
 
 	// CLR
-	case 0x0f:	RMW(AM_direct_byte, clr);								break;		// CLR (direct)
-	case 0x4f:	memoryRead(); A() = clr(); 								break;		// CLR (CLRA implied)
-	case 0x5f:	memoryRead(); B() = clr(); 								break;		// CLR (CLRB implied)
-	case 0x6f:	RMW(AM_indexed_byte, clr);								break;		// CLR (indexed)
-	case 0x7f:	RMW(AM_extended_byte, clr);								break;		// CLR (extended)
+	case 0x0f: directAddress(); CLR(); break;			// CLR (direct)
+	case 0x4f: swallowCurrent(); CLRA(); break;			// CLR (CLRA implied)
+	case 0x5f: swallowCurrent(); CLRB(); break;			// CLR (CLRB implied)
+	case 0x6f: indexedAddress(); CLR(); break;			// CLR (indexed)
+	case 0x7f: extendedAddress(); CLR(); break;			// CLR (extended)
 
 	// CMP
 
 	// CMPA
-	case 0x81:	cmp(A(), AM_immediate_byte());							break;		// CMP (CMPA, immediate)
-	case 0x91:	cmp(A(), AM_direct_byte());								break;		// CMP (CMPA, direct)
-	case 0xa1:	cmp(A(), AM_indexed_byte());							break;		// CMP (CMPA, indexed)
-	case 0xb1:	cmp(A(), AM_extended_byte());							break;		// CMP (CMPA, extended)
+	case 0x81: immediateByte(); CMPA(); break;			// CMP (CMPA, immediate)
+	case 0x91: directByte(); CMPA(); break;				// CMP (CMPA, direct)
+	case 0xa1: indexedByte(); CMPA(); break;			// CMP (CMPA, indexed)
+	case 0xb1: extendedByte(); CMPA(); break;			// CMP (CMPA, extended)
 
 	// CMPB
-	case 0xc1:	cmp(B(), AM_immediate_byte());							break;		// CMP (CMPB, immediate)
-	case 0xd1:	cmp(B(), AM_direct_byte());								break;		// CMP (CMPB, direct)
-	case 0xe1:	cmp(B(), AM_indexed_byte());							break;		// CMP (CMPB, indexed)
-	case 0xf1:	cmp(B(), AM_extended_byte());							break;		// CMP (CMPB, extended)
+	case 0xc1: immediateByte(); CMPB(); break;			// CMP (CMPB, immediate)
+	case 0xd1: directByte(); CMPB(); break;				// CMP (CMPB, direct)
+	case 0xe1: indexedByte(); CMPB(); break;			// CMP (CMPB, indexed)
+	case 0xf1: extendedByte(); CMPB(); break;			// CMP (CMPB, extended)
 
 	// CMPX
-	case 0x8c:	cmp(X(), AM_immediate_word());							break;		// CMP (CMPX, immediate)
-	case 0x9c:	cmp(X(), AM_direct_word());								break;		// CMP (CMPX, direct)
-	case 0xac:	cmp(X(), AM_indexed_word());							break;		// CMP (CMPX, indexed)
-	case 0xbc:	cmp(X(), AM_extended_word());							break;		// CMP (CMPX, extended)
+	case 0x8c: immediateShort(); CMPX(); break;			// CMP (CMPX, immediate)
+	case 0x9c: directShort(); CMPX(); break;			// CMP (CMPX, direct)
+	case 0xac: indexedShort(); CMPX(); break;			// CMP (CMPX, indexed)
+	case 0xbc: extendedShort(); CMPX(); break;			// CMP (CMPX, extended)
 
 	// COM
-	case 0x03:	RMW(AM_direct_byte, com);								break;		// COM (direct)
-	case 0x43:	memoryRead(); A() = com(A());							break;		// COM (COMA inherent)
-	case 0x53:	memoryRead(); B() = com(B());							break;		// COM (COMB inherent)
-	case 0x63:	RMW(AM_indexed_byte, com);								break;		// COM (indexed)
-	case 0x73:	RMW(AM_extended_byte, com);								break;		// COM (extended)
+	case 0x03: directByte(); COM(); break;				// COM (direct)
+	case 0x43: swallowCurrent(); COMA(); break;			// COM (COMA inherent)
+	case 0x53: swallowCurrent(); COMB(); break;			// COM (COMB inherent)
+	case 0x63: indexedByte(); COM(); break;				// COM (indexed)
+	case 0x73: extendedByte(); COM(); break;			// COM (extended)
 
 	// CWAI
-	case 0x3c:	cwai(AM_direct_byte());									break;		// CWAI (direct)
+	case 0x3c: immediateByte(); CWAI(); break;			// CWAI (immediate) - cycles omitted: halts before full interrupt response
 
 	// DAA
-	case 0x19:	memoryRead(); A() = da(A()); 							break;		// DAA (inherent)
+	case 0x19: swallowCurrent(); DAA(); break;			// DAA (inherent)
 
 	// DEC
-	case 0x0a:	RMW(AM_direct_byte, dec);								break;		// DEC (direct)
-	case 0x4a:	memoryRead(); A() = dec(A());							break;		// DEC (DECA inherent)
-	case 0x5a:	memoryRead(); B() = dec(B());							break;		// DEC (DECB inherent)
-	case 0x6a:	RMW(AM_indexed_byte, dec);								break;		// DEC (indexed)
-	case 0x7a:	RMW(AM_extended_byte, dec);								break;		// DEC (extended)
+	case 0x0a: directByte(); DEC(); break;				// DEC (direct)
+	case 0x4a: swallowCurrent(); DECA(); break;			// DEC (DECA inherent)
+	case 0x5a: swallowCurrent(); DECB(); break;			// DEC (DECB inherent)
+	case 0x6a: indexedByte(); DEC(); break;				// DEC (indexed)
+	case 0x7a: extendedByte(); DEC(); break;			// DEC (extended)
 
 	// EOR
 
 	// EORA
-	case 0x88:	A() = eorr(A(), AM_immediate_byte());					break;		// EOR (EORA immediate)
-	case 0x98:	A() = eorr(A(), AM_direct_byte());						break;		// EOR (EORA direct)
-	case 0xa8:	A() = eorr(A(), AM_indexed_byte());						break;		// EOR (EORA indexed)
-	case 0xb8:	A() = eorr(A(), AM_extended_byte());					break;		// EOR (EORA extended)
+	case 0x88: immediateByte(); EORA(); break;			// EOR (EORA immediate)
+	case 0x98: directByte(); EORA(); break;				// EOR (EORA direct)
+	case 0xa8: indexedByte(); EORA(); break;			// EOR (EORA indexed)
+	case 0xb8: extendedByte(); EORA(); break;			// EOR (EORA extended)
 
 	// EORB
-	case 0xc8:	B() = eorr(B(), AM_immediate_byte());					break;		// EOR (EORB immediate)
-	case 0xd8:	B() = eorr(B(), AM_direct_byte());						break;		// EOR (EORB direct)
-	case 0xe8:	B() = eorr(B(), AM_indexed_byte());						break;		// EOR (EORB indexed)
-	case 0xf8:	B() = eorr(B(), AM_extended_byte());					break;		// EOR (EORB extended)
+	case 0xc8: immediateByte(); EORB(); break;			// EOR (EORB immediate)
+	case 0xd8: directByte(); EORB(); break;				// EOR (EORB direct)
+	case 0xe8: indexedByte(); EORB(); break;			// EOR (EORB indexed)
+	case 0xf8: extendedByte(); EORB(); break;			// EOR (EORB extended)
 
 	// EXG
-	case 0x1e:	exg(AM_immediate_byte());								break;		// EXG (R1,R2 immediate)
+	case 0x1e: immediateByte(); EXG(); break;			// EXG (R1,R2 immediate)
 
 	// INC
-	case 0x0c:	RMW(AM_direct_byte, inc);								break;		// INC (direct)
-	case 0x4c:	memoryRead(); A() = inc(A());							break;		// INC (INCA inherent)
-	case 0x5c:	memoryRead(); B() = inc(B());							break;		// INC (INCB inherent)
-	case 0x6c:	RMW(AM_indexed_byte, inc);								break;		// INC (indexed)
-	case 0x7c:	RMW(AM_extended_byte, inc);								break;		// INC (extended)
+	case 0x0c: directByte(); INC(); break;				// INC (direct)
+	case 0x4c: swallowCurrent(); INCA(); break;			// INC (INCA inherent)
+	case 0x5c: swallowCurrent(); INCB(); break;			// INC (INCB inherent)
+	case 0x6c: indexedByte(); INC(); break;				// INC (indexed)
+	case 0x7c: extendedByte(); INC(); break;			// INC (extended)
 
 	// JMP
-	case 0x0e:	jump(Address_direct());									break;		// JMP (direct)
-	case 0x6e:	jump(Address_indexed());								break;		// JMP (indexed)
-	case 0x7e:	jump(Address_extended());								break;		// JMP (extended)
+	case 0x0e: directAddress(); JMP(); break;			// JMP (direct)
+	case 0x6e: indexedAddress(); JMP(); break;			// JMP (indexed)
+	case 0x7e: extendedAddress(); JMP(); break;			// JMP (extended)
 
 	// JSR
-	case 0x9d:	jsr(Address_direct());									break;		// JSR (direct)
-	case 0xad:	jsr(Address_indexed());									break;		// JSR (indexed)
-	case 0xbd:	jsr(Address_extended());								break;		// JSR (extended)
+	case 0x9d: directAddress(); JSR(); break;			// JSR (direct)
+	case 0xad: indexedAddress(); JSR(); break;			// JSR (indexed)
+	case 0xbd: extendedAddress(); JSR(); break;			// JSR (extended)
 
 	// LD
 
 	// LDA
-	case 0x86:	A() = through(AM_immediate_byte());						break;		// LD (LDA immediate)
-	case 0x96:	A() = through(AM_direct_byte());						break;		// LD (LDA direct)
-	case 0xa6:	A() = through(AM_indexed_byte());						break;		// LD (LDA indexed)
-	case 0xb6:	A() = through(AM_extended_byte());						break;		// LD (LDA extended)
+	case 0x86: immediateByte(); LDA(); break;			// LD (LDA immediate)
+	case 0x96: directByte(); LDA(); break;				// LD (LDA direct)
+	case 0xa6: indexedByte(); LDA(); break;				// LD (LDA indexed)
+	case 0xb6: extendedByte(); LDA(); break;			// LD (LDA extended)
 
 	// LDB
-	case 0xc6:	B() = through(AM_immediate_byte());						break;		// LD (LDB immediate)
-	case 0xd6:	B() = through(AM_direct_byte());						break;		// LD (LDB direct)
-	case 0xe6:	B() = through(AM_indexed_byte());						break;		// LD (LDB indexed)
-	case 0xf6:	B() = through(AM_extended_byte());						break;		// LD (LDB extended)
+	case 0xc6: immediateByte(); LDB(); break;			// LD (LDB immediate)
+	case 0xd6: directByte(); LDB(); break;				// LD (LDB direct)
+	case 0xe6: indexedByte(); LDB(); break;				// LD (LDB indexed)
+	case 0xf6: extendedByte(); LDB(); break;			// LD (LDB extended)
 
 	// LDD
-	case 0xcc:	D() = through(AM_immediate_word());						break;		// LD (LDD immediate)
-	case 0xdc:	D() = through(AM_direct_word());						break;		// LD (LDD direct)
-	case 0xec:	D() = through(AM_indexed_word());						break;		// LD (LDD indexed)
-	case 0xfc:	D() = through(AM_extended_word());						break;		// LD (LDD extended)
+	case 0xcc: immediateShort(); LDD(); break;			// LD (LDD immediate)
+	case 0xdc: directShort(); LDD(); break;				// LD (LDD direct)
+	case 0xec: indexedShort(); LDD(); break;			// LD (LDD indexed)
+	case 0xfc: extendedShort(); LDD(); break;			// LD (LDD extended)
 
 	// LDU
-	case 0xce:	U() = through(AM_immediate_word());						break;		// LD (LDU immediate)
-	case 0xde:	U() = through(AM_direct_word());						break;		// LD (LDU direct)
-	case 0xee:	U() = through(AM_indexed_word());						break;		// LD (LDU indexed)
-	case 0xfe:	U() = through(AM_extended_word());						break;		// LD (LDU extended)
+	case 0xce: immediateShort(); LDU(); break;			// LD (LDU immediate)
+	case 0xde: directShort(); LDU(); break;				// LD (LDU direct)
+	case 0xee: indexedShort(); LDU(); break;			// LD (LDU indexed)
+	case 0xfe: extendedShort(); LDU(); break;			// LD (LDU extended)
 
 	// LDX
-	case 0x8e:	X() = through(AM_immediate_word());						break;		// LD (LDX immediate)
-	case 0x9e:	X() = through(AM_direct_word());						break;		// LD (LDX direct)
-	case 0xae:	X() = through(AM_indexed_word());						break;		// LD (LDX indexed)
-	case 0xbe:	X() = through(AM_extended_word());						break;		// LD (LDX extended)
+	case 0x8e: immediateShort(); LDX(); break;			// LD (LDX immediate)
+	case 0x9e: directShort(); LDX(); break;				// LD (LDX direct)
+	case 0xae: indexedShort(); LDX(); break;			// LD (LDX indexed)
+	case 0xbe: extendedShort(); LDX(); break;			// LD (LDX extended)
 
 	// LEA
-	case 0x30:	adjustZero(X() = Address_indexed());					break;		// LEA (LEAX indexed)
-	case 0x31:	adjustZero(Y() = Address_indexed());					break;		// LEA (LEAY indexed)
-	case 0x32:	S() = Address_indexed();								break;		// LEA (LEAS indexed)
-	case 0x33:	U() = Address_indexed();								break;		// LEA (LEAU indexed)
+	case 0x30: indexedAddress(); LEAX(); break;			// LEA (LEAX indexed)
+	case 0x31: indexedAddress(); LEAY(); break;			// LEA (LEAY indexed)
+	case 0x32: indexedAddress(); LEAS(); break;			// LEA (LEAS indexed)
+	case 0x33: indexedAddress(); LEAU(); break;			// LEA (LEAU indexed)
 
 	// LSR
-	case 0x04:	RMW(AM_direct_byte, lsr);								break;		// LSR (direct)
-	case 0x44:	memoryRead(); A() = lsr(A());							break;		// LSR (LSRA inherent)
-	case 0x54:	memoryRead(); B() = lsr(B());							break;		// LSR (LSRB inherent)
-	case 0x64:	RMW(AM_indexed_byte, lsr);								break;		// LSR (indexed)
-	case 0x74:	RMW(AM_extended_byte, lsr);								break;		// LSR (extended)
+	case 0x04: directByte(); LSR(); break;				// LSR (direct)
+	case 0x44: swallowCurrent(); LSRA(); break;			// LSR (LSRA inherent)
+	case 0x54: swallowCurrent(); LSRB(); break;			// LSR (LSRB inherent)
+	case 0x64: indexedByte(); LSR(); break;				// LSR (indexed)
+	case 0x74: extendedByte(); LSR(); break;			// LSR (extended)
 
 	// MUL
-	case 0x3d:	memoryRead(); D() = mul(A(), B()); 						break;		// MUL (inherent)
+	case 0x3d: swallowCurrent(); MUL(); break;			// MUL (inherent)
 
 	// NEG
-	case 0x00:	RMW(AM_direct_byte, neg);								break;		// NEG (direct)
-	case 0x40:	memoryRead(); A() = neg(A());							break;		// NEG (NEGA, inherent)
-	case 0x50:	memoryRead(); B() = neg(B());							break;		// NEG (NEGB, inherent)
-	case 0x60:	RMW(AM_indexed_byte, neg);								break;		// NEG (indexed)
-	case 0x70:	RMW(AM_extended_byte, neg);								break;		// NEG (extended)
+	case 0x00: directByte(); NEG(); break;				// NEG (direct)
+	case 0x40: swallowCurrent(); NEGA(); break;			// NEG (NEGA, inherent)
+	case 0x50: swallowCurrent(); NEGB(); break;			// NEG (NEGB, inherent)
+	case 0x60: indexedByte(); NEG(); break;				// NEG (indexed)
+	case 0x70: extendedByte(); NEG(); break;			// NEG (extended)
 
 	// NOP
-	case 0x12:	memoryRead();											break;		// NOP (inherent)
+	case 0x12: swallowCurrent(); NOP(); break;			// NOP (inherent)
 
 	// OR
 
 	// ORA
-	case 0x8a:	A() = orr(A(), AM_immediate_byte());					break;		// OR (ORA immediate)
-	case 0x9a:	A() = orr(A(), AM_direct_byte());						break;		// OR (ORA direct)
-	case 0xaa:	A() = orr(A(), AM_indexed_byte());						break;		// OR (ORA indexed)
-	case 0xba:	A() = orr(A(), AM_extended_byte());						break;		// OR (ORA extended)
+	case 0x8a: immediateByte(); ORA(); break;			// OR (ORA immediate)
+	case 0x9a: directByte(); ORA(); break;				// OR (ORA direct)
+	case 0xaa: indexedByte(); ORA(); break;				// OR (ORA indexed)
+	case 0xba: extendedByte(); ORA(); break;			// OR (ORA extended)
 
 	// ORB
-	case 0xca:	B() = orr(B(), AM_immediate_byte());					break;		// OR (ORB immediate)
-	case 0xda:	B() = orr(B(), AM_direct_byte());						break;		// OR (ORB direct)
-	case 0xea:	B() = orr(B(), AM_indexed_byte());						break;		// OR (ORB indexed)
-	case 0xfa:	B() = orr(B(), AM_extended_byte());						break;		// OR (ORB extended)
+	case 0xca: immediateByte(); ORB(); break;			// OR (ORB immediate)
+	case 0xda: directByte(); ORB(); break;				// OR (ORB direct)
+	case 0xea: indexedByte(); ORB(); break;				// OR (ORB indexed)
+	case 0xfa: extendedByte(); ORB(); break;			// OR (ORB extended)
 
 	// ORCC
-	case 0x1a:	CC() |= AM_immediate_byte(); swallowRead();						break;		// OR (ORCC immediate)
+	case 0x1a: immediateByte(); ORCC(); break;			// OR (ORCC immediate)
 
 	// PSH
-	case 0x34:	psh(S(), AM_immediate_byte());							break;		// PSH (PSHS immediate)
-	case 0x36:	psh(U(), AM_immediate_byte());							break;		// PSH (PSHU immediate)
+	case 0x34: immediateByte(); PSHS(); break;			// PSH (PSHS immediate)
+	case 0x36: immediateByte(); PSHU(); break;			// PSH (PSHU immediate)
 
 	// PUL
-	case 0x35:	pul(S(), AM_immediate_byte());							break;		// PUL (PULS immediate)
-	case 0x37:	pul(U(), AM_immediate_byte());							break;		// PUL (PULU immediate)
+	case 0x35: immediateByte(); PULS(); break;			// PUL (PULS immediate)
+	case 0x37: immediateByte(); PULU(); break;			// PUL (PULU immediate)
 
 	// ROL
-	case 0x09:	RMW(AM_direct_byte, rol);								break;		// ROL (direct)
-	case 0x49:	memoryRead(); A() = rol(A());							break;		// ROL (ROLA inherent)
-	case 0x59:	memoryRead(); B() = rol(B());							break;		// ROL (ROLB inherent)
-	case 0x69:	RMW(AM_indexed_byte, rol);								break;		// ROL (indexed)
-	case 0x79:	RMW(AM_extended_byte, rol);								break;		// ROL (extended)
+	case 0x09: directByte(); ROL(); break;				// ROL (direct)
+	case 0x49: swallowCurrent(); ROLA(); break;			// ROL (ROLA inherent)
+	case 0x59: swallowCurrent(); ROLB(); break;			// ROL (ROLB inherent)
+	case 0x69: indexedByte(); ROL(); break;				// ROL (indexed)
+	case 0x79: extendedByte(); ROL(); break;			// ROL (extended)
 
 	// ROR
-	case 0x06:	RMW(AM_direct_byte, ror);								break;		// ROR (direct)
-	case 0x46:	memoryRead(); A() = ror(A());							break;		// ROR (RORA inherent)
-	case 0x56:	memoryRead(); B() = ror(B());							break;		// ROR (RORB inherent)
-	case 0x66:	RMW(AM_indexed_byte, ror);								break;		// ROR (indexed)
-	case 0x76:	RMW(AM_extended_byte, ror);								break;		// ROR (extended)
+	case 0x06: directByte(); ROR(); break;				// ROR (direct)
+	case 0x46: swallowCurrent(); RORA(); break;			// ROR (RORA inherent)
+	case 0x56: swallowCurrent(); RORB(); break;			// ROR (RORB inherent)
+	case 0x66: indexedByte(); ROR(); break;				// ROR (indexed)
+	case 0x76: extendedByte(); ROR(); break;			// ROR (extended)
 
 	// RTI
-	case 0x3B:	memoryRead(); rti();									break;		// RTI (inherent)
+	case 0x3B: swallowCurrent(); RTI(); break;			// RTI (inherent)
 
 	// RTS
-	case 0x39:	memoryRead(); ret(); 									break;		// RTS (inherent)
+	case 0x39: swallowCurrent(); RTS(); break;			// RTS (inherent)
 
 	// SBC
 
 	// SBCA
-	case 0x82:	A() = sbc(A(), AM_immediate_byte());					break;		// SBC (SBCA immediate)
-	case 0x92:	A() = sbc(A(), AM_direct_byte());						break;		// SBC (SBCA direct)
-	case 0xa2:	A() = sbc(A(), AM_indexed_byte());						break;		// SBC (SBCA indexed)
-	case 0xb2:	A() = sbc(A(), AM_extended_byte());						break;		// SBC (SBCB extended)
+	case 0x82: immediateByte(); SBCA(); break;			// SBC (SBCA immediate)
+	case 0x92: directByte(); SBCA(); break;				// SBC (SBCA direct)
+	case 0xa2: indexedByte(); SBCA(); break;			// SBC (SBCA indexed)
+	case 0xb2: extendedByte(); SBCA(); break;			// SBC (SBCB extended)
 
 	// SBCB
-	case 0xc2:	B() = sbc(B(), AM_immediate_byte());					break;		// SBC (SBCB immediate)
-	case 0xd2:	B() = sbc(B(), AM_direct_byte());						break;		// SBC (SBCB direct)
-	case 0xe2:	B() = sbc(B(), AM_indexed_byte());						break;		// SBC (SBCB indexed)
-	case 0xf2:	B() = sbc(B(), AM_extended_byte());						break;		// SBC (SBCB extended)
+	case 0xc2: immediateByte(); SBCB(); break;			// SBC (SBCB immediate)
+	case 0xd2: directByte(); SBCB(); break;				// SBC (SBCB direct)
+	case 0xe2: indexedByte(); SBCB(); break;			// SBC (SBCB indexed)
+	case 0xf2: extendedByte(); SBCB(); break;			// SBC (SBCB extended)
 
 	// SEX
-	case 0x1d:	memoryRead(); A() = sex(B());							break;		// SEX (inherent)
+	case 0x1d: swallowCurrent(); SEX(); break;			// SEX (inherent)
 
 	// ST
 
 	// STA
-	case 0x97:	base::memoryWrite(Address_direct(), through(A()));			break;		// ST (STA direct)
-	case 0xa7:	base::memoryWrite(Address_indexed(), through(A()));			break;		// ST (STA indexed)
-	case 0xb7:	base::memoryWrite(Address_extended(), through(A()));			break;		// ST (STA extended)
+	case 0x97: directAddress(); STA(); break;			// ST (STA direct)
+	case 0xa7: indexedAddress(); STA(); break;			// ST (STA indexed)
+	case 0xb7: extendedAddress(); STA(); break;			// ST (STA extended)
 
 	// STB
-	case 0xd7:	base::memoryWrite(Address_direct(), through(B()));			break;		// ST (STB direct)
-	case 0xe7:	base::memoryWrite(Address_indexed(), through(B()));			break;		// ST (STB indexed)
-	case 0xf7:	base::memoryWrite(Address_extended(), through(B()));			break;		// ST (STB extended)
+	case 0xd7: directAddress(); STB(); break;			// ST (STB direct)
+	case 0xe7: indexedAddress(); STB(); break;			// ST (STB indexed)
+	case 0xf7: extendedAddress(); STB(); break;			// ST (STB extended)
 
 	// STD
-	case 0xdd:	Processor::setShort(Address_direct(), through(D()));		break;		// ST (STD direct)
-	case 0xed:	Processor::setShort(Address_indexed(), through(D()));	break;		// ST (STD indexed)
-	case 0xfd:	Processor::setShort(Address_extended(), through(D()));	break;		// ST (STD extended)
+	case 0xdd: directAddress(); STD(); break;			// ST (STD direct)
+	case 0xed: indexedAddress(); STD(); break;			// ST (STD indexed)
+	case 0xfd: extendedAddress(); STD(); break;			// ST (STD extended)
 
 	// STU
-	case 0xdf:	Processor::setShort(Address_direct(), through(U()));		break;		// ST (STU direct)
-	case 0xef:	Processor::setShort(Address_indexed(), through(U()));	break;		// ST (STU indexed)
-	case 0xff:	Processor::setShort(Address_extended(), through(U()));	break;		// ST (STU extended)
+	case 0xdf: directAddress(); STU(); break;			// ST (STU direct)
+	case 0xef: indexedAddress(); STU(); break;			// ST (STU indexed)
+	case 0xff: extendedAddress(); STU(); break;			// ST (STU extended)
 
 	// STX
-	case 0x9f:	Processor::setShort(Address_direct(), through(X()));		break;		// ST (STX direct)
-	case 0xaf:	Processor::setShort(Address_indexed(), through(X()));	break;		// ST (STX indexed)
-	case 0xbf:	Processor::setShort(Address_extended(), through(X()));	break;		// ST (STX extended)
+	case 0x9f: directAddress(); STX(); break;			// ST (STX direct)
+	case 0xaf: indexedAddress(); STX(); break;			// ST (STX indexed)
+	case 0xbf: extendedAddress(); STX(); break;			// ST (STX extended)
 
 	// SUB
 
 	// SUBA
-	case 0x80:	A() = sub(A(), AM_immediate_byte());					break;		// SUB (SUBA immediate)
-	case 0x90:	A() = sub(A(), AM_direct_byte());						break;		// SUB (SUBA direct)
-	case 0xa0:	A() = sub(A(), AM_indexed_byte());						break;		// SUB (SUBA indexed)
-	case 0xb0:	A() = sub(A(), AM_extended_byte());						break;		// SUB (SUBA extended)
+	case 0x80: immediateByte(); SUBA(); break;			// SUB (SUBA immediate)
+	case 0x90: directByte(); SUBA(); break;				// SUB (SUBA direct)
+	case 0xa0: indexedByte(); SUBA(); break;			// SUB (SUBA indexed)
+	case 0xb0: extendedByte(); SUBA(); break;			// SUB (SUBA extended)
 
 	// SUBB
-	case 0xc0:	B() = sub(B(), AM_immediate_byte());					break;		// SUB (SUBB immediate)
-	case 0xd0:	B() = sub(B(), AM_direct_byte());						break;		// SUB (SUBB direct)
-	case 0xe0:	B() = sub(B(), AM_indexed_byte());						break;		// SUB (SUBB indexed)
-	case 0xf0:	B() = sub(B(), AM_extended_byte());						break;		// SUB (SUBB extended)
+	case 0xc0: immediateByte(); SUBB(); break;			// SUB (SUBB immediate)
+	case 0xd0: directByte(); SUBB(); break;				// SUB (SUBB direct)
+	case 0xe0: indexedByte(); SUBB(); break;			// SUB (SUBB indexed)
+	case 0xf0: extendedByte(); SUBB(); break;			// SUB (SUBB extended)
 
 	// SUBD
-	case 0x83:	D() = sub(D(), AM_immediate_word());					break;		// SUB (SUBD immediate)
-	case 0x93:	D() = sub(D(), AM_direct_word());						break;		// SUB (SUBD direct)
-	case 0xa3:	D() = sub(D(), AM_indexed_word());						break;		// SUB (SUBD indexed)
-	case 0xb3:	D() = sub(D(), AM_extended_word());						break;		// SUB (SUBD extended)
+	case 0x83: immediateShort(); SUBD(); break;			// SUB (SUBD immediate)
+	case 0x93: directShort(); SUBD(); break;			// SUB (SUBD direct)
+	case 0xa3: indexedShort(); SUBD(); break;			// SUB (SUBD indexed)
+	case 0xb3: extendedShort(); SUBD(); break;			// SUB (SUBD extended)
 
 	// SWI
-	case 0x3f:	memoryRead(); swi();									break;		// SWI (inherent) XXXX
+	case 0x3f: swallowCurrent(); SWI(); break;			// SWI (inherent)
 
 	// SYNC
-	case 0x13:	memoryRead(); halt();									break;		// SYNC (inherent)XXXX
+	case 0x13: swallowCurrent(); SYNC(); break;			// SYNC (inherent)
 
 	// TFR
-	case 0x1f:	tfr(AM_immediate_byte());								break;		// TFR (immediate)
+	case 0x1f: immediateByte(); TFR(); break;			// TFR (immediate)
 
 	// TST
-	case 0x0d:	tst(AM_direct_byte());									break;		// TST (direct)
-	case 0x4d:	memoryRead(); tst(A());									break;		// TST (TSTA inherent)
-	case 0x5d:	memoryRead(); tst(B()); 								break;		// TST (TSTB inherent)
-	case 0x6d:	tst(AM_indexed_byte());									break;		// TST (indexed)
-	case 0x7d:	tst(AM_extended_byte());								break;		// TST (extended)
+	case 0x0d: directByte(); TST(); break;				// TST (direct)
+	case 0x4d: swallowCurrent(); TSTA(); break;			// TST (TSTA inherent)
+	case 0x5d: swallowCurrent(); TSTB(); break;			// TST (TSTB inherent)
+	case 0x6d: indexedByte(); TST(); break;				// TST (indexed)
+	case 0x7d: extendedByte(); TST(); break;			// TST (extended)
 
 	// Branching
+	case 0x16: relativeWordAddress(); LBRA(); break;	// BRA (LBRA relative)
+	case 0x17: relativeWordAddress(); LBSR(); break;	// BSR (LBSR relative)
+	case 0x20: relativeByteAddress(); BRA(); break;		// BRA (relative)
+	case 0x21: relativeByteAddress(); BRN(); break;		// BRN (relative)
+	case 0x22: relativeByteAddress(); BHI(); break;		// BHI (relative)
+	case 0x23: relativeByteAddress(); BLS(); break;		// BLS (relative)
+	case 0x24: relativeByteAddress(); BCC(); break;		// BCC (relative)
+	case 0x25: relativeByteAddress(); BCS(); break;		// BCS (relative)
+	case 0x26: relativeByteAddress(); BNE(); break;		// BNE (relative)
+	case 0x27: relativeByteAddress(); BEQ(); break;		// BEQ (relative)
+	case 0x28: relativeByteAddress(); BVC(); break;		// BVC (relative)
+	case 0x29: relativeByteAddress(); BVS(); break;		// BVS (relative)
+	case 0x2a: relativeByteAddress(); BPL(); break;		// BPL (relative)
+	case 0x2b: relativeByteAddress(); BMI(); break;		// BMI (relative)
+	case 0x2c: relativeByteAddress(); BGE(); break;		// BGE (relative)
+	case 0x2d: relativeByteAddress(); BLT(); break;		// BLT (relative)
+	case 0x2e: relativeByteAddress(); BGT(); break;		// BGT (relative)
+	case 0x2f: relativeByteAddress(); BLE(); break;		// BLE (relative)
 
-	case 0x16:	jump(Address_relative_word());							break;		// BRA (LBRA relative)
-	case 0x17:	jsr(Address_relative_word());							break;		// BSR (LBSR relative)
-	case 0x20:	jump(Address_relative_byte());							break;		// BRA (relative)
-	case 0x21:	Address_relative_byte();								break;		// BRN (relative)
-	case 0x22:	branchShort(HI());										break;		// BHI (relative)
-	case 0x23:	branchShort(LS());										break;		// BLS (relative)
-	case 0x24:	branchShort(!carry());									break;		// BCC (relative)
-	case 0x25:	branchShort(carry());									break;		// BCS (relative)
-	case 0x26:	branchShort(!zero());									break;		// BNE (relative)
-	case 0x27:	branchShort(zero());									break;		// BEQ (relative)
-	case 0x28: 	branchShort(!overflow());								break;		// BVC (relative)
-	case 0x29: 	branchShort(overflow());								break;		// BVS (relative)
-	case 0x2a: 	branchShort(!negative());								break;		// BPL (relative)
-	case 0x2b: 	branchShort(negative());								break;		// BMI (relative)
-	case 0x2c:	branchShort(GE());										break;		// BGE (relative)
-	case 0x2d:	branchShort(LT());										break;		// BLT (relative)
-	case 0x2e:	branchShort(GT());										break;		// BGT (relative)
-	case 0x2f:	branchShort(LE());										break;		// BLE (relative)
-
-	case 0x8d:	jsr(Address_relative_byte());							break;		// BSR (relative)
+	case 0x8d: relativeByteAddress(); BSR(); break;		// BSR (relative)
 
 	default:
 		UNREACHABLE;
@@ -533,69 +518,65 @@ void EightBit::mc6809::executeUnprefixed() {
 
 void EightBit::mc6809::execute10() {
 
-	assert(m_prefix10 && !m_prefix11);
-	assert(cycles() == 2);	// Two fetches
-
 	switch (opcode()) {
 
 	// CMP
 
 	// CMPD
-	case 0x83:	cmp(D(), AM_immediate_word());							break;		// CMP (CMPD, immediate)
-	case 0x93:	cmp(D(), AM_direct_word());								break;		// CMP (CMPD, direct)
-	case 0xa3:	cmp(D(), AM_indexed_word());							break;		// CMP (CMPD, indexed)
-	case 0xb3:	cmp(D(), AM_extended_word());							break;		// CMP (CMPD, extended)
+	case 0x83: immediateShort(); CMPD(); break;			// CMP (CMPD, immediate)
+	case 0x93: directShort(); CMPD(); break;			// CMP (CMPD, direct)
+	case 0xa3: indexedShort(); CMPD(); break;			// CMP (CMPD, indexed)
+	case 0xb3: extendedShort(); CMPD(); break;			// CMP (CMPD, extended)
 
 	// CMPY
-	case 0x8c:	cmp(Y(), AM_immediate_word());							break;		// CMP (CMPY, immediate)
-	case 0x9c:	cmp(Y(), AM_direct_word());								break;		// CMP (CMPY, direct)
-	case 0xac:	cmp(Y(), AM_indexed_word());							break;		// CMP (CMPY, indexed)
-	case 0xbc:	cmp(Y(), AM_extended_word());							break;		// CMP (CMPY, extended)
+	case 0x8c: immediateShort(); CMPY(); break;			// CMP (CMPY, immediate)
+	case 0x9c: directShort(); CMPY(); break;			// CMP (CMPY, direct)
+	case 0xac: indexedShort(); CMPY(); break;			// CMP (CMPY, indexed)
+	case 0xbc: extendedShort(); CMPY(); break;			// CMP (CMPY, extended)
 
 	// LD
 
 	// LDS
-	case 0xce:	S() = through(AM_immediate_word());						break;		// LD (LDS immediate)
-	case 0xde:	S() = through(AM_direct_word());						break;		// LD (LDS direct)
-	case 0xee:	S() = through(AM_indexed_word());						break;		// LD (LDS indexed)
-	case 0xfe:	S() = through(AM_extended_word());						break;		// LD (LDS extended)
+	case 0xce: immediateShort(); LDS(); break;			// LD (LDS immediate)
+	case 0xde: directShort(); LDS(); break;				// LD (LDS direct)
+	case 0xee: indexedShort(); LDS(); break;			// LD (LDS indexed)
+	case 0xfe: extendedShort(); LDS(); break;			// LD (LDS extended)
 
 	// LDY
-	case 0x8e:	Y() = through(AM_immediate_word());						break;		// LD (LDY immediate)
-	case 0x9e:	Y() = through(AM_direct_word());						break;		// LD (LDY direct)
-	case 0xae:	Y() = through(AM_indexed_word());						break;		// LD (LDY indexed)
-	case 0xbe:	Y() = through(AM_extended_word());						break;		// LD (LDY extended)
+	case 0x8e: immediateShort(); LDY(); break;			// LD (LDY immediate)
+	case 0x9e: directShort(); LDY(); break;				// LD (LDY direct)
+	case 0xae: indexedShort(); LDY(); break;			// LD (LDY indexed)
+	case 0xbe: extendedShort(); LDY(); break;			// LD (LDY extended)
 
 	// Branching
-
-	case 0x21:	Address_relative_word();								break;		// BRN (LBRN relative)
-	case 0x22:	branchLong(HI());										break;		// BHI (LBHI relative)
-	case 0x23:	branchLong(LS());										break;		// BLS (LBLS relative)
-	case 0x24:	branchLong(!carry());									break;		// BCC (LBCC relative)
-	case 0x25:	branchLong(carry());									break;		// BCS (LBCS relative)
-	case 0x26:	branchLong(!zero());									break;		// BNE (LBNE relative)
-	case 0x27:	branchLong(zero());										break;		// BEQ (LBEQ relative)
-	case 0x28:	branchLong(!overflow());								break;		// BVC (LBVC relative)
-	case 0x29:	branchLong(overflow());									break;		// BVS (LBVS relative)
-	case 0x2a:	branchLong(!negative());								break;		// BPL (LBPL relative)
-	case 0x2b: 	branchLong(negative());									break;		// BMI (LBMI relative)
-	case 0x2c:	branchLong(GE());										break;		// BGE (LBGE relative)
-	case 0x2d:	branchLong(LT());										break;		// BLT (LBLT relative)
-	case 0x2e:	branchLong(GT());										break;		// BGT (LBGT relative)
-	case 0x2f:	branchLong(LE());										break;		// BLE (LBLE relative)
+	case 0x21: relativeWordAddress(); LBRN(); break;	// BRN (LBRN relative)
+	case 0x22: relativeWordAddress(); LBHI(); break;	// BHI (LBHI relative)
+	case 0x23: relativeWordAddress(); LBLS(); break;	// BLS (LBLS relative)
+	case 0x24: relativeWordAddress(); LBCC(); break;	// BCC (LBCC relative)
+	case 0x25: relativeWordAddress(); LBCS(); break;	// BCS (LBCS relative)
+	case 0x26: relativeWordAddress(); LBNE(); break;	// BNE (LBNE relative)
+	case 0x27: relativeWordAddress(); LBEQ(); break;	// BEQ (LBEQ relative)
+	case 0x28: relativeWordAddress(); LBVC(); break;	// BVC (LBVC relative)
+	case 0x29: relativeWordAddress(); LBVS(); break;	// BVS (LBVS relative)
+	case 0x2a: relativeWordAddress(); LBPL(); break;	// BPL (LBPL relative)
+	case 0x2b: relativeWordAddress(); LBMI(); break;	// BMI (LBMI relative)
+	case 0x2c: relativeWordAddress(); LBGE(); break;	// BGE (LBGE relative)
+	case 0x2d: relativeWordAddress(); LBLT(); break;	// BLT (LBLT relative)
+	case 0x2e: relativeWordAddress(); LBGT(); break;	// BGT (LBGT relative)
+	case 0x2f: relativeWordAddress(); LBLE(); break;	// BLE (LBLE relative)
 
 	// STS
-	case 0xdf:	Processor::setShort(Address_direct(), through(S()));		break;		// ST (STS direct)
-	case 0xef:	Processor::setShort(Address_indexed(), through(S()));	break;		// ST (STS indexed)
-	case 0xff:	Processor::setShort(Address_extended(), through(S()));	break;		// ST (STS extended)
+	case 0xdf: directAddress(); STS(); break;			// ST (STS direct)
+	case 0xef: indexedAddress(); STS(); break;			// ST (STS indexed)
+	case 0xff: extendedAddress(); STS(); break;			// ST (STS extended)
 
 	// STY
-	case 0x9f:	Processor::setShort(Address_direct(), through(Y()));		break;		// ST (STY direct)
-	case 0xaf:	Processor::setShort(Address_indexed(), through(Y()));	break;		// ST (STY indexed)
-	case 0xbf:	Processor::setShort(Address_extended(), through(Y()));	break;		// ST (STY extended)
+	case 0x9f: directAddress(); STY(); break;			// ST (STY direct)
+	case 0xaf: indexedAddress(); STY(); break;			// ST (STY indexed)
+	case 0xbf: extendedAddress(); STY(); break;			// ST (STY extended)
 
 	// SWI
-	case 0x3f:	memoryRead(); swi2();									break;		// SWI (SWI2 inherent)
+	case 0x3f: swallowCurrent(); SWI2(); break;			// SWI (SWI2 inherent)
 
 	default:
 		UNREACHABLE;
@@ -604,57 +585,117 @@ void EightBit::mc6809::execute10() {
 
 void EightBit::mc6809::execute11() {
 
-	assert(!m_prefix10 && m_prefix11);
-	assert(cycles() == 2);	// Two fetches
-
 	switch (opcode()) {
 
 	// CMP
 
 	// CMPU
-	case 0x83:	cmp(U(), AM_immediate_word());							break;		// CMP (CMPU, immediate)
-	case 0x93:	cmp(U(), AM_direct_word());								break;		// CMP (CMPU, direct)
-	case 0xa3:	cmp(U(), AM_indexed_word());							break;		// CMP (CMPU, indexed)
-	case 0xb3:	cmp(U(), AM_extended_word());							break;		// CMP (CMPU, extended)
+	case 0x83: immediateShort(); CMPU(); break;			// CMP (CMPU, immediate)
+	case 0x93: directShort(); CMPU(); break;			// CMP (CMPU, direct)
+	case 0xa3: indexedShort(); CMPU(); break;			// CMP (CMPU, indexed)
+	case 0xb3: extendedShort(); CMPU(); break;			// CMP (CMPU, extended)
 
 	// CMPS
-	case 0x8c:	cmp(S(), AM_immediate_word());							break;		// CMP (CMPS, immediate)
-	case 0x9c:	cmp(S(), AM_direct_word());								break;		// CMP (CMPS, direct)
-	case 0xac:	cmp(S(), AM_indexed_word());							break;		// CMP (CMPS, indexed)
-	case 0xbc:	cmp(S(), AM_extended_word());							break;		// CMP (CMPS, extended)
+	case 0x8c: immediateShort(); CMPS(); break;			// CMP (CMPS, immediate)
+	case 0x9c: directShort(); CMPS(); break;			// CMP (CMPS, direct)
+	case 0xac: indexedShort(); CMPS(); break;			// CMP (CMPS, indexed)
+	case 0xbc: extendedShort(); CMPS(); break;			// CMP (CMPS, extended)
 
 	// SWI
-	case 0x3f:	memoryRead(); swi3();									break;		// SWI (SWI3 inherent)
+	case 0x3f: swallowCurrent(); SWI3(); break;			// SWI (SWI3 inherent)
 
 	default:
 		UNREACHABLE;
 	}
 }
 
-//
+#pragma region Miscellaneous instruction implementations
 
-void EightBit::mc6809::push(const uint8_t value) noexcept {
+void EightBit::mc6809::prefix10() {
+	m_prefix10 = true;
+	base::execute(fetchInstruction());
+}
+
+void EightBit::mc6809::prefix11() {
+	m_prefix11 = true;
+	base::execute(fetchInstruction());
+}
+
+#pragma endregion
+
+#pragma region Push / Pop
+
+void EightBit::mc6809::pop() noexcept {
+	popS();
+}
+
+void EightBit::mc6809::push(uint8_t value) noexcept {
 	pushS(value);
 }
 
-void EightBit::mc6809::pop() noexcept {
-	(void)popS();
-}
-
-void EightBit::mc6809::push(register16_t& stack, const uint8_t value) noexcept {
+void EightBit::mc6809::push(register16_t& stack, uint8_t value) {
 	base::memoryWrite(--stack, value);
 }
 
-uint8_t EightBit::mc6809::pop(register16_t& stack) noexcept {
-	base::memoryRead(stack++);
-	return BUS().DATA();
+void EightBit::mc6809::pushS(uint8_t value) noexcept {
+	push(S(), value);
 }
 
-//
+void EightBit::mc6809::push(register16_t& stack, register16_t value) {
+	push(stack, value.low);
+	push(stack, value.high);
+}
 
-EightBit::register16_t& EightBit::mc6809::RR(const int which) {
-	ASSUME(which >= 0);
-	ASSUME(which <= 3);
+void EightBit::mc6809::pop(register16_t& stack) noexcept {
+	base::memoryRead(stack++);
+}
+
+void EightBit::mc6809::popS() noexcept {
+	pop(S());
+}
+
+EightBit::register16_t EightBit::mc6809::popWord(register16_t& stack) {
+	pop(stack);
+	intermediate().high = BUS().DATA();
+	pop(stack);
+	intermediate().low = BUS().DATA();
+	return intermediate();
+}
+
+#pragma endregion
+
+#pragma region Addressing modes
+
+void EightBit::mc6809::immediateAddress() noexcept {
+	EA() = PC();
+	++PC();
+}
+
+void EightBit::mc6809::relativeByteAddress() {
+	fetchByte();
+	const int8_t offset = BUS().DATA();
+	EA().joined = PC().joined + offset;
+}
+
+void EightBit::mc6809::relativeWordAddress() {
+	fetchShort();
+	const int16_t offset = intermediate().joined;
+	EA().joined = PC().joined + offset;
+}
+
+void EightBit::mc6809::directAddress() {
+	fetchByte();
+	EA() = { BUS().DATA(), DP() };
+	swallowRead();
+}
+
+void EightBit::mc6809::extendedAddress() {
+	fetchInto(intermediate());
+	EA() = intermediate();
+	swallowRead();
+}
+
+EightBit::register16_t& EightBit::mc6809::RR(int which) {
 	switch (which) {
 	case 0b00:
 		return X();
@@ -669,171 +710,754 @@ EightBit::register16_t& EightBit::mc6809::RR(const int which) {
 	}
 }
 
-EightBit::register16_t EightBit::mc6809::Address_relative_byte() {
-	fetchByte();
-	const auto address = PC() + (int8_t)BUS().DATA();
-	swallowRead();
-	return address;
-}
-
-EightBit::register16_t EightBit::mc6809::Address_relative_word() {
-	fetchShort();
-	return PC() + (int16_t)intermediate().joined;
-}
-
-EightBit::register16_t EightBit::mc6809::Address_direct() {
-	fetchByte();
-	const auto offset = BUS().DATA();
-	swallowRead();
-	return register16_t(offset, DP());
-}
-
-EightBit::register16_t EightBit::mc6809::Address_indexed() {
+void EightBit::mc6809::indexedAddress() {
 	fetchByte();
 	const auto type = BUS().DATA();
-	auto& r = RR((type & (Bit6 | Bit5)) >> 5);
-
-	register16_t address = Mask16;
-	if (type & Bit7) {
-		const auto indirect = type & Bit4;
+	auto& r = RR((type & Bit6 | Bit5) >> 5);
+	if ((type & Bit7) != 0) {
 		switch (type & Mask4) {
-		case 0b0000:	// ,R+
-			ASSUME(!indirect);
-			address = r++;
-			base::memoryRead(PC());
+		case 0b0000: // ,R+
+			EA() = r;
+			++r;
+			swallowCurrent();
 			swallowRead(2);
 			break;
-		case 0b0001:	// ,R++
-			address = r;
+		case 0b0001: // ,R++
+			EA() = r;
 			r += 2;
-			base::memoryRead(PC());
+			swallowCurrent();
 			swallowRead(3);
 			break;
-		case 0b0010:	// ,-R
-			ASSUME(!indirect);
-			address = --r;
-			base::memoryRead(PC());
+		case 0b0010: // ,-R
+			--r;
+			EA() = r;
+			swallowCurrent();
 			swallowRead(2);
 			break;
-		case 0b0011:	// ,--R
+		case 0b0011: // ,--R
 			r -= 2;
-			address = r;
-			base::memoryRead(PC());
+			EA() = r;
+			swallowCurrent();
 			swallowRead(3);
 			break;
-		case 0b0100:	// ,R
-			address = r;
-			memoryRead();
+		case 0b0100: // ,R
+			EA() = r;
+			swallowCurrent();
 			break;
-		case 0b0101:	// B,R
-			address = r + (int8_t)B();
-			base::memoryRead(PC());
+		case 0b0101: // B,R
+			EA().joined = r.joined + B();
+			swallowCurrent();
 			swallowRead();
 			break;
-		case 0b0110:	// A,R
-			address = r + (int8_t)A();
-			base::memoryRead(PC());
+		case 0b0110: // A,R
+			EA().joined = r.joined + (int8_t)A();
+			swallowCurrent();
 			swallowRead();
 			break;
-		case 0b1000:	// n,R (eight-bit)
+		case 0b1000: // n,R (eight-bit)
 			fetchByte();
-			address = r + (int8_t)BUS().DATA();
+			EA().joined = r.joined + (int8_t)BUS().DATA();
 			swallowRead();
 			break;
-		case 0b1001:	// n,R (sixteen-bit)
-			fetchShort();
-			address = r + (int16_t)intermediate().joined;
-			base::memoryRead(PC());
+		case 0b1001: // n,R (sixteen-bit)
+			fetchInto(intermediate());
+			EA() = intermediate();
+			EA().joined += r.joined;
+			swallowCurrent();
 			swallowRead(2);
 			break;
-		case 0b1011:	// D,R
-			address = r + D();
-			base::memoryRead(PC());
-			base::memoryRead(PC() + 1);
-			base::memoryRead(PC() + 2);
+		case 0b1011: // D,R
+			EA().joined = r.joined + D().joined;
+			swallowCurrent(3);
 			swallowRead(2);
 			break;
-		case 0b1100:	// n,PCR (eight-bit)
-			address = Address_relative_byte();
+		case 0b1100: // n,PCR (eight-bit)
+			relativeByteAddress();
+			swallowRead();
 			break;
-		case 0b1101:	// n,PCR (sixteen-bit)
-			address = Address_relative_word();
-			base::memoryRead(PC());
+		case 0b1101: // n,PCR (sixteen-bit)
+			relativeWordAddress();
+			swallowCurrent();
 			swallowRead(3);
 			break;
-		case 0b1111:	// [n]
-			assert(indirect);
-			address = Address_extended();
-			base::memoryRead(PC());
+		case 0b1111: // [n]
+			fetchInto(intermediate());
+			EA() = intermediate();
+			swallowCurrent();
 			break;
 		default:
-			UNREACHABLE;
+			assert(false && "Invalid index type");
 		}
-		if (indirect) {
-			base::getShort(address);
-			address = base::intermediate();
+
+		const auto indirect = type & Bit4;
+		if (indirect != 0) {
+			LEA(BUS().ADDRESS());
+			getInto(EA());
 			swallowRead();
 		}
-	} else {
+	}
+	else {
 		// EA = ,R + 5-bit offset
-		address = r + signExtend(5, type & Mask5);
-		base::memoryRead(PC());
+		EA().joined = r.joined + signExtend(5, type & Mask5);
+		swallowCurrent();
 		swallowRead();
 	}
-	return address;
 }
 
-EightBit::register16_t EightBit::mc6809::Address_extended() {
+void EightBit::mc6809::immediateByte() {
+	immediateAddress();
+	base::memoryRead(EA());
+}
+
+void EightBit::mc6809::fetchByte() noexcept {
+	immediateByte();
+}
+
+void EightBit::mc6809::directByte() {
+	directAddress();
+	base::memoryRead(EA());
+}
+
+void EightBit::mc6809::indexedByte() {
+	indexedAddress();
+	base::memoryRead(EA());
+}
+
+void EightBit::mc6809::extendedByte() {
+	extendedAddress();
+	base::memoryRead(EA());
+}
+
+void EightBit::mc6809::immediateShort() {
 	fetchShort();
+}
+
+void EightBit::mc6809::directShort() {
+	directAddress();
+	getShort(EA());
+}
+
+void EightBit::mc6809::indexedShort() {
+	indexedAddress();
+	getShort(EA());
+}
+
+void EightBit::mc6809::extendedShort() {
+	extendedAddress();
+	getShort(EA());
+}
+
+#pragma endregion
+
+#pragma region Load / store 8 or 16 - bit data
+
+uint8_t EightBit::mc6809::through(uint8_t data) {
+	CC() = clearBit(CC(), VF);
+	CC() = adjustNZ(data);
+	return data;
+}
+
+void EightBit::mc6809::assign(uint8_t& destination) {
+	destination = through(BUS().DATA());
+}
+
+void EightBit::mc6809::LDA() {
+	assign(A());
+}
+
+void EightBit::mc6809::LDB() {
+	assign(B());
+}
+
+uint16_t EightBit::mc6809::through(uint16_t data) {
+	CC() = clearBit(CC(), VF);
+	CC() = adjustNZ(data);
+	return data;
+}
+
+EightBit::register16_t EightBit::mc6809::through(register16_t data) {
+	return through(data.joined);
+}
+
+void EightBit::mc6809::assign(register16_t destination) {
+	destination = through(intermediate());
+}
+
+void EightBit::mc6809::LDD() {
+	assign(D());
+}
+
+void EightBit::mc6809::LDS() {
+	assign(S());
+}
+
+void EightBit::mc6809::LDU() {
+	assign(U());
+}
+
+void EightBit::mc6809::LDX() {
+	assign(X());
+}
+
+void EightBit::mc6809::LDY() {
+	assign(Y());
+}
+
+void EightBit::mc6809::store(uint8_t data) {
+	base::memoryWrite(EA(), through(data));
+}
+
+void EightBit::mc6809::STA() {
+	store(A());
+}
+
+void EightBit::mc6809::STB() {
+	store(B());
+}
+
+void EightBit::mc6809::store(register16_t data) {
+	Processor::setShort(EA(), through(data));
+}
+
+void EightBit::mc6809::STD() {
+	store(D());
+}
+
+void EightBit::mc6809::STU() {
+	store(U());
+}
+
+void EightBit::mc6809::STS() {
+	store(S());
+}
+
+void EightBit::mc6809::STX() {
+	store(X());
+}
+
+void EightBit::mc6809::STY() {
+	store(Y());
+}
+
+#pragma endregion
+
+#pragma region Branching
+
+void EightBit::mc6809::LBSR() {
+	swallowRead(4);
+	call(EA());
+}
+
+void EightBit::mc6809::BSR() {
+	swallowRead(3);
+	call(EA());
+}
+
+bool EightBit::mc6809::branch(register16_t destination, bool condition) {
 	swallowRead();
-	return intermediate();
+	if (condition)
+		jump(destination);
+	return condition;
+}
+
+void EightBit::mc6809::branchShort(bool condition) {
+	branch(EA(), condition);
+}
+
+void EightBit::mc6809::branchLong(bool condition) {
+	if (branch(EA(), condition))
+		swallowRead();
+}
+
+void EightBit::mc6809::BRA() { branchShort(true); }
+void EightBit::mc6809::BRN() { branchShort(false); }
+void EightBit::mc6809::BHI() { branchShort(HI()); }
+void EightBit::mc6809::BLS() { branchShort(LS()); }
+void EightBit::mc6809::BCC() { branchShort(!carry()); }
+void EightBit::mc6809::BCS() { branchShort(carry()); }
+void EightBit::mc6809::BNE() { branchShort(!zero()); }
+void EightBit::mc6809::BEQ() { branchShort(zero()); }
+void EightBit::mc6809::BVC() { branchShort(!overflow()); }
+void EightBit::mc6809::BVS() { branchShort(overflow()); }
+void EightBit::mc6809::BPL() { branchShort(!negative()); }
+void EightBit::mc6809::BMI() { branchShort(negative()); }
+void EightBit::mc6809::BGE() { branchShort(GE()); }
+void EightBit::mc6809::BLT() { branchShort(LT()); }
+void EightBit::mc6809::BGT() { branchShort(GT()); }
+void EightBit::mc6809::BLE() { branchShort(LE()); }
+
+void EightBit::mc6809::LBRA() { branchLong(true); }
+void EightBit::mc6809::LBRN() { branchLong(false); }
+void EightBit::mc6809::LBHI() { branchLong(HI()); }
+void EightBit::mc6809::LBLS() { branchLong(LS()); }
+void EightBit::mc6809::LBCC() { branchLong(!carry()); }
+void EightBit::mc6809::LBCS() { branchLong(carry()); }
+void EightBit::mc6809::LBNE() { branchLong(!zero()); }
+void EightBit::mc6809::LBEQ() { branchLong(zero()); }
+void EightBit::mc6809::LBVC() { branchLong(!overflow()); }
+void EightBit::mc6809::LBVS() { branchLong(overflow()); }
+void EightBit::mc6809::LBPL() { branchLong(!negative()); }
+void EightBit::mc6809::LBMI() { branchLong(negative()); }
+void EightBit::mc6809::LBGE() { branchLong(GE()); }
+void EightBit::mc6809::LBLT() { branchLong(LT()); }
+void EightBit::mc6809::LBGT() { branchLong(GT()); }
+void EightBit::mc6809::LBLE() { branchLong(LE()); }
+
+#pragma endregion
+
+#pragma region Miscellaneous instruction implementations
+
+void EightBit::mc6809::SYNC() { halt(); }
+
+void EightBit::mc6809::NOP() {
+	// No operation!
+}
+
+void EightBit::mc6809::ABX() {
+	X().joined += B();
+	swallowRead();
+}
+
+void EightBit::mc6809::ADCA() { A() = addWithCarry(A()); }
+void EightBit::mc6809::ADCB() { B() = addWithCarry(B()); }
+
+uint8_t EightBit::mc6809::addWithCarry(uint8_t operand) {
+	return add(operand, BUS().DATA(), carryFlag());
+}
+
+void EightBit::mc6809::ADDA() { A() = add(A()); }
+void EightBit::mc6809::ADDB() { B() = add(B()); }
+
+uint8_t EightBit::mc6809::add(uint8_t operand) {
+	return add(operand, BUS().DATA());
+}
+
+uint8_t EightBit::mc6809::add(uint8_t operand, uint8_t data, int carry) {
+	intermediate().joined = operand + data + carry;
+	CC() = adjustAddition(operand, data, intermediate());
+	return intermediate().low;
+}
+
+void EightBit::mc6809::ADDD() {
+	D() = add(D(), intermediate());
+}
+
+EightBit::register16_t EightBit::mc6809::add(register16_t operand, register16_t data, int carry) {
+	auto addition = operand.joined + data.joined + carry;
+	CC() = adjustAddition(operand, data, addition);
+	swallowRead();
+	return addition;
+}
+
+EightBit::register16_t EightBit::mc6809::add(register16_t operand, register16_t data) {
+	return add(operand, data, 0);
 }
 
 //
 
-uint8_t EightBit::mc6809::AM_immediate_byte() {
-	fetchByte();
-	return BUS().DATA();
+void EightBit::mc6809::ANDCC() {
+	CC() &= BUS().DATA();
+	swallowRead();
 }
 
-uint8_t EightBit::mc6809::AM_direct_byte() {
-	base::memoryRead(Address_direct());
-	return BUS().DATA();
+void EightBit::mc6809::ANDA() { A() = _and(A()); }
+void EightBit::mc6809::ANDB() { B() = _and(B()); }
+
+uint16_t EightBit::mc6809::_and(uint16_t operand, uint16_t data) {
+	return through((uint16_t)(operand & data));
 }
 
-uint8_t EightBit::mc6809::AM_indexed_byte() {
-	base::memoryRead(Address_indexed());
-	return BUS().DATA();
+EightBit::register16_t EightBit::mc6809::_and(register16_t operand, register16_t data) {
+	return { _and(operand.joined, data.joined) };
 }
 
-uint8_t EightBit::mc6809::AM_extended_byte() {
-	base::memoryRead(Address_extended());
-	return BUS().DATA();
+uint8_t EightBit::mc6809::_and(uint8_t operand, uint8_t data) {
+	return through((uint8_t)(operand & data));
 }
 
-//
-
-EightBit::register16_t EightBit::mc6809::AM_immediate_word() {
-	fetchShort();
-	return intermediate();
+uint8_t EightBit::mc6809::_and(uint8_t operand) {
+	return _and(operand, BUS().DATA());
 }
 
-EightBit::register16_t EightBit::mc6809::AM_direct_word() {
-	getShort(Address_direct());
-	return intermediate();
+void EightBit::mc6809::ASLA() { A() = arithmeticShiftLeft(A()); }
+
+void EightBit::mc6809::ASLB() { B() = arithmeticShiftLeft(B()); }
+
+void EightBit::mc6809::ASL() {
+	auto result = arithmeticShiftLeft(BUS().DATA());
+	swallowEffectiveAddress();
+	base::memoryWrite(result);
 }
 
-EightBit::register16_t EightBit::mc6809::AM_indexed_word() {
-	getShort(Address_indexed());
-	return intermediate();
+uint8_t EightBit::mc6809::arithmeticShiftLeft(uint8_t operand) {
+	CC() = setBit(CC(), CF, operand & Bit7);
+	CC() = adjustNZ((uint8_t)(operand <<= 1));
+	auto overflow = carryFlag() ^ negativeFlag() >> 3;
+	CC() = setBit(CC(), VF, overflow);
+	return operand;
 }
 
-EightBit::register16_t EightBit::mc6809::AM_extended_word() {
-	getShort(Address_extended());
-	return intermediate();
+void EightBit::mc6809::ASRA() { A() = arithmeticShiftRight(A()); }
+
+void EightBit::mc6809::ASRB() { B() = arithmeticShiftRight(B()); }
+
+void EightBit::mc6809::ASR() {
+	auto result = arithmeticShiftRight(BUS().DATA());
+	swallowEffectiveAddress();
+	base::memoryWrite(result);
 }
 
-//
+uint8_t EightBit::mc6809::arithmeticShiftRight(uint8_t operand) {
+	CC() = setBit(CC(), CF, operand & Bit0);
+	uint8_t result = (operand >> 1) | (operand & Bit7);
+	CC() = adjustNZ(result);
+	return result;
+}
+
+void EightBit::mc6809::BITA() { bit(A(), BUS().DATA()); }
+void EightBit::mc6809::BITB() { bit(B(), BUS().DATA()); }
+
+void EightBit::mc6809::bit(uint8_t operand, uint8_t data) { auto _ = _and(operand, data); }
+
+void EightBit::mc6809::CLRA() { A() = clear(); }
+
+void EightBit::mc6809::CLRB() { B() = clear(); }
+
+void EightBit::mc6809::CLR() {
+	swallowEffectiveAddress();
+	auto result = clear();
+	swallowEffectiveAddress();
+	base::memoryWrite(result);
+}
+
+uint8_t EightBit::mc6809::clear() {
+	CC() = clearBit(CC(), CF);
+	return through((uint8_t)0U);
+}
+
+void EightBit::mc6809::CMPA() { compare(A(), BUS().DATA()); }
+void EightBit::mc6809::CMPB() { compare(B(), BUS().DATA()); }
+
+void EightBit::mc6809::compare(uint16_t operand, uint16_t data) { auto _ = subtract(operand, data); }
+
+void EightBit::mc6809::compare(register16_t operand, register16_t data) { compare(operand.joined, data.joined); }
+
+void EightBit::mc6809::compare(uint8_t operand, uint8_t data) { auto _ = subtract(operand, data); }
+
+void EightBit::mc6809::CMPU() { compare(U(), BUS().DATA()); }
+void EightBit::mc6809::CMPS() { compare(S(), BUS().DATA()); }
+void EightBit::mc6809::CMPD() { compare(D(), BUS().DATA()); }
+void EightBit::mc6809::CMPX() { compare(X(), BUS().DATA()); }
+void EightBit::mc6809::CMPY() { compare(Y(), BUS().DATA()); }
+
+void EightBit::mc6809::compare(register16_t operand) { auto _ = subtract(operand, intermediate()); }
+
+void EightBit::mc6809::COMA() { A() = complement(A()); }
+
+void EightBit::mc6809::COMB() { B() = complement(B()); }
+
+void EightBit::mc6809::COM() {
+	auto result = complement(BUS().DATA());
+	swallowEffectiveAddress();
+	base::memoryWrite(result);
+}
+
+uint8_t EightBit::mc6809::complement(uint8_t operand) {
+	CC() = setBit(CC(), CF);
+	return through((uint8_t)~operand);
+}
+
+void EightBit::mc6809::CWAI() {
+	CC() &= BUS().DATA();
+	swallowCurrent();
+	saveEntireRegisterState();
+	swallowRead();
+	halt();
+}
+
+void EightBit::mc6809::DAA() {
+	auto original = A();
+
+	auto lowPart = lowNibble(original);
+	auto lowAdjust = halfCarry() || lowPart > 9;
+
+	auto highPart = highNibble(original);
+	auto highAdjust = carry() || highPart > 9 || (highPart == 9 && lowPart > 9);
+
+	uint8_t correction = 0;
+
+	if (lowAdjust)
+		correction |= 0x06;
+
+	if (highAdjust)
+		correction |= 0x60;
+
+	uint8_t result = original + correction;
+	auto newCarry = (correction & 0x60) != 0;
+	A() = through(result);
+	CC() = setBit(CC(), CF, newCarry);
+}
+
+void EightBit::mc6809::EORA() { A() = exclusiveOr(A()); }
+void EightBit::mc6809::EORB() { B() = exclusiveOr(B()); }
+
+uint16_t EightBit::mc6809::exclusiveOr(uint16_t operand, uint16_t data) { return through((uint16_t)(operand ^ data)); }
+
+EightBit::register16_t EightBit::mc6809::exclusiveOr(register16_t operand, register16_t data) { return exclusiveOr(operand.joined, data.joined); }
+
+uint8_t EightBit::mc6809::exclusiveOr(uint8_t operand, uint8_t data) { return through((uint8_t)(operand ^ data)); }
+
+uint8_t EightBit::mc6809::exclusiveOr(uint8_t operand) { return exclusiveOr(operand, BUS().DATA()); }
+
+void EightBit::mc6809::DECA() { A() = decrement(A()); }
+
+void EightBit::mc6809::DECB() { B() = decrement(B()); }
+
+void EightBit::mc6809::DEC() {
+	auto result = decrement(BUS().DATA());
+	swallowEffectiveAddress();
+	base::memoryWrite(result);
+}
+
+uint8_t EightBit::mc6809::decrement(uint8_t operand) {
+	intermediate().joined = operand - 1;
+	auto result = intermediate().low;
+	CC() = adjustNZ(result);
+	CC() = adjustOverflow(operand, 1, intermediate());
+	return result;
+}
+
+void EightBit::mc6809::INCA() { A() = increment(A()); }
+
+void EightBit::mc6809::INCB() { B() = increment(B()); }
+
+void EightBit::mc6809::INC() {
+	auto result = increment(BUS().DATA());
+	swallowEffectiveAddress();
+	base::memoryWrite(result);
+}
+
+uint8_t EightBit::mc6809::increment(uint8_t operand) {
+	intermediate().joined = operand + 1;
+	auto result = intermediate().low;
+	CC() = adjustNZ(result);
+	CC() = adjustOverflow(operand, 1, intermediate());
+	return result;
+}
+
+void EightBit::mc6809::JMP() { jump(EA()); }
+
+void EightBit::mc6809::JSR() {
+	swallowEffectiveAddress();
+	swallowRead();
+	call(EA());
+}
+
+void EightBit::mc6809::LSRA() { A() = logicalShiftRight(A()); }
+
+void EightBit::mc6809::LSRB() { B() = logicalShiftRight(B()); }
+
+void EightBit::mc6809::LSR() {
+	auto result = logicalShiftRight(BUS().DATA());
+	swallowEffectiveAddress();
+	base::memoryWrite(result);
+}
+
+uint8_t EightBit::mc6809::logicalShiftRight(uint8_t operand) {
+	CC() = setBit(CC(), CF, operand & Bit0);
+	CC() = adjustNZ(operand >>= 1);
+	return operand;
+}
+
+void EightBit::mc6809::MUL() {
+	swallowRead(9);
+	D().joined = A() * B();
+	CC() = adjustZero(D());
+	CC() = setBit(CC(), CF, D().low & Bit7);
+}
+
+void EightBit::mc6809::NEGA() { A() = negate(A()); }
+
+void EightBit::mc6809::NEGB() { B() = negate(B()); }
+
+void EightBit::mc6809::NEG() {
+	auto result = negate(BUS().DATA());
+	swallowEffectiveAddress();
+	base::memoryWrite(result);
+}
+
+uint8_t EightBit::mc6809::negate(uint8_t operand) {
+	CC() = setBit(CC(), VF, operand == Bit7);
+	intermediate().joined = ~operand + 1;
+	operand = intermediate().low;
+	CC() = adjustNZ(operand);
+	CC() = adjustCarry(intermediate());
+	return operand;
+}
+
+void EightBit::mc6809::ORCC() {
+	CC() |= BUS().DATA();
+	swallowRead();
+}
+
+void EightBit::mc6809::ORA() { A() = _or(A()); }
+void EightBit::mc6809::ORB() { B() = _or(B()); }
+
+uint16_t EightBit::mc6809::_or(uint16_t operand, uint16_t data) { return through((uint16_t)(operand | data)); }
+
+EightBit::register16_t EightBit::mc6809::_or(register16_t operand, register16_t data) { return _or(operand.joined, data.joined); }
+
+uint8_t EightBit::mc6809::_or(uint8_t operand, uint8_t data) { return through((uint8_t)(operand | data)); }
+
+uint8_t EightBit::mc6809::_or(uint8_t operand) { return _or(operand, BUS().DATA()); }
+
+void EightBit::mc6809::ROLA() { A() = rotateLeft(A()); }
+
+void EightBit::mc6809::ROLB() { B() = rotateLeft(B()); }
+
+void EightBit::mc6809::ROL() {
+	auto result = rotateLeft(BUS().DATA());
+	swallowEffectiveAddress();
+	base::memoryWrite(result);
+}
+
+uint8_t EightBit::mc6809::rotateLeft(uint8_t operand) {
+	auto carryIn = carryFlag();
+	CC() = setBit(CC(), CF, operand & Bit7);
+	CC() = setBit(CC(), VF, (operand & Bit7) >> 7 ^ (operand & Bit6) >> 6);
+	uint8_t result = operand << 1 | carryIn;
+	CC() = adjustNZ(result);
+	return result;
+}
+
+void EightBit::mc6809::RORA() { A() = rotateRight(A()); }
+
+void EightBit::mc6809::RORB() { B() = rotateRight(B()); }
+
+void EightBit::mc6809::ROR() {
+	auto result = rotateRight(BUS().DATA());
+	swallowEffectiveAddress();
+	base::memoryWrite(result);
+}
+
+uint8_t EightBit::mc6809::rotateRight(uint8_t operand) {
+	auto carryIn = carryFlag();
+	CC() = setBit(CC(), CF, operand & Bit0);
+	uint8_t result = operand >> 1 | carryIn << 7;
+	CC() = adjustNZ(result);
+	return result;
+}
+
+void EightBit::mc6809::RTI() {
+	restoreRegisterState();
+	swallowRead();
+}
+
+void EightBit::mc6809::RTS() {
+	ret();
+	swallowRead();
+}
+
+void EightBit::mc6809::SBCA() { A() = subtractWithCarry(A()); }
+void EightBit::mc6809::SBCB() { B() = subtractWithCarry(B()); }
+
+uint8_t EightBit::mc6809::subtractWithCarry(uint8_t operand) { return subtract(operand, BUS().DATA(), carryFlag()); }
+
+void EightBit::mc6809::SUBA() { A() = subtract(A()); }
+void EightBit::mc6809::SUBB() { B() = subtract(B()); }
+
+uint8_t EightBit::mc6809::subtract(uint8_t operand) { return subtract(operand, BUS().DATA()); }
+
+uint8_t EightBit::mc6809::subtract(uint8_t operand, uint8_t data, int carry) {
+	intermediate().joined = operand - data - carry;
+	CC() = adjustSubtraction(operand, data, intermediate());
+	return intermediate().low;
+}
+
+void EightBit::mc6809::SUBD() { D() = subtract(D(), intermediate()); }
+
+uint16_t EightBit::mc6809::subtract(uint16_t operand, uint16_t data, int carry) {
+	auto subtraction = operand - data - carry;
+	CC() = adjustSubtraction(operand, data, subtraction);
+	swallowRead();
+	return subtraction;
+}
+
+EightBit::register16_t EightBit::mc6809::subtract(register16_t operand, register16_t data, int carry) { return subtract(operand.joined, data.joined, carry); }
+
+EightBit::register16_t EightBit::mc6809::subtract(register16_t operand, register16_t data) { return subtract(operand, data, 0); }
+
+void EightBit::mc6809::SEX() { A() = SEX(B()); }
+
+uint8_t EightBit::mc6809::SEX(uint8_t from) {
+	CC() = adjustNZ(from);
+	return (from & Bit7) != 0 ? Mask8 : (uint8_t)0;
+}
+
+void EightBit::mc6809::SWI() {
+	saveEntireRegisterState();
+	CC() = setBit(CC(), IF | FF);  // Disable IRQ / FIRQ
+	assert(fastInterruptMasked() && interruptMasked());
+	swallowRead();
+	Processor::getPagedInto(0xff, _vectorSWI, EA());
+	jump(EA());
+	swallowRead();
+}
+
+void EightBit::mc6809::SWI2() {
+	saveEntireRegisterState();
+	swallowRead();
+	Processor::getPagedInto(0xff, _vectorSWI2, EA());
+	jump(EA());
+	swallowRead();
+}
+
+void EightBit::mc6809::SWI3() {
+	saveEntireRegisterState();
+	swallowRead();
+	Processor::getPagedInto(0xff, _vectorSWI3, EA());
+	jump(EA());
+	swallowRead();
+}
+
+void EightBit::mc6809::TSTA() { test(A()); }
+
+void EightBit::mc6809::TSTB() { test(B()); }
+
+void EightBit::mc6809::TST() {
+	test(BUS().DATA());
+	swallowRead(2);
+}
+
+void EightBit::mc6809::test(uint8_t data) { auto _ = through(data); }
+
+void EightBit::mc6809::LEAX() {
+	LEA(X());
+	CC() = adjustZero(X());
+	swallowRead();
+}
+
+void EightBit::mc6809::LEAY() {
+	LEA(Y());
+	CC() = adjustZero(Y());
+	swallowRead();
+}
+
+void EightBit::mc6809::LEAS() {
+	LEA(S());
+	swallowRead();
+}
+
+void EightBit::mc6809::LEAU() {
+	LEA(U());
+	swallowRead();
+}
+
+void EightBit::mc6809::LEA(register16_t& destination) {
+	destination = EA();
+}
+
+#pragma region Save / restore register state
 
 void EightBit::mc6809::saveEntireRegisterState() {
 	CC() = setBit(CC(), EF);
@@ -846,109 +1470,125 @@ void EightBit::mc6809::savePartialRegisterState() {
 }
 
 void EightBit::mc6809::saveRegisterState() {
-	psh(S(), CC() & EF ? 0xff : 0b10000001);
+	swallowRead();
+	PSH(S(), entireFlag() ? Mask8 : 0b10000001);
 }
 
 void EightBit::mc6809::restoreRegisterState() {
-	pul(S(), CC() & EF ? 0xff : 0b10000001);
+	PUL(S(), entireFlag() ? Mask8 : 0b10000001);
 }
 
-//
-
-uint8_t EightBit::mc6809::adc(const uint8_t operand, const uint8_t data) {
-	return add(operand, data, carry());
+void EightBit::mc6809::PSHS() {
+	PSH(S());
 }
 
-uint8_t EightBit::mc6809::add(const uint8_t operand, const uint8_t data, const uint8_t carry) {
-	const register16_t addition = operand + data + carry;
-	adjustAddition(operand, data, addition);
-	return addition.low;
+void EightBit::mc6809::PSHU() {
+	PSH(U());
 }
 
-EightBit::register16_t EightBit::mc6809::add(const register16_t operand, const register16_t data) {
-	const uint32_t addition = operand.joined + data.joined;
-	adjustAddition(operand, data, addition);
-	swallowRead();
-	return addition & Mask16;
+void EightBit::mc6809::PSH(register16_t& stack) {
+	auto control = BUS().DATA();
+	swallowRead(2);
+	swallowPop(stack);
+	PSH(stack, control);
 }
 
-uint8_t EightBit::mc6809::andr(const uint8_t operand, const uint8_t data) {
-	return through((uint8_t)(operand & data));
+void EightBit::mc6809::PSH(register16_t& stack, uint8_t control) {
+
+	// Reverse order of PUL
+
+	// Eight-bit registers
+
+	if ((control & Bit7) != 0)
+		push(stack, PC());
+
+	if ((control & Bit6) != 0)
+		// Pushing to the S stack means we must be pushing U
+		push(stack, &stack == &(S()) ? U() : S());
+
+	if ((control & Bit5) != 0)
+		push(stack, Y());
+
+	if ((control & Bit4) != 0)
+		push(stack, X());
+
+	// Eight-bit registers
+
+	if ((control & Bit3) != 0)
+		push(stack, DP());
+
+	if ((control & Bit2) != 0)
+		push(stack, B());
+
+	if ((control & Bit1) != 0)
+		push(stack, A());
+
+	if ((control & Bit0) != 0)
+		push(stack, CC());
 }
 
-uint8_t EightBit::mc6809::asl(uint8_t operand) {
-	CC() = setBit(CC(), CF, operand & Bit7);
-	adjustNZ(operand <<= 1);
-	const auto overflow = carry() ^ (negative() >> 3);
-	CC() = setBit(CC(), VF, overflow);
-	return operand;
+void EightBit::mc6809::PULU() {
+	PUL(U());
 }
 
-uint8_t EightBit::mc6809::asr(uint8_t operand) {
-	CC() = setBit(CC(), CF, operand & Bit0);
-	const uint8_t result = (operand >> 1) | Bit7;
-	adjustNZ(result);
-	return result;
+void EightBit::mc6809::PULS() {
+	PUL(S());
 }
 
-void EightBit::mc6809::bit(const uint8_t operand, const uint8_t data) {
-	andr(operand, data);
+void EightBit::mc6809::PUL(register16_t& stack) {
+	auto control = BUS().DATA();
+	swallowRead(2);
+	PUL(stack, control);
+	swallowPop(stack);
 }
 
-uint8_t EightBit::mc6809::clr(uint8_t) {
-	CC() = clearBit(CC(), CF);
-	return through((uint8_t)0U);
+void EightBit::mc6809::PUL(register16_t& stack, uint8_t control) {
+
+	// Reverse order of PSH
+
+	// Eight-bit registers
+
+	if ((control & Bit0) != 0) {
+		pop(stack);
+		CC() = BUS().DATA();
+	}
+
+	if ((control & Bit1) != 0) {
+		pop(stack);
+		A() = BUS().DATA();
+	}
+
+	if ((control & Bit2) != 0) {
+		pop(stack);
+		B() = BUS().DATA();
+	}
+
+	if ((control & Bit3) != 0) {
+		pop(stack);
+		DP() = BUS().DATA();
+	}
+
+	// Sixteen-bit registers
+
+	if ((control & Bit4) != 0)
+		X() = popWord(stack);
+
+	if ((control & Bit5) != 0)
+		Y() = popWord(stack);
+
+	if ((control & Bit6) != 0)
+		// Pulling from the S stack means we must be pulling U
+		(&stack == &(S()) ? U() : S()) = popWord(stack);
+
+	if ((control & Bit7) != 0)
+		PC() = popWord(stack);
 }
 
-void EightBit::mc6809::cmp(const uint8_t operand, const uint8_t data) {
-	sub(operand, data);
-}
+#pragma endregion
 
-void EightBit::mc6809::cmp(const register16_t operand, const register16_t data) {
-	sub(operand, data);
-}
+#pragma region 8 - bit register transfers
 
-uint8_t EightBit::mc6809::com(const uint8_t operand) {
-	CC() = setBit(CC(), CF);
-	return through((uint8_t)~operand);
-}
-
-void EightBit::mc6809::cwai(const uint8_t data) {
-	CC() &= data;
-	base::memoryRead(PC());
-	swallowRead();
-	saveEntireRegisterState();
-	halt();
-}
-
-uint8_t EightBit::mc6809::da(uint8_t operand) {
-
-	CC() = setBit(CC(), CF, operand > 0x99);
-
-	const auto lowAdjust = halfCarry() || (lowNibble(operand) > 9);
-	const auto highAdjust = carry() || (operand > 0x99);
-
-	if (lowAdjust)
-		operand += 6;
-	if (highAdjust)
-		operand += 0x60;
-
-	return through(operand);
-}
-
-uint8_t EightBit::mc6809::dec(const uint8_t operand) {
-	const register16_t subtraction = operand - 1;
-	const auto result = subtraction.low;
-	adjustNZ(result);
-	adjustOverflow(operand, 1, subtraction);
-	return result;
-}
-
-uint8_t EightBit::mc6809::eorr(const uint8_t operand, const uint8_t data) {
-	return through((uint8_t)(operand ^ data));
-}
-
-uint8_t& EightBit::mc6809::referenceTransfer8(const int specifier) {
+uint8_t& EightBit::mc6809::referenceTransfer8(int specifier) {
 	switch (specifier) {
 	case 0b1000:
 		return A();
@@ -963,7 +1603,7 @@ uint8_t& EightBit::mc6809::referenceTransfer8(const int specifier) {
 	}
 }
 
-EightBit::register16_t& EightBit::mc6809::referenceTransfer16(const int specifier) {
+EightBit::register16_t& EightBit::mc6809::referenceTransfer16(int specifier) {
 	switch (specifier) {
 	case 0b0000:
 		return D();
@@ -982,189 +1622,67 @@ EightBit::register16_t& EightBit::mc6809::referenceTransfer16(const int specifie
 	}
 }
 
-void EightBit::mc6809::exg(const uint8_t data) {
+void EightBit::mc6809::EXG() {
+	auto immediate = BUS().DATA();
 
-	const auto reg1 = highNibble(data);
-	const auto reg2 = lowNibble(data);
+	auto leftSpecifier = highNibble(immediate);
+	auto leftType = leftSpecifier & Bit3;
 
-	const bool type8 = !(reg1 & Bit3);	// 8 bit exchange?
-	ASSUME(type8 == !(reg2 & Bit3));	// Regardless, the register exchange must be equivalent
+	auto rightSpecifier = lowNibble(immediate);
+	auto rightType = rightSpecifier & Bit3;
 
-	if (type8)
-		std::swap(referenceTransfer8(reg1), referenceTransfer8(reg2));
-	else
-		std::swap(referenceTransfer16(reg1), referenceTransfer16(reg2));
+	if (leftType == 0) {
+		auto& leftRegister = referenceTransfer16(leftSpecifier);
+		if (rightType == 0) {
+			auto& rightRegister = referenceTransfer16(rightSpecifier);
+			(leftRegister.joined, rightRegister.joined) = (rightRegister.joined, leftRegister.joined);
+		} else {
+			auto& rightRegister = referenceTransfer8(rightSpecifier);
+			(leftRegister.low, rightRegister) = (rightRegister, leftRegister.low);
+			leftRegister.high = Mask8;
+		}
+	}
+	else {
+		auto& leftRegister = referenceTransfer8(leftSpecifier);
+		if (rightType == 0) {
+			auto& rightRegister = referenceTransfer16(rightSpecifier);
+			(leftRegister, rightRegister.low) = (rightRegister.low, leftRegister);
+			rightRegister.high = Mask8;
+		} else {
+			auto& rightRegister = referenceTransfer8(rightSpecifier);
+			(leftRegister, rightRegister) = (rightRegister, leftRegister);
+		}
+	}
 
 	swallowRead(6);
 }
 
-uint8_t EightBit::mc6809::inc(uint8_t operand) {
-	const register16_t addition = operand + 1;
-	const auto result = addition.low;
-	adjustNZ(result);
-	adjustOverflow(operand, 1, addition);
-	adjustHalfCarry(operand, 1, result);
-	return result;
-}
+void EightBit::mc6809::TFR() {
+	auto immediate = BUS().DATA();
 
-void EightBit::mc6809::jsr(const register16_t address) {
-	call(address);
-}
+	auto sourceSpecifier = highNibble(immediate);
+	auto sourceType = sourceSpecifier & Bit3;
 
-uint8_t EightBit::mc6809::lsr(uint8_t operand) {
-	CC() = setBit(CC(), CF, operand & Bit0);
-	adjustNZ(operand >>= 1);
-	return operand;
-}
+	auto destinationSpecifier = lowNibble(immediate);
+	auto destinationType = destinationSpecifier & Bit3;
 
-EightBit::register16_t EightBit::mc6809::mul(const uint8_t first, const uint8_t second) {
-	const register16_t result = first * second;
-	adjustZero(result);
-	CC() = setBit(CC(), CF, result.low & Bit7);
-	swallowRead(9);
-	return result;
-}
-
-uint8_t EightBit::mc6809::neg(uint8_t operand) {
-	CC() = setBit(CC(), VF, operand == Bit7);
-	const register16_t result = 0 - operand;
-	operand = result.low;
-	adjustNZ(operand);
-	adjustCarry(result);
-	return operand;
-}
-
-uint8_t EightBit::mc6809::orr(const uint8_t operand, const uint8_t data) {
-	return through((uint8_t)(operand | data));
-}
-
-void EightBit::mc6809::psh(register16_t& stack, const uint8_t data) {
-	swallowRead(2);
-	base::memoryRead(stack);
-	if (data & Bit7)
-		pushWord(stack, PC());
-	if (data & Bit6)
-		// Pushing to the S stack means we must be pushing U
-		pushWord(stack, &stack == &S() ? U() : S());
-	if (data & Bit5)
-		pushWord(stack, Y());
-	if (data & Bit4)
-		pushWord(stack, X());
-	if (data & Bit3)
-		push(stack, DP());
-	if (data & Bit2)
-		push(stack, B());
-	if (data & Bit1)
-		push(stack, A());
-	if (data & Bit0)
-		push(stack, CC());
-}
-
-void EightBit::mc6809::pul(register16_t& stack, const uint8_t data) {
-	swallowRead(2);
-	if (data & Bit0)
-		CC() = pop(stack);
-	if (data & Bit1)
-		A() = pop(stack);
-	if (data & Bit2)
-		B() = pop(stack);
-	if (data & Bit3)
-		DP() = pop(stack);
-	if (data & Bit4) 
-		X() = popWord(stack);
-	if (data & Bit5)
-		Y() = popWord(stack);
-	if (data & Bit6)
-		// Pulling from the S stack means we must be pulling U
-		(&stack == &S() ? U() : S()) = popWord(stack);
-	if (data & Bit7)
-		PC() = popWord(stack);
-	base::memoryRead(stack);
-}
-
-uint8_t EightBit::mc6809::rol(const uint8_t operand) {
-	const auto carryIn = carry();
-	CC() = setBit(CC(), CF, operand & Bit7);
-	CC() = setBit(CC(), VF, ((operand & Bit7) >> 7) ^ ((operand & Bit6) >> 6));
-	const uint8_t result = (operand << 1) | carryIn;
-	adjustNZ(result);
-	return result;
-}
-		
-uint8_t EightBit::mc6809::ror(const uint8_t operand) {
-	const auto carryIn = carry();
-	CC() = setBit(CC(), CF, operand & Bit0);
-	const uint8_t result = (operand >> 1) | (carryIn << 7);
-	adjustNZ(result);
-	return result;
-}
-
-void EightBit::mc6809::rti() {
-	restoreRegisterState();
-	swallowRead();
-}
-
-void EightBit::mc6809::swi() {
-	swallowRead();
-	saveEntireRegisterState();
-	CC() = setBit(CC(), IF);	// Disable IRQ
-	CC() = setBit(CC(), FF);	// Disable FIRQ
-	Processor::getPagedInto(0xff, _vectorSWI, PC());
-	swallowRead();
-}
-
-void EightBit::mc6809::swi2() {
-	swallowRead();
-	saveEntireRegisterState();
-	Processor::getPagedInto(0xff, _vectorSWI2, PC());
-	swallowRead();
-}
-
-void EightBit::mc6809::swi3() {
-	swallowRead();
-	saveEntireRegisterState();
-	Processor::getPagedInto(0xff, _vectorSWI3, PC());
-	swallowRead();
-}
-
-uint8_t EightBit::mc6809::sex(const uint8_t from) {
-	adjustNZ(from);
-	return from & Bit7 ? Mask8 : 0;
-}
-
-void EightBit::mc6809::tfr(const uint8_t data) {
-
-	const auto reg1 = highNibble(data);
-	const auto reg2 = lowNibble(data);
-
-	const bool type8 = !!(reg1 & Bit3);	// 8 bit transfer?
-	ASSUME(type8 == !!(reg2 & Bit3));	// Regardless, the register transfer must be equivalent
-
-	if (type8)
-		referenceTransfer8(reg2) = referenceTransfer8(reg1);
-	else
-		referenceTransfer16(reg2) = referenceTransfer16(reg1);
+	if (sourceType == 0) {
+		auto& sourceRegister = referenceTransfer16(sourceSpecifier);
+		if (destinationType == 0)
+			referenceTransfer16(destinationSpecifier) = sourceRegister;
+		else
+			referenceTransfer8(destinationSpecifier) = sourceRegister.low;
+	} else {
+		auto& sourceRegister = referenceTransfer8(sourceSpecifier);
+		if (destinationType == 0)
+			referenceTransfer16(destinationSpecifier) = { sourceRegister, Mask8 };
+		else
+			referenceTransfer8(destinationSpecifier) = sourceRegister;
+	}
 
 	swallowRead(4);
 }
 
-uint8_t EightBit::mc6809::sbc(const uint8_t operand, const uint8_t data) {
-	return sub(operand, data, carry());
-}
+#pragma endregion
 
-uint8_t EightBit::mc6809::sub(const uint8_t operand, const uint8_t data, const uint8_t carry) {
-	const register16_t subtraction = operand - data - carry;
-	adjustSubtraction(operand, data, subtraction);
-	return subtraction.low;
-}
-
-EightBit::register16_t EightBit::mc6809::sub(const register16_t operand, const register16_t data) {
-	const uint32_t subtraction = operand.joined - data.joined;
-	adjustSubtraction(operand, data, subtraction);
-	swallowRead();
-	return subtraction & Mask16;
-}
-
-void EightBit::mc6809::tst(const uint8_t data) {
-	cmp(data, 0);
-}
+#pragma endregion

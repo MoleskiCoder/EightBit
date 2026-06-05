@@ -79,7 +79,7 @@ namespace EightBit {
 
 		virtual void immediateAddress() noexcept;
 
-		void fetchByte() noexcept;
+		virtual void fetchByte() noexcept;
 		virtual uint8_t fetchInstruction() noexcept;
 
 		virtual void getInto(register16_t& into) noexcept = 0;

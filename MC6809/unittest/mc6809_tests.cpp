@@ -38,11 +38,11 @@ BOOST_AUTO_TEST_CASE(ABX1) {
 	BOOST_CHECK_EQUAL(cpu.X(), 0x80d4);
 	BOOST_CHECK_EQUAL(cpu.Y(), 0);
 	BOOST_CHECK_EQUAL(cpu.U(), 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.halfCarry(), 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.halfCarry());
 	BOOST_CHECK_EQUAL(cycles, 3);
 }
 
@@ -64,11 +64,11 @@ BOOST_AUTO_TEST_CASE(ABX2) {
 	BOOST_CHECK_EQUAL(cpu.X(), 0x80d4);
 	BOOST_CHECK_EQUAL(cpu.Y(), 0);
 	BOOST_CHECK_EQUAL(cpu.U(), 0);
-	BOOST_CHECK(cpu.carry() != 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK(cpu.zero() != 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.halfCarry(), 0);
+	BOOST_CHECK(cpu.carry());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(cpu.zero());
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.halfCarry());
 	BOOST_CHECK_EQUAL(cycles, 3);
 }
 
@@ -89,11 +89,11 @@ BOOST_AUTO_TEST_CASE(Immediate_byte) {
 	cpu.A() = 0x3a;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xb7);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.halfCarry() != 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.halfCarry());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -108,11 +108,11 @@ BOOST_AUTO_TEST_CASE(ADCANoC1) {
 	board.poke(1, 0x02);
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 7);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.halfCarry(), 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.halfCarry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -128,11 +128,11 @@ BOOST_AUTO_TEST_CASE(ADCANoC2) {
 	board.poke(1, 0x02);
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x10);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK(cpu.halfCarry() != 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(cpu.halfCarry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -148,11 +148,11 @@ BOOST_AUTO_TEST_CASE(ADCAWiC) {
 	board.poke(1, 0x22);
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x37);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.halfCarry(), 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.halfCarry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -168,8 +168,8 @@ BOOST_AUTO_TEST_CASE(ADCAWiHC) {
 	board.poke(1, 0x2B);
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x40);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK(cpu.halfCarry() != 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(cpu.halfCarry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -189,11 +189,11 @@ BOOST_AUTO_TEST_CASE(Immediate_byte) {
 	cpu.A() = 0x24;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xaf);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.halfCarry(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.halfCarry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -211,11 +211,11 @@ BOOST_AUTO_TEST_CASE(ADDANoC) {
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 6);
 	BOOST_CHECK_EQUAL(cpu.B(), 5);
-	BOOST_CHECK_EQUAL(cpu.halfCarry(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(!cpu.halfCarry());
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -231,9 +231,9 @@ BOOST_AUTO_TEST_CASE(ADDAWiC) {
 	cpu.A() = 3;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 2);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -249,11 +249,11 @@ BOOST_AUTO_TEST_CASE(ADDB1) {
 	cpu.CC() = 0;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.B(), 0x81);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.halfCarry(), 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.halfCarry());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -269,10 +269,10 @@ BOOST_AUTO_TEST_CASE(ADDB2) {
 	cpu.CC() = 0;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.B(), 0xfe);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -288,10 +288,10 @@ BOOST_AUTO_TEST_CASE(ADDB3) {
 	cpu.CC() = 0;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.B(), 0x7f);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -307,10 +307,10 @@ BOOST_AUTO_TEST_CASE(ADDB4) {
 	cpu.CC() = 0;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.B(), 0xfe);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -329,10 +329,10 @@ BOOST_AUTO_TEST_CASE(ADDDNoC) {
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x06);
 	BOOST_CHECK_EQUAL(cpu.B(), 0xb5);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 4);
 }
 
@@ -351,10 +351,10 @@ BOOST_AUTO_TEST_CASE(ADDD1) {
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x66);
 	BOOST_CHECK_EQUAL(cpu.B(), 0xb5);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 4);
 }
 
@@ -373,10 +373,10 @@ BOOST_AUTO_TEST_CASE(ADDD2) {
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xb0);
 	BOOST_CHECK_EQUAL(cpu.B(), 0x00);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cpu.cycles(), 4);
 }
 
@@ -395,10 +395,10 @@ BOOST_AUTO_TEST_CASE(ADDD3) {
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xe0);
 	BOOST_CHECK_EQUAL(cpu.B(), 0x00);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cpu.cycles(), 4);
 }
 
@@ -418,9 +418,9 @@ BOOST_AUTO_TEST_CASE(Immediate_byte) {
 	cpu.A() = 0xfc;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x10);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -439,9 +439,9 @@ BOOST_AUTO_TEST_CASE(Inherent) {
 	cpu.A() = 0x7a;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xf4);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK(cpu.negative() != 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -460,9 +460,9 @@ BOOST_AUTO_TEST_CASE(Inherent) {
 	cpu.A() = 0xcb;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xe5);
-	BOOST_CHECK(cpu.carry() != 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
+	BOOST_CHECK(cpu.carry());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -482,8 +482,8 @@ BOOST_AUTO_TEST_CASE(Immediate_byte) {
 	cpu.A() = 0xa6;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xa6);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -502,10 +502,10 @@ BOOST_AUTO_TEST_CASE(Implied) {
 	cpu.A() = 0x43;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x00);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK(cpu.zero() != 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(cpu.zero());
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.overflow());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -525,10 +525,10 @@ BOOST_AUTO_TEST_CASE(Immediate_byte) {
 	cpu.A() = 0xf6;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xf6);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -567,10 +567,10 @@ BOOST_AUTO_TEST_CASE(CMP2) {
 	cpu.CC() = EightBit::mc6809::NF;
 	cpu.B() = 0xa0;
 	cycles = cpu.step();
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK(cpu.zero() != 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -585,10 +585,10 @@ BOOST_AUTO_TEST_CASE(CMP3) {
 	cpu.CC() = EightBit::mc6809::NF;
 	cpu.B() = 0x70;
 	cycles = cpu.step();
-	BOOST_CHECK(cpu.carry() != 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
+	BOOST_CHECK(cpu.carry());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -605,8 +605,8 @@ BOOST_AUTO_TEST_CASE(CMP16) {
 	cycles = cpu.step();
 	BOOST_CHECK(cpu.carry() != 0);
 	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -621,10 +621,10 @@ BOOST_AUTO_TEST_CASE(Immediate_word) {
 	cpu.X() = 0x1ab0;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.X(), 0x1ab0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 4);
 }
 
@@ -644,10 +644,10 @@ BOOST_AUTO_TEST_CASE(DECA0x32) {
 	cpu.A() = 0x32;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x31);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -662,10 +662,10 @@ BOOST_AUTO_TEST_CASE(DECA0x80) {
 	cpu.A() = 0x80;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x7f);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -680,10 +680,10 @@ BOOST_AUTO_TEST_CASE(DECA0x00) {
 	cpu.A() = 0x00;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xff);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -703,10 +703,10 @@ BOOST_AUTO_TEST_CASE(INCA1) {
 	cpu.A() = 0x32;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x33);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -720,10 +720,10 @@ BOOST_AUTO_TEST_CASE(INCA2) {
 	cpu.A() = 0x7f;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0x80);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -737,10 +737,10 @@ BOOST_AUTO_TEST_CASE(INCA3) {
 	cpu.A() = 0xff;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK(cpu.zero() != 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -761,10 +761,10 @@ BOOST_AUTO_TEST_CASE(Immediate_byte) {
 	cpu.CC() = cpu.setBit(cpu.CC(), EightBit::mc6809::CF);
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xdf);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -782,10 +782,10 @@ BOOST_AUTO_TEST_CASE(SBCB_direct) {
 	cpu.CC() = EightBit::mc6809::CF;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.B(), 0x31);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 4);
 }
 
@@ -802,10 +802,10 @@ BOOST_AUTO_TEST_CASE(SBCA1) {
 	cpu.A() = 0xff;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0);
-	BOOST_CHECK_EQUAL(cpu.carry(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.zero() != 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
+	BOOST_CHECK(!cpu.carry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.zero());
+	BOOST_CHECK(!cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -821,10 +821,10 @@ BOOST_AUTO_TEST_CASE(SBCA2) {
 	cpu.A() = 0;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 1);
-	BOOST_CHECK(cpu.carry() != 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
+	BOOST_CHECK(cpu.carry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -840,9 +840,9 @@ BOOST_AUTO_TEST_CASE(SBCA3) {
 	cpu.A() = 0;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xff);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.negative() != 0);
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -864,10 +864,10 @@ BOOST_AUTO_TEST_CASE(SUBA1) {
 	cpu.A() = 0;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 1);
-	BOOST_CHECK(cpu.carry() != 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
+	BOOST_CHECK(cpu.carry());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.negative());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -883,10 +883,10 @@ BOOST_AUTO_TEST_CASE(SUBA2) {
 	cpu.A() = 0;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.A(), 0xff);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -902,10 +902,10 @@ BOOST_AUTO_TEST_CASE(SUBB1) {
 	cpu.B() = 2;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.B(), 0x4f);
-	BOOST_CHECK_EQUAL(cpu.negative(), 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(!cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -921,10 +921,10 @@ BOOST_AUTO_TEST_CASE(SUBB2) {
 	cpu.B() = 2;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.B(), 0x81);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK(cpu.overflow() != 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(cpu.overflow());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 2);
 }
 
@@ -942,10 +942,10 @@ BOOST_AUTO_TEST_CASE(SUBBY) {
 	cpu.Y() = 0x21;
 	cycles = cpu.step();
 	BOOST_CHECK_EQUAL(cpu.B(), 0xe2);
-	BOOST_CHECK(cpu.negative() != 0);
-	BOOST_CHECK_EQUAL(cpu.zero(), 0);
-	BOOST_CHECK_EQUAL(cpu.overflow(), 0);
-	BOOST_CHECK(cpu.carry() != 0);
+	BOOST_CHECK(cpu.negative());
+	BOOST_CHECK(!cpu.zero());
+	BOOST_CHECK(!cpu.overflow());
+	BOOST_CHECK(cpu.carry());
 	BOOST_CHECK_EQUAL(cycles, 4);
 }
 
@@ -1010,11 +1010,7 @@ BOOST_AUTO_TEST_CASE(BGT3) {
 	board.poke(5, 0x86);	// LDA #2
 	board.poke(6, 0x02);
 	board.poke(7, 0x12);	// NOP
-	cpu.lowerRESET();
-	cycles = cpu.step();
-	cpu.lowerRESET();
-	cycles = cpu.step();
-	BOOST_CHECK_EQUAL(cpu.PC(), 0);
+	BOOST_REQUIRE_EQUAL(cpu.PC(), 0);
 	cpu.CC() = EightBit::mc6809::NF;
 	cycles = cpu.step();
 	cycles = cpu.step();

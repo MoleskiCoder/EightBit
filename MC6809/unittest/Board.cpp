@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Board.h"
-
 Board::Board() {}
 
 void Board::raisePOWER() noexcept {
@@ -22,12 +21,12 @@ void Board::lowerPOWER() noexcept {
 }
 
 void Board::initialise() noexcept {
-	CPU().ExecutingInstruction.connect([this](EightBit::mc6809& cpu) {
+	CPU().ExecutingInstruction.connect([this](EightBit::EventArgs&) {
 		m_disassembleAt = CPU().PC();
 		m_ignoreDisassembly = m_disassembler.ignore();
 	});
 
-	CPU().ExecutedInstruction.connect([this](EightBit::mc6809& cpu) {
+	CPU().ExecutedInstruction.connect([this](EightBit::EventArgs& cpu) {
 		if (!m_ignoreDisassembly)
 			std::cout << m_disassembler.trace(m_disassembleAt) << "	" << std::endl;
 	});
