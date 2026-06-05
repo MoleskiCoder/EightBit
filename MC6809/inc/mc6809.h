@@ -284,12 +284,12 @@ namespace EightBit {
 			return adjustSubtraction(before.joined, data.joined, after);
 		}
 
-		[[nodiscard]] constexpr auto LS() const { return carry() || zero(); }						// (C OR Z)
-		[[nodiscard]] constexpr auto HI() const { return !LS(); }									// !(C OR Z)
-		[[nodiscard]] constexpr auto LT() const { return (negative() >> 3) ^ (overflow() >> 1); }	// (N XOR V)
-		[[nodiscard]] constexpr auto GE() const { return !LT(); }									// !(N XOR V)
-		[[nodiscard]] constexpr auto LE() const { return zero() || LT(); }							// (Z OR (N XOR V))
-		[[nodiscard]] constexpr auto GT() const { return !LE(); }									// !(Z OR (N XOR V))
+		[[nodiscard]] constexpr auto LS() const { return carry() || zero(); }								// (C OR Z)
+		[[nodiscard]] constexpr auto HI() const { return !LS(); }											// !(C OR Z)
+		[[nodiscard]] constexpr auto LT() const { return (negativeFlag() >> 3) ^ (overflowFlag() >> 1); }	// (N XOR V)
+		[[nodiscard]] constexpr auto GE() const { return !LT(); }											// !(N XOR V)
+		[[nodiscard]] constexpr auto LE() const { return zero() || LT(); }									// (Z OR (N XOR V))
+		[[nodiscard]] constexpr auto GT() const { return !LE(); }											// !(Z OR (N XOR V))
 
 		#pragma region Load / store 8 or 16 - bit data
 

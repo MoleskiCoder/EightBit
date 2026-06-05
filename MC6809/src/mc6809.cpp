@@ -1144,11 +1144,11 @@ void EightBit::mc6809::compare(register16_t operand, register16_t data) { compar
 
 void EightBit::mc6809::compare(uint8_t operand, uint8_t data) { auto _ = subtract(operand, data); }
 
-void EightBit::mc6809::CMPU() { compare(U(), BUS().DATA()); }
-void EightBit::mc6809::CMPS() { compare(S(), BUS().DATA()); }
-void EightBit::mc6809::CMPD() { compare(D(), BUS().DATA()); }
-void EightBit::mc6809::CMPX() { compare(X(), BUS().DATA()); }
-void EightBit::mc6809::CMPY() { compare(Y(), BUS().DATA()); }
+void EightBit::mc6809::CMPU() { compare(U()); }
+void EightBit::mc6809::CMPS() { compare(S()); }
+void EightBit::mc6809::CMPD() { compare(D()); }
+void EightBit::mc6809::CMPX() { compare(X()); }
+void EightBit::mc6809::CMPY() { compare(Y()); }
 
 void EightBit::mc6809::compare(register16_t operand) { auto _ = subtract(operand, intermediate()); }
 
