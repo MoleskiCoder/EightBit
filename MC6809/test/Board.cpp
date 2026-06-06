@@ -67,9 +67,9 @@ void Board::initialise() noexcept {
 	});
 
 	// Keyboard wiring, check for input once per frame
-	CPU().ExecutedInstruction.connect([this] (EightBit::mc6809& cpu) {
-		assert(cpu.cycles() > 0);
-		m_frameCycleCount -= cpu.cycles();
+	CPU().ExecutedInstruction.connect([this] (EightBit::EventArgs&) {
+		assert(CPU().cycles() > 0);
+		m_frameCycleCount -= CPU().cycles();
 		if (m_frameCycleCount < 0) {
 			if (_kbhit()) {
 				ACIA().RDR() = _getch();
@@ -80,21 +80,21 @@ void Board::initialise() noexcept {
 	});
 
 	if (m_configuration.isProfileMode()) {
-		m_cpu.ExecutingInstruction.connect([this](EightBit::mc6809& cpu) {
-			m_profiler.addInstruction(peek(cpu.PC()));
+		m_cpu.ExecutingInstruction.connect([this](EightBit::EventArgs&) {
+			m_profiler.addInstruction(peek(CPU().PC()));
 		});
-		m_cpu.ExecutedInstruction.connect([this](EightBit::mc6809& cpu) {
-			m_profiler.addAddress(cpu.PC().joined, cpu.cycles());
+		m_cpu.ExecutedInstruction.connect([this](EightBit::EventArgs&) {
+			m_profiler.addAddress(CPU().PC().joined, CPU().cycles());
 		});
 	}
 
 	if (m_configuration.isDebugMode()) {
 		// MC6809 disassembly wiring
-		CPU().ExecutingInstruction.connect([this] (EightBit::mc6809& cpu) {
-			m_disassembleAt = cpu.PC();
+		CPU().ExecutingInstruction.connect([this] (EightBit::EventArgs& cpu) {
+			m_disassembleAt = CPU().PC();
 			m_ignoreDisassembly = m_disassembler.ignore();
 		});
-		CPU().ExecutedInstruction.connect([this] (EightBit::mc6809&) {
+		CPU().ExecutedInstruction.connect([this] (EightBit::EventArgs&) {
 			if (!m_ignoreDisassembly)
 				std::cout << m_disassembler.trace(m_disassembleAt) << "	" << ACIA().dumpStatus() << std::endl;
 		});
@@ -102,9 +102,9 @@ void Board::initialise() noexcept {
 
 	if (m_configuration.terminatesEarly()) {
 		// Early termination condition for CPU timing code
-		CPU().ExecutedInstruction.connect([this] (EightBit::mc6809& cpu) {
-			assert(cpu.cycles() > 0);
-			m_totalCycleCount += cpu.cycles();
+		CPU().ExecutedInstruction.connect([this] (EightBit::EventArgs&) {
+			assert(CPU().cycles() > 0);
+			m_totalCycleCount += CPU().cycles();
 			if (m_totalCycleCount > Configuration::TerminationCycles)
 				lowerPOWER();
 		});
@@ -115,18 +115,14 @@ const EightBit::MemoryMapping& Board::mapping(uint16_t address) noexcept {
 
 	if (address < 0x8000)
 		return m_ramMapping;
-		//return { m_ram, 0x0000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 
 	if (address < 0xa000)
 		return m_unused2000Mapping;
-		//return { m_unused2000, 0x8000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
 
 	if (address < 0xc000)
 		return m_ioMapping;
-		//return { m_io, 0xa000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadWrite };
 
 	return m_romMapping;
-	//return { m_rom, 0xc000, EightBit::Chip::Mask16, EightBit::MemoryMapping::AccessLevel::ReadOnly };
 }
 
 void Board::updateAciaPins() {

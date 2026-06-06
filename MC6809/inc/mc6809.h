@@ -301,7 +301,7 @@ namespace EightBit {
 
 		[[nodiscard]] uint16_t through(uint16_t data);
 		[[nodiscard]] register16_t through(register16_t data);
-		void assign(register16_t destination);
+		void assign(register16_t& destination);
 
 		void LDD();
 		void LDS();

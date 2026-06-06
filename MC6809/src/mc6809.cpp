@@ -713,7 +713,7 @@ EightBit::register16_t& EightBit::mc6809::RR(int which) {
 void EightBit::mc6809::indexedAddress() {
 	fetchByte();
 	const auto type = BUS().DATA();
-	auto& r = RR((type & Bit6 | Bit5) >> 5);
+	auto& r = RR((type & (Bit6 | Bit5)) >> 5);
 	if ((type & Bit7) != 0) {
 		switch (type & Mask4) {
 		case 0b0000: // ,R+
@@ -879,7 +879,7 @@ EightBit::register16_t EightBit::mc6809::through(register16_t data) {
 	return through(data.joined);
 }
 
-void EightBit::mc6809::assign(register16_t destination) {
+void EightBit::mc6809::assign(register16_t& destination) {
 	destination = through(intermediate());
 }
 
