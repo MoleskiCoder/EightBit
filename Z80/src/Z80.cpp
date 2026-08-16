@@ -559,12 +559,16 @@ void EightBit::Z80::daa() noexcept {
 }
 
 void EightBit::Z80::scf() noexcept {
+	if (displaced())
+		Q() = 0;
 	setBit(CF);
 	clearBit(HC | NF);
 	adjustXY((Q() ^ F()) | A());
 }
 
 void EightBit::Z80::ccf() noexcept {
+	if (displaced())
+		Q() = 0;
 	clearBit(NF);
 	const auto carrying = carry();
 	setBit(HC, carrying);
@@ -1707,7 +1711,7 @@ void EightBit::Z80::loadImmediate(int y) {
 	if (memoryY && displaced())
 		fetchDisplacement();
 	fetchByte();  // LD r,n
-	if (memoryY)
+	if (memoryY && displaced())
 		tick(2);
 	IntelProcessor::R(y, BUS().DATA());
 }
