@@ -9,4 +9,4 @@
 	url = https://github.com/SingleStepTests/sm83
 [submodule "modules/z80"]
 	path = modules/z80
-	url = https://github.com/SingleStepTests/z80
+	url = https://github.com/SingleStepTests/z80.git
