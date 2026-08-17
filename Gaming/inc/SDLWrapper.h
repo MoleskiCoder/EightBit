@@ -6,7 +6,7 @@
 namespace Gaming {
 	class SDLWrapper final {
 	public:
-		SDLWrapper();
+		SDLWrapper(bool verbose = false);
 		~SDLWrapper();
 
 		static void throwSDLException(std::string failure) {

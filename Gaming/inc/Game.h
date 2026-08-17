@@ -19,7 +19,7 @@ namespace Gaming {
 
 	class Game : public EightBit::Device {
 	public:
-		Game();
+		Game(bool verbose = false);
 		virtual ~Game();
 
 		virtual void runLoop();
@@ -89,8 +89,10 @@ namespace Gaming {
 		Uint32 m_pixelType = SDL_PIXELFORMAT_ARGB8888;
 
 		bool m_vsync = false;
-		Uint32 m_startTicks = 0;
-		Uint32 m_frames = 0;
+		Uint64 m_performanceFrequency = 0;
+		double m_targetFrameTime = 0.0;	// in seconds
+		Uint64 m_frameStartTime = 0;	// in performance frequency
+		Uint64 m_frameEndTime = 0;		// in performance frequency
 
 		std::map<int, std::shared_ptr<GameController>> m_gameControllers;
 		std::map<SDL_JoystickID, int> m_mappedControllers;

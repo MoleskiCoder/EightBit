@@ -5,7 +5,8 @@
 
 namespace Gaming {
 
-Game::Game() {}
+Game::Game(bool verbose /* = false */)
+: m_wrapper(verbose) {}
 
 Game::~Game() {}
 
@@ -77,8 +78,8 @@ void Game::raisePOWER() noexcept {
 	configureBackground();
 	createBitmapTexture();
 
-	m_frames = 0UL;
-	m_startTicks = ::SDL_GetTicks();
+	m_performanceFrequency = ::SDL_GetPerformanceFrequency();
+	m_targetFrameTime = 1.0 / fps();
 }
 
 void Game::configureBackground() const {
@@ -102,6 +103,7 @@ void Game::runLoop() {
 }
 
 void Game::update() {
+	m_frameStartTime = ::SDL_GetPerformanceCounter();
 	handleEvents();
 	runVerticalBlank();
 	runRasterLines();
@@ -149,7 +151,6 @@ void Game::draw() {
 }
 
 bool Game::maybeSynchronise() {
-	++m_frames;
 	const bool synchronising = !m_vsync;
 	if (synchronising)
 		synchronise();
@@ -157,11 +158,27 @@ bool Game::maybeSynchronise() {
 }
 
 void Game::synchronise() {
-	const auto elapsedTicks = ::SDL_GetTicks() - m_startTicks;
-	const auto neededTicks = (m_frames / fps()) * 1000.0;
-	const auto sleepNeeded = (int)(neededTicks - elapsedTicks);
-	if (sleepNeeded > 0)
-		::SDL_Delay(sleepNeeded);
+	
+	m_frameEndTime = ::SDL_GetPerformanceCounter();
+
+	const auto frameTime = m_frameEndTime - m_frameStartTime;	// In performance frequency
+	::SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "Frame time (ticks): %ld", frameTime);
+
+	const auto elapsedFrameTime = double(frameTime) / m_performanceFrequency;	// In seconds
+	::SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "Frame time (seconds): %f", elapsedFrameTime);
+
+	const auto gap = m_targetFrameTime - elapsedFrameTime;	// in seconds
+	::SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "Timing gap (seconds): %f", gap);
+
+	if (gap > 0) {
+		const auto delay = Uint32(gap * 1000.0);
+		::SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "Delay (ticks): %d", delay);
+		SDL_Delay(delay);
+	}
+
+	if (gap < 0) {
+		::SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Running slowly");
+	}
 }
 
 void Game::removeJoystick(SDL_Event& e) {

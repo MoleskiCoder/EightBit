@@ -18,13 +18,9 @@ EightBit::Processor::Processor(const Processor& rhs) noexcept
 DEFINE_PIN_LEVEL_CHANGERS(RESET, Processor)
 DEFINE_PIN_LEVEL_CHANGERS(INT, Processor)
 
-void EightBit::Processor::handleRESET() noexcept {
-	raiseRESET();
-}
+void EightBit::Processor::handleRESET() noexcept {}
 
-void EightBit::Processor::handleINT() noexcept {
-	raiseINT();
-}
+void EightBit::Processor::handleINT() noexcept {}
 
 void EightBit::Processor::memoryWrite(const register16_t address, const uint8_t data) noexcept {
 	BUS().ADDRESS() = address;
