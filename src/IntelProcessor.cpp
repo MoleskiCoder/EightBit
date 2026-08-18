@@ -5,7 +5,7 @@ std::array<int, 8> EightBit::IntelProcessor::m_halfCarryTableAdd = { { 0, 0, 1, 
 std::array<int, 8> EightBit::IntelProcessor::m_halfCarryTableSub = { { 0, 1, 1, 1, 0, 0, 0, 1 } };
 
 EightBit::IntelProcessor::IntelProcessor(Bus& bus) noexcept
-: LittleEndianProcessor(bus) {
+: base(bus) {
 	for (int i = 0; i < 0x100; ++i)
 		m_decodedOpcodes.at(i) = i;
 
@@ -17,7 +17,7 @@ EightBit::IntelProcessor::IntelProcessor(Bus& bus) noexcept
 }
 
 EightBit::IntelProcessor::IntelProcessor(const IntelProcessor& rhs) noexcept
-: LittleEndianProcessor(rhs),
+: base(rhs),
   m_sp(rhs.m_sp),
   m_memptr(rhs.m_memptr) {
 	HALT() = rhs.HALT();
@@ -30,13 +30,13 @@ void EightBit::IntelProcessor::resetRegisterSet() noexcept {
 DEFINE_PIN_LEVEL_CHANGERS(HALT, IntelProcessor);
 
 void EightBit::IntelProcessor::handleRESET() noexcept {
-	Processor::handleRESET();
+	base::handleRESET();
 	disableInterrupts();
-	Processor::jump(0);
+	base::jump(0);
 }
 
 void EightBit::IntelProcessor::handleINT() noexcept {
-	Processor::handleINT();
+	base::handleINT();
 	raiseHALT();
 	disableInterrupts();
 }
@@ -51,7 +51,7 @@ void EightBit::IntelProcessor::pop() noexcept {
 
 EightBit::register16_t& EightBit::IntelProcessor::incrementPC() noexcept {
 	if (proceeding())
-		Processor::incrementPC();
+		base::incrementPC();
 	return PC();
 }
 
@@ -61,12 +61,12 @@ uint8_t EightBit::IntelProcessor::fetchInstruction() noexcept {
 }
 
 void EightBit::IntelProcessor::getShort() noexcept {
-	LittleEndianProcessor::getShort();
+	base::getShort();
 	MEMPTR() = BUS().ADDRESS();
 }
 
 void EightBit::IntelProcessor::setShort(const register16_t value) noexcept {
-	LittleEndianProcessor::setShort(value);
+	base::setShort(value);
 	MEMPTR() = BUS().ADDRESS();
 }
 
@@ -104,7 +104,7 @@ void EightBit::IntelProcessor::jumpRelative(const int8_t offset) noexcept {
 }
 
 void EightBit::IntelProcessor::ret() noexcept {
-	LittleEndianProcessor::ret();
+	base::ret();
 	MEMPTR() = PC();
 }
 
@@ -114,7 +114,7 @@ void EightBit::IntelProcessor::jumpIndirect() noexcept {
 }
 
 void EightBit::IntelProcessor::jump() noexcept {
-	Processor::jump(MEMPTR());
+	base::jump(MEMPTR());
 }
 
 void EightBit::IntelProcessor::callIndirect() noexcept {
@@ -150,7 +150,7 @@ bool EightBit::IntelProcessor::operator==(const EightBit::IntelProcessor& rhs) c
 	auto& left = const_cast<IntelProcessor&>(*this);
 	auto& right = const_cast<IntelProcessor&>(rhs);
 	return
-		LittleEndianProcessor::operator==(rhs)
+		base::operator==(rhs)
 		&& left.HALT() == right.HALT()
 		&& left.MEMPTR() == right.MEMPTR()
 		&& left.SP() == right.SP()

@@ -6,6 +6,9 @@
 
 namespace EightBit {
 	class ClockedChip : public Chip {
+
+		using base = Chip;
+
 	public:
 		ClockedChip(const ClockedChip& rhs) noexcept;
 		bool operator==(const ClockedChip& rhs) const noexcept;

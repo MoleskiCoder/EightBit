@@ -6,6 +6,9 @@ namespace EightBit {
 	// The RAM class is everything the ROM class is, plus
 	// it's externally 'reference'able and 'poke'able.
 	class Ram : public Rom {
+
+		using base = Rom;
+
 	public:
 		Ram(size_t size = 0) noexcept;
 		virtual ~Ram() noexcept = default;

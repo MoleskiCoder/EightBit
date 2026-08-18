@@ -2,10 +2,10 @@
 #include "../inc/BigEndianProcessor.h"
 
 EightBit::BigEndianProcessor::BigEndianProcessor(Bus& memory) noexcept
-: Processor(memory) {}
+: base(memory) {}
 
 EightBit::BigEndianProcessor::BigEndianProcessor(const BigEndianProcessor& rhs) noexcept
-: Processor(rhs) {}
+: base(rhs) {}
 
 EightBit::register16_t EightBit::BigEndianProcessor::peekShort(uint16_t address) noexcept {
 	const auto high = BUS().peek(address);

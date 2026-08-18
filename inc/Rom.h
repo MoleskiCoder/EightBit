@@ -12,6 +12,9 @@ namespace EightBit {
 	// Nothing over and above the interface is exposed to users
 	// of the ROM class.
 	class Rom : public Memory {
+
+		using base = Memory;
+
 	private:
 		std::vector<uint8_t> m_bytes;
 

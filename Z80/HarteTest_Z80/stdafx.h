@@ -2,17 +2,12 @@
 
 #define SIMDJSON_DISABLE_DEPRECATED_API
 
-#include <cassert>
 #include <chrono>
 #include <cstdint>
-#include <exception>
 #include <filesystem>
-#include <fstream>
+#include <optional>
 #include <iostream>
-#include <map>
-#include <memory>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>

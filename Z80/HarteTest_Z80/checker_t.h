@@ -2,6 +2,9 @@
 
 #include <cstdint>
 #include <optional>
+#include <vector>
+#include <utility>
+#include <sstream>
 
 #include <Disassembler.h>
 

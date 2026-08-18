@@ -12,6 +12,9 @@ namespace EightBit {
 	// *always* returns the same value, from whichever location
 	// is being read.
 	class UnusedMemory final : public Memory {
+
+		using base = Memory;
+
 	public:
 		UnusedMemory(uint16_t size, uint8_t value) noexcept;
 

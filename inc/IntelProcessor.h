@@ -14,6 +14,9 @@ namespace EightBit {
 	class Bus;
 
 	class IntelProcessor : public LittleEndianProcessor {
+
+		using base = LittleEndianProcessor;
+
 	public:
 		struct opcode_decoded_t {
 

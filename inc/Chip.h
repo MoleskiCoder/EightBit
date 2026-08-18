@@ -18,6 +18,9 @@
 
 namespace EightBit {
 	class Chip : public Device {
+
+		using base = Device;
+
 	public:
 		enum Bits {
 			Bit0 = 1,
@@ -143,7 +146,7 @@ namespace EightBit {
 		}
 
 		Chip(const Chip& rhs) noexcept
-		: Device(rhs) {}
+		: base(rhs) {}
 
 	protected:
 		Chip() noexcept = default;

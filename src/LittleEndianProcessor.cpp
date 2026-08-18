@@ -2,10 +2,10 @@
 #include "../inc/LittleEndianProcessor.h"
 
 EightBit::LittleEndianProcessor::LittleEndianProcessor(Bus& memory) noexcept
-: Processor(memory) {}
+: base(memory) {}
 
 EightBit::LittleEndianProcessor::LittleEndianProcessor(const LittleEndianProcessor& rhs) noexcept
-: Processor(rhs) {}
+: base(rhs) {}
 
 EightBit::register16_t EightBit::LittleEndianProcessor::peekShort(uint16_t address) noexcept {
 	const auto low = BUS().peek(address);

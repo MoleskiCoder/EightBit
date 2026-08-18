@@ -7,6 +7,9 @@ namespace EightBit {
 	class Bus;
 
 	class BigEndianProcessor : public Processor {
+
+		using base = Processor;
+
 	public:
 		virtual ~BigEndianProcessor() noexcept = default;
 		BigEndianProcessor(const BigEndianProcessor& rhs) noexcept;
@@ -25,7 +28,7 @@ namespace EightBit {
 
 		void fetchInto(register16_t& into) noexcept final;
 
-		void pushShort(register16_t value) noexcept final;
+		void pushShort(register16_t value) noexcept override;
 		void popInto(register16_t& into) noexcept final;
 	};
 }

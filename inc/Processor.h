@@ -10,6 +10,9 @@
 
 namespace EightBit {
 	class Processor : public ClockedChip {
+
+		using base = ClockedChip;
+
 	public:
 		Signal<EventArgs> ExecutingInstruction;
 		Signal<EventArgs> ExecutedInstruction;

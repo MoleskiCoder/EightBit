@@ -5,6 +5,9 @@
 
 namespace EightBit {
 	class PortEventArgs final : public EventArgs {
+
+		using base = EventArgs;
+
 	private:
 		register16_t _port;
 

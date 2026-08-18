@@ -11,6 +11,9 @@
 
 namespace EightBit {
 	class Bus : public Mapper {
+
+		using base = Mapper;
+
 	public:
 		virtual ~Bus() noexcept = default;
 

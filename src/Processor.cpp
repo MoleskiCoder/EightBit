@@ -6,7 +6,7 @@ EightBit::Processor::Processor(Bus& bus) noexcept
 }
 
 EightBit::Processor::Processor(const Processor& rhs) noexcept
-: ClockedChip(rhs),
+: base(rhs),
   m_bus(rhs.m_bus),
   m_opcode(rhs.m_opcode),
   m_pc(rhs.m_pc),
@@ -157,7 +157,7 @@ void EightBit::Processor::ret() noexcept {
 
 bool EightBit::Processor::operator==(const EightBit::Processor& rhs) const noexcept {
 	return
-		ClockedChip::operator==(rhs)
+		base::operator==(rhs)
 		&& RESET() == rhs.RESET()
 		&& INT() == rhs.INT()
 		&& PC() == rhs.PC();
