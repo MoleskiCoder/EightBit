@@ -16,6 +16,9 @@ namespace EightBit {
 	class Bus;
 
 	class Z80 final : public IntelProcessor {
+
+		using base = IntelProcessor;
+
 	public:
 		// ** From the Z80 CPU User Manual
 		// RFSH.Refresh(output, active Low). RFSH, together with MREQ, indicates that the lower

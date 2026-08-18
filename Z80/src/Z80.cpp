@@ -4,7 +4,7 @@
 // based on http://www.z80.info/decoding.htm
 
 EightBit::Z80::Z80(Bus& bus, InputOutput& ports) noexcept
-: IntelProcessor(bus),
+: base(bus),
   m_ports(ports) {
 	RaisedPOWER.connect([this](EventArgs) {
 
@@ -24,7 +24,7 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports) noexcept
 		IX() = IY() = Mask16;
 
 		// One of the register sets has been initialised
-		// (by the IntelProcessor base class)
+		// (by the base class)
 		// so now lets initialise the other register set.
 		exx();
 		exxAF();
@@ -46,7 +46,7 @@ EightBit::Z80::Z80(Bus& bus, InputOutput& ports) noexcept
 }
 
 EightBit::Z80::Z80(const Z80& rhs) noexcept
-: IntelProcessor(rhs),
+: base(rhs),
   m_ports(rhs.m_ports),
   m_registers(rhs.m_registers),
   m_registerSet(rhs.m_registerSet),
@@ -69,7 +69,7 @@ EightBit::Z80::Z80(const Z80& rhs) noexcept
 
 bool EightBit::Z80::operator==(const EightBit::Z80& rhs) const noexcept {
 
-	const auto base = IntelProcessor::operator==(rhs);
+	const auto base = base::operator==(rhs);
 
 	auto& left = const_cast<Z80&>(*this);
 	auto& right = const_cast<Z80&>(rhs);
@@ -151,7 +151,7 @@ void EightBit::Z80::memoryUpdate(int ticks) noexcept {
 	lowerMREQ();
 		lowerWR();
 			tick();
-			IntelProcessor::memoryWrite();
+			base::memoryWrite();
 		raiseWR();
 	raiseMREQ();
 	tick();
@@ -178,7 +178,7 @@ void EightBit::Z80::memoryRead() noexcept {
 	lowerMREQ();
 		lowerRD();
 			tick();
-			IntelProcessor::memoryRead();
+			base::memoryRead();
 		raiseRD();
 	raiseMREQ();
 	if (fetchingOpCode())
@@ -188,7 +188,7 @@ void EightBit::Z80::memoryRead() noexcept {
 }
 
 void EightBit::Z80::handleRESET() noexcept {
-	IntelProcessor::handleRESET();
+	base::handleRESET();
 	disableInterrupts();
 	IM() = 0;
 	IV() = 0;
@@ -223,7 +223,7 @@ uint8_t EightBit::Z80::readDataUnderInterrupt() noexcept {
 
 void EightBit::Z80::handleINT() noexcept {
 
-	IntelProcessor::handleINT();
+	base::handleINT();
 
 	const auto data = readDataUnderInterrupt();
 	tick();
@@ -231,7 +231,7 @@ void EightBit::Z80::handleINT() noexcept {
 
 	switch (IM()) {
 	case 0:		// i8080 equivalent
-		IntelProcessor::execute(data);
+		base::execute(data);
 		break;
 	case 1:
 		restart(7 << 3);
@@ -239,7 +239,7 @@ void EightBit::Z80::handleINT() noexcept {
 		break;
 	case 2:
 		Processor::getPagedInto(IV(), data, MEMPTR());
-		IntelProcessor::call();
+		base::call();
 		assert(cycles() == 19);
 		break;
 	default:
@@ -280,7 +280,7 @@ bool EightBit::Z80::convertCondition(int flag) noexcept {
 
 void EightBit::Z80::returnConditionalFlag(const int flag) noexcept {
 	tick();
-	IntelProcessor::returnConditionalFlag(flag);
+	base::returnConditionalFlag(flag);
 }
 
 void EightBit::Z80::retn() noexcept {
@@ -294,11 +294,11 @@ void EightBit::Z80::reti() noexcept {
 
 void EightBit::Z80::call(register16_t destination) noexcept {
 	tick();
-	Processor::call(destination);
+	base::call(destination);
 }
 
 void EightBit::Z80::jumpRelative(int8_t offset) noexcept {
-	IntelProcessor::jumpRelative(offset);
+	base::jumpRelative(offset);
 	tick(5);
 }
 
@@ -577,7 +577,7 @@ void EightBit::Z80::ccf() noexcept {
 }
 
 void EightBit::Z80::cpl() noexcept {
-	IntelProcessor::cpl();
+	base::cpl();
 	setBit(HC | NF);
 	adjustXY(A());
 }
@@ -600,7 +600,7 @@ void EightBit::Z80::neg() noexcept {
 
 void EightBit::Z80::blockCompare() noexcept {
 
-	IntelProcessor::memoryRead(HL());
+	base::memoryRead(HL());
 	uint8_t result = A() - BUS().DATA();
 
 	setBit(PF, --BC().joined);
@@ -648,8 +648,8 @@ void EightBit::Z80::cpdr() noexcept {
 }
 
 void EightBit::Z80::blockLoad() noexcept {
-	IntelProcessor::memoryRead(HL());
-	IntelProcessor::memoryWrite(DE());
+	base::memoryRead(HL());
+	base::memoryWrite(DE());
 	const auto xy = A() + BUS().DATA();
 	setBit(XF, xy & Bit3);
 	setBit(YF, xy & Bit1);
@@ -765,7 +765,7 @@ void EightBit::Z80::indr() noexcept {
 
 void EightBit::Z80::blockOut() noexcept {
 	tick();
-	Processor::memoryRead(HL());
+	base::memoryRead(HL());
 	B() = decrement(B());
 	writePort(BC());
 }
@@ -904,7 +904,7 @@ void EightBit::Z80::fetchDisplacement() noexcept {
 // is in the HALT state
 uint8_t EightBit::Z80::fetchInstruction() noexcept {
 	lowerM1();
-		const auto data = IntelProcessor::fetchInstruction();
+		const auto data = base::fetchInstruction();
 	raiseM1();
 	return data;
 }
@@ -1012,7 +1012,7 @@ void EightBit::Z80::R2(const int r, const uint8_t value) noexcept {
 		L() = value;
 		break;
 	case 6:
-		IntelProcessor::memoryWrite(HL(), value);
+		base::memoryWrite(HL(), value);
 		break;
 	case 7:
 		A() = value;
@@ -1043,7 +1043,7 @@ void EightBit::Z80::poweredStep() noexcept {
 		}
 	}
 
-	IntelProcessor::execute(fetchInstruction());
+	base::execute(fetchInstruction());
 
 	Q() = m_modifiedF;
 }
@@ -1134,11 +1134,11 @@ void EightBit::Z80::executeCB(const int x, const int y, const int z) noexcept {
 	if (update) {
 		if (displaced()) {
 			tick();
-			IntelProcessor::memoryWrite(operand);
+			base::memoryWrite(operand);
 			if (!memoryZ)
 				R2(z, operand);
 		} else {
-			IntelProcessor::R(z, operand, 2);
+			base::R(z, operand, 2);
 		}
 	}
 }
@@ -1155,7 +1155,7 @@ void EightBit::Z80::executeED(const int x, const int y, const int z, const int p
 			readPort(BC());
 			++MEMPTR();
 			if (y != 6)	// IN r[y],(C)
-				IntelProcessor::R(y, BUS().DATA());
+				base::R(y, BUS().DATA());
 			adjustSZPXY(BUS().DATA());
 			clearBit(NF | HC);
 			break;
@@ -1439,7 +1439,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				tick(5);
 			}
 			const auto original = R(y);
-			IntelProcessor::R(y, increment(original), 2);
+			base::R(y, increment(original), 2);
 			break;
 		}
 		case 5: { // 8-bit DEC
@@ -1448,7 +1448,7 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				tick(5);
 			}
 			const auto original = R(y);
-			IntelProcessor::R(y, decrement(original), 2);
+			base::R(y, decrement(original), 2);
 			break;
 		}
 		case 6: { // 8-bit load immediate
@@ -1512,18 +1512,18 @@ void EightBit::Z80::executeOther(const int x, const int y, const int z, const in
 				if (memoryY) {
 					switch (z) {
 					case 4:
-						IntelProcessor::R(y, H());
+						base::R(y, H());
 						normal = false;
 						break;
 					case 5:
-						IntelProcessor::R(y, L());
+						base::R(y, L());
 						normal = false;
 						break;
 					}
 				}
 			}
 			if (normal)
-				IntelProcessor::R(y, R(z));
+				base::R(y, R(z));
 		} else {
 			lowerHALT(); // Exception (replaces LD (HL), (HL))
 		}
@@ -1713,7 +1713,7 @@ void EightBit::Z80::loadImmediate(int y) {
 	fetchByte();  // LD r,n
 	if (memoryY && displaced())
 		tick(2);
-	IntelProcessor::R(y, BUS().DATA());
+	base::R(y, BUS().DATA());
 }
 
 void EightBit::Z80::popRegisterPair(int p) {
@@ -1727,17 +1727,17 @@ void EightBit::Z80::pushRegisterPair(int p) {
 
 void EightBit::Z80::prefixDD() {
 	m_prefixDD = true;
-	IntelProcessor::execute(fetchInstruction());
+	base::execute(fetchInstruction());
 }
 
 void EightBit::Z80::prefixED() {
 	m_prefixED = true;
-	IntelProcessor::execute(fetchInstruction());
+	base::execute(fetchInstruction());
 }
 
 void EightBit::Z80::prefixFD() {
 	m_prefixFD = true;
-	IntelProcessor::execute(fetchInstruction());
+	base::execute(fetchInstruction());
 }
 
 void EightBit::Z80::prefixCB() {
@@ -1745,8 +1745,8 @@ void EightBit::Z80::prefixCB() {
 	if (displaced()) {
 		fetchDisplacement();
 		fetchByte();
-		Processor::execute(BUS().DATA());
+		base::execute(BUS().DATA());
 	} else {
-		Processor::execute(fetchInstruction());
+		base::execute(fetchInstruction());
 	}
 }
