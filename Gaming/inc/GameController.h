@@ -4,6 +4,8 @@
 
 #include <SDL3/SDL.h>
 
+#include "Wrapper.h"
+
 namespace Gaming {
 	class GameController final {
 	public:
@@ -14,7 +16,8 @@ namespace Gaming {
 		void stopRumble() noexcept;
 
 		[[nodiscard]] static auto buildJoystickId(SDL_Gamepad* gamepad) noexcept {
-			auto joystick = ::SDL_GetGamepadJoystick(gamepad);
+			auto* joystick = ::SDL_GetGamepadJoystick(gamepad);
+			Wrapper::maybeThrowException(joystick, "Unable to obtain joystick from gamepad");
 			return ::SDL_GetJoystickID(joystick);
 		}
 

@@ -30,20 +30,17 @@ void Game::raisePOWER() noexcept {
 
 	Device::raisePOWER();
 
-	m_window.reset(::SDL_CreateWindow(
-		title().c_str(),
-		windowWidth(), windowHeight(),
-		0), ::SDL_DestroyWindow);
+	m_window.reset(::SDL_CreateWindow(title().c_str(), windowWidth(), windowHeight(), 0), ::SDL_DestroyWindow);
 	Wrapper::maybeThrowException(m_window.get(), "Unable to create window");
 
 	const auto displayID = SDL_GetDisplayForWindow(m_window.get());
-	const auto* mode = ::SDL_GetCurrentDisplayMode(displayID);
-	Wrapper::maybeThrowException(mode, "Unable to obtain window information");
+	Wrapper::maybeThrowException(displayID != 0, "Unable to get display for window");
 
-	m_renderer.reset(::SDL_CreateRenderer(
-		m_window.get(),
-		nullptr), ::SDL_DestroyRenderer);
-	Wrapper::maybeThrowException(m_renderer.get(), "Unable to create renderer: ");
+	const auto* mode = ::SDL_GetCurrentDisplayMode(displayID);
+	Wrapper::maybeThrowException(mode, "Unable to obtain window display mode");
+
+	m_renderer.reset(::SDL_CreateRenderer(m_window.get(), nullptr), ::SDL_DestroyRenderer);
+	Wrapper::maybeThrowException(m_renderer.get(), "Unable to create renderer");
 
 	m_vsync = useVsync();
 	if (m_vsync) {
@@ -172,7 +169,7 @@ void Game::synchronise() {
 void Game::removeJoystick(SDL_Event& e) {
 	const auto which = e.jdevice.which;
 	const auto found = m_gameControllers.find(which);
-	SDL_assert(found != m_gameControllers.end());
+	assert(found != m_gameControllers.end());
 	auto& controller = found->second;
 	const auto joystickId = controller->getJoystickId();
 	m_mappedControllers.erase(joystickId);
@@ -182,11 +179,11 @@ void Game::removeJoystick(SDL_Event& e) {
 
 void Game::addJoystick(SDL_Event& e) {
 	const auto which = e.jdevice.which;
-	SDL_assert(m_gameControllers.find(which) == m_gameControllers.end());
+	assert(m_gameControllers.find(which) == m_gameControllers.end());
 	auto controller = std::make_shared<GameController>(which);
 	const auto joystickId = controller->getJoystickId();
 	m_gameControllers[which] = controller;
-	SDL_assert(m_mappedControllers.contains(joystickId));
+	assert(m_mappedControllers.contains(joystickId));
 	m_mappedControllers[joystickId] = which;
 	SDL_Log("Joystick device %d added (%zd controllers)", which, m_gameControllers.size());
 }
@@ -222,7 +219,7 @@ std::shared_ptr<GameController> Game::chooseController(const int who) const {
 	if (which == -1)
 		return nullptr;
 	const auto found = m_gameControllers.find(which);
-	SDL_assert(found != m_gameControllers.cend());
+	assert(found != m_gameControllers.cend());
 	return found->second;
 }
 
