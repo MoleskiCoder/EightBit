@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace Gaming {
 	class GameController final {
@@ -13,26 +13,26 @@ namespace Gaming {
 		void startRumble() noexcept;
 		void stopRumble() noexcept;
 
-		[[nodiscard]] static auto buildJoystickId(SDL_GameController* controller) noexcept {
-			auto joystick = ::SDL_GameControllerGetJoystick(controller);
-			return ::SDL_JoystickInstanceID(joystick);
+		[[nodiscard]] static auto buildJoystickId(SDL_Gamepad* gamepad) noexcept {
+			auto joystick = ::SDL_GetGamepadJoystick(gamepad);
+			return ::SDL_GetJoystickID(joystick);
 		}
 
 		[[nodiscard]] auto getJoystickId() const noexcept {
-			return buildJoystickId(m_gameController.get());
+			return buildJoystickId(m_gamepad.get());
 		}
 
 	private:
 		int m_index;
-		std::shared_ptr<SDL_GameController> m_gameController;
+		std::shared_ptr<SDL_Gamepad> m_gamepad;
 
 		void open();
 		void close() noexcept;
 
-		std::shared_ptr<SDL_Haptic> m_hapticController;
+		std::shared_ptr<SDL_Haptic> m_haptic;
 		bool m_hapticRumbleSupported = false;
 
-		void openHapticController();
-		void closeHapticController() noexcept;
+		void openHaptic();
+		void closeHaptic() noexcept;
 	};
 }

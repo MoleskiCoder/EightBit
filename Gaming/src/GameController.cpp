@@ -14,48 +14,51 @@ namespace Gaming {
 	}
 
 	void GameController::open() {
-		SDL_assert(::SDL_NumJoysticks() > 0);
-		if (::SDL_IsGameController(m_index)) {
-			m_gameController.reset(::SDL_GameControllerOpen(m_index), ::SDL_GameControllerClose);
-			if (m_gameController == nullptr)
-				SDLWrapper::throwSDLException("Unable to open game controller: ");
-			openHapticController();
-			auto name = ::SDL_GameControllerName(m_gameController.get());
-			::SDL_Log("Game controller name: %s", name);
+
+		int count;
+		auto* joysticks = SDL_GetJoysticks(&count);
+		Wrapper::maybeThrowException(joysticks, "Unable to obtain joystick information");
+		::SDL_free(joysticks);
+		assert(count > 0);
+		assert(m_index < count);
+	
+		if (::SDL_IsGamepad(m_index)) {
+			m_gamepad.reset(::SDL_OpenGamepad(m_index), ::SDL_CloseGamepad);
+			Wrapper::maybeThrowException(m_gamepad.get(), "Unable to open gamepad");
+			openHaptic();
+			const auto* name = ::SDL_GetGamepadName(m_gamepad.get());
+			Wrapper::maybeThrowException(name, "Unable to obtain gamepad name");
+			::SDL_LogInfo(SDL_LOG_CATEGORY_INPUT, "Game controller name: %s", name);
 		} else {
-			::SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Joystick is not a game controller!!");
+			::SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Joystick is not a game controller");
 		}
 	}
 
-	void GameController::openHapticController() {
-		m_hapticController.reset(::SDL_HapticOpen(m_index), ::SDL_HapticClose);
-		if (m_hapticController == nullptr)
-			SDLWrapper::throwSDLException("Unable to open haptic controller: ");
-		SDLWrapper::verifySDLCall(::SDL_HapticRumbleInit(m_hapticController.get()), "Unable to initialise haptic controller: ");
-		m_hapticRumbleSupported = ::SDL_HapticRumbleSupported(m_hapticController.get()) != SDL_FALSE;
+	void GameController::openHaptic() {
+		m_haptic.reset(::SDL_OpenHaptic(m_index), ::SDL_CloseHaptic);
+		Wrapper::maybeThrowException(m_haptic.get(), "Unable to open haptic gamepad");
+		const auto success = ::SDL_InitHapticRumble(m_haptic.get());
+		Wrapper::maybeThrowException(success, "Unable to initialise haptic gamepad");
+		m_hapticRumbleSupported = ::SDL_HapticRumbleSupported(m_haptic.get());
 	}
 
-	void GameController::closeHapticController() noexcept {
-		m_hapticController.reset();
+	void GameController::closeHaptic() noexcept {
+		m_haptic.reset();
 		m_hapticRumbleSupported = false;
 	}
 
 	void GameController::close() noexcept {
-		m_gameController.reset();
-		closeHapticController();
+		m_gamepad.reset();
+		closeHaptic();
 	}
 
 	void GameController::startRumble() noexcept {
-		if (m_hapticRumbleSupported) {
-			if (::SDL_HapticRumblePlay(m_hapticController.get(), 1.0, 1000) < 0)
-				::SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Unable to start haptic rumble: %s", ::SDL_GetError());
-		}
+		if (m_hapticRumbleSupported && !::SDL_PlayHapticRumble(m_haptic.get(), 1.0, 1000))
+			::SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Unable to start haptic rumble: %s", ::SDL_GetError());
 	}
 
 	void GameController::stopRumble() noexcept {
-		if (m_hapticRumbleSupported) {
-			if (::SDL_HapticRumbleStop(m_hapticController.get()) < 0)
-				::SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Unable to stop haptic rumble: %s", ::SDL_GetError());
-		}
+		if (m_hapticRumbleSupported && !::SDL_StopHapticRumble(m_haptic.get()))
+			::SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Unable to stop haptic rumble: %s", ::SDL_GetError());
 	}
 }

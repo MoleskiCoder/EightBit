@@ -32,48 +32,38 @@ void Game::raisePOWER() noexcept {
 
 	m_window.reset(::SDL_CreateWindow(
 		title().c_str(),
-		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		windowWidth(), windowHeight(),
-		SDL_WINDOW_SHOWN), ::SDL_DestroyWindow);
-	if (m_window == nullptr)
-		SDLWrapper::throwSDLException("Unable to create window: ");
+		0), ::SDL_DestroyWindow);
+	Wrapper::maybeThrowException(m_window.get(), "Unable to create window");
 
-	::SDL_DisplayMode mode;
-	SDLWrapper::verifySDLCall(
-		::SDL_GetWindowDisplayMode(m_window.get(), &mode),
-		"Unable to obtain window information: ");
+	const auto displayID = SDL_GetDisplayForWindow(m_window.get());
+	const auto* mode = ::SDL_GetCurrentDisplayMode(displayID);
+	Wrapper::maybeThrowException(mode, "Unable to obtain window information");
 
-	Uint32 rendererFlags = 0;
+	m_renderer.reset(::SDL_CreateRenderer(
+		m_window.get(),
+		nullptr), ::SDL_DestroyRenderer);
+	Wrapper::maybeThrowException(m_renderer.get(), "Unable to create renderer: ");
+
 	m_vsync = useVsync();
 	if (m_vsync) {
-		const auto required = fps();
-		if (std::abs(required - mode.refresh_rate) < 0.001) {
-			rendererFlags |= SDL_RENDERER_PRESENTVSYNC;
-			::SDL_Log("Attempting to use SDL_RENDERER_PRESENTVSYNC");
+		assert(mode != nullptr);
+		const auto difference = fps() - mode->refresh_rate;
+		m_vsync = std::abs(difference) < 0.001;
+		if (m_vsync) {
+			SDL_Log("Attempting to configure renderer VSYNC");
+			m_vsync = SDL_SetRenderVSync(m_renderer.get(), 1);
+			if (!m_vsync) {
+				const auto error = SDL_GetError();
+				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Unable to set render VSYNC (%s)", error);
+			}
 		} else {
-			m_vsync = false;
-			::SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Display refresh rate is incompatible with required rate (%f)", required);
-		}
-	}
-	m_renderer.reset(::SDL_CreateRenderer(m_window.get(), -1, rendererFlags), ::SDL_DestroyRenderer);
-	if (m_renderer == nullptr)
-		SDLWrapper::throwSDLException("Unable to create renderer: ");
-
-	::SDL_RendererInfo info;
-	SDLWrapper::verifySDLCall(
-		::SDL_GetRendererInfo(m_renderer.get(), &info),
-		"Unable to obtain renderer information");
-
-	if (m_vsync) {
-		if ((info.flags & SDL_RENDERER_PRESENTVSYNC) == 0) {
-			::SDL_LogWarn(::SDL_LOG_CATEGORY_APPLICATION, "Renderer does not support VSYNC, reverting to timed delay loop.");
-			m_vsync = false;
+			SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Display refresh rate is incompatible with required rate (%f)", fps());
 		}
 	}
 
-	m_pixelFormat.reset(::SDL_AllocFormat(m_pixelType), ::SDL_FreeFormat);
-	if (m_pixelFormat == nullptr)
-		SDLWrapper::throwSDLException("Unable to allocate pixel format: ");
+	m_pixelFormat = SDL_GetPixelFormatDetails(m_pixelType);
+	Wrapper::maybeThrowException(m_pixelFormat, "Unable to obtain pixel format details");
 
 	configureBackground();
 	createBitmapTexture();
@@ -83,15 +73,13 @@ void Game::raisePOWER() noexcept {
 }
 
 void Game::configureBackground() const {
-	SDLWrapper::verifySDLCall(
-		::SDL_SetRenderDrawColor(m_renderer.get(), 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE),
-		"Unable to set render draw colour");
+	const auto success = ::SDL_SetRenderDrawColor(m_renderer.get(), 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+	Wrapper::maybeThrowException(success, "Unable to set render draw colour");
 }
 
 void Game::createBitmapTexture() {
 	m_bitmapTexture.reset(::SDL_CreateTexture(m_renderer.get(), m_pixelType, SDL_TEXTUREACCESS_STREAMING, rasterWidth(), rasterHeight()), ::SDL_DestroyTexture);
-	if (m_bitmapTexture == nullptr)
-		SDLWrapper::throwSDLException("Unable to create bitmap texture");
+	Wrapper::maybeThrowException(m_bitmapTexture.get(), "Unable to create bitmap texture");
 }
 
 void Game::runLoop() {
@@ -113,31 +101,31 @@ void Game::handleEvents() {
 	::SDL_Event e;
 	while (::SDL_PollEvent(&e)) {
 		switch (e.type) {
-		case SDL_QUIT:
+		case SDL_EVENT_QUIT:
 			lowerPOWER();
 			break;
-		case SDL_KEYDOWN:
-			handleKeyDown(e.key.keysym.sym);
+		case SDL_EVENT_KEY_DOWN:
+			handleKeyDown(e.key.key);
 			break;
-		case SDL_KEYUP:
-			handleKeyUp(e.key.keysym.sym);
+		case SDL_EVENT_KEY_UP:
+			handleKeyUp(e.key.key);
 			break;
-		case SDL_JOYBUTTONDOWN:
+		case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 			handleJoyButtonDown(e.jbutton);
 			break;
-		case SDL_JOYBUTTONUP:
+		case SDL_EVENT_JOYSTICK_BUTTON_UP:
 			handleJoyButtonUp(e.jbutton);
 			break;
-		case SDL_CONTROLLERBUTTONDOWN:
-			handleControllerButtonDown(e.cbutton);
+		case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+			handleGamepadButtonDown(e.gbutton);
 			break;
-		case SDL_CONTROLLERBUTTONUP:
-			handleControllerButtonUp(e.cbutton);
+		case SDL_EVENT_GAMEPAD_BUTTON_UP:
+			handleGamepadButtonUp(e.gbutton);
 			break;
-		case SDL_JOYDEVICEADDED:
+		case SDL_EVENT_JOYSTICK_ADDED:
 			addJoystick(e);
 			break;
-		case SDL_JOYDEVICEREMOVED:
+		case SDL_EVENT_JOYSTICK_REMOVED:
 			removeJoystick(e);
 			break;
 		}
@@ -146,7 +134,7 @@ void Game::handleEvents() {
 
 void Game::draw() {
 	updateTexture();
-	copyTexture();
+	renderTexture();
 	displayTexture();
 }
 
@@ -203,7 +191,7 @@ void Game::addJoystick(SDL_Event& e) {
 	SDL_Log("Joystick device %d added (%zd controllers)", which, m_gameControllers.size());
 }
 
-std::shared_ptr<GameController> Game::gameController(const int which) const {
+std::shared_ptr<GameController> Game::gamepad(const int which) const {
 	const auto i = m_gameControllers.find(which);
 	if (i == m_gameControllers.cend())
 		throw std::runtime_error("Unknown controller");
@@ -239,27 +227,27 @@ std::shared_ptr<GameController> Game::chooseController(const int who) const {
 }
 
 void Game::updateTexture() {
-	SDLWrapper::verifySDLCall(
-		::SDL_UpdateTexture(m_bitmapTexture.get(), nullptr, pixels(), displayWidth() * sizeof(Uint32)),
-		"Unable to update texture: ");
+	const auto success = ::SDL_UpdateTexture(m_bitmapTexture.get(), nullptr, pixels(), displayWidth() * sizeof(Uint32));
+	Wrapper::maybeThrowException(success, "Unable to update texture");
 }
 
-void Game::copyTexture() {
-	SDLWrapper::verifySDLCall(
-		::SDL_RenderCopy(m_renderer.get(), m_bitmapTexture.get(), nullptr, nullptr),
-		"Unable to copy texture to renderer: ");
+void Game::renderTexture() {
+	const auto success = ::SDL_RenderTexture(m_renderer.get(), m_bitmapTexture.get(), nullptr, nullptr);
+	Wrapper::maybeThrowException(success, "Unable to render texture");
 }
 
 void Game::displayTexture() {
-	::SDL_RenderPresent(m_renderer.get());
+	const auto success = ::SDL_RenderPresent(m_renderer.get());
+	Wrapper::maybeThrowException(success, "Unable to present render to screen");
+
 }
 
 void Game::toggleFullscreen() {
-	auto wasFullscreen = ::SDL_GetWindowFlags(m_window.get()) & SDL_WINDOW_FULLSCREEN_DESKTOP;
-	SDLWrapper::verifySDLCall(
-		::SDL_SetWindowFullscreen(m_window.get(), wasFullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP),
-		"Failed to modify the window full screen setting: ");
-	::SDL_ShowCursor(wasFullscreen ? 1 : 0);
+	const auto wasFullscreen = (SDL_GetWindowFlags(m_window.get()) & SDL_WINDOW_FULLSCREEN) != 0;
+	auto success = SDL_SetWindowFullscreen(m_window.get(), !wasFullscreen);
+	Wrapper::maybeThrowException(success, "Failed to toggle window full screen setting");
+	success = wasFullscreen ? SDL_ShowCursor() : SDL_HideCursor();
+	Wrapper::maybeThrowException(success, "Failed to toggle cursor show/hide");
 }
 
 bool Game::handleKeyDown(SDL_Keycode key) {
@@ -292,11 +280,11 @@ bool Game::handleJoyButtonUp(SDL_JoyButtonEvent event) {
 	return false;
 }
 
-bool Game::handleControllerButtonDown(SDL_ControllerButtonEvent event) {
+bool Game::handleGamepadButtonDown(SDL_GamepadButtonEvent event) {
 	return false;
 }
 
-bool Game::handleControllerButtonUp(SDL_ControllerButtonEvent event) {
+bool Game::handleGamepadButtonUp(SDL_GamepadButtonEvent event) {
 	return false;
 }
 

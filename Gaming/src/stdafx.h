@@ -7,13 +7,14 @@
 #ifndef STDAFX_H
 #define STDAFX_H
 
+#include <cassert>
 #include <cstdint>
 #include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include <Device.h>
 

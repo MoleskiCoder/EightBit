@@ -5,11 +5,11 @@
 #include <memory>
 #include <string>
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include <Device.h>
 
-#include "SDLWrapper.h"
+#include "Wrapper.h"
 
 class Configuration;
 
@@ -52,7 +52,7 @@ namespace Gaming {
 		void removeJoystick(SDL_Event& e);
 
 		virtual void updateTexture();
-		virtual void copyTexture();
+		virtual void renderTexture();
 		virtual void displayTexture();
 
 		[[nodiscard]] virtual const uint32_t* pixels() const = 0;
@@ -63,12 +63,12 @@ namespace Gaming {
 		virtual bool handleJoyButtonDown(SDL_JoyButtonEvent event);
 		virtual bool handleJoyButtonUp(SDL_JoyButtonEvent event);
 
-		virtual bool handleControllerButtonDown(SDL_ControllerButtonEvent event);
-		virtual bool handleControllerButtonUp(SDL_ControllerButtonEvent event);
+		virtual bool handleGamepadButtonDown(SDL_GamepadButtonEvent event);
+		virtual bool handleGamepadButtonUp(SDL_GamepadButtonEvent event);
 
 		void toggleFullscreen();
 
-		[[nodiscard]] std::shared_ptr<GameController> gameController(int which) const;
+		[[nodiscard]] std::shared_ptr<GameController> gamepad(int which) const;
 		[[nodiscard]] int mappedController(const SDL_JoystickID which) const;
 
 		[[nodiscard]] int chooseControllerIndex(int who) const;
@@ -76,17 +76,17 @@ namespace Gaming {
 
 		[[nodiscard]] std::shared_ptr<SDL_Renderer> renderer() const noexcept { return m_renderer; }
 		[[nodiscard]] std::shared_ptr<SDL_Texture> bitmapTexture() const noexcept { return m_bitmapTexture; }
-		[[nodiscard]] std::shared_ptr<SDL_PixelFormat> pixelFormat() const noexcept { return m_pixelFormat; }
+		[[nodiscard]] const SDL_PixelFormatDetails* pixelFormat() const noexcept { return m_pixelFormat; }
 
 	private:
-		SDLWrapper m_wrapper;
+		Wrapper m_wrapper;
 
 		std::shared_ptr<SDL_Window> m_window;
 		std::shared_ptr<SDL_Renderer> m_renderer;
 		std::shared_ptr<SDL_Texture> m_bitmapTexture;
-		std::shared_ptr<SDL_PixelFormat> m_pixelFormat;
+		const SDL_PixelFormatDetails* m_pixelFormat = nullptr;
 
-		Uint32 m_pixelType = SDL_PIXELFORMAT_ARGB8888;
+		SDL_PixelFormat m_pixelType = SDL_PIXELFORMAT_ARGB8888;
 
 		bool m_vsync = false;
 		Uint64 m_performanceFrequency = 0;
