@@ -48,8 +48,8 @@ namespace Gaming {
 		virtual void runRasterLines() {};
 		virtual void runVerticalBlank() {}
 
-		void addJoystick(SDL_Event& e);
-		void removeJoystick(SDL_Event& e);
+		void addGamepad(SDL_Event& e);
+		void removeGamepad(SDL_Event& e);
 
 		virtual void updateTexture();
 		virtual void renderTexture();
@@ -69,7 +69,6 @@ namespace Gaming {
 		void toggleFullscreen();
 
 		[[nodiscard]] std::shared_ptr<GameController> gamepad(int which) const;
-		[[nodiscard]] int mappedController(const SDL_JoystickID which) const;
 
 		[[nodiscard]] int chooseControllerIndex(int who) const;
 		[[nodiscard]] std::shared_ptr<GameController> chooseController(int who) const;
@@ -95,7 +94,6 @@ namespace Gaming {
 		Uint64 m_frameEndTime = 0;		// in performance frequency
 
 		std::map<int, std::shared_ptr<GameController>> m_gameControllers;
-		std::map<SDL_JoystickID, int> m_mappedControllers;
 
 		void configureBackground() const;
 		void createBitmapTexture();

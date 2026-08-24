@@ -119,11 +119,11 @@ void Game::handleEvents() {
 		case SDL_EVENT_GAMEPAD_BUTTON_UP:
 			handleGamepadButtonUp(e.gbutton);
 			break;
-		case SDL_EVENT_JOYSTICK_ADDED:
-			addJoystick(e);
+		case SDL_EVENT_GAMEPAD_ADDED:
+			addGamepad(e);
 			break;
-		case SDL_EVENT_JOYSTICK_REMOVED:
-			removeJoystick(e);
+		case SDL_EVENT_GAMEPAD_REMOVED:
+			removeGamepad(e);
 			break;
 		}
 	}
@@ -166,39 +166,25 @@ void Game::synchronise() {
 	}
 }
 
-void Game::removeJoystick(SDL_Event& e) {
-	const auto which = e.jdevice.which;
+void Game::removeGamepad(SDL_Event& e) {
+	const auto which = e.gdevice.which;
 	const auto found = m_gameControllers.find(which);
 	assert(found != m_gameControllers.end());
-	auto& controller = found->second;
-	const auto joystickId = controller->getJoystickId();
-	m_mappedControllers.erase(joystickId);
 	m_gameControllers.erase(which);
 	SDL_Log("Joystick device %d removed (%zd controllers)", which, m_gameControllers.size());
 }
 
-void Game::addJoystick(SDL_Event& e) {
-	const auto which = e.jdevice.which;
+void Game::addGamepad(SDL_Event& e) {
+	const auto which = e.gdevice.which;
 	assert(m_gameControllers.find(which) == m_gameControllers.end());
 	auto controller = std::make_shared<GameController>(which);
-	const auto joystickId = controller->getJoystickId();
 	m_gameControllers[which] = controller;
-	assert(m_mappedControllers.contains(joystickId));
-	m_mappedControllers[joystickId] = which;
-	SDL_Log("Joystick device %d added (%zd controllers)", which, m_gameControllers.size());
 }
 
 std::shared_ptr<GameController> Game::gamepad(const int which) const {
 	const auto i = m_gameControllers.find(which);
 	if (i == m_gameControllers.cend())
 		throw std::runtime_error("Unknown controller");
-	return i->second;
-}
-
-int Game::mappedController(const SDL_JoystickID which) const {
-	const auto i = m_mappedControllers.find(which);
-	if (i == m_mappedControllers.cend())
-		throw std::runtime_error("Unknown joystick");
 	return i->second;
 }
 
