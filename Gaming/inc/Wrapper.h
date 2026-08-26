@@ -5,10 +5,19 @@
 #include <sstream>
 
 namespace Gaming {
-	class Wrapper final {
+	class Wrapper final : public EightBit::Device {
+
+		using base = Device;
+
 	public:
-		Wrapper(bool verbose = false);
-		~Wrapper();
+		Wrapper(SDL_LogPriority logging = SDL_LOG_PRIORITY_WARN);
+		~Wrapper() = default;
+
+		void raisePOWER() noexcept final;
+		void lowerPOWER() noexcept final;
+
+		void initialise();
+		void terminate();
 
 		static void throwException(const std::string& failure) {
 			std::ostringstream output;
@@ -24,5 +33,8 @@ namespace Gaming {
 		static void maybeThrowException(void* handle, const std::string& failure) {
 			maybeThrowException(handle != nullptr, failure);
 		}
+
+	private:
+		SDL_LogPriority m_logging;
 	};
 }

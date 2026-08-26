@@ -19,11 +19,17 @@ namespace Gaming {
 
 	class Game : public EightBit::Device {
 	public:
-		Game(bool verbose = false);
+		Game(SDL_LogPriority logging = SDL_LOG_PRIORITY_WARN);
 		virtual ~Game();
 
-		virtual void runLoop();
+		virtual SDL_AppResult runFrame();
+		virtual SDL_AppResult handleEvent(SDL_Event& e);
+
 		void raisePOWER() noexcept override;
+		void lowerPOWER() noexcept override;
+
+		virtual void initialise();
+		virtual void terminate();
 
 	protected:
 		[[nodiscard]] virtual float fps() const noexcept = 0;
@@ -39,11 +45,8 @@ namespace Gaming {
 
 		[[nodiscard]] virtual std::string title() const noexcept = 0;
 
-		virtual void handleEvents();
 		virtual void update();
 		virtual void draw();
-		virtual bool maybeSynchronise();	// true, if manual synchronisation required
-		virtual void synchronise();
 
 		virtual void runRasterLines() {};
 		virtual void runVerticalBlank() {}
@@ -88,10 +91,6 @@ namespace Gaming {
 		SDL_PixelFormat m_pixelType = SDL_PIXELFORMAT_ARGB8888;
 
 		bool m_vsync = false;
-		Uint64 m_performanceFrequency = 0;
-		double m_targetFrameTime = 0.0;	// in seconds
-		Uint64 m_frameStartTime = 0;	// in performance frequency
-		Uint64 m_frameEndTime = 0;		// in performance frequency
 
 		std::map<int, std::shared_ptr<GameController>> m_gameControllers;
 

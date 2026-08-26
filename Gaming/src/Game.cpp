@@ -3,10 +3,12 @@
 
 #include "../inc/GameController.h"
 
+#include <format>
+
 namespace Gaming {
 
-Game::Game(bool verbose /* = false */)
-: m_wrapper(verbose) {}
+Game::Game(SDL_LogPriority logging /* = SDL_LOG_PRIORITY_WARN */)
+: m_wrapper(logging) {}
 
 Game::~Game() {}
 
@@ -27,8 +29,18 @@ int Game::displayHeight() const noexcept {
 }
 
 void Game::raisePOWER() noexcept {
-
 	Device::raisePOWER();
+	initialise();
+}
+
+void Game::lowerPOWER() noexcept {
+	terminate();
+	Device::lowerPOWER();
+}
+
+void Game::initialise() {
+
+	m_wrapper.raisePOWER();
 
 	m_window.reset(::SDL_CreateWindow(title().c_str(), windowWidth(), windowHeight(), 0), ::SDL_DestroyWindow);
 	Wrapper::maybeThrowException(m_window.get(), "Unable to create window");
@@ -59,14 +71,24 @@ void Game::raisePOWER() noexcept {
 		}
 	}
 
+	if (!m_vsync) {
+		SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "Setting callback rate hint");
+		const auto success = SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, std::format("{}", fps()).c_str());
+		Wrapper::maybeThrowException(success, "Unable to set event loop callback rate hint");
+	}
+
 	m_pixelFormat = SDL_GetPixelFormatDetails(m_pixelType);
 	Wrapper::maybeThrowException(m_pixelFormat, "Unable to obtain pixel format details");
 
 	configureBackground();
 	createBitmapTexture();
+}
 
-	m_performanceFrequency = ::SDL_GetPerformanceFrequency();
-	m_targetFrameTime = 1.0 / fps();
+void Game::terminate() {
+	m_bitmapTexture.reset();
+	m_renderer.reset();
+	m_window.reset();
+	m_wrapper.lowerPOWER();
 }
 
 void Game::configureBackground() const {
@@ -79,91 +101,54 @@ void Game::createBitmapTexture() {
 	Wrapper::maybeThrowException(m_bitmapTexture.get(), "Unable to create bitmap texture");
 }
 
-void Game::runLoop() {
-	while (powered()) {
-		update();
-		draw();
-		maybeSynchronise();
-	}
+SDL_AppResult Game::runFrame() {
+	update();
+	draw();
+	return SDL_APP_CONTINUE;
 }
 
 void Game::update() {
-	m_frameStartTime = ::SDL_GetPerformanceCounter();
-	handleEvents();
 	runVerticalBlank();
 	runRasterLines();
 }
 
-void Game::handleEvents() {
-	::SDL_Event e;
-	while (::SDL_PollEvent(&e)) {
-		switch (e.type) {
-		case SDL_EVENT_QUIT:
-			lowerPOWER();
-			break;
-		case SDL_EVENT_KEY_DOWN:
-			handleKeyDown(e.key.key);
-			break;
-		case SDL_EVENT_KEY_UP:
-			handleKeyUp(e.key.key);
-			break;
-		case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
-			handleJoyButtonDown(e.jbutton);
-			break;
-		case SDL_EVENT_JOYSTICK_BUTTON_UP:
-			handleJoyButtonUp(e.jbutton);
-			break;
-		case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
-			handleGamepadButtonDown(e.gbutton);
-			break;
-		case SDL_EVENT_GAMEPAD_BUTTON_UP:
-			handleGamepadButtonUp(e.gbutton);
-			break;
-		case SDL_EVENT_GAMEPAD_ADDED:
-			addGamepad(e);
-			break;
-		case SDL_EVENT_GAMEPAD_REMOVED:
-			removeGamepad(e);
-			break;
-		}
+SDL_AppResult Game::handleEvent(SDL_Event& e) {
+	switch (e.type) {
+	case SDL_EVENT_QUIT:
+		return SDL_APP_SUCCESS;
+		break;
+	case SDL_EVENT_KEY_DOWN:
+		handleKeyDown(e.key.key);
+		break;
+	case SDL_EVENT_KEY_UP:
+		handleKeyUp(e.key.key);
+		break;
+	case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+		handleJoyButtonDown(e.jbutton);
+		break;
+	case SDL_EVENT_JOYSTICK_BUTTON_UP:
+		handleJoyButtonUp(e.jbutton);
+		break;
+	case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+		handleGamepadButtonDown(e.gbutton);
+		break;
+	case SDL_EVENT_GAMEPAD_BUTTON_UP:
+		handleGamepadButtonUp(e.gbutton);
+		break;
+	case SDL_EVENT_GAMEPAD_ADDED:
+		addGamepad(e);
+		break;
+	case SDL_EVENT_GAMEPAD_REMOVED:
+		removeGamepad(e);
+		break;
 	}
+	return SDL_APP_CONTINUE;
 }
 
 void Game::draw() {
 	updateTexture();
 	renderTexture();
 	displayTexture();
-}
-
-bool Game::maybeSynchronise() {
-	const bool synchronising = !m_vsync;
-	if (synchronising)
-		synchronise();
-	return synchronising;
-}
-
-void Game::synchronise() {
-	
-	m_frameEndTime = ::SDL_GetPerformanceCounter();
-
-	const auto frameTime = m_frameEndTime - m_frameStartTime;	// In performance frequency
-	::SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "Frame time (ticks): %ld", frameTime);
-
-	const auto elapsedFrameTime = double(frameTime) / m_performanceFrequency;	// In seconds
-	::SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "Frame time (seconds): %f", elapsedFrameTime);
-
-	const auto gap = m_targetFrameTime - elapsedFrameTime;	// in seconds
-	::SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "Timing gap (seconds): %f", gap);
-
-	if (gap > 0) {
-		const auto delay = Uint32(gap * 1000.0);
-		::SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "Delay (ticks): %d", delay);
-		SDL_Delay(delay);
-	}
-
-	if (gap < 0) {
-		::SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Running slowly");
-	}
 }
 
 void Game::removeGamepad(SDL_Event& e) {

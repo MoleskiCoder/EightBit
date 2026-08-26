@@ -3,13 +3,27 @@
 
 using namespace Gaming;
 
-Wrapper::Wrapper(bool verbose /* = false */) {
-	const auto success = ::SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
-	maybeThrowException(success, "Unable to initialise SDL library");
-	const auto priority = verbose ? SDL_LogPriority::SDL_LOG_PRIORITY_VERBOSE : SDL_LogPriority::SDL_LOG_PRIORITY_ERROR;
-	::SDL_SetLogPriorities(priority);
+Wrapper::Wrapper(SDL_LogPriority logging /* = SDL_LOG_PRIORITY_WARN */)
+: m_logging(logging) {}
+
+void Wrapper::raisePOWER() noexcept {
+	base::raisePOWER();
+	initialise();
 }
 
-Wrapper::~Wrapper() {
-	::SDL_Quit();
+void Wrapper::lowerPOWER() noexcept {
+	terminate();
+	base::lowerPOWER();
+}
+
+void Wrapper::initialise() {
+	const auto success = ::SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
+	maybeThrowException(success, "Unable to initialise SDL library");
+	::SDL_SetLogPriorities(m_logging);
+	::SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "SDL library initialised");
+}
+
+void Wrapper::terminate() {
+    ::SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "SDL library terminating");
+    ::SDL_Quit();
 }
